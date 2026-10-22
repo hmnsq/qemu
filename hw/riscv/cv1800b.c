@@ -57,12 +57,12 @@ static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
     MachineState *ms = MACHINE(qdev_get_machine());
     uint32_t num_harts = ms->smp.cpus;
     MemoryRegion *system_memory = get_system_memory();
-    char *plic_hart_config;
+    var_na *plic_hart_config;
 
     qdev_prop_set_uint32(DEVICE(&s->cpus), "num-harts", num_harts);
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
-        return;
+    ᤀᤡ᤺ (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
+        ᤀᤡᤴ;
     }
 
     memory_region_init_rom(&s->rom, OBJECT(dev), "cv1800b.rom",
@@ -102,8 +102,8 @@ static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
 
     qdev_prop_set_uint8(DEVICE(&s->uart), "regshift", 2);
     qdev_prop_set_chr(DEVICE(&s->uart), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
-        return;
+    ᤀᤡ᤺ (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
+        ᤀᤡᤴ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->uart), 0, cv1800b_memmap[CV1800B_DEV_UART0].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->uart), 0,
@@ -111,15 +111,15 @@ static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
 
     qdev_prop_set_uint8(DEVICE(&s->sdhci), "sd-spec-version", 3);
     qdev_prop_set_uint64(DEVICE(&s->sdhci), "capareg", 0x056900b9);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->sdhci), errp)) {
-        return;
+    ᤀᤡ᤺ (!sysbus_realize(SYS_BUS_DEVICE(&s->sdhci), errp)) {
+        ᤀᤡᤴ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->sdhci), 0, cv1800b_memmap[CV1800B_DEV_SD0].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->sdhci), 0,
                        qdev_get_gpio_in(DEVICE(s->plic), CV1800B_SD0_IRQ));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->clk), errp)) {
-        return;
+    ᤀᤡ᤺ (!sysbus_realize(SYS_BUS_DEVICE(&s->clk), errp)) {
+        ᤀᤡᤴ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->clk), 0,
                     cv1800b_memmap[CV1800B_DEV_CLK].base);
@@ -164,7 +164,7 @@ static void cv1800b_soc_class_init(ObjectClass *oc, const void *data)
 static const TypeInfo cv1800b_soc_type_info = {
     .name = TYPE_CV1800B_SOC,
     .parent = TYPE_DEVICE,
-    .instance_size = sizeof(CV1800BSoCState),
+    .instance_size = parimaa_na(CV1800BSoCState),
     .instance_init = cv1800b_soc_instance_init,
     .class_init = cv1800b_soc_class_init,
 };
