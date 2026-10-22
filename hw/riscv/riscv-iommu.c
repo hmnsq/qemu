@@ -81,37 +81,37 @@ static uint32_t riscv_iommu_space_devid(RISCVIOMMUSpace *as)
 
     /* FIXME: PCIe bus remapping for attached endpoints. */
     devid |= as->iommu->bus << 8;
-    return devid;
+    返回 devid;
 }
 
 static uint8_t riscv_iommu_get_icvec_vector(uint32_t icvec, uint32_t vec_type)
 {
     switch (vec_type) {
     case RISCV_IOMMU_INTR_CQ:
-        return icvec & RISCV_IOMMU_ICVEC_CIV;
+        返回 icvec & RISCV_IOMMU_ICVEC_CIV;
     case RISCV_IOMMU_INTR_FQ:
-        return (icvec & RISCV_IOMMU_ICVEC_FIV) >> 4;
+        返回 (icvec & RISCV_IOMMU_ICVEC_FIV) >> 4;
     case RISCV_IOMMU_INTR_PM:
-        return (icvec & RISCV_IOMMU_ICVEC_PMIV) >> 8;
+        返回 (icvec & RISCV_IOMMU_ICVEC_PMIV) >> 8;
     case RISCV_IOMMU_INTR_PQ:
-        return (icvec & RISCV_IOMMU_ICVEC_PIV) >> 12;
+        返回 (icvec & RISCV_IOMMU_ICVEC_PIV) >> 12;
     default:
         g_assert_not_reached();
     }
 }
 
-void riscv_iommu_notify(RISCVIOMMUState *s, int vec_type)
+void riscv_iommu_notify(RISCVIOMMUState *s, 整数 vec_type)
 {
     uint32_t ipsr, icvec, vector;
 
-    if (!s->notify) {
-        return;
+    如果 (!s->notify) {
+        返回;
     }
 
     icvec = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_ICVEC);
     ipsr = riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_IPSR, (1 << vec_type), 0);
 
-    if (!(ipsr & (1 << vec_type))) {
+    如果 (!(ipsr & (1 << vec_type))) {
         vector = riscv_iommu_get_icvec_vector(icvec, vec_type);
         s->notify(s, vector);
         trace_riscv_iommu_notify_int_vector(vec_type, vector);
@@ -129,26 +129,26 @@ void riscv_iommu_fault(RISCVIOMMUState *s, struct riscv_iommu_fq_record *ev)
     trace_riscv_iommu_flt(s->parent_obj.id, PCI_BUS_NUM(devid), PCI_SLOT(devid),
                           PCI_FUNC(devid), ev->hdr, ev->iotval);
 
-    if (!(ctrl & RISCV_IOMMU_FQCSR_FQON) ||
+    如果 (!(ctrl & RISCV_IOMMU_FQCSR_FQON) ||
         !!(ctrl & (RISCV_IOMMU_FQCSR_FQOF | RISCV_IOMMU_FQCSR_FQMF))) {
-        return;
+        返回;
     }
 
-    if (head == next) {
+    如果 (head == next) {
         riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_FQCSR,
                               RISCV_IOMMU_FQCSR_FQOF, 0);
-    } else {
+    } 否则 {
         dma_addr_t addr = s->fq_addr + tail * sizeof(*ev);
-        if (dma_memory_write(s->target_as, addr, ev, sizeof(*ev),
+        如果 (dma_memory_write(s->target_as, addr, ev, sizeof(*ev),
                              MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
             riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_FQCSR,
                                   RISCV_IOMMU_FQCSR_FQMF, 0);
-        } else {
+        } 否则 {
             riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_FQT, next);
         }
     }
 
-    if (ctrl & RISCV_IOMMU_FQCSR_FIE) {
+    如果 (ctrl & RISCV_IOMMU_FQCSR_FIE) {
         riscv_iommu_notify(s, RISCV_IOMMU_INTR_FQ);
     }
 }
@@ -165,26 +165,26 @@ static void riscv_iommu_pri(RISCVIOMMUState *s,
     trace_riscv_iommu_pri(s->parent_obj.id, PCI_BUS_NUM(devid), PCI_SLOT(devid),
                           PCI_FUNC(devid), pr->payload);
 
-    if (!(ctrl & RISCV_IOMMU_PQCSR_PQON) ||
+    如果 (!(ctrl & RISCV_IOMMU_PQCSR_PQON) ||
         !!(ctrl & (RISCV_IOMMU_PQCSR_PQOF | RISCV_IOMMU_PQCSR_PQMF))) {
-        return;
+        返回;
     }
 
-    if (head == next) {
+    如果 (head == next) {
         riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_PQCSR,
                               RISCV_IOMMU_PQCSR_PQOF, 0);
-    } else {
+    } 否则 {
         dma_addr_t addr = s->pq_addr + tail * sizeof(*pr);
-        if (dma_memory_write(s->target_as, addr, pr, sizeof(*pr),
+        如果 (dma_memory_write(s->target_as, addr, pr, sizeof(*pr),
                              MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
             riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_PQCSR,
                                   RISCV_IOMMU_PQCSR_PQMF, 0);
-        } else {
+        } 否则 {
             riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_PQT, next);
         }
     }
 
-    if (ctrl & RISCV_IOMMU_PQCSR_PIE) {
+    如果 (ctrl & RISCV_IOMMU_PQCSR_PIE) {
         riscv_iommu_notify(s, RISCV_IOMMU_INTR_PQ);
     }
 }
@@ -212,9 +212,9 @@ static uint64_t riscv_iommu_pext_u64(uint64_t val, uint64_t ext)
     uint64_t ret = 0;
     uint64_t rot = 1;
 
-    while (ext) {
-        if (ext & 1) {
-            if (val & 1) {
+    当 (ext) {
+        如果 (ext & 1) {
+            如果 (val & 1) {
                 ret |= rot;
             }
             rot <<= 1;
@@ -223,38 +223,38 @@ static uint64_t riscv_iommu_pext_u64(uint64_t val, uint64_t ext)
         ext >>= 1;
     }
 
-    return ret;
+    返回 ret;
 }
 
 /* Check if GPA matches MSI/MRIF pattern. */
 static bool riscv_iommu_msi_check(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     dma_addr_t gpa)
 {
-    if (!s->enable_msi) {
-        return false;
+    如果 (!s->enable_msi) {
+        返回 false;
     }
 
-    if (get_field(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_MODE) !=
+    如果 (get_field(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_MODE) !=
         RISCV_IOMMU_DC_MSIPTP_MODE_FLAT) {
-        return false; /* Invalid MSI/MRIF mode */
+        返回 false; /* Invalid MSI/MRIF mode */
     }
 
-    if ((PPN_DOWN(gpa) ^ ctx->msi_addr_pattern) & ~ctx->msi_addr_mask) {
-        return false; /* GPA not in MSI range defined by AIA IMSIC rules. */
+    如果 ((PPN_DOWN(gpa) ^ ctx->msi_addr_pattern) & ~ctx->msi_addr_mask) {
+        返回 false; /* GPA not in MSI range defined by AIA IMSIC rules. */
     }
 
-    return true;
+    返回 true;
 }
 
 /* Returns the NAPOT page mask, or 0 for reserved encodings. */
 static hwaddr riscv_iommu_napot_page_mask(hwaddr ppn, hwaddr addr, hwaddr *out)
 {
-    int napot_bits = ctz64(ppn) + 1;
+    整数 napot_bits = ctz64(ppn) + 1;
     hwaddr napot_mask, page_mask;
 
     /* The spec only defines 64KB (napot_bits == 4) */
-    if (napot_bits != 4) {
-        return 0;
+    如果 (napot_bits != 4) {
+        返回 0;
     }
 
     napot_mask = (1ULL << napot_bits) - 1;
@@ -262,7 +262,7 @@ static hwaddr riscv_iommu_napot_page_mask(hwaddr ppn, hwaddr addr, hwaddr *out)
 
     *out = PPN_PHYS(ppn & ~napot_mask) | (addr & page_mask);
 
-    return page_mask;
+    返回 page_mask;
 }
 
 /*
@@ -278,7 +278,7 @@ static hwaddr riscv_iommu_napot_page_mask(hwaddr ppn, hwaddr addr, hwaddr *out)
  * @iotlb    : translation data: physical address and access mode.
  * @return   : success or fault cause code.
  */
-static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
+static 整数 riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     IOMMUTLBEntry *iotlb)
 {
     IOMMUAccessFlags trans_perm = IOMMU_NONE;
@@ -324,29 +324,29 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
      * means we can't do an early MSI check unless we have
      * strictly !en_s.
      */
-    if (!en_s && (req_perm & IOMMU_WO) &&
+    如果 (!en_s && (req_perm & IOMMU_WO) &&
         riscv_iommu_msi_check(s, ctx, iotlb->iova)) {
         iotlb->target_as = &s->trap_as;
         iotlb->translated_addr = iotlb->iova;
         iotlb->addr_mask = ~TARGET_PAGE_MASK;
-        return 0;
+        返回 0;
     }
 
     /* Exit early for pass-through mode. */
-    if (!(en_s || en_g)) {
+    如果 (!(en_s || en_g)) {
         iotlb->translated_addr = iotlb->iova;
         iotlb->addr_mask = ~TARGET_PAGE_MASK;
         /* Allow R/W in pass-through mode */
         iotlb->perm = IOMMU_RW;
-        return 0;
+        返回 0;
     }
 
     /* S/G translation parameters. */
-    for (pass = 0; pass < 2; pass++) {
+    为 (pass = 0; pass < 2; pass++) {
         uint32_t sv_mode;
 
         sc[pass].step = 0;
-        if (pass ? (s->fctl & RISCV_IOMMU_FCTL_GXL) :
+        如果 (pass ? (s->fctl & RISCV_IOMMU_FCTL_GXL) :
             (ctx->tc & RISCV_IOMMU_DC_TC_SXL)) {
             /* 32bit mode for GXL/SXL == 1 */
             switch (pass ? gatp : satp) {
@@ -357,17 +357,17 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
                 break;
             case RISCV_IOMMU_DC_IOHGATP_MODE_SV32X4:
                 sv_mode = pass ? RISCV_IOMMU_CAP_SV32X4 : RISCV_IOMMU_CAP_SV32;
-                if (!(s->cap & sv_mode)) {
-                    return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                如果 (!(s->cap & sv_mode)) {
+                    返回 RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
                 }
                 sc[pass].levels    = 2;
                 sc[pass].ptidxbits = 10;
                 sc[pass].ptesize   = 4;
                 break;
             default:
-                return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                返回 RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
             }
-        } else {
+        } 否则 {
             /* 64bit mode for GXL/SXL == 0 */
             switch (pass ? gatp : satp) {
             case RISCV_IOMMU_DC_IOHGATP_MODE_BARE:
@@ -377,8 +377,8 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
                 break;
             case RISCV_IOMMU_DC_IOHGATP_MODE_SV39X4:
                 sv_mode = pass ? RISCV_IOMMU_CAP_SV39X4 : RISCV_IOMMU_CAP_SV39;
-                if (!(s->cap & sv_mode)) {
-                    return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                如果 (!(s->cap & sv_mode)) {
+                    返回 RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
                 }
                 sc[pass].levels    = 3;
                 sc[pass].ptidxbits = 9;
@@ -386,8 +386,8 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
                 break;
             case RISCV_IOMMU_DC_IOHGATP_MODE_SV48X4:
                 sv_mode = pass ? RISCV_IOMMU_CAP_SV48X4 : RISCV_IOMMU_CAP_SV48;
-                if (!(s->cap & sv_mode)) {
-                    return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                如果 (!(s->cap & sv_mode)) {
+                    返回 RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
                 }
                 sc[pass].levels    = 4;
                 sc[pass].ptidxbits = 9;
@@ -395,15 +395,15 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
                 break;
             case RISCV_IOMMU_DC_IOHGATP_MODE_SV57X4:
                 sv_mode = pass ? RISCV_IOMMU_CAP_SV57X4 : RISCV_IOMMU_CAP_SV57;
-                if (!(s->cap & sv_mode)) {
-                    return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                如果 (!(s->cap & sv_mode)) {
+                    返回 RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
                 }
                 sc[pass].levels    = 5;
                 sc[pass].ptidxbits = 9;
                 sc[pass].ptesize   = 8;
                 break;
             default:
-                return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                返回 RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
             }
         }
     };
@@ -425,30 +425,30 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
         const bool ade =
             ctx->tc & (pass ? RISCV_IOMMU_DC_TC_GADE : RISCV_IOMMU_DC_TC_SADE);
 
-        if (ade && !(s->cap & RISCV_IOMMU_CAP_AMO_HWAD)) {
+        如果 (ade && !(s->cap & RISCV_IOMMU_CAP_AMO_HWAD)) {
             /* GADE/SADE are reserved bits if AMO_HWAD is cleared.  */
-            return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+            返回 RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
         }
 
         /* Address range check before first level lookup */
-        if (!sc[pass].step) {
+        如果 (!sc[pass].step) {
             const uint64_t va_len = va_skip + va_bits;
             const uint64_t va_mask = (1ULL << va_len) - 1;
 
-            if (pass == S_STAGE && va_len > 32) {
+            如果 (pass == S_STAGE && va_len > 32) {
                 uint64_t mask, masked_msbs;
 
                 mask = MAKE_64BIT_MASK(0, target_long_bits() - va_len + 1);
                 masked_msbs = (addr >> (va_len - 1)) & mask;
 
-                if (masked_msbs != 0 && masked_msbs != mask) {
-                    return (req_perm & IOMMU_WO) ?
+                如果 (masked_msbs != 0 && masked_msbs != mask) {
+                    返回 (req_perm & IOMMU_WO) ?
                                 RISCV_IOMMU_FQ_CAUSE_WR_FAULT_S :
                                 RISCV_IOMMU_FQ_CAUSE_RD_FAULT_S;
                 }
-            } else {
-                if ((addr & va_mask) != addr) {
-                    return (req_perm & IOMMU_WO) ?
+            } 否则 {
+                如果 ((addr & va_mask) != addr) {
+                    返回 (req_perm & IOMMU_WO) ?
                                 RISCV_IOMMU_FQ_CAUSE_WR_FAULT_VS :
                                 RISCV_IOMMU_FQ_CAUSE_RD_FAULT_VS;
                 }
@@ -456,58 +456,58 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
         }
 
 
-        if (pass == S_STAGE) {
+        如果 (pass == S_STAGE) {
             riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_S_VS_WALKS);
-        } else {
+        } 否则 {
             riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_G_WALKS);
         }
 
         /* Read page table entry */
-        if (sc[pass].ptesize == 4) {
+        如果 (sc[pass].ptesize == 4) {
             uint32_t pte32 = 0;
             ret = ldl_le_dma(s->target_as, pte_addr, &pte32,
                              MEMTXATTRS_UNSPECIFIED);
             pte = pte32;
-        } else {
+        } 否则 {
             ret = ldq_le_dma(s->target_as, pte_addr, &pte,
                              MEMTXATTRS_UNSPECIFIED);
         }
-        if (ret != MEMTX_OK) {
-            return (req_perm & IOMMU_WO) ? RISCV_IOMMU_FQ_CAUSE_WR_FAULT
+        如果 (ret != MEMTX_OK) {
+            返回 (req_perm & IOMMU_WO) ? RISCV_IOMMU_FQ_CAUSE_WR_FAULT
                                          : RISCV_IOMMU_FQ_CAUSE_RD_FAULT;
         }
 
         sc[pass].step++;
         hwaddr ppn = pte >> PTE_PPN_SHIFT;
 
-        if (!(pte & PTE_V)) {
+        如果 (!(pte & PTE_V)) {
             break;                /* Invalid PTE */
-        } else if (pte & PTE_RESERVED(false)) {
+        } 否则 如果 (pte & PTE_RESERVED(false)) {
             break;                /* Reserved PTE bits set */
-        } else if (!(pte & (PTE_R | PTE_W | PTE_X))) {
+        } 否则 如果 (!(pte & (PTE_R | PTE_W | PTE_X))) {
             base = PPN_PHYS(ppn); /* Inner PTE, continue walking */
-        } else if ((pte & (PTE_R | PTE_W | PTE_X)) == PTE_W) {
+        } 否则 如果 ((pte & (PTE_R | PTE_W | PTE_X)) == PTE_W) {
             break;                /* Reserved leaf PTE flags: PTE_W */
-        } else if ((pte & (PTE_R | PTE_W | PTE_X)) == (PTE_W | PTE_X)) {
+        } 否则 如果 ((pte & (PTE_R | PTE_W | PTE_X)) == (PTE_W | PTE_X)) {
             break;                /* Reserved leaf PTE flags: PTE_W + PTE_X */
-        } else if (ppn & ((1ULL << (va_skip - TARGET_PAGE_BITS)) - 1)) {
+        } 否则 如果 (ppn & ((1ULL << (va_skip - TARGET_PAGE_BITS)) - 1)) {
             break;                /* Misaligned PPN */
-        } else if (!(pte & PTE_U) && !pv) {
+        } 否则 如果 (!(pte & PTE_U) && !pv) {
             /*
              * All accesses are assumed to be User mode unless
              * process_id is valid (pv).  In case we have a
              * non-user mode leaf PTE and !pv we need to fault.
              */
             break;
-        } else if ((req_perm & IOMMU_RO) && !(pte & PTE_R)) {
+        } 否则 如果 ((req_perm & IOMMU_RO) && !(pte & PTE_R)) {
             break;                /* Read access check failed */
-        } else if ((req_perm & IOMMU_WO) && !(pte & PTE_W)) {
+        } 否则 如果 ((req_perm & IOMMU_WO) && !(pte & PTE_W)) {
             break;                /* Write access check failed */
-        } else if (!ade && !(pte & PTE_A)) {
+        } 否则 如果 (!ade && !(pte & PTE_A)) {
             break;                /* Access bit not set */
-        } else if ((req_perm & IOMMU_WO) && !ade && !(pte & PTE_D)) {
+        } 否则 如果 ((req_perm & IOMMU_WO) && !ade && !(pte & PTE_D)) {
             break;                /* Dirty bit not set */
-        } else if (pass == G_STAGE && !(pte & PTE_U)) {
+        } 否则 如果 (pass == G_STAGE && !(pte & PTE_U)) {
             /*
              * riscv-iommu spec 1.0: "When checking the U bit in a
              * second-stage PTE, the transaction is treated as
@@ -517,25 +517,25 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
              * we are always in user mode at this point.
              */
             break;
-        } else {
+        } 否则 {
             /* Leaf PTE, translation completed. */
             sc[pass].step = sc[pass].levels;
 
-            if (pte & PTE_N) {
+            如果 (pte & PTE_N) {
                 hwaddr mask = riscv_iommu_napot_page_mask(ppn, addr, &base);
 
-                if (!mask) {
+                如果 (!mask) {
                     break;
                 }
                 iotlb->addr_mask &= mask;
-            } else {
+            } 否则 {
                 base = PPN_PHYS(ppn) | (addr & ((1ULL << va_skip) - 1));
                 /* Update address mask based on smallest translation granularity */
                 iotlb->addr_mask &= (1ULL << va_skip) - 1;
             }
 
             /* Continue with S-Stage translation? */
-            if (pass && sc[0].step != sc[0].levels) {
+            如果 (pass && sc[0].step != sc[0].levels) {
                 pass = S_STAGE;
                 addr = iotlb->iova;
                 continue;
@@ -553,16 +553,16 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
             iotlb->translated_addr = base;
 
             /* Check MSI GPA address match */
-            if (pass == S_STAGE && (req_perm & IOMMU_WO) &&
+            如果 (pass == S_STAGE && (req_perm & IOMMU_WO) &&
                 riscv_iommu_msi_check(s, ctx, base)) {
                 /* Trap MSI writes and return GPA address. */
                 iotlb->target_as = &s->trap_as;
                 iotlb->addr_mask = ~TARGET_PAGE_MASK;
-                return 0;
+                返回 0;
             }
 
             /* Continue with G-Stage translation? */
-            if (!pass && en_g) {
+            如果 (!pass && en_g) {
                 pass = G_STAGE;
                 addr = base;
                 base = gatp;
@@ -571,21 +571,21 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
             }
 
             iotlb->perm = trans_perm;
-            return 0;
+            返回 0;
         }
 
-        if (sc[pass].step == sc[pass].levels) {
+        如果 (sc[pass].step == sc[pass].levels) {
             break; /* Can't find leaf PTE */
         }
 
         /* Continue with G-Stage translation? */
-        if (!pass && en_g) {
+        如果 (!pass && en_g) {
             pass = G_STAGE;
             addr = base;
             base = gatp;
             sc[pass].step = 0;
         }
-    } while (1);
+    } 当 (1);
 
     /*
      * riscv_iommu_translate() will receive a fault and then call
@@ -595,7 +595,7 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
      */
     iotlb->translated_addr = addr;
 
-    return (req_perm & IOMMU_WO) ?
+    返回 (req_perm & IOMMU_WO) ?
                 (pass ? RISCV_IOMMU_FQ_CAUSE_WR_FAULT_VS :
                         RISCV_IOMMU_FQ_CAUSE_WR_FAULT_S) :
                 (pass ? RISCV_IOMMU_FQ_CAUSE_RD_FAULT_VS :
@@ -610,7 +610,7 @@ static void riscv_iommu_report_fault(RISCVIOMMUState *s,
 {
     struct riscv_iommu_fq_record ev = { 0 };
 
-    if (ctx->tc & RISCV_IOMMU_DC_TC_DTF) {
+    如果 (ctx->tc & RISCV_IOMMU_DC_TC_DTF) {
         switch (cause) {
         case RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED:
         case RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT:
@@ -622,7 +622,7 @@ static void riscv_iommu_report_fault(RISCVIOMMUState *s,
             break;
         default:
             /* DTF prevents reporting a fault for this given cause */
-            return;
+            返回;
         }
     }
 
@@ -631,7 +631,7 @@ static void riscv_iommu_report_fault(RISCVIOMMUState *s,
     ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_DID, ctx->devid);
     ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_PV, pv);
 
-    if (pv) {
+    如果 (pv) {
         ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_PID, ctx->process_id);
     }
 
@@ -652,8 +652,8 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
     size_t offset;
     uint32_t n190;
     uint64_t pte[2];
-    int fault_type = RISCV_IOMMU_FQ_TTYPE_UADDR_WR;
-    int cause;
+    整数 fault_type = RISCV_IOMMU_FQ_TTYPE_UADDR_WR;
+    整数 cause;
 
     /* Interrupt File Number */
     intn = riscv_iommu_pext_u64(PPN_DOWN(gpa), ctx->msi_addr_mask);
@@ -661,7 +661,7 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
 
     /* fetch MSI PTE */
     addr = PPN_PHYS(get_field(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_PPN));
-    if (addr & offset) {
+    如果 (addr & offset) {
         /* Interrupt file number out of range */
         res = MEMTX_ACCESS_ERROR;
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_LOAD_FAULT;
@@ -671,10 +671,10 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
     addr |= offset;
     res = dma_memory_read(s->target_as, addr, &pte, sizeof(pte),
             MEMTXATTRS_UNSPECIFIED);
-    if (res != MEMTX_OK) {
-        if (res == MEMTX_DECODE_ERROR) {
+    如果 (res != MEMTX_OK) {
+        如果 (res == MEMTX_DECODE_ERROR) {
             cause = RISCV_IOMMU_FQ_CAUSE_MSI_PT_CORRUPTED;
-        } else {
+        } 否则 {
             cause = RISCV_IOMMU_FQ_CAUSE_MSI_LOAD_FAULT;
         }
         goto err;
@@ -683,7 +683,7 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
     le64_to_cpus(&pte[0]);
     le64_to_cpus(&pte[1]);
 
-    if (!(pte[0] & RISCV_IOMMU_MSI_PTE_V) || (pte[0] & RISCV_IOMMU_MSI_PTE_C)) {
+    如果 (!(pte[0] & RISCV_IOMMU_MSI_PTE_V) || (pte[0] & RISCV_IOMMU_MSI_PTE_C)) {
         /*
          * The spec mentions that: "If msipte.C == 1, then further
          * processing to interpret the PTE is implementation
@@ -712,7 +712,7 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
          *
          * In other words, bits 62:54 and 9:3 of pte[0] are reserved.
          */
-        if (pte[0] & (GENMASK_ULL(62, 54) | GENMASK_ULL(9, 3))) {
+        如果 (pte[0] & (GENMASK_ULL(62, 54) | GENMASK_ULL(9, 3))) {
             res = MEMTX_DECODE_ERROR;
             cause = RISCV_IOMMU_FQ_CAUSE_MSI_MISCONFIGURED;
             goto err;
@@ -726,12 +726,12 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
                               gpa, addr);
 
         res = dma_memory_write(s->target_as, addr, &data, size, attrs);
-        if (res != MEMTX_OK) {
+        如果 (res != MEMTX_OK) {
             cause = RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT;
             goto err;
         }
 
-        return MEMTX_OK;
+        返回 MEMTX_OK;
     case RISCV_IOMMU_MSI_PTE_M_MRIF:
         /* MRIF mode, continue. */
         break;
@@ -746,7 +746,7 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
      * for an IMSIC interrupt file (2047) or destination address is not 32-bit
      * aligned. See IOMMU Specification, Chapter 2.3. MSI page tables.
      */
-    if ((data > 2047) || (gpa & 3)) {
+    如果 ((data > 2047) || (gpa & 3)) {
         res = MEMTX_ACCESS_ERROR;
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_MISCONFIGURED;
         goto err;
@@ -784,14 +784,14 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
     /* MRIF pending bit mask */
     data = 1ULL << (data & 0x03f);
     res = dma_memory_read(s->target_as, addr, &intn, sizeof(intn), attrs);
-    if (res != MEMTX_OK) {
+    如果 (res != MEMTX_OK) {
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_LOAD_FAULT;
         goto err;
     }
 
     intn = intn | data;
     res = dma_memory_write(s->target_as, addr, &intn, sizeof(intn), attrs);
-    if (res != MEMTX_OK) {
+    如果 (res != MEMTX_OK) {
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT;
         goto err;
     }
@@ -799,14 +799,14 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
     /* Get MRIF enable bits */
     addr = addr + sizeof(intn);
     res = dma_memory_read(s->target_as, addr, &intn, sizeof(intn), attrs);
-    if (res != MEMTX_OK) {
+    如果 (res != MEMTX_OK) {
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_LOAD_FAULT;
         goto err;
     }
 
-    if (!(intn & data)) {
+    如果 (!(intn & data)) {
         /* notification disabled, MRIF update completed. */
-        return MEMTX_OK;
+        返回 MEMTX_OK;
     }
 
     /* Send notification message */
@@ -815,19 +815,19 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
           (get_field(pte[1], RISCV_IOMMU_MSI_MRIF_NID_MSB) << 10);
 
     res = dma_memory_write(s->target_as, addr, &n190, sizeof(n190), attrs);
-    if (res != MEMTX_OK) {
+    如果 (res != MEMTX_OK) {
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT;
         goto err;
     }
 
     trace_riscv_iommu_mrif_notification(s->parent_obj.id, n190, addr);
 
-    return MEMTX_OK;
+    返回 MEMTX_OK;
 
 err:
     riscv_iommu_report_fault(s, ctx, fault_type, cause,
                              !!ctx->process_id, 0, 0);
-    return res;
+    返回 res;
 }
 
 /*
@@ -841,49 +841,49 @@ static bool riscv_iommu_validate_device_ctx(RISCVIOMMUState *s,
     uint32_t fsc_mode, msi_mode;
     uint64_t gatp;
 
-    if (ctx->tc & RISCV_IOMMU_DC_TC_RESERVED) {
-        return false;
+    如果 (ctx->tc & RISCV_IOMMU_DC_TC_RESERVED) {
+        返回 false;
     }
 
-    if (!(s->cap & RISCV_IOMMU_CAP_ATS) &&
+    如果 (!(s->cap & RISCV_IOMMU_CAP_ATS) &&
         (ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS ||
          ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI ||
          ctx->tc & RISCV_IOMMU_DC_TC_PRPR)) {
-        return false;
+        返回 false;
     }
 
-    if (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS) &&
+    如果 (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS) &&
         (ctx->tc & RISCV_IOMMU_DC_TC_T2GPA ||
          ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI)) {
-        return false;
+        返回 false;
     }
 
-    if (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI) &&
+    如果 (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI) &&
         ctx->tc & RISCV_IOMMU_DC_TC_PRPR) {
-        return false;
+        返回 false;
     }
 
-    if (!(s->cap & RISCV_IOMMU_CAP_T2GPA) &&
+    如果 (!(s->cap & RISCV_IOMMU_CAP_T2GPA) &&
         ctx->tc & RISCV_IOMMU_DC_TC_T2GPA) {
-        return false;
+        返回 false;
     }
 
-    if (s->cap & RISCV_IOMMU_CAP_MSI_FLAT) {
+    如果 (s->cap & RISCV_IOMMU_CAP_MSI_FLAT) {
         msi_mode = get_field(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_MODE);
 
-        if (msi_mode != RISCV_IOMMU_DC_MSIPTP_MODE_OFF &&
+        如果 (msi_mode != RISCV_IOMMU_DC_MSIPTP_MODE_OFF &&
             msi_mode != RISCV_IOMMU_DC_MSIPTP_MODE_FLAT) {
-            return false;
+            返回 false;
         }
     }
 
     gatp = get_field(ctx->gatp, RISCV_IOMMU_ATP_MODE_FIELD);
-    if (ctx->tc & RISCV_IOMMU_DC_TC_T2GPA &&
+    如果 (ctx->tc & RISCV_IOMMU_DC_TC_T2GPA &&
         gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
-        return false;
+        返回 false;
     }
 
-    if (gatp != RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
+    如果 (gatp != RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
         uint64_t iohgatp_ppn = get_field(ctx->gatp,
                                          RISCV_IOMMU_DC_IOHGATP_PPN);
 
@@ -893,57 +893,57 @@ static bool riscv_iommu_validate_device_ctx(RISCVIOMMUState *s,
          * Bare and the root page table (address) determined by
          * DC.iohgatp.PPN is not aligned to a 16-KiB boundary."
          */
-        if (PPN_PHYS(iohgatp_ppn) & ((1ULL << 14) - 1)) {
-            return false;
+        如果 (PPN_PHYS(iohgatp_ppn) & ((1ULL << 14) - 1)) {
+            返回 false;
         }
     }
 
     fsc_mode = get_field(ctx->satp, RISCV_IOMMU_DC_FSC_MODE);
 
-    if (ctx->tc & RISCV_IOMMU_DC_TC_PDTV) {
+    如果 (ctx->tc & RISCV_IOMMU_DC_TC_PDTV) {
         switch (fsc_mode) {
         case RISCV_IOMMU_DC_FSC_PDTP_MODE_PD8:
-            if (!(s->cap & RISCV_IOMMU_CAP_PD8)) {
-                return false;
+            如果 (!(s->cap & RISCV_IOMMU_CAP_PD8)) {
+                返回 false;
             }
             break;
         case RISCV_IOMMU_DC_FSC_PDTP_MODE_PD17:
-            if (!(s->cap & RISCV_IOMMU_CAP_PD17)) {
-                return false;
+            如果 (!(s->cap & RISCV_IOMMU_CAP_PD17)) {
+                返回 false;
             }
             break;
         case RISCV_IOMMU_DC_FSC_PDTP_MODE_PD20:
-            if (!(s->cap & RISCV_IOMMU_CAP_PD20)) {
-                return false;
+            如果 (!(s->cap & RISCV_IOMMU_CAP_PD20)) {
+                返回 false;
             }
             break;
         }
-    } else {
+    } 否则 {
         /* DC.tc.PDTV is 0 */
-        if (ctx->tc & RISCV_IOMMU_DC_TC_DPE) {
-            return false;
+        如果 (ctx->tc & RISCV_IOMMU_DC_TC_DPE) {
+            返回 false;
         }
 
-        if (ctx->tc & RISCV_IOMMU_DC_TC_SXL) {
-            if (fsc_mode == RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV32 &&
+        如果 (ctx->tc & RISCV_IOMMU_DC_TC_SXL) {
+            如果 (fsc_mode == RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV32 &&
                 !(s->cap & RISCV_IOMMU_CAP_SV32)) {
-                return false;
+                返回 false;
             }
-        } else {
+        } 否则 {
             switch (fsc_mode) {
             case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39:
-                if (!(s->cap & RISCV_IOMMU_CAP_SV39)) {
-                    return false;
+                如果 (!(s->cap & RISCV_IOMMU_CAP_SV39)) {
+                    返回 false;
                 }
                 break;
             case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV48:
-                if (!(s->cap & RISCV_IOMMU_CAP_SV48)) {
-                    return false;
+                如果 (!(s->cap & RISCV_IOMMU_CAP_SV48)) {
+                    返回 false;
                 }
             break;
             case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
-                if (!(s->cap & RISCV_IOMMU_CAP_SV57)) {
-                    return false;
+                如果 (!(s->cap & RISCV_IOMMU_CAP_SV57)) {
+                    返回 false;
                 }
                 break;
             }
@@ -955,11 +955,11 @@ static bool riscv_iommu_validate_device_ctx(RISCVIOMMUState *s,
      * always zero (little-endian accesses). Thus TC_SBE must
      * always be LE, i.e. zero.
      */
-    if (ctx->tc & RISCV_IOMMU_DC_TC_SBE) {
-        return false;
+    如果 (ctx->tc & RISCV_IOMMU_DC_TC_SBE) {
+        返回 false;
     }
 
-    return true;
+    返回 true;
 }
 
 /*
@@ -971,12 +971,12 @@ static bool riscv_iommu_validate_process_ctx(RISCVIOMMUState *s,
 {
     uint32_t mode;
 
-    if (get_field(ctx->ta, RISCV_IOMMU_PC_TA_RESERVED)) {
-        return false;
+    如果 (get_field(ctx->ta, RISCV_IOMMU_PC_TA_RESERVED)) {
+        返回 false;
     }
 
-    if (get_field(ctx->satp, RISCV_IOMMU_PC_FSC_RESERVED)) {
-        return false;
+    如果 (get_field(ctx->satp, RISCV_IOMMU_PC_FSC_RESERVED)) {
+        返回 false;
     }
 
     mode = get_field(ctx->satp, RISCV_IOMMU_DC_FSC_MODE);
@@ -988,35 +988,35 @@ static bool riscv_iommu_validate_process_ctx(RISCVIOMMUState *s,
     case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
         break;
     default:
-        return false;
+        返回 false;
     }
 
-    if (ctx->tc & RISCV_IOMMU_DC_TC_SXL) {
-        if (mode == RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV32 &&
+    如果 (ctx->tc & RISCV_IOMMU_DC_TC_SXL) {
+        如果 (mode == RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV32 &&
             !(s->cap & RISCV_IOMMU_CAP_SV32)) {
-                return false;
+                返回 false;
         }
-    } else {
+    } 否则 {
         switch (mode) {
         case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV39)) {
-                return false;
+            如果 (!(s->cap & RISCV_IOMMU_CAP_SV39)) {
+                返回 false;
             }
             break;
         case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV48:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV48)) {
-                return false;
+            如果 (!(s->cap & RISCV_IOMMU_CAP_SV48)) {
+                返回 false;
             }
             break;
         case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV57)) {
-                return false;
+            如果 (!(s->cap & RISCV_IOMMU_CAP_SV57)) {
+                返回 false;
             }
             break;
         }
     }
 
-    return true;
+    返回 true;
 }
 
 /**
@@ -1047,7 +1047,7 @@ static MemTxResult pdt_memory_read(RISCVIOMMUState *s,
 
     /* G stages translation mode */
     gatp_mode = get_field(ctx->gatp, RISCV_IOMMU_ATP_MODE_FIELD);
-    if (gatp_mode == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
+    如果 (gatp_mode == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
         goto out;
     }
 
@@ -1057,49 +1057,49 @@ static MemTxResult pdt_memory_read(RISCVIOMMUState *s,
     /* Start at step 0 */
     sc.step = 0;
 
-    if (s->fctl & RISCV_IOMMU_FCTL_GXL) {
+    如果 (s->fctl & RISCV_IOMMU_FCTL_GXL) {
         /* 32bit mode for GXL == 1 */
         switch (gatp_mode) {
         case RISCV_IOMMU_DC_IOHGATP_MODE_SV32X4:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV32X4)) {
-                return MEMTX_ACCESS_ERROR;
+            如果 (!(s->cap & RISCV_IOMMU_CAP_SV32X4)) {
+                返回 MEMTX_ACCESS_ERROR;
             }
             sc.levels    = 2;
             sc.ptidxbits = 10;
             sc.ptesize   = 4;
             break;
         default:
-            return MEMTX_ACCESS_ERROR;
+            返回 MEMTX_ACCESS_ERROR;
         }
-    } else {
+    } 否则 {
         /* 64bit mode for GXL == 0 */
         switch (gatp_mode) {
         case RISCV_IOMMU_DC_IOHGATP_MODE_SV39X4:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV39X4)) {
-                return MEMTX_ACCESS_ERROR;
+            如果 (!(s->cap & RISCV_IOMMU_CAP_SV39X4)) {
+                返回 MEMTX_ACCESS_ERROR;
             }
             sc.levels    = 3;
             sc.ptidxbits = 9;
             sc.ptesize   = 8;
             break;
         case RISCV_IOMMU_DC_IOHGATP_MODE_SV48X4:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV48X4)) {
-                return MEMTX_ACCESS_ERROR;
+            如果 (!(s->cap & RISCV_IOMMU_CAP_SV48X4)) {
+                返回 MEMTX_ACCESS_ERROR;
             }
             sc.levels    = 4;
             sc.ptidxbits = 9;
             sc.ptesize   = 8;
             break;
         case RISCV_IOMMU_DC_IOHGATP_MODE_SV57X4:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV57X4)) {
-                return MEMTX_ACCESS_ERROR;
+            如果 (!(s->cap & RISCV_IOMMU_CAP_SV57X4)) {
+                返回 MEMTX_ACCESS_ERROR;
             }
             sc.levels    = 5;
             sc.ptidxbits = 9;
             sc.ptesize   = 8;
             break;
         default:
-            return MEMTX_ACCESS_ERROR;
+            返回 MEMTX_ACCESS_ERROR;
         }
     }
 
@@ -1111,57 +1111,57 @@ static MemTxResult pdt_memory_read(RISCVIOMMUState *s,
         const dma_addr_t pte_addr = base + idx * sc.ptesize;
 
         /* Address range check before first level lookup */
-        if (!sc.step) {
+        如果 (!sc.step) {
             const uint64_t va_mask = (1ULL << (va_skip + va_bits)) - 1;
-            if ((addr & va_mask) != addr) {
-                return MEMTX_ACCESS_ERROR;
+            如果 ((addr & va_mask) != addr) {
+                返回 MEMTX_ACCESS_ERROR;
             }
         }
 
         /* Read page table entry */
-        if (sc.ptesize == 4) {
+        如果 (sc.ptesize == 4) {
             uint32_t pte32 = 0;
             ret = ldl_le_dma(s->target_as, pte_addr, &pte32, attrs);
             pte = pte32;
-        } else {
+        } 否则 {
             ret = ldq_le_dma(s->target_as, pte_addr, &pte, attrs);
         }
-        if (ret != MEMTX_OK) {
-            return ret;
+        如果 (ret != MEMTX_OK) {
+            返回 ret;
         }
 
         sc.step++;
         hwaddr ppn = pte >> PTE_PPN_SHIFT;
 
-        if (!(pte & PTE_V)) {
-            return MEMTX_ACCESS_ERROR; /* Invalid PTE */
-        } else if (!(pte & (PTE_R | PTE_W | PTE_X))) {
+        如果 (!(pte & PTE_V)) {
+            返回 MEMTX_ACCESS_ERROR; /* Invalid PTE */
+        } 否则 如果 (!(pte & (PTE_R | PTE_W | PTE_X))) {
             base = PPN_PHYS(ppn); /* Inner PTE, continue walking */
-        } else if ((pte & (PTE_R | PTE_W | PTE_X)) == PTE_W) {
-            return MEMTX_ACCESS_ERROR; /* Reserved leaf PTE flags: PTE_W */
-        } else if ((pte & (PTE_R | PTE_W | PTE_X)) == (PTE_W | PTE_X)) {
-            return MEMTX_ACCESS_ERROR; /* Reserved leaf PTE flags: PTE_W + PTE_X */
-        } else if (ppn & ((1ULL << (va_skip - TARGET_PAGE_BITS)) - 1)) {
-            return MEMTX_ACCESS_ERROR; /* Misaligned PPN */
-        } else {
+        } 否则 如果 ((pte & (PTE_R | PTE_W | PTE_X)) == PTE_W) {
+            返回 MEMTX_ACCESS_ERROR; /* Reserved leaf PTE flags: PTE_W */
+        } 否则 如果 ((pte & (PTE_R | PTE_W | PTE_X)) == (PTE_W | PTE_X)) {
+            返回 MEMTX_ACCESS_ERROR; /* Reserved leaf PTE flags: PTE_W + PTE_X */
+        } 否则 如果 (ppn & ((1ULL << (va_skip - TARGET_PAGE_BITS)) - 1)) {
+            返回 MEMTX_ACCESS_ERROR; /* Misaligned PPN */
+        } 否则 {
             /* Leaf PTE, translation completed. */
-            if (pte & PTE_N) {
-                if (!riscv_iommu_napot_page_mask(ppn, addr, &base)) {
-                    return MEMTX_ACCESS_ERROR;
+            如果 (pte & PTE_N) {
+                如果 (!riscv_iommu_napot_page_mask(ppn, addr, &base)) {
+                    返回 MEMTX_ACCESS_ERROR;
                 }
-            } else {
+            } 否则 {
                 base = PPN_PHYS(ppn) | (addr & ((1ULL << va_skip) - 1));
             }
             break;
         }
 
-        if (sc.step == sc.levels) {
-            return MEMTX_ACCESS_ERROR; /* Can't find leaf PTE */
+        如果 (sc.step == sc.levels) {
+            返回 MEMTX_ACCESS_ERROR; /* Can't find leaf PTE */
         }
-    } while (1);
+    } 当 (1);
 
 out:
-    return dma_memory_read(s->target_as, base, buf, len, attrs);
+    返回 dma_memory_read(s->target_as, base, buf, len, attrs);
 }
 
 /*
@@ -1171,21 +1171,21 @@ out:
  * @ctx       : Device Translation Context with devid and process_id set.
  * @return    : success or fault code.
  */
-static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
+static 整数 riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
 {
     const uint64_t ddtp = s->ddtp;
     unsigned mode = get_field(ddtp, RISCV_IOMMU_DDTP_MODE);
     dma_addr_t addr = PPN_PHYS(get_field(ddtp, RISCV_IOMMU_DDTP_PPN));
     struct riscv_iommu_dc dc;
     /* Device Context format: 0: extended (64 bytes) | 1: base (32 bytes) */
-    const int dc_fmt = !s->enable_msi;
+    const 整数 dc_fmt = !s->enable_msi;
     const size_t dc_len = sizeof(dc) >> dc_fmt;
-    int depth;
+    整数 depth;
     uint64_t de;
 
     switch (mode) {
     case RISCV_IOMMU_DDTP_MODE_OFF:
-        return RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED;
+        返回 RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED;
 
     case RISCV_IOMMU_DDTP_MODE_BARE:
         /* mock up pass-through translation context */
@@ -1195,13 +1195,13 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
             RISCV_IOMMU_DC_FSC_MODE_BARE);
 
         ctx->tc = RISCV_IOMMU_DC_TC_V;
-        if (s->enable_ats) {
+        如果 (s->enable_ats) {
             ctx->tc |= RISCV_IOMMU_DC_TC_EN_ATS;
         }
 
         ctx->ta = 0;
         ctx->msiptp = 0;
-        return 0;
+        返回 0;
 
     case RISCV_IOMMU_DDTP_MODE_1LVL:
         depth = 0;
@@ -1216,7 +1216,7 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
         break;
 
     default:
-        return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+        返回 RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
     }
 
     /*
@@ -1227,12 +1227,12 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
      * - if base device-context format is used:
      *   1LVL: 7, 2LVL: 16, 3LVL: 24
      */
-    if (ctx->devid >= (1 << (depth * 9 + 6 + (dc_fmt && depth != 2)))) {
-        return RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
+    如果 (ctx->devid >= (1 << (depth * 9 + 6 + (dc_fmt && depth != 2)))) {
+        返回 RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
     }
 
     /* Device directory tree walk */
-    for (; depth-- > 0; ) {
+    为 (; depth-- > 0; ) {
         riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_DD_WALK);
         /*
          * Select device id index bits based on device directory tree level
@@ -1243,20 +1243,20 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
          * - if base device-context format is used:
          *   device index: [23:16][15:7][6:0]
          */
-        const int split = depth * 9 + 6 + dc_fmt;
+        const 整数 split = depth * 9 + 6 + dc_fmt;
         addr |= ((ctx->devid >> split) << 3) & ~TARGET_PAGE_MASK;
-        if (dma_memory_read(s->target_as, addr, &de, sizeof(de),
+        如果 (dma_memory_read(s->target_as, addr, &de, sizeof(de),
                             MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
-            return RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT;
+            返回 RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT;
         }
         le64_to_cpus(&de);
-        if (!(de & RISCV_IOMMU_DDTE_VALID)) {
+        如果 (!(de & RISCV_IOMMU_DDTE_VALID)) {
             /* invalid directory entry */
-            return RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
+            返回 RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
         }
-        if (de & ~(RISCV_IOMMU_DDTE_PPN | RISCV_IOMMU_DDTE_VALID)) {
+        如果 (de & ~(RISCV_IOMMU_DDTE_PPN | RISCV_IOMMU_DDTE_VALID)) {
             /* reserved bits set */
-            return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+            返回 RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
         }
         addr = PPN_PHYS(get_field(de, RISCV_IOMMU_DDTE_PPN));
     }
@@ -1267,9 +1267,9 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
     addr |= (ctx->devid * dc_len) & ~TARGET_PAGE_MASK;
 
     memset(&dc, 0, sizeof(dc));
-    if (dma_memory_read(s->target_as, addr, &dc, dc_len,
+    如果 (dma_memory_read(s->target_as, addr, &dc, dc_len,
                         MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
-        return RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT;
+        返回 RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT;
     }
 
     /* Set translation context. */
@@ -1281,68 +1281,68 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
     ctx->msi_addr_mask = le64_to_cpu(dc.msi_addr_mask);
     ctx->msi_addr_pattern = le64_to_cpu(dc.msi_addr_pattern);
 
-    if (!(ctx->tc & RISCV_IOMMU_DC_TC_V)) {
-        return RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
+    如果 (!(ctx->tc & RISCV_IOMMU_DC_TC_V)) {
+        返回 RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
     }
 
-    if (!riscv_iommu_validate_device_ctx(s, ctx)) {
-        return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+    如果 (!riscv_iommu_validate_device_ctx(s, ctx)) {
+        返回 RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
     }
 
     /* FSC field checks */
     mode = get_field(ctx->satp, RISCV_IOMMU_DC_FSC_MODE);
     addr = PPN_PHYS(get_field(ctx->satp, RISCV_IOMMU_DC_FSC_PPN));
 
-    if (!(ctx->tc & RISCV_IOMMU_DC_TC_PDTV)) {
-        if (ctx->process_id != RISCV_IOMMU_NOPROCID) {
+    如果 (!(ctx->tc & RISCV_IOMMU_DC_TC_PDTV)) {
+        如果 (ctx->process_id != RISCV_IOMMU_NOPROCID) {
             /* PID is disabled */
-            return RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
+            返回 RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
         }
-        if (mode > RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57) {
+        如果 (mode > RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57) {
             /* Invalid translation mode */
-            return RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
+            返回 RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
         }
-        return 0;
+        返回 0;
     }
 
-    if (ctx->process_id == RISCV_IOMMU_NOPROCID) {
-        if (!(ctx->tc & RISCV_IOMMU_DC_TC_DPE)) {
+    如果 (ctx->process_id == RISCV_IOMMU_NOPROCID) {
+        如果 (!(ctx->tc & RISCV_IOMMU_DC_TC_DPE)) {
             /* No default process_id enabled, set BARE mode */
             ctx->satp = 0ULL;
-            return 0;
-        } else {
+            返回 0;
+        } 否则 {
             /* Use default process_id #0 */
             ctx->process_id = 0;
         }
     }
 
-    if (mode == RISCV_IOMMU_DC_FSC_MODE_BARE) {
+    如果 (mode == RISCV_IOMMU_DC_FSC_MODE_BARE) {
         /* No S-Stage translation, done. */
-        return 0;
+        返回 0;
     }
 
     /* FSC.TC.PDTV enabled */
-    if (mode > RISCV_IOMMU_DC_FSC_PDTP_MODE_PD20) {
+    如果 (mode > RISCV_IOMMU_DC_FSC_PDTP_MODE_PD20) {
         /* Invalid PDTP.MODE */
-        return RISCV_IOMMU_FQ_CAUSE_PDT_MISCONFIGURED;
+        返回 RISCV_IOMMU_FQ_CAUSE_PDT_MISCONFIGURED;
     }
 
-    for (depth = mode - RISCV_IOMMU_DC_FSC_PDTP_MODE_PD8; depth-- > 0; ) {
+    为 (depth = mode - RISCV_IOMMU_DC_FSC_PDTP_MODE_PD8; depth-- > 0; ) {
         riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_PD_WALK);
 
         /*
          * Select process id index bits based on process directory tree
          * level. See IOMMU Specification, 2.2. Process-Directory-Table.
          */
-        const int split = depth * 9 + 8;
+        const 整数 split = depth * 9 + 8;
         addr |= ((ctx->process_id >> split) << 3) & ~TARGET_PAGE_MASK;
-        if (pdt_memory_read(s, ctx, addr, &de, sizeof(de),
+        如果 (pdt_memory_read(s, ctx, addr, &de, sizeof(de),
                             MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
-            return RISCV_IOMMU_FQ_CAUSE_PDT_LOAD_FAULT;
+            返回 RISCV_IOMMU_FQ_CAUSE_PDT_LOAD_FAULT;
         }
         le64_to_cpus(&de);
-        if (!(de & RISCV_IOMMU_PDTE_VALID)) {
-            return RISCV_IOMMU_FQ_CAUSE_PDT_INVALID;
+        如果 (!(de & RISCV_IOMMU_PDTE_VALID)) {
+            返回 RISCV_IOMMU_FQ_CAUSE_PDT_INVALID;
         }
         addr = PPN_PHYS(get_field(de, RISCV_IOMMU_PDTE_PPN));
     }
@@ -1351,24 +1351,24 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
 
     /* Leaf entry in PDT */
     addr |= (ctx->process_id << 4) & ~TARGET_PAGE_MASK;
-    if (pdt_memory_read(s, ctx, addr, &dc.ta, sizeof(uint64_t) * 2,
+    如果 (pdt_memory_read(s, ctx, addr, &dc.ta, sizeof(uint64_t) * 2,
                         MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
-        return RISCV_IOMMU_FQ_CAUSE_PDT_LOAD_FAULT;
+        返回 RISCV_IOMMU_FQ_CAUSE_PDT_LOAD_FAULT;
     }
 
     /* Use FSC and TA from process directory entry. */
     ctx->ta = le64_to_cpu(dc.ta);
     ctx->satp = le64_to_cpu(dc.fsc);
 
-    if (!(ctx->ta & RISCV_IOMMU_PC_TA_V)) {
-        return RISCV_IOMMU_FQ_CAUSE_PDT_INVALID;
+    如果 (!(ctx->ta & RISCV_IOMMU_PC_TA_V)) {
+        返回 RISCV_IOMMU_FQ_CAUSE_PDT_INVALID;
     }
 
-    if (!riscv_iommu_validate_process_ctx(s, ctx)) {
-        return RISCV_IOMMU_FQ_CAUSE_PDT_MISCONFIGURED;
+    如果 (!riscv_iommu_validate_process_ctx(s, ctx)) {
+        返回 RISCV_IOMMU_FQ_CAUSE_PDT_MISCONFIGURED;
     }
 
-    return 0;
+    返回 0;
 }
 
 /* Translation Context cache support */
@@ -1376,7 +1376,7 @@ static gboolean riscv_iommu_ctx_equal(gconstpointer v1, gconstpointer v2)
 {
     RISCVIOMMUContext *c1 = (RISCVIOMMUContext *) v1;
     RISCVIOMMUContext *c2 = (RISCVIOMMUContext *) v2;
-    return c1->devid == c2->devid &&
+    返回 c1->devid == c2->devid &&
            c1->process_id == c2->process_id;
 }
 
@@ -1387,7 +1387,7 @@ static guint riscv_iommu_ctx_hash(gconstpointer v)
      * Generate simple hash of (process_id, devid)
      * assuming 24-bit wide devid.
      */
-    return (guint)(ctx->devid) + ((guint)(ctx->process_id) << 24);
+    返回 (guint)(ctx->devid) + ((guint)(ctx->process_id) << 24);
 }
 
 static void riscv_iommu_ctx_inval_devid_procid(gpointer key, gpointer value,
@@ -1395,7 +1395,7 @@ static void riscv_iommu_ctx_inval_devid_procid(gpointer key, gpointer value,
 {
     RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) value;
     RISCVIOMMUContext *arg = (RISCVIOMMUContext *) data;
-    if (ctx->tc & RISCV_IOMMU_DC_TC_V &&
+    如果 (ctx->tc & RISCV_IOMMU_DC_TC_V &&
         ctx->devid == arg->devid &&
         ctx->process_id == arg->process_id) {
         ctx->tc &= ~RISCV_IOMMU_DC_TC_V;
@@ -1407,7 +1407,7 @@ static void riscv_iommu_ctx_inval_devid(gpointer key, gpointer value,
 {
     RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) value;
     RISCVIOMMUContext *arg = (RISCVIOMMUContext *) data;
-    if (ctx->tc & RISCV_IOMMU_DC_TC_V &&
+    如果 (ctx->tc & RISCV_IOMMU_DC_TC_V &&
         ctx->devid == arg->devid) {
         ctx->tc &= ~RISCV_IOMMU_DC_TC_V;
     }
@@ -1417,7 +1417,7 @@ static void riscv_iommu_ctx_inval_all(gpointer key, gpointer value,
                                       gpointer data)
 {
     RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) value;
-    if (ctx->tc & RISCV_IOMMU_DC_TC_V) {
+    如果 (ctx->tc & RISCV_IOMMU_DC_TC_V) {
         ctx->tc &= ~RISCV_IOMMU_DC_TC_V;
     }
 }
@@ -1452,13 +1452,13 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
 
     ctx_cache = g_hash_table_ref(s->ctx_cache);
 
-    if (mode != RISCV_IOMMU_DDTP_MODE_OFF &&
+    如果 (mode != RISCV_IOMMU_DDTP_MODE_OFF &&
         mode != RISCV_IOMMU_DDTP_MODE_BARE) {
         ctx = g_hash_table_lookup(ctx_cache, &key);
 
-        if (ctx && (ctx->tc & RISCV_IOMMU_DC_TC_V)) {
+        如果 (ctx && (ctx->tc & RISCV_IOMMU_DC_TC_V)) {
             *ref = ctx_cache;
-            return ctx;
+            返回 ctx;
         }
     }
 
@@ -1466,10 +1466,10 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
     ctx->devid = devid;
     ctx->process_id = process_id;
 
-    int fault = riscv_iommu_ctx_fetch(s, ctx);
-    if (!fault) {
-        if (mode != RISCV_IOMMU_DDTP_MODE_BARE) {
-            if (g_hash_table_size(ctx_cache) >= LIMIT_CACHE_CTX) {
+    整数 fault = riscv_iommu_ctx_fetch(s, ctx);
+    如果 (!fault) {
+        如果 (mode != RISCV_IOMMU_DDTP_MODE_BARE) {
+            如果 (g_hash_table_size(ctx_cache) >= LIMIT_CACHE_CTX) {
                 g_hash_table_unref(ctx_cache);
                 ctx_cache = g_hash_table_new_full(riscv_iommu_ctx_hash,
                                                   riscv_iommu_ctx_equal,
@@ -1480,12 +1480,12 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
 
             g_hash_table_add(ctx_cache, ctx);
             *ref = ctx_cache;
-        } else {
+        } 否则 {
             g_hash_table_unref(ctx_cache);
             /* Remember ctx so it can be freed */
             *ref = ctx;
         }
-        return ctx;
+        返回 ctx;
     }
 
     g_hash_table_unref(ctx_cache);
@@ -1498,9 +1498,9 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
      * least one other place (end of riscv_iommu_translate())
      * that does something similar.
      */
-    if (perm & IOMMU_RO) {
+    如果 (perm & IOMMU_RO) {
         fault_type = RISCV_IOMMU_FQ_TTYPE_UADDR_RD;
-    } else {
+    } 否则 {
         fault_type = RISCV_IOMMU_FQ_TTYPE_UADDR_WR;
     }
 
@@ -1508,38 +1508,38 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
                              !!process_id, iova, 0);
 
     g_free(ctx);
-    return NULL;
+    返回 NULL;
 }
 
 static void riscv_iommu_ctx_put(RISCVIOMMUState *s, void *ref)
 {
     unsigned mode = get_field(s->ddtp, RISCV_IOMMU_DDTP_MODE);
 
-    if (!ref) {
-        return;
+    如果 (!ref) {
+        返回;
     }
 
     /* ref is pointing to ctx in Bare mode. Bare mode ctx is not cached */
-    if (mode == RISCV_IOMMU_DDTP_MODE_BARE) {
+    如果 (mode == RISCV_IOMMU_DDTP_MODE_BARE) {
         g_free(ref);
-    } else {
+    } 否则 {
         g_hash_table_unref((GHashTable *)ref);
     }
 }
 
 /* Find or allocate address space for a given device */
 static AddressSpace *riscv_iommu_space(RISCVIOMMUState *s, PCIBus *bus,
-                                            int devfn)
+                                            整数 devfn)
 {
     RISCVIOMMUSpace *as;
 
     QLIST_FOREACH(as, &s->spaces, list) {
-        if (as->bus == bus && as->devfn == devfn) {
+        如果 (as->bus == bus && as->devfn == devfn) {
             break;
         }
     }
 
-    if (as == NULL) {
+    如果 (as == NULL) {
         char name[64];
         as = g_new0(RISCVIOMMUSpace, 1);
 
@@ -1561,7 +1561,7 @@ static AddressSpace *riscv_iommu_space(RISCVIOMMUState *s, PCIBus *bus,
         trace_riscv_iommu_new(s->parent_obj.id, pci_bus_num(bus),
                 PCI_SLOT(devfn), PCI_FUNC(devfn));
     }
-    return &as->iova_as;
+    返回 &as->iova_as;
 }
 
 /* Translation Object cache support */
@@ -1569,14 +1569,14 @@ static gboolean riscv_iommu_iot_equal(gconstpointer v1, gconstpointer v2)
 {
     RISCVIOMMUEntry *t1 = (RISCVIOMMUEntry *) v1;
     RISCVIOMMUEntry *t2 = (RISCVIOMMUEntry *) v2;
-    return t1->gscid == t2->gscid && t1->pscid == t2->pscid &&
+    返回 t1->gscid == t2->gscid && t1->pscid == t2->pscid &&
            t1->iova == t2->iova && t1->tag == t2->tag;
 }
 
 static guint riscv_iommu_iot_hash(gconstpointer v)
 {
     RISCVIOMMUEntry *t = (RISCVIOMMUEntry *) v;
-    return (guint)t->iova;
+    返回 (guint)t->iova;
 }
 
 /* GV: 0 AV: 0 PSCV: 0 GVMA: 0 */
@@ -1586,7 +1586,7 @@ void riscv_iommu_iot_inval_all(gpointer key, gpointer value, gpointer data)
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag) {
+    如果 (iot->tag == arg->tag) {
         iot->perm = IOMMU_NONE;
     }
 }
@@ -1597,7 +1597,7 @@ void riscv_iommu_iot_inval_pscid(gpointer key, gpointer value, gpointer data)
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    如果 (iot->tag == arg->tag &&
         iot->pscid == arg->pscid) {
         iot->perm = IOMMU_NONE;
     }
@@ -1609,7 +1609,7 @@ void riscv_iommu_iot_inval_iova(gpointer key, gpointer value, gpointer data)
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    如果 (iot->tag == arg->tag &&
         iot->iova == arg->iova) {
         iot->perm = IOMMU_NONE;
     }
@@ -1621,7 +1621,7 @@ static void riscv_iommu_iot_inval_pscid_iova(gpointer key, gpointer value,
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    如果 (iot->tag == arg->tag &&
         iot->pscid == arg->pscid &&
         iot->iova == arg->iova) {
         iot->perm = IOMMU_NONE;
@@ -1635,7 +1635,7 @@ void riscv_iommu_iot_inval_gscid(gpointer key, gpointer value, gpointer data)
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    如果 (iot->tag == arg->tag &&
         iot->gscid == arg->gscid) {
         iot->perm = IOMMU_NONE;
     }
@@ -1647,7 +1647,7 @@ static void riscv_iommu_iot_inval_gscid_pscid(gpointer key, gpointer value,
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    如果 (iot->tag == arg->tag &&
         iot->gscid == arg->gscid &&
         iot->pscid == arg->pscid) {
         iot->perm = IOMMU_NONE;
@@ -1661,7 +1661,7 @@ static void riscv_iommu_iot_inval_gscid_iova(gpointer key, gpointer value,
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    如果 (iot->tag == arg->tag &&
         iot->gscid == arg->gscid &&
         iot->iova == arg->iova) {
         iot->perm = IOMMU_NONE;
@@ -1674,7 +1674,7 @@ static void riscv_iommu_iot_inval_gscid_pscid_iova(gpointer key, gpointer value,
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    如果 (iot->tag == arg->tag &&
         iot->gscid == arg->gscid &&
         iot->pscid == arg->pscid &&
         iot->iova == arg->iova) {
@@ -1692,18 +1692,18 @@ static RISCVIOMMUEntry *riscv_iommu_iot_lookup(RISCVIOMMUContext *ctx,
         .pscid = get_field(ctx->ta, RISCV_IOMMU_DC_TA_PSCID),
         .iova  = PPN_DOWN(iova),
     };
-    return g_hash_table_lookup(iot_cache, &key);
+    返回 g_hash_table_lookup(iot_cache, &key);
 }
 
 /* caller should keep ref-count for iot_cache object */
 static void riscv_iommu_iot_update(RISCVIOMMUState *s,
     GHashTable *iot_cache, RISCVIOMMUEntry *iot)
 {
-    if (!s->iot_limit) {
-        return;
+    如果 (!s->iot_limit) {
+        返回;
     }
 
-    if (g_hash_table_size(s->iot_cache) >= s->iot_limit) {
+    如果 (g_hash_table_size(s->iot_cache) >= s->iot_limit) {
         iot_cache = g_hash_table_new_full(riscv_iommu_iot_hash,
                                           riscv_iommu_iot_equal,
                                           g_free, NULL);
@@ -1733,16 +1733,16 @@ static RISCVIOMMUTransTag riscv_iommu_get_transtag(RISCVIOMMUContext *ctx)
     uint64_t satp = get_field(ctx->satp, RISCV_IOMMU_ATP_MODE_FIELD);
     uint64_t gatp = get_field(ctx->gatp, RISCV_IOMMU_ATP_MODE_FIELD);
 
-    if (satp == RISCV_IOMMU_DC_FSC_MODE_BARE) {
-        return (gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) ?
+    如果 (satp == RISCV_IOMMU_DC_FSC_MODE_BARE) {
+        返回 (gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) ?
             RISCV_IOMMU_TRANS_TAG_BY : RISCV_IOMMU_TRANS_TAG_VG;
-    } else {
-        return (gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) ?
+    } 否则 {
+        返回 (gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) ?
             RISCV_IOMMU_TRANS_TAG_SS : RISCV_IOMMU_TRANS_TAG_VN;
     }
 }
 
-static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
+static 整数 riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     IOMMUTLBEntry *iotlb, bool enable_cache)
 {
     RISCVIOMMUTransTag transtag = riscv_iommu_get_transtag(ctx);
@@ -1751,7 +1751,7 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     bool enable_pid;
     bool enable_pri;
     GHashTable *iot_cache;
-    int fault;
+    整数 fault;
 
     riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_URQ);
 
@@ -1761,10 +1761,10 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     enable_pid = (ctx->tc & RISCV_IOMMU_DC_TC_PDTV);
 
     /* Check for ATS request. */
-    if (iotlb->perm == IOMMU_NONE) {
+    如果 (iotlb->perm == IOMMU_NONE) {
         riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_ATS_RQ);
         /* Check if ATS is disabled. */
-        if (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS)) {
+        如果 (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS)) {
             enable_pri = false;
             fault = RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
             goto done;
@@ -1773,7 +1773,7 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
 
     iot = riscv_iommu_iot_lookup(ctx, iot_cache, iotlb->iova, transtag);
     perm = iot ? iot->perm : IOMMU_NONE;
-    if (perm != IOMMU_NONE) {
+    如果 (perm != IOMMU_NONE) {
         iotlb->translated_addr = PPN_PHYS(iot->phys);
         iotlb->addr_mask = ~TARGET_PAGE_MASK;
         iotlb->perm = perm;
@@ -1786,7 +1786,7 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     /* Translate using device directory / page table information. */
     fault = riscv_iommu_spa_fetch(s, ctx, iotlb);
 
-    if (!fault && iotlb->target_as == &s->trap_as) {
+    如果 (!fault && iotlb->target_as == &s->trap_as) {
         /* Do not cache trapped MSI translations */
         goto done;
     }
@@ -1797,7 +1797,7 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
      * translation cache evictions for other devices sharing the
      * IOMMU hardware model.
      */
-    if (!fault && iotlb->translated_addr != iotlb->iova && enable_cache) {
+    如果 (!fault && iotlb->translated_addr != iotlb->iova && enable_cache) {
         iot = g_new0(RISCVIOMMUEntry, 1);
         iot->iova = PPN_DOWN(iotlb->iova);
         iot->phys = PPN_DOWN(iotlb->translated_addr);
@@ -1811,9 +1811,9 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
 done:
     g_hash_table_unref(iot_cache);
 
-    if (enable_pri && fault) {
+    如果 (enable_pri && fault) {
         struct riscv_iommu_pq_record pr = {0};
-        if (enable_pid) {
+        如果 (enable_pid) {
             pr.hdr = set_field(RISCV_IOMMU_PREQ_HDR_PV,
                                RISCV_IOMMU_PREQ_HDR_PID, ctx->process_id);
         }
@@ -1821,25 +1821,25 @@ done:
         pr.payload = (iotlb->iova & TARGET_PAGE_MASK) |
                      RISCV_IOMMU_PREQ_PAYLOAD_M;
         riscv_iommu_pri(s, &pr);
-        return fault;
+        返回 fault;
     }
 
-    if (fault) {
+    如果 (fault) {
         unsigned ttype = RISCV_IOMMU_FQ_TTYPE_PCIE_ATS_REQ;
 
-        if ((iotlb->perm & IOMMU_RW) == IOMMU_RW
+        如果 ((iotlb->perm & IOMMU_RW) == IOMMU_RW
             || iotlb->perm & IOMMU_WO) {
             ttype = RISCV_IOMMU_FQ_TTYPE_UADDR_WR;
-        } else if (iotlb->perm & IOMMU_RO) {
+        } 否则 如果 (iotlb->perm & IOMMU_RO) {
             ttype = RISCV_IOMMU_FQ_TTYPE_UADDR_RD;
         }
 
         riscv_iommu_report_fault(s, ctx, ttype, fault, enable_pid,
                                  iotlb->iova, iotlb->translated_addr);
-        return fault;
+        返回 fault;
     }
 
-    return 0;
+    返回 0;
 }
 
 /* IOMMU Command Interface */
@@ -1850,11 +1850,11 @@ static MemTxResult riscv_iommu_iofence(RISCVIOMMUState *s, bool notify,
      * ATS processing in this implementation of the IOMMU is synchronous,
      * no need to wait for completions here.
      */
-    if (!notify) {
-        return MEMTX_OK;
+    如果 (!notify) {
+        返回 MEMTX_OK;
     }
 
-    return dma_memory_write(s->target_as, addr, &data, sizeof(data),
+    返回 dma_memory_write(s->target_as, addr, &data, sizeof(data),
         MEMTXATTRS_UNSPECIFIED);
 }
 
@@ -1870,24 +1870,24 @@ static void riscv_iommu_ats(RISCVIOMMUState *s,
     uint32_t devid;
     const bool pv = cmd->dword0 & RISCV_IOMMU_CMD_ATS_PV;
 
-    if (cmd->dword0 & RISCV_IOMMU_CMD_ATS_DSV) {
+    如果 (cmd->dword0 & RISCV_IOMMU_CMD_ATS_DSV) {
         /* Use device segment and requester id */
         devid = get_field(cmd->dword0,
             RISCV_IOMMU_CMD_ATS_DSEG | RISCV_IOMMU_CMD_ATS_RID);
-    } else {
+    } 否则 {
         devid = get_field(cmd->dword0, RISCV_IOMMU_CMD_ATS_RID);
     }
 
     pid = get_field(cmd->dword0, RISCV_IOMMU_CMD_ATS_PID);
 
     QLIST_FOREACH(as, &s->spaces, list) {
-        if (riscv_iommu_space_devid(as) == devid) {
+        如果 (riscv_iommu_space_devid(as) == devid) {
             break;
         }
     }
 
-    if (!as || !as->notifier) {
-        return;
+    如果 (!as || !as->notifier) {
+        返回;
     }
 
     event.type = flag;
@@ -1895,7 +1895,7 @@ static void riscv_iommu_ats(RISCVIOMMUState *s,
     event.entry.target_as = s->target_as;
 
     IOMMU_NOTIFIER_FOREACH(n, &as->iova_mr) {
-        if (!pv || n->iommu_idx == pid) {
+        如果 (!pv || n->iommu_idx == pid) {
             event.entry.iova = n->start;
             event.entry.addr_mask = n->end - n->start;
             trace_fn(as->iova_mr.parent_obj.name);
@@ -1907,7 +1907,7 @@ static void riscv_iommu_ats(RISCVIOMMUState *s,
 static void riscv_iommu_ats_inval(RISCVIOMMUState *s,
     struct riscv_iommu_command *cmd)
 {
-    return riscv_iommu_ats(s, cmd, IOMMU_NOTIFIER_DEVIOTLB_UNMAP, IOMMU_NONE,
+    返回 riscv_iommu_ats(s, cmd, IOMMU_NOTIFIER_DEVIOTLB_UNMAP, IOMMU_NONE,
                            trace_riscv_iommu_ats_inval);
 }
 
@@ -1919,7 +1919,7 @@ static void riscv_iommu_ats_prgr(RISCVIOMMUState *s,
 
     /* Using the access flag to carry response code information */
     IOMMUAccessFlags perm = resp_code ? IOMMU_NONE : IOMMU_RW;
-    return riscv_iommu_ats(s, cmd, IOMMU_NOTIFIER_MAP, perm,
+    返回 riscv_iommu_ats(s, cmd, IOMMU_NOTIFIER_MAP, perm,
                            trace_riscv_iommu_ats_prgr);
 }
 
@@ -1936,22 +1936,22 @@ static void riscv_iommu_process_ddtp(RISCVIOMMUState *s)
      * {OFF, BARE}        -> {OFF, BARE, 1LVL, 2LVL, 3LVL}
      * {1LVL, 2LVL, 3LVL} -> {OFF, BARE}
      */
-    if (new_mode == old_mode ||
+    如果 (new_mode == old_mode ||
         new_mode == RISCV_IOMMU_DDTP_MODE_OFF ||
         new_mode == RISCV_IOMMU_DDTP_MODE_BARE) {
         ok = true;
-    } else if (new_mode == RISCV_IOMMU_DDTP_MODE_1LVL ||
+    } 否则 如果 (new_mode == RISCV_IOMMU_DDTP_MODE_1LVL ||
                new_mode == RISCV_IOMMU_DDTP_MODE_2LVL ||
                new_mode == RISCV_IOMMU_DDTP_MODE_3LVL) {
         ok = old_mode == RISCV_IOMMU_DDTP_MODE_OFF ||
              old_mode == RISCV_IOMMU_DDTP_MODE_BARE;
     }
 
-    if (ok) {
+    如果 (ok) {
         /* clear reserved and busy bits, report back sanitized version */
         new_ddtp = set_field(new_ddtp & RISCV_IOMMU_DDTP_PPN,
                              RISCV_IOMMU_DDTP_MODE, new_mode);
-    } else {
+    } 否则 {
         new_ddtp = old_ddtp;
     }
     s->ddtp = new_ddtp;
@@ -1976,17 +1976,17 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
     head = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQH) & s->cq_mask;
 
     /* Check for pending error or queue processing disabled */
-    if (!(ctrl & RISCV_IOMMU_CQCSR_CQON) ||
+    如果 (!(ctrl & RISCV_IOMMU_CQCSR_CQON) ||
         !!(ctrl & (RISCV_IOMMU_CQCSR_CMD_ILL | RISCV_IOMMU_CQCSR_CQMF))) {
-        return;
+        返回;
     }
 
-    while (tail != head) {
+    当 (tail != head) {
         addr = s->cq_addr  + head * sizeof(cmd);
         res = dma_memory_read(s->target_as, addr, &cmd, sizeof(cmd),
                               MEMTXATTRS_UNSPECIFIED);
 
-        if (res != MEMTX_OK) {
+        如果 (res != MEMTX_OK) {
             riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_CQCSR,
                                   RISCV_IOMMU_CQCSR_CQMF, 0);
             goto fault;
@@ -2000,7 +2000,7 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
         switch (cmd_opcode) {
         case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOFENCE_FUNC_C,
                              RISCV_IOMMU_CMD_IOFENCE_OPCODE):
-            if (cmd.dword0 & RISCV_IOMMU_CMD_IOFENCE_RESERVED) {
+            如果 (cmd.dword0 & RISCV_IOMMU_CMD_IOFENCE_RESERVED) {
                 goto cmd_ill;
             }
 
@@ -2008,7 +2008,7 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
                 cmd.dword0 & RISCV_IOMMU_CMD_IOFENCE_AV, cmd.dword1 << 2,
                 get_field(cmd.dword0, RISCV_IOMMU_CMD_IOFENCE_DATA));
 
-            if (res != MEMTX_OK) {
+            如果 (res != MEMTX_OK) {
                 riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_CQCSR,
                                       RISCV_IOMMU_CQCSR_CQMF, 0);
                 goto fault;
@@ -2027,14 +2027,14 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
                                        RISCV_IOMMU_CMD_IOTINVAL_PSCID);
             hwaddr iova = (cmd.dword1 << 2) & TARGET_PAGE_MASK;
 
-            if (pscv) {
+            如果 (pscv) {
                 /* illegal command arguments IOTINVAL.GVMA & PSCV == 1 */
                 goto cmd_ill;
             }
 
             func = riscv_iommu_iot_inval_all;
 
-            if (gv) {
+            如果 (gv) {
                 func = (av) ? riscv_iommu_iot_inval_gscid_iova :
                               riscv_iommu_iot_inval_gscid;
             }
@@ -2060,21 +2060,21 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
             hwaddr iova = (cmd.dword1 << 2) & TARGET_PAGE_MASK;
             RISCVIOMMUTransTag transtag;
 
-            if (gv) {
+            如果 (gv) {
                 transtag = RISCV_IOMMU_TRANS_TAG_VN;
-                if (pscv) {
+                如果 (pscv) {
                     func = (av) ? riscv_iommu_iot_inval_gscid_pscid_iova :
                                   riscv_iommu_iot_inval_gscid_pscid;
-                } else {
+                } 否则 {
                     func = (av) ? riscv_iommu_iot_inval_gscid_iova :
                                   riscv_iommu_iot_inval_gscid;
                 }
-            } else {
+            } 否则 {
                 transtag = RISCV_IOMMU_TRANS_TAG_SS;
-                if (pscv) {
+                如果 (pscv) {
                     func = (av) ? riscv_iommu_iot_inval_pscid_iova :
                                   riscv_iommu_iot_inval_pscid;
-                } else {
+                } 否则 {
                     func = (av) ? riscv_iommu_iot_inval_iova :
                                   riscv_iommu_iot_inval_all;
                 }
@@ -2086,10 +2086,10 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
 
         case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IODIR_FUNC_INVAL_DDT,
                              RISCV_IOMMU_CMD_IODIR_OPCODE):
-            if (!(cmd.dword0 & RISCV_IOMMU_CMD_IODIR_DV)) {
+            如果 (!(cmd.dword0 & RISCV_IOMMU_CMD_IODIR_DV)) {
                 /* invalidate all device context cache mappings */
                 func = riscv_iommu_ctx_inval_all;
-            } else {
+            } 否则 {
                 /* invalidate all device context matching DID */
                 func = riscv_iommu_ctx_inval_devid;
             }
@@ -2099,10 +2099,10 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
 
         case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IODIR_FUNC_INVAL_PDT,
                              RISCV_IOMMU_CMD_IODIR_OPCODE):
-            if (!(cmd.dword0 & RISCV_IOMMU_CMD_IODIR_DV)) {
+            如果 (!(cmd.dword0 & RISCV_IOMMU_CMD_IODIR_DV)) {
                 /* illegal command arguments IODIR_PDT & DV == 0 */
                 goto cmd_ill;
-            } else {
+            } 否则 {
                 func = riscv_iommu_ctx_inval_devid_procid;
             }
             riscv_iommu_ctx_inval(s, func,
@@ -2113,7 +2113,7 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
         /* ATS commands */
         case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_ATS_FUNC_INVAL,
                              RISCV_IOMMU_CMD_ATS_OPCODE):
-            if (!s->enable_ats) {
+            如果 (!s->enable_ats) {
                 goto cmd_ill;
             }
 
@@ -2122,7 +2122,7 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
 
         case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_ATS_FUNC_PRGR,
                              RISCV_IOMMU_CMD_ATS_OPCODE):
-            if (!s->enable_ats) {
+            如果 (!s->enable_ats) {
                 goto cmd_ill;
             }
 
@@ -2141,10 +2141,10 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
         head = (head + 1) & s->cq_mask;
         riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_CQH, head);
     }
-    return;
+    返回;
 
 fault:
-    if (ctrl & RISCV_IOMMU_CQCSR_CIE) {
+    如果 (ctrl & RISCV_IOMMU_CQCSR_CIE) {
         riscv_iommu_notify(s, RISCV_IOMMU_INTR_CQ);
     }
 }
@@ -2157,7 +2157,7 @@ static void riscv_iommu_process_cq_control(RISCVIOMMUState *s)
     bool enable = !!(ctrl_set & RISCV_IOMMU_CQCSR_CQEN);
     bool active = !!(ctrl_set & RISCV_IOMMU_CQCSR_CQON);
 
-    if (enable && !active) {
+    如果 (enable && !active) {
         base = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_CQB);
         s->cq_mask = (2ULL << get_field(base, RISCV_IOMMU_CQB_LOG2SZ)) - 1;
         s->cq_addr = PPN_PHYS(get_field(base, RISCV_IOMMU_CQB_PPN));
@@ -2168,11 +2168,11 @@ static void riscv_iommu_process_cq_control(RISCVIOMMUState *s)
         ctrl_clr = RISCV_IOMMU_CQCSR_BUSY | RISCV_IOMMU_CQCSR_CQMF |
                    RISCV_IOMMU_CQCSR_CMD_ILL | RISCV_IOMMU_CQCSR_CMD_TO |
                    RISCV_IOMMU_CQCSR_FENCE_W_IP;
-    } else if (!enable && active) {
+    } 否则 如果 (!enable && active) {
         stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_CQT], ~0);
         ctrl_set = 0;
         ctrl_clr = RISCV_IOMMU_CQCSR_BUSY | RISCV_IOMMU_CQCSR_CQON;
-    } else {
+    } 否则 {
         ctrl_set = 0;
         ctrl_clr = RISCV_IOMMU_CQCSR_BUSY;
     }
@@ -2184,7 +2184,7 @@ static void riscv_iommu_process_cq_control(RISCVIOMMUState *s)
      * re-process pending command.
      */
     ctrl_set = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQCSR);
-    if ((ctrl_set & RISCV_IOMMU_CQCSR_CQON) &&
+    如果 ((ctrl_set & RISCV_IOMMU_CQCSR_CQON) &&
         !(ctrl_set & (RISCV_IOMMU_CQCSR_CMD_ILL | RISCV_IOMMU_CQCSR_CQMF))) {
         riscv_iommu_process_cq_tail(s);
     }
@@ -2198,7 +2198,7 @@ static void riscv_iommu_process_fq_control(RISCVIOMMUState *s)
     bool enable = !!(ctrl_set & RISCV_IOMMU_FQCSR_FQEN);
     bool active = !!(ctrl_set & RISCV_IOMMU_FQCSR_FQON);
 
-    if (enable && !active) {
+    如果 (enable && !active) {
         base = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_FQB);
         s->fq_mask = (2ULL << get_field(base, RISCV_IOMMU_FQB_LOG2SZ)) - 1;
         s->fq_addr = PPN_PHYS(get_field(base, RISCV_IOMMU_FQB_PPN));
@@ -2208,11 +2208,11 @@ static void riscv_iommu_process_fq_control(RISCVIOMMUState *s)
         ctrl_set = RISCV_IOMMU_FQCSR_FQON;
         ctrl_clr = RISCV_IOMMU_FQCSR_BUSY | RISCV_IOMMU_FQCSR_FQMF |
             RISCV_IOMMU_FQCSR_FQOF;
-    } else if (!enable && active) {
+    } 否则 如果 (!enable && active) {
         stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_FQH], ~0);
         ctrl_set = 0;
         ctrl_clr = RISCV_IOMMU_FQCSR_BUSY | RISCV_IOMMU_FQCSR_FQON;
-    } else {
+    } 否则 {
         ctrl_set = 0;
         ctrl_clr = RISCV_IOMMU_FQCSR_BUSY;
     }
@@ -2228,7 +2228,7 @@ static void riscv_iommu_process_pq_control(RISCVIOMMUState *s)
     bool enable = !!(ctrl_set & RISCV_IOMMU_PQCSR_PQEN);
     bool active = !!(ctrl_set & RISCV_IOMMU_PQCSR_PQON);
 
-    if (enable && !active) {
+    如果 (enable && !active) {
         base = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_PQB);
         s->pq_mask = (2ULL << get_field(base, RISCV_IOMMU_PQB_LOG2SZ)) - 1;
         s->pq_addr = PPN_PHYS(get_field(base, RISCV_IOMMU_PQB_PPN));
@@ -2238,11 +2238,11 @@ static void riscv_iommu_process_pq_control(RISCVIOMMUState *s)
         ctrl_set = RISCV_IOMMU_PQCSR_PQON;
         ctrl_clr = RISCV_IOMMU_PQCSR_BUSY | RISCV_IOMMU_PQCSR_PQMF |
             RISCV_IOMMU_PQCSR_PQOF;
-    } else if (!enable && active) {
+    } 否则 如果 (!enable && active) {
         stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_PQH], ~0);
         ctrl_set = 0;
         ctrl_clr = RISCV_IOMMU_PQCSR_BUSY | RISCV_IOMMU_PQCSR_PQON;
-    } else {
+    } 否则 {
         ctrl_set = 0;
         ctrl_clr = RISCV_IOMMU_PQCSR_BUSY;
     }
@@ -2261,26 +2261,26 @@ static void riscv_iommu_process_dbg(RISCVIOMMUState *s)
     RISCVIOMMUContext *ctx;
     void *ref;
 
-    if (!(ctrl & RISCV_IOMMU_TR_REQ_CTL_GO_BUSY)) {
-        return;
+    如果 (!(ctrl & RISCV_IOMMU_TR_REQ_CTL_GO_BUSY)) {
+        返回;
     }
 
     ctx = riscv_iommu_ctx(s, devid, pid, perm, iova, &ref);
-    if (ctx == NULL) {
+    如果 (ctx == NULL) {
         riscv_iommu_reg_set64(s, RISCV_IOMMU_REG_TR_RESPONSE,
                                  RISCV_IOMMU_TR_RESPONSE_FAULT |
                                  (RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED << 10));
-    } else {
+    } 否则 {
         IOMMUTLBEntry iotlb = {
             .iova = iova,
             .perm = perm,
             .addr_mask = ~0,
             .target_as = NULL,
         };
-        int fault = riscv_iommu_translate(s, ctx, &iotlb, false);
-        if (fault) {
+        整数 fault = riscv_iommu_translate(s, ctx, &iotlb, false);
+        如果 (fault) {
             iova = RISCV_IOMMU_TR_RESPONSE_FAULT | (((uint64_t) fault) << 10);
-        } else {
+        } 否则 {
             iova = iotlb.translated_addr & ~iotlb.addr_mask;
             iova = set_field(0, RISCV_IOMMU_TR_RESPONSE_PPN, PPN_DOWN(iova));
         }
@@ -2321,51 +2321,51 @@ static void riscv_iommu_update_ipsr(RISCVIOMMUState *s, uint64_t data)
     uint32_t ipsr_set = 0;
     uint32_t ipsr_clr = 0;
 
-    if (data & RISCV_IOMMU_IPSR_CIP) {
+    如果 (data & RISCV_IOMMU_IPSR_CIP) {
         cqcsr = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQCSR);
 
-        if (cqcsr & RISCV_IOMMU_CQCSR_CIE &&
+        如果 (cqcsr & RISCV_IOMMU_CQCSR_CIE &&
             (cqcsr & RISCV_IOMMU_CQCSR_FENCE_W_IP ||
              cqcsr & RISCV_IOMMU_CQCSR_CMD_ILL ||
              cqcsr & RISCV_IOMMU_CQCSR_CMD_TO ||
              cqcsr & RISCV_IOMMU_CQCSR_CQMF)) {
             ipsr_set |= RISCV_IOMMU_IPSR_CIP;
-        } else {
+        } 否则 {
             ipsr_clr |= RISCV_IOMMU_IPSR_CIP;
         }
-    } else {
+    } 否则 {
         ipsr_clr |= RISCV_IOMMU_IPSR_CIP;
     }
 
-    if (data & RISCV_IOMMU_IPSR_FIP) {
+    如果 (data & RISCV_IOMMU_IPSR_FIP) {
         fqcsr = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_FQCSR);
 
-        if (fqcsr & RISCV_IOMMU_FQCSR_FIE &&
+        如果 (fqcsr & RISCV_IOMMU_FQCSR_FIE &&
             (fqcsr & RISCV_IOMMU_FQCSR_FQOF ||
              fqcsr & RISCV_IOMMU_FQCSR_FQMF)) {
             ipsr_set |= RISCV_IOMMU_IPSR_FIP;
-        } else {
+        } 否则 {
             ipsr_clr |= RISCV_IOMMU_IPSR_FIP;
         }
-    } else {
+    } 否则 {
         ipsr_clr |= RISCV_IOMMU_IPSR_FIP;
     }
 
-    if (!(data & RISCV_IOMMU_IPSR_PMIP)) {
+    如果 (!(data & RISCV_IOMMU_IPSR_PMIP)) {
         ipsr_clr |= RISCV_IOMMU_IPSR_PMIP;
     }
 
-    if (data & RISCV_IOMMU_IPSR_PIP) {
+    如果 (data & RISCV_IOMMU_IPSR_PIP) {
         pqcsr = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_PQCSR);
 
-        if (pqcsr & RISCV_IOMMU_PQCSR_PIE &&
+        如果 (pqcsr & RISCV_IOMMU_PQCSR_PIE &&
             (pqcsr & RISCV_IOMMU_PQCSR_PQOF ||
              pqcsr & RISCV_IOMMU_PQCSR_PQMF)) {
             ipsr_set |= RISCV_IOMMU_IPSR_PIP;
-        } else {
+        } 否则 {
             ipsr_clr |= RISCV_IOMMU_IPSR_PIP;
         }
-    } else {
+    } 否则 {
         ipsr_clr |= RISCV_IOMMU_IPSR_PIP;
     }
 
@@ -2402,7 +2402,7 @@ static void riscv_iommu_process_hpm_writes(RISCVIOMMUState *s,
  */
 static void riscv_iommu_write_reg_val(RISCVIOMMUState *s,
                                       void *dest, hwaddr reg_addr,
-                                      int size, uint64_t data)
+                                      整数 size, uint64_t data)
 {
     uint64_t ro = ldn_le_p(&s->regs_ro[reg_addr], size);
     uint64_t wc = ldn_le_p(&s->regs_wc[reg_addr], size);
@@ -2422,14 +2422,14 @@ static MemTxResult riscv_iommu_mmio_write(void *opaque, hwaddr addr,
     uint64_t val = 0;
     bool cy_inh = false;
 
-    if ((addr & (size - 1)) != 0) {
+    如果 ((addr & (size - 1)) != 0) {
         /* Unsupported MMIO alignment or access size */
-        return MEMTX_ERROR;
+        返回 MEMTX_ERROR;
     }
 
-    if (addr + size > RISCV_IOMMU_REG_MSI_CONFIG) {
+    如果 (addr + size > RISCV_IOMMU_REG_MSI_CONFIG) {
         /* Unsupported MMIO access location. */
-        return MEMTX_ACCESS_ERROR;
+        返回 MEMTX_ACCESS_ERROR;
     }
 
     /* Track actionable MMIO write. */
@@ -2474,13 +2474,13 @@ static MemTxResult riscv_iommu_mmio_write(void *opaque, hwaddr addr,
          */
         val = le64_to_cpu(val);
 
-        if (regb == RISCV_IOMMU_REG_ICVEC) {
+        如果 (regb == RISCV_IOMMU_REG_ICVEC) {
             riscv_iommu_update_icvec(s, val);
-        } else {
+        } 否则 {
             riscv_iommu_update_ipsr(s, val);
         }
 
-        return MEMTX_OK;
+        返回 MEMTX_OK;
 
     case RISCV_IOMMU_REG_TR_REQ_CTL:
         process_fn = riscv_iommu_process_dbg;
@@ -2489,7 +2489,7 @@ static MemTxResult riscv_iommu_mmio_write(void *opaque, hwaddr addr,
         break;
 
     case RISCV_IOMMU_REG_IOCOUNTINH:
-        if (addr != RISCV_IOMMU_REG_IOCOUNTINH) {
+        如果 (addr != RISCV_IOMMU_REG_IOCOUNTINH) {
             break;
         }
         /* Store previous value of CY bit. */
@@ -2511,22 +2511,22 @@ static MemTxResult riscv_iommu_mmio_write(void *opaque, hwaddr addr,
     riscv_iommu_write_reg_val(s, &s->regs[addr], addr, size, data);
 
     /* Busy flag update, MSB 4-byte register. */
-    if (busy) {
+    如果 (busy) {
         uint32_t rw = ldl_le_p(&s->regs[regb]);
         stl_le_p(&s->regs[regb], rw | busy);
     }
 
     /* Process HPM writes and update any internal state if needed. */
-    if (regb >= RISCV_IOMMU_REG_IOCOUNTOVF &&
+    如果 (regb >= RISCV_IOMMU_REG_IOCOUNTOVF &&
         regb <= (RISCV_IOMMU_REG_IOHPMEVT(RISCV_IOMMU_IOCOUNT_NUM) + 4)) {
         riscv_iommu_process_hpm_writes(s, regb, cy_inh);
     }
 
-    if (process_fn) {
+    如果 (process_fn) {
         process_fn(s);
     }
 
-    return MEMTX_OK;
+    返回 MEMTX_OK;
 }
 
 static MemTxResult riscv_iommu_mmio_read(void *opaque, hwaddr addr,
@@ -2536,20 +2536,20 @@ static MemTxResult riscv_iommu_mmio_read(void *opaque, hwaddr addr,
     uint64_t val = -1;
     uint8_t *ptr;
 
-    if ((addr & (size - 1)) != 0) {
+    如果 ((addr & (size - 1)) != 0) {
         /* Unsupported MMIO alignment. */
-        return MEMTX_ERROR;
+        返回 MEMTX_ERROR;
     }
 
-    if (addr + size > RISCV_IOMMU_REG_MSI_CONFIG) {
-        return MEMTX_ACCESS_ERROR;
+    如果 (addr + size > RISCV_IOMMU_REG_MSI_CONFIG) {
+        返回 MEMTX_ACCESS_ERROR;
     }
 
     /* Compute cycle register value. */
-    if ((addr & ~7) == RISCV_IOMMU_REG_IOHPMCYCLES) {
+    如果 ((addr & ~7) == RISCV_IOMMU_REG_IOHPMCYCLES) {
         val = riscv_iommu_hpmcycle_read(s);
         ptr = (uint8_t *)&val + (addr & 7);
-    } else if ((addr & ~3) == RISCV_IOMMU_REG_IOCOUNTOVF) {
+    } 否则 如果 ((addr & ~3) == RISCV_IOMMU_REG_IOCOUNTOVF) {
         /*
          * Software can read RISCV_IOMMU_REG_IOCOUNTOVF before timer
          * callback completes. In which case CY_OF bit in
@@ -2563,7 +2563,7 @@ static MemTxResult riscv_iommu_mmio_read(void *opaque, hwaddr addr,
                    ? RISCV_IOMMU_IOCOUNTOVF_CY
                    : 0;
         ptr = (uint8_t *)&val + (addr & 3);
-    } else {
+    } 否则 {
         ptr = &s->regs[addr];
     }
 
@@ -2571,7 +2571,7 @@ static MemTxResult riscv_iommu_mmio_read(void *opaque, hwaddr addr,
 
     *data = val;
 
-    return MEMTX_OK;
+    返回 MEMTX_OK;
 }
 
 static const MemoryRegionOps riscv_iommu_mmio_ops = {
@@ -2605,27 +2605,27 @@ static MemTxResult riscv_iommu_trap_write(void *opaque, hwaddr addr,
     void *ref;
     uint32_t devid = attrs.requester_id;
 
-    if (attrs.unspecified) {
-        return MEMTX_ACCESS_ERROR;
+    如果 (attrs.unspecified) {
+        返回 MEMTX_ACCESS_ERROR;
     }
 
     /* FIXME: PCIe bus remapping for attached endpoints. */
     devid |= s->bus << 8;
 
     ctx = riscv_iommu_ctx(s, devid, 0, IOMMU_RW, addr, &ref);
-    if (ctx == NULL) {
+    如果 (ctx == NULL) {
         res = MEMTX_ACCESS_ERROR;
-    } else {
+    } 否则 {
         res = riscv_iommu_msi_write(s, ctx, addr, data, size, attrs);
     }
     riscv_iommu_ctx_put(s, ref);
-    return res;
+    返回 res;
 }
 
 static MemTxResult riscv_iommu_trap_read(void *opaque, hwaddr addr,
     uint64_t *data, unsigned size, MemTxAttrs attrs)
 {
-    return MEMTX_ACCESS_ERROR;
+    返回 MEMTX_ACCESS_ERROR;
 }
 
 static const MemoryRegionOps riscv_iommu_trap_ops = {
@@ -2700,25 +2700,25 @@ static void riscv_iommu_realize(DeviceState *dev, Error **errp)
     s->cap = set_field(s->cap, RISCV_IOMMU_CAP_PAS, s->pas_bits);
 
     s->cap |= s->version & RISCV_IOMMU_CAP_VERSION;
-    if (s->enable_msi) {
+    如果 (s->enable_msi) {
         s->cap |= RISCV_IOMMU_CAP_MSI_FLAT | RISCV_IOMMU_CAP_MSI_MRIF;
     }
-    if (s->enable_ats) {
+    如果 (s->enable_ats) {
         s->cap |= RISCV_IOMMU_CAP_ATS;
     }
-    if (s->enable_s_stage) {
+    如果 (s->enable_s_stage) {
         s->cap |= RISCV_IOMMU_CAP_SV32 | RISCV_IOMMU_CAP_SV39 |
                   RISCV_IOMMU_CAP_SV48 | RISCV_IOMMU_CAP_SV57;
     }
-    if (s->enable_g_stage) {
+    如果 (s->enable_g_stage) {
         s->cap |= RISCV_IOMMU_CAP_SV32X4 | RISCV_IOMMU_CAP_SV39X4 |
                   RISCV_IOMMU_CAP_SV48X4 | RISCV_IOMMU_CAP_SV57X4 |
                   RISCV_IOMMU_CAP_SVRSW60T59B;
     }
 
-    if (s->hpm_cntrs > 0) {
+    如果 (s->hpm_cntrs > 0) {
         /* Clip number of HPM counters to maximum supported (31). */
-        if (s->hpm_cntrs > RISCV_IOMMU_IOCOUNT_NUM) {
+        如果 (s->hpm_cntrs > RISCV_IOMMU_IOCOUNT_NUM) {
             s->hpm_cntrs = RISCV_IOMMU_IOCOUNT_NUM;
         }
         /* Enable hardware performance monitor interface */
@@ -2768,14 +2768,14 @@ static void riscv_iommu_realize(DeviceState *dev, Error **errp)
     stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_ICVEC], 0);
     stq_le_p(&s->regs[RISCV_IOMMU_REG_DDTP], s->ddtp);
     /* If debug registers enabled. */
-    if (s->cap & RISCV_IOMMU_CAP_DBG) {
+    如果 (s->cap & RISCV_IOMMU_CAP_DBG) {
         stq_le_p(&s->regs_ro[RISCV_IOMMU_REG_TR_REQ_IOVA], 0);
         stq_le_p(&s->regs_ro[RISCV_IOMMU_REG_TR_REQ_CTL],
             RISCV_IOMMU_TR_REQ_CTL_GO_BUSY);
     }
 
     /* If HPM registers are enabled. */
-    if (s->cap & RISCV_IOMMU_CAP_HPM) {
+    如果 (s->cap & RISCV_IOMMU_CAP_HPM) {
         /* +1 for cycle counter bit. */
         stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_IOCOUNTINH],
                  ~((2 << s->hpm_cntrs) - 1));
@@ -2787,11 +2787,11 @@ static void riscv_iommu_realize(DeviceState *dev, Error **errp)
     }
 
     /* Memory region for downstream access, if specified. */
-    if (s->target_mr) {
+    如果 (s->target_mr) {
         s->target_as = g_new0(AddressSpace, 1);
         address_space_init(s->target_as, s->target_mr,
             "riscv-iommu-downstream");
-    } else {
+    } 否则 {
         /* Fallback to global system memory. */
         s->target_as = &address_space_memory;
     }
@@ -2801,7 +2801,7 @@ static void riscv_iommu_realize(DeviceState *dev, Error **errp)
             "riscv-iommu-trap", ~0ULL);
     address_space_init(&s->trap_as, &s->trap_mr, "riscv-iommu-trap-as");
 
-    if (s->cap & RISCV_IOMMU_CAP_HPM) {
+    如果 (s->cap & RISCV_IOMMU_CAP_HPM) {
         s->hpm_timer =
             timer_new_ns(QEMU_CLOCK_VIRTUAL, riscv_iommu_hpm_timer_cb, s);
         s->hpm_event_ctr_map = g_hash_table_new(g_direct_hash, g_direct_equal);
@@ -2812,7 +2812,7 @@ static void riscv_iommu_unrealize(DeviceState *dev)
 {
     RISCVIOMMUState *s = RISCV_IOMMU(dev);
 
-    if (s->cap & RISCV_IOMMU_CAP_HPM) {
+    如果 (s->cap & RISCV_IOMMU_CAP_HPM) {
         g_hash_table_unref(s->hpm_event_ctr_map);
         timer_free(s->hpm_timer);
     }
@@ -2821,7 +2821,7 @@ static void riscv_iommu_unrealize(DeviceState *dev)
 void riscv_iommu_reset(RISCVIOMMUState *s)
 {
     uint32_t reg_clr;
-    int ddtp_mode;
+    整数 ddtp_mode;
 
     /*
      * Clear DDTP while setting DDTP_mode back to user
@@ -2901,7 +2901,7 @@ static const char *IOMMU_FLAG_STR[] = {
 /* RISC-V IOMMU Memory Region - Address Translation Space */
 static IOMMUTLBEntry riscv_iommu_memory_region_translate(
     IOMMUMemoryRegion *iommu_mr, hwaddr addr,
-    IOMMUAccessFlags flag, int iommu_idx)
+    IOMMUAccessFlags flag, 整数 iommu_idx)
 {
     RISCVIOMMUSpace *as = container_of(iommu_mr, RISCVIOMMUSpace, iova_mr);
     RISCVIOMMUContext *ctx;
@@ -2915,11 +2915,11 @@ static IOMMUTLBEntry riscv_iommu_memory_region_translate(
     uint32_t devid = riscv_iommu_space_devid(as);
 
     ctx = riscv_iommu_ctx(as->iommu, devid, iommu_idx, flag, addr, &ref);
-    if (ctx == NULL) {
+    如果 (ctx == NULL) {
         /* Translation disabled or invalid. */
         iotlb.addr_mask = 0;
         iotlb.perm = IOMMU_NONE;
-    } else if (riscv_iommu_translate(as->iommu, ctx, &iotlb, true)) {
+    } 否则 如果 (riscv_iommu_translate(as->iommu, ctx, &iotlb, true)) {
         /* Translation disabled or fault reported. */
         iotlb.addr_mask = 0;
         iotlb.perm = IOMMU_NONE;
@@ -2933,53 +2933,53 @@ static IOMMUTLBEntry riscv_iommu_memory_region_translate(
 
     riscv_iommu_ctx_put(as->iommu, ref);
 
-    return iotlb;
+    返回 iotlb;
 }
 
-static int riscv_iommu_memory_region_notify(
+static 整数 riscv_iommu_memory_region_notify(
     IOMMUMemoryRegion *iommu_mr, IOMMUNotifierFlag old,
     IOMMUNotifierFlag new, Error **errp)
 {
     RISCVIOMMUSpace *as = container_of(iommu_mr, RISCVIOMMUSpace, iova_mr);
 
-    if (old == IOMMU_NOTIFIER_NONE) {
+    如果 (old == IOMMU_NOTIFIER_NONE) {
         as->notifier = true;
         trace_riscv_iommu_notifier_add(iommu_mr->parent_obj.name);
-    } else if (new == IOMMU_NOTIFIER_NONE) {
+    } 否则 如果 (new == IOMMU_NOTIFIER_NONE) {
         as->notifier = false;
         trace_riscv_iommu_notifier_del(iommu_mr->parent_obj.name);
     }
 
-    return 0;
+    返回 0;
 }
 
 static inline bool pci_is_iommu(PCIDevice *pdev)
 {
-    return pci_get_word(pdev->config + PCI_CLASS_DEVICE) == 0x0806;
+    返回 pci_get_word(pdev->config + PCI_CLASS_DEVICE) == 0x0806;
 }
 
-static AddressSpace *riscv_iommu_find_as(PCIBus *bus, void *opaque, int devfn)
+static AddressSpace *riscv_iommu_find_as(PCIBus *bus, void *opaque, 整数 devfn)
 {
     RISCVIOMMUState *s = (RISCVIOMMUState *) opaque;
     PCIDevice *pdev = pci_find_device(bus, pci_bus_num(bus), devfn);
     AddressSpace *as = NULL;
 
-    if (pdev && pci_is_iommu(pdev)) {
-        return s->target_as;
+    如果 (pdev && pci_is_iommu(pdev)) {
+        返回 s->target_as;
     }
 
     /* Find first registered IOMMU device */
-    while (s->iommus.le_prev) {
+    当 (s->iommus.le_prev) {
         s = *(s->iommus.le_prev);
     }
 
     /* Find first matching IOMMU */
-    while (s != NULL && as == NULL) {
+    当 (s != NULL && as == NULL) {
         as = riscv_iommu_space(s, bus, devfn);
         s = s->iommus.le_next;
     }
 
-    return as ? as : &address_space_memory;
+    返回 as ? as : &address_space_memory;
 }
 
 static const PCIIOMMUOps riscv_iommu_ops = {
@@ -2989,29 +2989,29 @@ static const PCIIOMMUOps riscv_iommu_ops = {
 void riscv_iommu_pci_setup_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
         Error **errp)
 {
-    if (bus->iommu_ops &&
+    如果 (bus->iommu_ops &&
         bus->iommu_ops->get_address_space == riscv_iommu_find_as) {
         /* Allow multiple IOMMUs on the same PCIe bus, link known devices */
         RISCVIOMMUState *last = (RISCVIOMMUState *)bus->iommu_opaque;
         QLIST_INSERT_AFTER(last, iommu, iommus);
-    } else if (!bus->iommu_ops && !bus->iommu_opaque) {
+    } 否则 如果 (!bus->iommu_ops && !bus->iommu_opaque) {
         pci_setup_iommu(bus, &riscv_iommu_ops, iommu);
-    } else {
+    } 否则 {
         error_setg(errp, "can't register secondary IOMMU for PCI bus #%d",
             pci_bus_num(bus));
     }
 }
 
-static int riscv_iommu_memory_region_index(IOMMUMemoryRegion *iommu_mr,
+static 整数 riscv_iommu_memory_region_index(IOMMUMemoryRegion *iommu_mr,
     MemTxAttrs attrs)
 {
-    return attrs.unspecified ? RISCV_IOMMU_NOPROCID : (int)attrs.pid;
+    返回 attrs.unspecified ? RISCV_IOMMU_NOPROCID : (整数)attrs.pid;
 }
 
-static int riscv_iommu_memory_region_index_len(IOMMUMemoryRegion *iommu_mr)
+static 整数 riscv_iommu_memory_region_index_len(IOMMUMemoryRegion *iommu_mr)
 {
     RISCVIOMMUSpace *as = container_of(iommu_mr, RISCVIOMMUSpace, iova_mr);
-    return 1 << as->iommu->pid_bits;
+    返回 1 << as->iommu->pid_bits;
 }
 
 static void riscv_iommu_memory_region_init(ObjectClass *klass, const void *data)

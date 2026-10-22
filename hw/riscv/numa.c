@@ -27,156 +27,156 @@
 
 bool riscv_numa_enabled(const MachineState *ms)
 {
-    return (ms->numa_state && ms->numa_state->num_nodes) ? true : false;
+    返回 (ms->numa_state && ms->numa_state->num_nodes) ? true : false;
 }
 
-int riscv_socket_count(const MachineState *ms)
+整数 riscv_socket_count(const MachineState *ms)
 {
-    return (riscv_numa_enabled(ms)) ? ms->numa_state->num_nodes : 1;
+    返回 (riscv_numa_enabled(ms)) ? ms->numa_state->num_nodes : 1;
 }
 
-int riscv_socket_first_hartid(const MachineState *ms, int socket_id)
+整数 riscv_socket_first_hartid(const MachineState *ms, 整数 socket_id)
 {
-    int i, first_hartid = ms->smp.cpus;
+    整数 i, first_hartid = ms->smp.cpus;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? 0 : -1;
+    如果 (!riscv_numa_enabled(ms)) {
+        返回 (!socket_id) ? 0 : -1;
     }
 
-    for (i = 0; i < ms->smp.cpus; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
+    为 (i = 0; i < ms->smp.cpus; i++) {
+        如果 (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
             continue;
         }
-        if (i < first_hartid) {
+        如果 (i < first_hartid) {
             first_hartid = i;
         }
     }
 
-    return (first_hartid < ms->smp.cpus) ? first_hartid : -1;
+    返回 (first_hartid < ms->smp.cpus) ? first_hartid : -1;
 }
 
-int riscv_socket_last_hartid(const MachineState *ms, int socket_id)
+整数 riscv_socket_last_hartid(const MachineState *ms, 整数 socket_id)
 {
-    int i, last_hartid = -1;
+    整数 i, last_hartid = -1;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->smp.cpus - 1 : -1;
+    如果 (!riscv_numa_enabled(ms)) {
+        返回 (!socket_id) ? ms->smp.cpus - 1 : -1;
     }
 
-    for (i = 0; i < ms->smp.cpus; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
+    为 (i = 0; i < ms->smp.cpus; i++) {
+        如果 (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
             continue;
         }
-        if (i > last_hartid) {
+        如果 (i > last_hartid) {
             last_hartid = i;
         }
     }
 
-    return (last_hartid < ms->smp.cpus) ? last_hartid : -1;
+    返回 (last_hartid < ms->smp.cpus) ? last_hartid : -1;
 }
 
-int riscv_socket_hart_count(const MachineState *ms, int socket_id)
+整数 riscv_socket_hart_count(const MachineState *ms, 整数 socket_id)
 {
-    int first_hartid, last_hartid;
+    整数 first_hartid, last_hartid;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->smp.cpus : -1;
+    如果 (!riscv_numa_enabled(ms)) {
+        返回 (!socket_id) ? ms->smp.cpus : -1;
     }
 
     first_hartid = riscv_socket_first_hartid(ms, socket_id);
-    if (first_hartid < 0) {
-        return -1;
+    如果 (first_hartid < 0) {
+        返回 -1;
     }
 
     last_hartid = riscv_socket_last_hartid(ms, socket_id);
-    if (last_hartid < 0) {
-        return -1;
+    如果 (last_hartid < 0) {
+        返回 -1;
     }
 
-    if (first_hartid > last_hartid) {
-        return -1;
+    如果 (first_hartid > last_hartid) {
+        返回 -1;
     }
 
-    return last_hartid - first_hartid + 1;
+    返回 last_hartid - first_hartid + 1;
 }
 
-bool riscv_socket_check_hartids(const MachineState *ms, int socket_id)
+bool riscv_socket_check_hartids(const MachineState *ms, 整数 socket_id)
 {
-    int i, first_hartid, last_hartid;
+    整数 i, first_hartid, last_hartid;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? true : false;
+    如果 (!riscv_numa_enabled(ms)) {
+        返回 (!socket_id) ? true : false;
     }
 
     first_hartid = riscv_socket_first_hartid(ms, socket_id);
-    if (first_hartid < 0) {
-        return false;
+    如果 (first_hartid < 0) {
+        返回 false;
     }
 
     last_hartid = riscv_socket_last_hartid(ms, socket_id);
-    if (last_hartid < 0) {
-        return false;
+    如果 (last_hartid < 0) {
+        返回 false;
     }
 
-    for (i = first_hartid; i <= last_hartid; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
-            return false;
+    为 (i = first_hartid; i <= last_hartid; i++) {
+        如果 (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
+            返回 false;
         }
     }
 
-    return true;
+    返回 true;
 }
 
-uint64_t riscv_socket_mem_offset(const MachineState *ms, int socket_id)
+uint64_t riscv_socket_mem_offset(const MachineState *ms, 整数 socket_id)
 {
-    int i;
+    整数 i;
     uint64_t mem_offset = 0;
 
-    if (!riscv_numa_enabled(ms)) {
-        return 0;
+    如果 (!riscv_numa_enabled(ms)) {
+        返回 0;
     }
 
-    for (i = 0; i < ms->numa_state->num_nodes; i++) {
-        if (i == socket_id) {
+    为 (i = 0; i < ms->numa_state->num_nodes; i++) {
+        如果 (i == socket_id) {
             break;
         }
         mem_offset += ms->numa_state->nodes[i].node_mem;
     }
 
-    return (i == socket_id) ? mem_offset : 0;
+    返回 (i == socket_id) ? mem_offset : 0;
 }
 
-uint64_t riscv_socket_mem_size(const MachineState *ms, int socket_id)
+uint64_t riscv_socket_mem_size(const MachineState *ms, 整数 socket_id)
 {
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->ram_size : 0;
+    如果 (!riscv_numa_enabled(ms)) {
+        返回 (!socket_id) ? ms->ram_size : 0;
     }
 
-    return (socket_id < ms->numa_state->num_nodes) ?
+    返回 (socket_id < ms->numa_state->num_nodes) ?
             ms->numa_state->nodes[socket_id].node_mem : 0;
 }
 
 void riscv_socket_fdt_write_id(const MachineState *ms, const char *node_name,
-                               int socket_id)
+                               整数 socket_id)
 {
-    if (riscv_numa_enabled(ms)) {
+    如果 (riscv_numa_enabled(ms)) {
         qemu_fdt_setprop_cell(ms->fdt, node_name, "numa-node-id", socket_id);
     }
 }
 
 void riscv_socket_fdt_write_distance_matrix(const MachineState *ms)
 {
-    int i, j, idx;
+    整数 i, j, idx;
     g_autofree uint32_t *dist_matrix = NULL;
     uint32_t dist_matrix_size;
 
-    if (riscv_numa_enabled(ms) && ms->numa_state->have_numa_distance) {
+    如果 (riscv_numa_enabled(ms) && ms->numa_state->have_numa_distance) {
         dist_matrix_size = riscv_socket_count(ms) * riscv_socket_count(ms);
         dist_matrix_size *= (3 * sizeof(uint32_t));
         dist_matrix = g_malloc0(dist_matrix_size);
 
-        for (i = 0; i < riscv_socket_count(ms); i++) {
-            for (j = 0; j < riscv_socket_count(ms); j++) {
+        为 (i = 0; i < riscv_socket_count(ms); i++) {
+            为 (j = 0; j < riscv_socket_count(ms); j++) {
                 idx = (i * riscv_socket_count(ms) + j) * 3;
                 dist_matrix[idx + 0] = cpu_to_be32(i);
                 dist_matrix[idx + 1] = cpu_to_be32(j);
@@ -200,43 +200,43 @@ riscv_numa_cpu_index_to_props(MachineState *ms, unsigned cpu_index)
     const CPUArchIdList *possible_cpus = mc->possible_cpu_arch_ids(ms);
 
     assert(cpu_index < possible_cpus->len);
-    return possible_cpus->cpus[cpu_index].props;
+    返回 possible_cpus->cpus[cpu_index].props;
 }
 
-int64_t riscv_numa_get_default_cpu_node_id(const MachineState *ms, int idx)
+int64_t riscv_numa_get_default_cpu_node_id(const MachineState *ms, 整数 idx)
 {
     int64_t nidx = 0;
 
-    if (ms->numa_state->num_nodes > ms->smp.cpus) {
+    如果 (ms->numa_state->num_nodes > ms->smp.cpus) {
         error_report("Number of NUMA nodes (%d)"
                      " cannot exceed the number of available CPUs (%u).",
                      ms->numa_state->num_nodes, ms->smp.cpus);
         exit(EXIT_FAILURE);
     }
-    if (ms->numa_state->num_nodes) {
+    如果 (ms->numa_state->num_nodes) {
         nidx = idx / (ms->smp.cpus / ms->numa_state->num_nodes);
-        if (ms->numa_state->num_nodes <= nidx) {
+        如果 (ms->numa_state->num_nodes <= nidx) {
             nidx = ms->numa_state->num_nodes - 1;
         }
     }
 
-    return nidx;
+    返回 nidx;
 }
 
 const CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
 {
-    int n;
-    unsigned int max_cpus = ms->smp.max_cpus;
+    整数 n;
+    unsigned 整数 max_cpus = ms->smp.max_cpus;
 
-    if (ms->possible_cpus) {
+    如果 (ms->possible_cpus) {
         assert(ms->possible_cpus->len == max_cpus);
-        return ms->possible_cpus;
+        返回 ms->possible_cpus;
     }
 
     ms->possible_cpus = g_malloc0(sizeof(CPUArchIdList) +
                                   sizeof(CPUArchId) * max_cpus);
     ms->possible_cpus->len = max_cpus;
-    for (n = 0; n < ms->possible_cpus->len; n++) {
+    为 (n = 0; n < ms->possible_cpus->len; n++) {
         ms->possible_cpus->cpus[n].type = ms->cpu_type;
         ms->possible_cpus->cpus[n].arch_id = n;
         ms->possible_cpus->cpus[n].props.has_socket_id = true;
@@ -253,5 +253,5 @@ const CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
             n % ms->smp.threads;
     }
 
-    return ms->possible_cpus;
+    返回 ms->possible_cpus;
 }
