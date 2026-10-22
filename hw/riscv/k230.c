@@ -13,30 +13,30 @@
  * For more information, see <https://www.kendryte.com/en/proDetail/230>
  */
 
-#include "qemu/osdep.h"
-#include "cpu-qom.h"
-#include "qemu/cutils.h"
-#include "qemu/error-report.h"
-#include "qapi/error.h"
-#include "system/device_tree.h"
-#include "system/system.h"
-#include "system/memory.h"
-#include "target/riscv/cpu.h"
-#include "hw/core/loader.h"
-#include "hw/core/sysbus.h"
-#include "hw/riscv/k230.h"
-#include "hw/riscv/boot.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/sifive_plic.h"
-#include "hw/char/serial-mm.h"
-#include "hw/misc/unimp.h"
+#شامل "qemu/osdep.h"
+#شامل "cpu-qom.h"
+#شامل "qemu/cutils.h"
+#شامل "qemu/error-report.h"
+#شامل "qapi/error.h"
+#شامل "system/device_tree.h"
+#شامل "system/system.h"
+#شامل "system/memory.h"
+#شامل "target/riscv/cpu.h"
+#شامل "hw/core/loader.h"
+#شامل "hw/core/sysbus.h"
+#شامل "hw/riscv/k230.h"
+#شامل "hw/riscv/boot.h"
+#شامل "hw/intc/riscv_aclint.h"
+#شامل "hw/intc/sifive_plic.h"
+#شامل "hw/char/serial-mm.h"
+#شامل "hw/misc/unimp.h"
 
 /* Align K230_SDK k230_canmv_defconfig */
-#define K230_DIRECT_OPENSBI_ADDR 0x8000000
-#define K230_DIRECT_KERNEL_ADDR  0x8200000
-#define K230_DIRECT_DTB_ADDR     0xa000000
+#تعریف_کرو K230_براہ_راست_OPENSBI_ADDR 0x8000000
+#تعریف_کرو K230_براہ_راست_KERNEL_ADDR  0x8200000
+#تعریف_کرو K230_براہ_راست_DTB_ADDR     0xa000000
 
-static const MemMapEntry memmap[] = {
+ساکن ثابت Mem_Map_اندراج memmap[] = {
     [K230_DEV_DDRC] =         { 0x00000000,  0x80000000 },
     [K230_DEV_KPU_L2_CACHE] = { 0x80000000,  0x00200000 },
     [K230_DEV_SRAM] =         { 0x80200000,  0x00200000 },
@@ -102,94 +102,94 @@ static const MemMapEntry memmap[] = {
     [K230_DEV_CLINT] =        { 0xF04000000, 0x00400000 },
 };
 
-static void k230_soc_init(Object *obj)
+ساکن خالی k230_soc_init(Object *obj)
 {
     K230SoCState *s = RISCV_K230_SOC(obj);
     RISCVHartArrayState *cpu0 = &s->c908_cpu;
 
-    object_initialize_child(obj, "c908-cpu", cpu0, TYPE_RISCV_HART_ARRAY);
-    object_initialize_child(obj, "ddr-cfg", &s->ddr_cfg,
+    object_initialize_بچہ(obj, "c908-cpu", cpu0, TYPE_RISCV_HART_ARRAY);
+    object_initialize_بچہ(obj, "ddr-cfg", &s->ddr_cfg,
                             TYPE_K230_DDR_CFG);
-    object_initialize_child(obj, "ddr-phy", &s->ddr_phy,
+    object_initialize_بچہ(obj, "ddr-phy", &s->ddr_phy,
                             TYPE_K230_DDR_PHY);
     s->ddr_cfg.phy = &s->ddr_phy;
-    object_initialize_child(obj, "k230-wdt0", &s->wdt[0], TYPE_K230_WDT);
-    object_initialize_child(obj, "k230-wdt1", &s->wdt[1], TYPE_K230_WDT);
-    object_initialize_child(obj, "k230-gsdma", &s->gsdma, TYPE_K230_GSDMA);
-    object_initialize_child(obj, "k230-decomp-gzip", &s->decomp_gzip,
+    object_initialize_بچہ(obj, "k230-wdt0", &s->wdt[0], TYPE_K230_WDT);
+    object_initialize_بچہ(obj, "k230-wdt1", &s->wdt[1], TYPE_K230_WDT);
+    object_initialize_بچہ(obj, "k230-gsdma", &s->gsdma, TYPE_K230_GSDMA);
+    object_initialize_بچہ(obj, "k230-decomp-gzip", &s->decomp_gzip,
                             TYPE_K230_DECOMP_GZIP);
 
-    qdev_prop_set_uint32(DEVICE(cpu0), "hartid-base", 0);
-    qdev_prop_set_string(DEVICE(cpu0), "cpu-type", TYPE_RISCV_CPU_THEAD_C908);
-    qdev_prop_set_uint64(DEVICE(cpu0), "resetvec",
-                         memmap[K230_DEV_BOOTROM].base);
+    qdev_prop_سیٹ_uint32(DEVICE(cpu0), "hartid-base", 0);
+    qdev_prop_سیٹ_string(DEVICE(cpu0), "cpu-type", TYPE_RISCV_CPU_THEAD_C908);
+    qdev_prop_سیٹ_uint64(DEVICE(cpu0), "resetvec",
+                         memmap[K230_DEV_BOOTROM].بنیاد);
 }
 
-static DeviceState *k230_create_plic(int base_hartid, int hartid_count)
+ساکن DeviceState *k230_create_plic(صحیح بنیاد_hartid, صحیح hartid_گنتی)
 {
-    g_autofree char *plic_hart_config = NULL;
+    g_autofree حرف *plic_hart_config = تہی;
 
     /* Per-socket PLIC hart topology configuration string */
-    plic_hart_config = riscv_plic_hart_config_string(hartid_count);
+    plic_hart_config = riscv_plic_hart_config_string(hartid_گنتی);
 
     /* Per-socket PLIC */
-    return sifive_plic_create(get_system_memory(),
-                              memmap[K230_DEV_PLIC].base,
-                              plic_hart_config, hartid_count, base_hartid,
-                              K230_PLIC_NUM_SOURCES,
-                              K230_PLIC_NUM_PRIORITIES,
-                              K230_PLIC_PRIORITY_BASE, K230_PLIC_PENDING_BASE,
-                              K230_PLIC_ENABLE_BASE, K230_PLIC_ENABLE_STRIDE,
-                              K230_PLIC_CONTEXT_BASE,
+    واپس sifive_plic_create(get_system_حافظہ(),
+                              memmap[K230_DEV_PLIC].بنیاد,
+                              plic_hart_config, hartid_گنتی, بنیاد_hartid,
+                              K230_PLIC_عدد_SOURCES,
+                              K230_PLIC_عدد_PRIORITIES,
+                              K230_PLIC_ترجیح_بنیاد, K230_PLIC_PENDING_بنیاد,
+                              K230_PLIC_ENABLE_بنیاد, K230_PLIC_ENABLE_STRIDE,
+                              K230_PLIC_CONTEXT_بنیاد,
                               K230_PLIC_CONTEXT_STRIDE,
-                              memmap[K230_DEV_PLIC].size);
+                              memmap[K230_DEV_PLIC].سائز);
 }
 
-static void k230_create_uart(MemoryRegion *sys_mem, DeviceState *plic,
-                             int index)
+ساکن خالی k230_create_uart(حافظہ_Region *sys_mem, DeviceState *plic,
+                             صحیح اشاریہ)
 {
-    int uart_dev = K230_DEV_UART0 + index;
-    g_autofree char *name = g_strdup_printf("uart%d", index);
+    صحیح uart_dev = K230_DEV_UART0 + اشاریہ;
+    g_autofree حرف *name = g_strdup_printf("uart%d", اشاریہ);
 
     /* Cover the non-16550 part of the SDK's 0x1000 UART window. */
-    create_unimplemented_device(name, memmap[uart_dev].base,
-                                memmap[uart_dev].size);
+    create_unimplemented_device(name, memmap[uart_dev].بنیاد,
+                                memmap[uart_dev].سائز);
 
-    serial_mm_init(sys_mem, memmap[uart_dev].base, 2,
-                   qdev_get_gpio_in(plic, K230_UART0_IRQ + index),
-                   399193, serial_hd(index), DEVICE_LITTLE_ENDIAN);
+    serial_mm_init(sys_mem, memmap[uart_dev].بنیاد, 2,
+                   qdev_get_gpio_اندر(plic, K230_UART0_IRQ + اشاریہ),
+                   399193, serial_hd(اشاریہ), DEVICE_LITTLE_ENDIAN);
 }
 
-static void k230_soc_realize(DeviceState *dev, Error **errp)
+ساکن خالی k230_soc_realize(DeviceState *dev, Error **errp)
 {
     K230SoCState *s = RISCV_K230_SOC(dev);
-    MemoryRegion *sys_mem = get_system_memory();
-    int c908_cpus;
+    حافظہ_Region *sys_mem = get_system_حافظہ();
+    صحیح c908_cpus;
 
     sysbus_realize(SYS_BUS_DEVICE(&s->c908_cpu), &error_fatal);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_cfg), errp)) {
-        return;
+    اگر (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_cfg), errp)) {
+        واپس;
     }
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_phy), errp)) {
-        return;
+    اگر (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_phy), errp)) {
+        واپس;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ddr_cfg), 0,
-                    memmap[K230_DEV_DDRC_CFG].base);
+                    memmap[K230_DEV_DDRC_CFG].بنیاد);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ddr_phy), 0,
-                    memmap[K230_DEV_DDR_PHY].base);
+                    memmap[K230_DEV_DDR_PHY].بنیاد);
 
-    c908_cpus = s->c908_cpu.num_harts;
+    c908_cpus = s->c908_cpu.عدد_harts;
 
     /* SRAM */
-    memory_region_init_ram(&s->sram, OBJECT(dev), "sram",
-                           memmap[K230_DEV_SRAM].size, &error_fatal);
-    memory_region_add_subregion(sys_mem, memmap[K230_DEV_SRAM].base,
+    حافظہ_region_init_ram(&s->sram, OBJECT(dev), "sram",
+                           memmap[K230_DEV_SRAM].سائز, &error_fatal);
+    حافظہ_region_جوڑو_subregion(sys_mem, memmap[K230_DEV_SRAM].بنیاد,
                                 &s->sram);
 
     /* BootROM */
-    memory_region_init_rom(&s->bootrom, OBJECT(dev), "bootrom",
-                           memmap[K230_DEV_BOOTROM].size, &error_fatal);
-    memory_region_add_subregion(sys_mem, memmap[K230_DEV_BOOTROM].base,
+    حافظہ_region_init_rom(&s->bootrom, OBJECT(dev), "bootrom",
+                           memmap[K230_DEV_BOOTROM].سائز, &error_fatal);
+    حافظہ_region_جوڑو_subregion(sys_mem, memmap[K230_DEV_BOOTROM].بنیاد,
                                 &s->bootrom);
 
     /* PLIC */
@@ -197,59 +197,59 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
 
     /* CLINT */
     riscv_aclint_swi_create(sys_mem,
-                            memmap[K230_DEV_CLINT].base,
+                            memmap[K230_DEV_CLINT].بنیاد,
                             C908_CPU_HARTID, c908_cpus, false);
     riscv_aclint_mtimer_create(sys_mem,
-                               memmap[K230_DEV_CLINT].base + 0x4000,
-                               RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
+                               memmap[K230_DEV_CLINT].بنیاد + 0x4000,
+                               RISCV_ACLINT_DEFAULT_MTIMER_سائز,
                                C908_CPU_HARTID, c908_cpus,
                                RISCV_ACLINT_DEFAULT_MTIMECMP,
                                RISCV_ACLINT_DEFAULT_MTIME,
                                RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
 
     /* UART */
-    for (int i = 0; i < K230_UART_COUNT; i++) {
+    برائے (صحیح i = 0; i < K230_UART_گنتی; i++) {
         k230_create_uart(sys_mem, DEVICE(s->c908_plic), i);
     }
 
     /* Watchdog */
-    for (int i = 0; i < 2; i++) {
-        if (!sysbus_realize(SYS_BUS_DEVICE(&s->wdt[i]), errp)) {
-            return;
+    برائے (صحیح i = 0; i < 2; i++) {
+        اگر (!sysbus_realize(SYS_BUS_DEVICE(&s->wdt[i]), errp)) {
+            واپس;
         }
     }
 
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->wdt[0]), 0, memmap[K230_DEV_WDT0].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->wdt[0]), 0, memmap[K230_DEV_WDT0].بنیاد);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->wdt[0]), 0,
-                       qdev_get_gpio_in(DEVICE(s->c908_plic), K230_WDT0_IRQ));
+                       qdev_get_gpio_اندر(DEVICE(s->c908_plic), K230_WDT0_IRQ));
 
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->wdt[1]), 0, memmap[K230_DEV_WDT1].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->wdt[1]), 0, memmap[K230_DEV_WDT1].بنیاد);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->wdt[1]), 0,
-                       qdev_get_gpio_in(DEVICE(s->c908_plic), K230_WDT1_IRQ));
+                       qdev_get_gpio_اندر(DEVICE(s->c908_plic), K230_WDT1_IRQ));
 
     /* Gsdma */
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gsdma), errp)) {
-        return;
+    اگر (!sysbus_realize(SYS_BUS_DEVICE(&s->gsdma), errp)) {
+        واپس;
     }
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gsdma), 0, memmap[K230_DEV_GSDMA].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gsdma), 0, memmap[K230_DEV_GSDMA].بنیاد);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->gsdma), 0,
-                       qdev_get_gpio_in(DEVICE(s->c908_plic), K230_GSDMA_IRQ));
+                       qdev_get_gpio_اندر(DEVICE(s->c908_plic), K230_GSDMA_IRQ));
 
     /* Decomp gzip */
-    qdev_prop_set_uint64(DEVICE(&s->decomp_gzip), "sram-base",
-                         memmap[K230_DEV_SRAM].base);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->decomp_gzip), errp)) {
-        return;
+    qdev_prop_سیٹ_uint64(DEVICE(&s->decomp_gzip), "sram-base",
+                         memmap[K230_DEV_SRAM].بنیاد);
+    اگر (!sysbus_realize(SYS_BUS_DEVICE(&s->decomp_gzip), errp)) {
+        واپس;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->decomp_gzip), 0,
-                    memmap[K230_DEV_DECOMP_GZIP].base);
-    for (int i = 0; i < K230_DECOMP_GZIP_NUM_GPIOS_OUT; i++) {
-        qdev_connect_gpio_out(DEVICE(&s->decomp_gzip), i,
-                              qdev_get_gpio_in(DEVICE(&s->gsdma), i));
+                    memmap[K230_DEV_DECOMP_GZIP].بنیاد);
+    برائے (صحیح i = 0; i < K230_DECOMP_GZIP_عدد_GPIOS_برآمد; i++) {
+        qdev_connect_gpio_برآمد(DEVICE(&s->decomp_gzip), i,
+                              qdev_get_gpio_اندر(DEVICE(&s->gsdma), i));
     }
-    for (int i = 0; i < K230_DECOMP_GZIP_NUM_GPIOS_IN; i++) {
-        qdev_connect_gpio_out(DEVICE(&s->gsdma), i,
-                              qdev_get_gpio_in(DEVICE(&s->decomp_gzip), i));
+    برائے (صحیح i = 0; i < K230_DECOMP_GZIP_عدد_GPIOS_اندر; i++) {
+        qdev_connect_gpio_برآمد(DEVICE(&s->gsdma), i,
+                              qdev_get_gpio_اندر(DEVICE(&s->decomp_gzip), i));
     }
 
     /* Noc stub, the k230 decomp_gzip driver in uboot will access this region */
@@ -257,291 +257,291 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
 
     /* unimplemented devices */
     create_unimplemented_device("kpu.l2-cache",
-                                memmap[K230_DEV_KPU_L2_CACHE].base,
-                                memmap[K230_DEV_KPU_L2_CACHE].size);
+                                memmap[K230_DEV_KPU_L2_CACHE].بنیاد,
+                                memmap[K230_DEV_KPU_L2_CACHE].سائز);
 
-    create_unimplemented_device("kpu_cfg", memmap[K230_DEV_KPU_CFG].base,
-                                memmap[K230_DEV_KPU_CFG].size);
+    create_unimplemented_device("kpu_cfg", memmap[K230_DEV_KPU_CFG].بنیاد,
+                                memmap[K230_DEV_KPU_CFG].سائز);
 
-    create_unimplemented_device("fft", memmap[K230_DEV_FFT].base,
-                                memmap[K230_DEV_FFT].size);
+    create_unimplemented_device("fft", memmap[K230_DEV_FFT].بنیاد,
+                                memmap[K230_DEV_FFT].سائز);
 
     create_unimplemented_device("2d-engine.ai",
-                                memmap[K230_DEV_AI_2D_ENGINE].base,
-                                memmap[K230_DEV_AI_2D_ENGINE].size);
+                                memmap[K230_DEV_AI_2D_ENGINE].بنیاد,
+                                memmap[K230_DEV_AI_2D_ENGINE].سائز);
 
-    create_unimplemented_device("dma", memmap[K230_DEV_DMA].base,
-                                memmap[K230_DEV_DMA].size);
+    create_unimplemented_device("dma", memmap[K230_DEV_DMA].بنیاد,
+                                memmap[K230_DEV_DMA].سائز);
 
     create_unimplemented_device("2d-engine.non-ai",
-                                memmap[K230_DEV_NON_AI_2D].base,
-                                memmap[K230_DEV_NON_AI_2D].size);
+                                memmap[K230_DEV_NON_AI_2D].بنیاد,
+                                memmap[K230_DEV_NON_AI_2D].سائز);
 
-    create_unimplemented_device("isp", memmap[K230_DEV_ISP].base,
-                                memmap[K230_DEV_ISP].size);
+    create_unimplemented_device("isp", memmap[K230_DEV_ISP].بنیاد,
+                                memmap[K230_DEV_ISP].سائز);
 
-    create_unimplemented_device("dewarp", memmap[K230_DEV_DEWARP].base,
-                                memmap[K230_DEV_DEWARP].size);
+    create_unimplemented_device("dewarp", memmap[K230_DEV_DEWARP].بنیاد,
+                                memmap[K230_DEV_DEWARP].سائز);
 
-    create_unimplemented_device("rx-csi", memmap[K230_DEV_RX_CSI].base,
-                                memmap[K230_DEV_RX_CSI].size);
+    create_unimplemented_device("rx-csi", memmap[K230_DEV_RX_CSI].بنیاد,
+                                memmap[K230_DEV_RX_CSI].سائز);
 
-    create_unimplemented_device("vpu", memmap[K230_DEV_H264].base,
-                                memmap[K230_DEV_H264].size);
+    create_unimplemented_device("vpu", memmap[K230_DEV_H264].بنیاد,
+                                memmap[K230_DEV_H264].سائز);
 
-    create_unimplemented_device("gpu", memmap[K230_DEV_2P5D].base,
-                                memmap[K230_DEV_2P5D].size);
+    create_unimplemented_device("gpu", memmap[K230_DEV_2P5D].بنیاد,
+                                memmap[K230_DEV_2P5D].سائز);
 
-    create_unimplemented_device("vo", memmap[K230_DEV_VO].base,
-                                memmap[K230_DEV_VO].size);
+    create_unimplemented_device("vo", memmap[K230_DEV_VO].بنیاد,
+                                memmap[K230_DEV_VO].سائز);
 
-    create_unimplemented_device("vo_cfg", memmap[K230_DEV_VO_CFG].base,
-                                memmap[K230_DEV_VO_CFG].size);
+    create_unimplemented_device("vo_cfg", memmap[K230_DEV_VO_CFG].بنیاد,
+                                memmap[K230_DEV_VO_CFG].سائز);
 
-    create_unimplemented_device("3d-engine", memmap[K230_DEV_3D_ENGINE].base,
-                                memmap[K230_DEV_3D_ENGINE].size);
+    create_unimplemented_device("3d-engine", memmap[K230_DEV_3D_ENGINE].بنیاد,
+                                memmap[K230_DEV_3D_ENGINE].سائز);
 
-    create_unimplemented_device("pmu", memmap[K230_DEV_PMU].base,
-                                memmap[K230_DEV_PMU].size);
+    create_unimplemented_device("pmu", memmap[K230_DEV_PMU].بنیاد,
+                                memmap[K230_DEV_PMU].سائز);
 
-    create_unimplemented_device("rtc", memmap[K230_DEV_RTC].base,
-                                memmap[K230_DEV_RTC].size);
+    create_unimplemented_device("rtc", memmap[K230_DEV_RTC].بنیاد,
+                                memmap[K230_DEV_RTC].سائز);
 
-    create_unimplemented_device("cmu", memmap[K230_DEV_CMU].base,
-                                memmap[K230_DEV_CMU].size);
+    create_unimplemented_device("cmu", memmap[K230_DEV_CMU].بنیاد,
+                                memmap[K230_DEV_CMU].سائز);
 
-    create_unimplemented_device("rmu", memmap[K230_DEV_RMU].base,
-                                memmap[K230_DEV_RMU].size);
+    create_unimplemented_device("rmu", memmap[K230_DEV_RMU].بنیاد,
+                                memmap[K230_DEV_RMU].سائز);
 
-    create_unimplemented_device("boot", memmap[K230_DEV_BOOT].base,
-                                memmap[K230_DEV_BOOT].size);
+    create_unimplemented_device("boot", memmap[K230_DEV_BOOT].بنیاد,
+                                memmap[K230_DEV_BOOT].سائز);
 
-    create_unimplemented_device("pwr", memmap[K230_DEV_PWR].base,
-                                memmap[K230_DEV_PWR].size);
+    create_unimplemented_device("pwr", memmap[K230_DEV_PWR].بنیاد,
+                                memmap[K230_DEV_PWR].سائز);
 
-    create_unimplemented_device("ipcm", memmap[K230_DEV_MAILBOX].base,
-                                memmap[K230_DEV_MAILBOX].size);
+    create_unimplemented_device("ipcm", memmap[K230_DEV_MAILBOX].بنیاد,
+                                memmap[K230_DEV_MAILBOX].سائز);
 
-    create_unimplemented_device("iomux", memmap[K230_DEV_IOMUX].base,
-                                memmap[K230_DEV_IOMUX].size);
+    create_unimplemented_device("iomux", memmap[K230_DEV_IOMUX].بنیاد,
+                                memmap[K230_DEV_IOMUX].سائز);
 
-    create_unimplemented_device("timer", memmap[K230_DEV_TIMER].base,
-                                memmap[K230_DEV_TIMER].size);
+    create_unimplemented_device("timer", memmap[K230_DEV_TIMER].بنیاد,
+                                memmap[K230_DEV_TIMER].سائز);
 
-    create_unimplemented_device("wdt0", memmap[K230_DEV_WDT0].base,
-                                memmap[K230_DEV_WDT0].size);
+    create_unimplemented_device("wdt0", memmap[K230_DEV_WDT0].بنیاد,
+                                memmap[K230_DEV_WDT0].سائز);
 
-    create_unimplemented_device("wdt1", memmap[K230_DEV_WDT1].base,
-                                memmap[K230_DEV_WDT1].size);
+    create_unimplemented_device("wdt1", memmap[K230_DEV_WDT1].بنیاد,
+                                memmap[K230_DEV_WDT1].سائز);
 
-    create_unimplemented_device("ts", memmap[K230_DEV_TS].base,
-                                memmap[K230_DEV_TS].size);
+    create_unimplemented_device("ts", memmap[K230_DEV_TS].بنیاد,
+                                memmap[K230_DEV_TS].سائز);
 
-    create_unimplemented_device("hdi", memmap[K230_DEV_HDI].base,
-                                memmap[K230_DEV_HDI].size);
+    create_unimplemented_device("hdi", memmap[K230_DEV_HDI].بنیاد,
+                                memmap[K230_DEV_HDI].سائز);
 
-    create_unimplemented_device("stc", memmap[K230_DEV_STC].base,
-                                memmap[K230_DEV_STC].size);
+    create_unimplemented_device("stc", memmap[K230_DEV_STC].بنیاد,
+                                memmap[K230_DEV_STC].سائز);
 
-    create_unimplemented_device("security", memmap[K230_DEV_SECURITY].base,
-                                memmap[K230_DEV_SECURITY].size);
+    create_unimplemented_device("security", memmap[K230_DEV_SECURITY].بنیاد,
+                                memmap[K230_DEV_SECURITY].سائز);
 
-    create_unimplemented_device("i2c0", memmap[K230_DEV_I2C0].base,
-                                memmap[K230_DEV_I2C0].size);
+    create_unimplemented_device("i2c0", memmap[K230_DEV_I2C0].بنیاد,
+                                memmap[K230_DEV_I2C0].سائز);
 
-    create_unimplemented_device("i2c1", memmap[K230_DEV_I2C1].base,
-                                memmap[K230_DEV_I2C1].size);
+    create_unimplemented_device("i2c1", memmap[K230_DEV_I2C1].بنیاد,
+                                memmap[K230_DEV_I2C1].سائز);
 
-    create_unimplemented_device("i2c2", memmap[K230_DEV_I2C2].base,
-                                memmap[K230_DEV_I2C2].size);
+    create_unimplemented_device("i2c2", memmap[K230_DEV_I2C2].بنیاد,
+                                memmap[K230_DEV_I2C2].سائز);
 
-    create_unimplemented_device("i2c3", memmap[K230_DEV_I2C3].base,
-                                memmap[K230_DEV_I2C3].size);
+    create_unimplemented_device("i2c3", memmap[K230_DEV_I2C3].بنیاد,
+                                memmap[K230_DEV_I2C3].سائز);
 
-    create_unimplemented_device("i2c4", memmap[K230_DEV_I2C4].base,
-                                memmap[K230_DEV_I2C4].size);
+    create_unimplemented_device("i2c4", memmap[K230_DEV_I2C4].بنیاد,
+                                memmap[K230_DEV_I2C4].سائز);
 
-    create_unimplemented_device("pwm", memmap[K230_DEV_PWM].base,
-                                memmap[K230_DEV_PWM].size);
+    create_unimplemented_device("pwm", memmap[K230_DEV_PWM].بنیاد,
+                                memmap[K230_DEV_PWM].سائز);
 
-    create_unimplemented_device("gpio0", memmap[K230_DEV_GPIO0].base,
-                                memmap[K230_DEV_GPIO0].size);
+    create_unimplemented_device("gpio0", memmap[K230_DEV_GPIO0].بنیاد,
+                                memmap[K230_DEV_GPIO0].سائز);
 
-    create_unimplemented_device("gpio1", memmap[K230_DEV_GPIO1].base,
-                                memmap[K230_DEV_GPIO1].size);
+    create_unimplemented_device("gpio1", memmap[K230_DEV_GPIO1].بنیاد,
+                                memmap[K230_DEV_GPIO1].سائز);
 
-    create_unimplemented_device("adc", memmap[K230_DEV_ADC].base,
-                                memmap[K230_DEV_ADC].size);
+    create_unimplemented_device("adc", memmap[K230_DEV_ADC].بنیاد,
+                                memmap[K230_DEV_ADC].سائز);
 
-    create_unimplemented_device("codec", memmap[K230_DEV_CODEC].base,
-                                memmap[K230_DEV_CODEC].size);
+    create_unimplemented_device("codec", memmap[K230_DEV_CODEC].بنیاد,
+                                memmap[K230_DEV_CODEC].سائز);
 
-    create_unimplemented_device("i2s", memmap[K230_DEV_I2S].base,
-                                memmap[K230_DEV_I2S].size);
+    create_unimplemented_device("i2s", memmap[K230_DEV_I2S].بنیاد,
+                                memmap[K230_DEV_I2S].سائز);
 
-    create_unimplemented_device("usb0", memmap[K230_DEV_USB0].base,
-                                memmap[K230_DEV_USB0].size);
+    create_unimplemented_device("usb0", memmap[K230_DEV_USB0].بنیاد,
+                                memmap[K230_DEV_USB0].سائز);
 
-    create_unimplemented_device("usb1", memmap[K230_DEV_USB1].base,
-                                memmap[K230_DEV_USB1].size);
+    create_unimplemented_device("usb1", memmap[K230_DEV_USB1].بنیاد,
+                                memmap[K230_DEV_USB1].سائز);
 
-    create_unimplemented_device("sd0", memmap[K230_DEV_SD0].base,
-                                memmap[K230_DEV_SD0].size);
+    create_unimplemented_device("sd0", memmap[K230_DEV_SD0].بنیاد,
+                                memmap[K230_DEV_SD0].سائز);
 
-    create_unimplemented_device("sd1", memmap[K230_DEV_SD1].base,
-                                memmap[K230_DEV_SD1].size);
+    create_unimplemented_device("sd1", memmap[K230_DEV_SD1].بنیاد,
+                                memmap[K230_DEV_SD1].سائز);
 
-    create_unimplemented_device("qspi0", memmap[K230_DEV_QSPI0].base,
-                                memmap[K230_DEV_QSPI0].size);
+    create_unimplemented_device("qspi0", memmap[K230_DEV_QSPI0].بنیاد,
+                                memmap[K230_DEV_QSPI0].سائز);
 
-    create_unimplemented_device("qspi1", memmap[K230_DEV_QSPI1].base,
-                                memmap[K230_DEV_QSPI1].size);
+    create_unimplemented_device("qspi1", memmap[K230_DEV_QSPI1].بنیاد,
+                                memmap[K230_DEV_QSPI1].سائز);
 
-    create_unimplemented_device("spi", memmap[K230_DEV_SPI].base,
-                                memmap[K230_DEV_SPI].size);
+    create_unimplemented_device("spi", memmap[K230_DEV_SPI].بنیاد,
+                                memmap[K230_DEV_SPI].سائز);
 
-    create_unimplemented_device("hi_sys_cfg", memmap[K230_DEV_HI_SYS_CFG].base,
-                                memmap[K230_DEV_HI_SYS_CFG].size);
+    create_unimplemented_device("hi_sys_cfg", memmap[K230_DEV_HI_SYS_CFG].بنیاد,
+                                memmap[K230_DEV_HI_SYS_CFG].سائز);
 
-    create_unimplemented_device("flash", memmap[K230_DEV_FLASH].base,
-                                memmap[K230_DEV_FLASH].size);
+    create_unimplemented_device("flash", memmap[K230_DEV_FLASH].بنیاد,
+                                memmap[K230_DEV_FLASH].سائز);
 }
 
-static void k230_soc_class_init(ObjectClass *oc, const void *data)
+ساکن خالی k230_soc_class_init(ObjectClass *oc, ثابت خالی *ڈیٹا)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
     dc->realize = k230_soc_realize;
 }
 
-static const TypeInfo k230_soc_type_info = {
+ساکن ثابت TypeInfo k230_soc_type_info = {
     .name = TYPE_RISCV_K230_SOC,
-    .parent = TYPE_DEVICE,
-    .instance_size = sizeof(K230SoCState),
+    .والد = TYPE_DEVICE,
+    .instance_سائز = حجم(K230SoCState),
     .instance_init = k230_soc_init,
     .class_init = k230_soc_class_init,
 };
 
-static void k230_soc_register_types(void)
+ساکن خالی k230_soc_رجسٹر_types(خالی)
 {
-    type_register_static(&k230_soc_type_info);
+    type_رجسٹر_static(&k230_soc_type_info);
 }
 
-type_init(k230_soc_register_types)
+type_init(k230_soc_رجسٹر_types)
 
-static void k230_direct_boot(K230MachineState *s, MachineState *machine)
+ساکن خالی k230_براہ_راست_boot(K230MachineState *s, MachineState *machine)
 {
-    const char *firmware_name = riscv_default_firmware_name(&s->soc.c908_cpu);
+    ثابت حرف *firmware_name = riscv_default_firmware_name(&s->soc.c908_cpu);
     RISCVBootInfo boot_info = {0};
-    hwaddr start_addr = K230_DIRECT_OPENSBI_ADDR;
-    hwaddr firmware_end_addr = 0;
-    hwaddr kernel_entry = 0;
-    int fdt_size = 0;
+    hwaddr آغاز_addr = K230_براہ_راست_OPENSBI_ADDR;
+    hwaddr firmware_انتہا_addr = 0;
+    hwaddr kernel_اندراج = 0;
+    صحیح fdt_سائز = 0;
 
-    if (machine->firmware && !strcmp(machine->firmware, "none")) {
+    اگر (machine->firmware && !strcmp(machine->firmware, "none")) {
         error_report("K230 direct boot requires OpenSBI firmware; omit "
                      "-bios none or pass OpenSBI with -bios");
-        exit(EXIT_FAILURE);
+        باہر_نکلو(EXIT_FAILURE);
     }
 
-    if (!machine->dtb) {
+    اگر (!machine->dtb) {
         error_report("K230 direct boot requires -dtb");
-        exit(EXIT_FAILURE);
+        باہر_نکلو(EXIT_FAILURE);
     }
 
-    machine->fdt = load_device_tree(machine->dtb, &fdt_size);
-    if (!machine->fdt) {
+    machine->fdt = بھرو_device_درخت(machine->dtb, &fdt_سائز);
+    اگر (!machine->fdt) {
         error_report("load_device_tree() failed");
-        exit(EXIT_FAILURE);
+        باہر_نکلو(EXIT_FAILURE);
     }
 
-    qemu_fdt_add_path(machine->fdt, "/chosen");
+    qemu_fdt_جوڑو_راستہ(machine->fdt, "/chosen");
 
     riscv_boot_info_init(&boot_info, &s->soc.c908_cpu);
-    riscv_load_kernel(machine, &boot_info, K230_DIRECT_KERNEL_ADDR, true, NULL);
-    kernel_entry = boot_info.image_low_addr;
+    riscv_بھرو_kernel(machine, &boot_info, K230_براہ_راست_KERNEL_ADDR, true, تہی);
+    kernel_اندراج = boot_info.image_کم_addr;
 
-    riscv_load_fdt(K230_DIRECT_DTB_ADDR, machine->fdt);
+    riscv_بھرو_fdt(K230_براہ_راست_DTB_ADDR, machine->fdt);
 
-    firmware_end_addr = riscv_find_and_load_firmware(machine, &boot_info,
+    firmware_انتہا_addr = riscv_ڈھونڈو_and_بھرو_firmware(machine, &boot_info,
                                                      firmware_name,
-                                                     &start_addr, NULL);
-    if (firmware_end_addr > K230_DIRECT_KERNEL_ADDR) {
+                                                     &آغاز_addr, تہی);
+    اگر (firmware_انتہا_addr > K230_براہ_راست_KERNEL_ADDR) {
         error_report("K230 firmware overlaps kernel address 0x%x",
-                     K230_DIRECT_KERNEL_ADDR);
-        exit(EXIT_FAILURE);
+                     K230_براہ_راست_KERNEL_ADDR);
+        باہر_نکلو(EXIT_FAILURE);
     }
 
-    riscv_setup_rom_reset_vec(machine, &s->soc.c908_cpu, start_addr,
-                              memmap[K230_DEV_BOOTROM].base,
-                              memmap[K230_DEV_BOOTROM].size, kernel_entry,
-                              K230_DIRECT_DTB_ADDR);
+    riscv_تیاری_rom_reset_vec(machine, &s->soc.c908_cpu, آغاز_addr,
+                              memmap[K230_DEV_BOOTROM].بنیاد,
+                              memmap[K230_DEV_BOOTROM].سائز, kernel_اندراج,
+                              K230_براہ_راست_DTB_ADDR);
 }
 
-static void k230_firmware_boot(K230MachineState *s, MachineState *machine)
+ساکن خالی k230_firmware_boot(K230MachineState *s, MachineState *machine)
 {
-    const char *firmware_name = riscv_default_firmware_name(&s->soc.c908_cpu);
-    hwaddr start_addr = memmap[K230_DEV_DDRC].base;
+    ثابت حرف *firmware_name = riscv_default_firmware_name(&s->soc.c908_cpu);
+    hwaddr آغاز_addr = memmap[K230_DEV_DDRC].بنیاد;
     RISCVBootInfo boot_info = {0};
 
-    if (machine->dtb || (machine->kernel_cmdline && *machine->kernel_cmdline)) {
+    اگر (machine->dtb || (machine->kernel_cmdline && *machine->kernel_cmdline)) {
         error_report("K230 firmware boot does not support -dtb or -append");
-        exit(EXIT_FAILURE);
+        باہر_نکلو(EXIT_FAILURE);
     }
 
     riscv_boot_info_init(&boot_info, &s->soc.c908_cpu);
-    riscv_find_and_load_firmware(machine, &boot_info, firmware_name,
-                                 &start_addr, NULL);
+    riscv_ڈھونڈو_and_بھرو_firmware(machine, &boot_info, firmware_name,
+                                 &آغاز_addr, تہی);
 
-    riscv_setup_rom_reset_vec(machine, &s->soc.c908_cpu, start_addr,
-                              memmap[K230_DEV_BOOTROM].base,
-                              memmap[K230_DEV_BOOTROM].size, 0, 0);
+    riscv_تیاری_rom_reset_vec(machine, &s->soc.c908_cpu, آغاز_addr,
+                              memmap[K230_DEV_BOOTROM].بنیاد,
+                              memmap[K230_DEV_BOOTROM].سائز, 0, 0);
 }
 
-static void k230_machine_done(Notifier *notifier, void *data)
+ساکن خالی k230_machine_مکمل(Notifier *notifier, خالی *ڈیٹا)
 {
-    K230MachineState *s = container_of(notifier, K230MachineState,
-                                       machine_done);
+    K230MachineState *s = container_کا(notifier, K230MachineState,
+                                       machine_مکمل);
     MachineState *machine = MACHINE(s);
 
-    if (machine->kernel_filename) {
-        k230_direct_boot(s, machine);
-    } else {
+    اگر (machine->kernel_filename) {
+        k230_براہ_راست_boot(s, machine);
+    } ورنہ {
         k230_firmware_boot(s, machine);
     }
 }
 
-static void k230_machine_init(MachineState *machine)
+ساکن خالی k230_machine_init(MachineState *machine)
 {
     MachineClass *mc = MACHINE_GET_CLASS(machine);
     K230MachineState *s = RISCV_K230_MACHINE(machine);
-    MemoryRegion *sys_mem = get_system_memory();
+    حافظہ_Region *sys_mem = get_system_حافظہ();
 
-    if (machine->ram_size < mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    اگر (machine->ram_سائز < mc->default_ram_سائز) {
+        حرف *sz = سائز_مقصد_str(mc->default_ram_سائز);
         error_report("Invalid RAM size, should be %s", sz);
         g_free(sz);
-        exit(EXIT_FAILURE);
+        باہر_نکلو(EXIT_FAILURE);
     }
 
     /* Initialize SoC */
-    object_initialize_child(OBJECT(machine), "soc", &s->soc,
+    object_initialize_بچہ(OBJECT(machine), "soc", &s->soc,
                             TYPE_RISCV_K230_SOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&s->soc), تہی, &error_fatal);
 
     /* Data Memory */
-    memory_region_add_subregion(sys_mem, memmap[K230_DEV_DDRC].base,
+    حافظہ_region_جوڑو_subregion(sys_mem, memmap[K230_DEV_DDRC].بنیاد,
                                 machine->ram);
 
-    s->machine_done.notify = k230_machine_done;
-    qemu_add_machine_init_done_notifier(&s->machine_done);
+    s->machine_مکمل.notify = k230_machine_مکمل;
+    qemu_جوڑو_machine_init_مکمل_notifier(&s->machine_مکمل);
 }
 
-static void k230_machine_instance_init(Object *obj)
+ساکن خالی k230_machine_instance_init(Object *obj)
 {
 }
 
-static void k230_machine_class_init(ObjectClass *oc, const void *data)
+ساکن خالی k230_machine_class_init(ObjectClass *oc, ثابت خالی *ڈیٹا)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -549,20 +549,20 @@ static void k230_machine_class_init(ObjectClass *oc, const void *data)
     mc->init = k230_machine_init;
     mc->default_cpus = 1;
     mc->default_ram_id = "riscv.K230.ram"; /* DDR */
-    mc->default_ram_size = memmap[K230_DEV_DDRC].size;
+    mc->default_ram_سائز = memmap[K230_DEV_DDRC].سائز;
 }
 
-static const TypeInfo k230_machine_typeinfo = {
+ساکن ثابت TypeInfo k230_machine_typeinfo = {
     .name       = TYPE_RISCV_K230_MACHINE,
-    .parent     = TYPE_MACHINE,
+    .والد     = TYPE_MACHINE,
     .class_init = k230_machine_class_init,
     .instance_init = k230_machine_instance_init,
-    .instance_size = sizeof(K230MachineState),
+    .instance_سائز = حجم(K230MachineState),
 };
 
-static void k230_machine_init_register_types(void)
+ساکن خالی k230_machine_init_رجسٹر_types(خالی)
 {
-    type_register_static(&k230_machine_typeinfo);
+    type_رجسٹر_static(&k230_machine_typeinfo);
 }
 
-type_init(k230_machine_init_register_types)
+type_init(k230_machine_init_رجسٹر_types)

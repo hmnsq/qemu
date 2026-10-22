@@ -16,18 +16,18 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HW_RISCV_IOMMU_HPM_H
-#define HW_RISCV_IOMMU_HPM_H
+#اگر_غیر_تعریف_شدہ HW_RISCV_IOMMU_HPM_H
+#تعریف_کرو HW_RISCV_IOMMU_HPM_H
 
-#include "qom/object.h"
-#include "hw/riscv/riscv-iommu.h"
+#شامل "qom/object.h"
+#شامل "hw/riscv/riscv-iommu.h"
 
 uint64_t riscv_iommu_hpmcycle_read(RISCVIOMMUState *s);
-void riscv_iommu_hpm_incr_ctr(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
-                              unsigned event_id);
-void riscv_iommu_hpm_timer_cb(void *priv);
-void riscv_iommu_process_iocntinh_cy(RISCVIOMMUState *s, bool prev_cy_inh);
-void riscv_iommu_process_hpmcycle_write(RISCVIOMMUState *s);
-void riscv_iommu_process_hpmevt_write(RISCVIOMMUState *s, uint32_t evt_reg);
+خالی riscv_iommu_hpm_incr_ctr(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
+                              غیرعلامتی event_id);
+خالی riscv_iommu_hpm_timer_cb(خالی *priv);
+خالی riscv_iommu_process_iocntinh_cy(RISCVIOMMUState *s, bool پچھلا_cy_inh);
+خالی riscv_iommu_process_hpmcycle_write(RISCVIOMMUState *s);
+خالی riscv_iommu_process_hpmevt_write(RISCVIOMMUState *s, uint32_t evt_reg);
 
-#endif
+#اگر_ختم

@@ -6,89 +6,89 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#include "qemu/osdep.h"
-#include "qemu/units.h"
-#include "qemu/error-report.h"
-#include "qemu/guest-random.h"
-#include "qapi/error.h"
-#include "qapi/qapi-visit-common.h"
-#include "hw/core/boards.h"
-#include "hw/core/platform-bus.h"
-#include "hw/core/loader.h"
-#include "hw/core/sysbus.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/char/serial.h"
-#include "hw/block/flash.h"
-#include "hw/ide/pci.h"
-#include "hw/ide/ahci-pci.h"
-#include "hw/pci/pci.h"
-#include "hw/pci-host/gpex.h"
-#include "hw/core/sysbus-fdt.h"
-#include "hw/riscv/riscv_hart.h"
-#include "hw/riscv/boot.h"
-#include "hw/riscv/device-common.h"
-#include "hw/riscv/fdt-common.h"
-#include "hw/riscv/numa.h"
-#include "hw/riscv/iommu.h"
-#include "hw/riscv/riscv-iommu.h"
-#include "hw/riscv/riscv-iommu-bits.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/riscv_aplic.h"
-#include "hw/intc/riscv_imsic.h"
-#include "chardev/char.h"
-#include "hw/char/serial-mm.h"
-#include "system/device_tree.h"
-#include "system/runstate.h"
-#include "system/system.h"
-#include "system/kvm.h"
-#include "system/qtest.h"
-#include "system/tcg.h"
-#include "kvm/kvm_riscv.h"
-#include "system/tpm.h"
-#include "target/riscv/cpu.h"
-#include "net/net.h"
+#شامل "qemu/osdep.h"
+#شامل "qemu/units.h"
+#شامل "qemu/error-report.h"
+#شامل "qemu/guest-random.h"
+#شامل "qapi/error.h"
+#شامل "qapi/qapi-visit-common.h"
+#شامل "hw/core/boards.h"
+#شامل "hw/core/platform-bus.h"
+#شامل "hw/core/loader.h"
+#شامل "hw/core/sysbus.h"
+#شامل "hw/core/qdev-properties.h"
+#شامل "hw/char/serial.h"
+#شامل "hw/block/flash.h"
+#شامل "hw/ide/pci.h"
+#شامل "hw/ide/ahci-pci.h"
+#شامل "hw/pci/pci.h"
+#شامل "hw/pci-host/gpex.h"
+#شامل "hw/core/sysbus-fdt.h"
+#شامل "hw/riscv/riscv_hart.h"
+#شامل "hw/riscv/boot.h"
+#شامل "hw/riscv/device-common.h"
+#شامل "hw/riscv/fdt-common.h"
+#شامل "hw/riscv/numa.h"
+#شامل "hw/riscv/iommu.h"
+#شامل "hw/riscv/riscv-iommu.h"
+#شامل "hw/riscv/riscv-iommu-bits.h"
+#شامل "hw/intc/riscv_aclint.h"
+#شامل "hw/intc/riscv_aplic.h"
+#شامل "hw/intc/riscv_imsic.h"
+#شامل "chardev/char.h"
+#شامل "hw/char/serial-mm.h"
+#شامل "system/device_tree.h"
+#شامل "system/runstate.h"
+#شامل "system/system.h"
+#شامل "system/kvm.h"
+#شامل "system/qtest.h"
+#شامل "system/tcg.h"
+#شامل "kvm/kvm_riscv.h"
+#شامل "system/tpm.h"
+#شامل "target/riscv/cpu.h"
+#شامل "net/net.h"
 
-#include "aia.h"
+#شامل "aia.h"
 
-#define RVSERVER_ACLINT_TIMEBASE_FREQ          1000000000 /* 1Ghz */
-#define RVSERVER_CPUS_MAX_BITS                 9
-#define RVSERVER_CPUS_MAX                      (1 << RVSERVER_CPUS_MAX_BITS)
-#define RVSERVER_IRQCHIP_NUM_MSIS              255
-#define RVSERVER_IRQCHIP_NUM_SOURCES           96
-#define RVSERVER_IRQCHIP_NUM_PRIO_BITS         3
-#define RVSERVER_IRQCHIP_DEFAULT_AIA_GUESTS    5
-#define RVSERVER_IRQCHIP_MAX_GUESTS_BITS       3
-#define RVSERVER_IRQCHIP_MAX_GUESTS \
-        ((1U << RVSERVER_IRQCHIP_MAX_GUESTS_BITS) - 1U)
-#define RVSERVER_SOCKETS_MAX_BITS              2
-#define RVSERVER_SOCKETS_MAX                   (1 << RVSERVER_SOCKETS_MAX_BITS)
+#تعریف_کرو RVSERVER_ACLINT_TIMEBASE_FREQ          1000000000 /* 1Ghz */
+#تعریف_کرو RVSERVER_CPUS_MAX_بٹ                 9
+#تعریف_کرو RVSERVER_CPUS_MAX                      (1 << RVSERVER_CPUS_MAX_بٹ)
+#تعریف_کرو RVSERVER_IRQCHIP_عدد_MSIS              255
+#تعریف_کرو RVSERVER_IRQCHIP_عدد_SOURCES           96
+#تعریف_کرو RVSERVER_IRQCHIP_عدد_PRIO_بٹ         3
+#تعریف_کرو RVSERVER_IRQCHIP_DEFAULT_AIA_GUESTS    5
+#تعریف_کرو RVSERVER_IRQCHIP_MAX_GUESTS_بٹ       3
+#تعریف_کرو RVSERVER_IRQCHIP_MAX_GUESTS \
+        ((1U << RVSERVER_IRQCHIP_MAX_GUESTS_بٹ) - 1U)
+#تعریف_کرو RVSERVER_SOCKETS_MAX_بٹ              2
+#تعریف_کرو RVSERVER_SOCKETS_MAX                   (1 << RVSERVER_SOCKETS_MAX_بٹ)
 
-#define SYSCON_RESET                           0x1
-#define SYSCON_POWEROFF                        0x2
+#تعریف_کرو SYSCON_RESET                           0x1
+#تعریف_کرو SYSCON_POWEROFF                        0x2
 
-#define RVSERVER_PLATFORM_BUS_NUM_IRQS         8
+#تعریف_کرو RVSERVER_PLATFORM_BUS_عدد_IRQS         8
 
-#define TYPE_RISCV_SERVER_REF_MACHINE MACHINE_TYPE_NAME("riscv-server-ref")
+#تعریف_کرو TYPE_RISCV_SERVER_REF_MACHINE MACHINE_TYPE_NAME("riscv-server-ref")
 OBJECT_DECLARE_SIMPLE_TYPE(RISCVServerRefMachineState, RISCV_SERVER_REF_MACHINE)
 
-struct RISCVServerRefMachineState {
+ساخت RISCVServerRefMachineState {
     /*< private >*/
-    MachineState parent;
+    MachineState والد;
 
     /*< public >*/
-    Notifier machine_done;
+    Notifier machine_مکمل;
     RISCVHartArrayState soc[RVSERVER_SOCKETS_MAX];
     DeviceState *irqchip[RVSERVER_SOCKETS_MAX];
     PFlashCFI01 *flash[2];
 
-    int fdt_size;
-    int aia_guests;
-    const MemMapEntry *memmap;
+    صحیح fdt_سائز;
+    صحیح aia_guests;
+    ثابت Mem_Map_اندراج *memmap;
 
     DeviceState *platform_bus_dev;
 };
 
-enum {
+شمار {
     RVSERVER_MROM,
     RVSERVER_RESET_SYSCON,
     RVSERVER_RTC,
@@ -105,10 +105,10 @@ enum {
     RVSERVER_PCIE_PIO,
     RVSERVER_PLATFORM_BUS,
     RVSERVER_PCIE_ECAM,
-    RVSERVER_PCIE_MMIO_HIGH
+    RVSERVER_PCIE_MMIO_بلند
 };
 
-enum {
+شمار {
     RVSERVER_UART0_IRQ = 10,
     RVSERVER_RTC_IRQ   = 11,
     RVSERVER_PCIE_IRQ  = 32, /* 32 to 35 */
@@ -126,19 +126,19 @@ enum {
  * server reference machine physical address space.
  */
 
-#define RVSERVER_IMSIC_GROUP_MAX_SIZE      (1U << IMSIC_MMIO_GROUP_MIN_SHIFT)
-#if RVSERVER_IMSIC_GROUP_MAX_SIZE < \
-    IMSIC_GROUP_SIZE(RVSERVER_CPUS_MAX_BITS, RVSERVER_IRQCHIP_MAX_GUESTS_BITS)
-#error "Can't accommodate single IMSIC group in address space"
-#endif
+#تعریف_کرو RVSERVER_IMSIC_گروہ_MAX_سائز      (1U << IMSIC_MMIO_گروہ_MIN_سرکاؤ)
+#اگر RVSERVER_IMSIC_گروہ_MAX_سائز < \
+    IMSIC_گروہ_سائز(RVSERVER_CPUS_MAX_بٹ, RVSERVER_IRQCHIP_MAX_GUESTS_بٹ)
+#غلطی "Can't accommodate single IMSIC group in address space"
+#اگر_ختم
 
-#define RVSERVER_IMSIC_MAX_SIZE \
-    (RVSERVER_SOCKETS_MAX * RVSERVER_IMSIC_GROUP_MAX_SIZE)
-#if 0x4000000 < RVSERVER_IMSIC_MAX_SIZE
-#error "Can't accommodate all IMSIC groups in address space"
-#endif
+#تعریف_کرو RVSERVER_IMSIC_MAX_سائز \
+    (RVSERVER_SOCKETS_MAX * RVSERVER_IMSIC_گروہ_MAX_سائز)
+#اگر 0x4000000 < RVSERVER_IMSIC_MAX_سائز
+#غلطی "Can't accommodate all IMSIC groups in address space"
+#اگر_ختم
 
-static const MemMapEntry rvserver_ref_memmap[] = {
+ساکن ثابت Mem_Map_اندراج rvserver_ref_memmap[] = {
     [RVSERVER_MROM] =           {     0x1000,        0xf000 },
     [RVSERVER_RESET_SYSCON] =   {   0x100000,        0x1000 },
     [RVSERVER_RTC] =            {   0x101000,        0x1000 },
@@ -146,58 +146,58 @@ static const MemMapEntry rvserver_ref_memmap[] = {
     [RVSERVER_ACLINT] =         {  0x2000000,       0x10000 },
     [RVSERVER_PCIE_PIO] =       {  0x3000000,       0x10000 },
     [RVSERVER_PLATFORM_BUS] =   {  0x4000000,     0x2000000 },
-    [RVSERVER_APLIC_M] =        {  0xc000000, APLIC_SIZE(RVSERVER_CPUS_MAX) },
-    [RVSERVER_APLIC_S] =        {  0xd000000, APLIC_SIZE(RVSERVER_CPUS_MAX) },
+    [RVSERVER_APLIC_M] =        {  0xc000000, APLIC_سائز(RVSERVER_CPUS_MAX) },
+    [RVSERVER_APLIC_S] =        {  0xd000000, APLIC_سائز(RVSERVER_CPUS_MAX) },
     [RVSERVER_UART0] =          { 0x10000000,         0x100 },
     [RVSERVER_FLASH] =          { 0x20000000,     0x4000000 },
-    [RVSERVER_IMSIC_M] =        { 0x24000000, RVSERVER_IMSIC_MAX_SIZE },
-    [RVSERVER_IMSIC_S] =        { 0x28000000, RVSERVER_IMSIC_MAX_SIZE },
+    [RVSERVER_IMSIC_M] =        { 0x24000000, RVSERVER_IMSIC_MAX_سائز },
+    [RVSERVER_IMSIC_S] =        { 0x28000000, RVSERVER_IMSIC_MAX_سائز },
     [RVSERVER_PCIE_ECAM] =      { 0x30000000,    0x10000000 },
     [RVSERVER_PCIE_MMIO] =      { 0x40000000,    0x40000000 },
     [RVSERVER_DRAM] =           { 0x80000000, 0xff80000000ull },
-    [RVSERVER_PCIE_MMIO_HIGH] = { 0x10000000000ull, 0x10000000000ull },
+    [RVSERVER_PCIE_MMIO_بلند] = { 0x10000000000ull, 0x10000000000ull },
 };
 
-#define RVSERVER_FLASH_SECTOR_SIZE (256 * KiB)
+#تعریف_کرو RVSERVER_FLASH_SECTOR_سائز (256 * KiB)
 
-static void rvserver_flash_maps(RISCVServerRefMachineState *s,
-                                MemoryRegion *sysmem)
+ساکن خالی rvserver_flash_maps(RISCVServerRefMachineState *s,
+                                حافظہ_Region *sysmem)
 {
-    hwaddr flashsize = rvserver_ref_memmap[RVSERVER_FLASH].size / 2;
-    hwaddr flashbase = rvserver_ref_memmap[RVSERVER_FLASH].base;
+    hwaddr flashsize = rvserver_ref_memmap[RVSERVER_FLASH].سائز / 2;
+    hwaddr flashbase = rvserver_ref_memmap[RVSERVER_FLASH].بنیاد;
 
     riscv_init_flash_map(s->flash[0], flashbase, flashsize,
-                         sysmem, RVSERVER_FLASH_SECTOR_SIZE);
+                         sysmem, RVSERVER_FLASH_SECTOR_سائز);
     riscv_init_flash_map(s->flash[1], flashbase + flashsize, flashsize,
-                         sysmem, RVSERVER_FLASH_SECTOR_SIZE);
+                         sysmem, RVSERVER_FLASH_SECTOR_سائز);
 }
 
-static void create_fdt_pmu(RISCVServerRefMachineState *s)
+ساکن خالی create_fdt_pmu(RISCVServerRefMachineState *s)
 {
-    g_autofree char *pmu_name = g_strdup_printf("/pmu");
+    g_autofree حرف *pmu_name = g_strdup_printf("/pmu");
     MachineState *ms = MACHINE(s);
     RISCVCPU *hart = &s->soc[0].harts[0];
 
-    qemu_fdt_add_subnode(ms->fdt, pmu_name);
+    qemu_fdt_جوڑو_subnode(ms->fdt, pmu_name);
     qemu_fdt_setprop_string(ms->fdt, pmu_name, "compatible", "riscv,pmu");
-    riscv_pmu_generate_fdt_node(ms->fdt, hart->pmu_avail_ctrs, pmu_name);
+    riscv_pmu_generate_fdt_گرہ(ms->fdt, hart->pmu_avail_ctrs, pmu_name);
 }
 
-static void create_fdt_sockets(RISCVServerRefMachineState *s,
-                               const MemMapEntry *memmap,
+ساکن خالی create_fdt_sockets(RISCVServerRefMachineState *s,
+                               ثابت Mem_Map_اندراج *memmap,
                                uint32_t *phandle,
                                uint32_t *irq_mmio_phandle,
                                uint32_t *irq_pcie_phandle,
                                uint32_t *msi_pcie_phandle)
 {
-    int socket, phandle_pos;
+    صحیح socket, phandle_pos;
     MachineState *ms = MACHINE(s);
     uint32_t msi_m_phandle = 0, msi_s_phandle = 0;
     uint32_t xplic_phandles[MAX_NODES];
-    g_autofree uint32_t *intc_phandles = NULL;
-    int socket_count = riscv_socket_count(ms);
+    g_autofree uint32_t *intc_phandles = تہی;
+    صحیح socket_گنتی = riscv_socket_گنتی(ms);
     bool numa_enabled = riscv_numa_enabled(ms);
-    bool is_32_bit = riscv_is_32bit(&s->soc[0]);
+    bool is_32_ثنائی_ہندسہ = riscv_is_32bit(&s->soc[0]);
     IMSICFdtProps imsic_fdt_props;
     APLICFdtProps aplic_fdt_props;
     ACLINTFdtProps aclint_props;
@@ -213,35 +213,35 @@ static void create_fdt_sockets(RISCVServerRefMachineState *s,
     aclint_props.numa_enabled = numa_enabled;
 
     phandle_pos = ms->smp.cpus;
-    for (socket = (socket_count - 1); socket >= 0; socket--) {
-        hwaddr memaddr = s->memmap[RVSERVER_DRAM].base +
-                         riscv_socket_mem_offset(ms, socket);
-        uint64_t memsize = riscv_socket_mem_size(ms, socket);
+    برائے (socket = (socket_گنتی - 1); socket >= 0; socket--) {
+        hwaddr memaddr = s->memmap[RVSERVER_DRAM].بنیاد +
+                         riscv_socket_mem_انحراف(ms, socket);
+        uint64_t memsize = riscv_socket_mem_سائز(ms, socket);
 
-        phandle_pos -= s->soc[socket].num_harts;
+        phandle_pos -= s->soc[socket].عدد_harts;
 
         riscv_create_fdt_socket_cpus(ms->fdt, (&s->soc[socket])->harts, socket,
-                                     s->soc[socket].num_harts,
-                                     s->soc[socket].hartid_base,
+                                     s->soc[socket].عدد_harts,
+                                     s->soc[socket].hartid_بنیاد,
                                      phandle, &intc_phandles[phandle_pos],
-                                     numa_enabled, is_32_bit);
+                                     numa_enabled, is_32_ثنائی_ہندسہ);
 
-        riscv_create_fdt_socket_memory(ms->fdt, memaddr, memsize,
+        riscv_create_fdt_socket_حافظہ(ms->fdt, memaddr, memsize,
                                        socket, riscv_numa_enabled(ms));
 
         aclint_props.socket = socket;
-        aclint_props.num_harts = s->soc[socket].num_harts;
+        aclint_props.عدد_harts = s->soc[socket].عدد_harts;
         riscv_create_fdt_socket_aclint(ms->fdt, &aclint_props,
                                        &intc_phandles[phandle_pos]);
     }
 
     imsic_fdt_props.soc = &s->soc;
-    imsic_fdt_props.socket_count = socket_count;
+    imsic_fdt_props.socket_گنتی = socket_گنتی;
     imsic_fdt_props.smp_cpus = ms->smp.cpus;
-    imsic_fdt_props.imsic_m_base = memmap[RVSERVER_IMSIC_M].base;
-    imsic_fdt_props.imsic_s_base = memmap[RVSERVER_IMSIC_S].base;
-    imsic_fdt_props.imsic_group_max_size = RVSERVER_IMSIC_GROUP_MAX_SIZE;
-    imsic_fdt_props.irqchip_num_msis = RVSERVER_IRQCHIP_NUM_MSIS;
+    imsic_fdt_props.imsic_m_بنیاد = memmap[RVSERVER_IMSIC_M].بنیاد;
+    imsic_fdt_props.imsic_s_بنیاد = memmap[RVSERVER_IMSIC_S].بنیاد;
+    imsic_fdt_props.imsic_گروہ_max_سائز = RVSERVER_IMSIC_گروہ_MAX_سائز;
+    imsic_fdt_props.irqchip_عدد_msis = RVSERVER_IRQCHIP_عدد_MSIS;
     imsic_fdt_props.aia_guests = s->aia_guests;
 
     riscv_create_fdt_imsic(ms->fdt, &imsic_fdt_props, phandle, intc_phandles,
@@ -249,53 +249,53 @@ static void create_fdt_sockets(RISCVServerRefMachineState *s,
     *msi_pcie_phandle = msi_s_phandle;
 
     aplic_fdt_props.aplic_m = !kvm_enabled()
-                              ? &memmap[RVSERVER_APLIC_M] : NULL;
+                              ? &memmap[RVSERVER_APLIC_M] : تہی;
     aplic_fdt_props.aplic_s = &memmap[RVSERVER_APLIC_S];
     aplic_fdt_props.platform_bus = &memmap[RVSERVER_PLATFORM_BUS];
     aplic_fdt_props.platform_bus_irq = RVSERVER_PLATFORM_BUS_IRQ;
-    aplic_fdt_props.num_harts = ms->smp.cpus;
+    aplic_fdt_props.عدد_harts = ms->smp.cpus;
     aplic_fdt_props.numa_enabled = numa_enabled;
-    aplic_fdt_props.irqchip_num_sources = RVSERVER_IRQCHIP_NUM_SOURCES;
+    aplic_fdt_props.irqchip_عدد_sources = RVSERVER_IRQCHIP_عدد_SOURCES;
     aplic_fdt_props.aia_type = AIA_TYPE_APLIC_IMSIC;
 
     phandle_pos = ms->smp.cpus;
-    for (socket = (socket_count - 1); socket >= 0; socket--) {
-        phandle_pos -= s->soc[socket].num_harts;
+    برائے (socket = (socket_گنتی - 1); socket >= 0; socket--) {
+        phandle_pos -= s->soc[socket].عدد_harts;
 
         aplic_fdt_props.socket = socket;
-        aplic_fdt_props.num_harts = s->soc[socket].num_harts;
+        aplic_fdt_props.عدد_harts = s->soc[socket].عدد_harts;
         riscv_create_fdt_socket_aplic(ms->fdt, &aplic_fdt_props,
                                       msi_m_phandle, msi_s_phandle, phandle,
                                       &intc_phandles[phandle_pos],
                                       xplic_phandles);
     }
 
-    for (socket = 0; socket < socket_count; socket++) {
-        if (socket == 0) {
+    برائے (socket = 0; socket < socket_گنتی; socket++) {
+        اگر (socket == 0) {
             *irq_mmio_phandle = xplic_phandles[socket];
             *irq_pcie_phandle = xplic_phandles[socket];
         }
-        if (socket == 1) {
+        اگر (socket == 1) {
             *irq_pcie_phandle = xplic_phandles[socket];
         }
     }
 
-    riscv_socket_fdt_write_distance_matrix(ms);
+    riscv_socket_fdt_write_فاصلہ_میٹرکس(ms);
 }
 
-static void finalize_fdt(RISCVServerRefMachineState *s)
+ساکن خالی finalize_fdt(RISCVServerRefMachineState *s)
 {
     uint32_t phandle = 1, irq_mmio_phandle = 1, msi_pcie_phandle = 1;
     uint32_t irq_pcie_phandle = 1, iommu_sys_phandle;
-    g_autofree char *name = NULL;
+    g_autofree حرف *name = تہی;
     MachineState *ms = MACHINE(s);
 
     create_fdt_sockets(s, rvserver_ref_memmap, &phandle, &irq_mmio_phandle,
                        &irq_pcie_phandle, &msi_pcie_phandle);
 
     iommu_sys_phandle = riscv_create_fdt_riscv_iommu_sys(ms->fdt,
-                                         s->memmap[RVSERVER_IOMMU_SYS].base,
-                                         s->memmap[RVSERVER_IOMMU_SYS].size,
+                                         s->memmap[RVSERVER_IOMMU_SYS].بنیاد,
+                                         s->memmap[RVSERVER_IOMMU_SYS].سائز,
                                          &phandle, irq_mmio_phandle,
                                          msi_pcie_phandle, IOMMU_SYS_IRQ);
 
@@ -303,19 +303,19 @@ static void finalize_fdt(RISCVServerRefMachineState *s)
                           &s->memmap[RVSERVER_PCIE_ECAM],
                           &s->memmap[RVSERVER_PCIE_PIO],
                           &s->memmap[RVSERVER_PCIE_MMIO],
-                          &s->memmap[RVSERVER_PCIE_MMIO_HIGH],
+                          &s->memmap[RVSERVER_PCIE_MMIO_بلند],
                           irq_pcie_phandle, msi_pcie_phandle,
                           iommu_sys_phandle, RVSERVER_PCIE_IRQ);
 
     riscv_create_fdt_syscon(ms->fdt, &phandle,
-                            rvserver_ref_memmap[RVSERVER_RESET_SYSCON].base,
-                            rvserver_ref_memmap[RVSERVER_RESET_SYSCON].size,
+                            rvserver_ref_memmap[RVSERVER_RESET_SYSCON].بنیاد,
+                            rvserver_ref_memmap[RVSERVER_RESET_SYSCON].سائز,
                             SYSCON_RESET, SYSCON_POWEROFF, false);
 
     riscv_create_fdt_uart(ms->fdt, &rvserver_ref_memmap[RVSERVER_UART0],
                           RVSERVER_UART0_IRQ, AIA_TYPE_APLIC_IMSIC,
                           irq_mmio_phandle);
-    name = riscv_fdt_get_uart_nodename(rvserver_ref_memmap[RVSERVER_UART0].base);
+    name = riscv_fdt_get_uart_nodename(rvserver_ref_memmap[RVSERVER_UART0].بنیاد);
     qemu_fdt_setprop_string(ms->fdt, "/chosen", "stdout-path", name);
     qemu_fdt_setprop_string(ms->fdt, "/aliases", "serial0", name);
 
@@ -324,16 +324,16 @@ static void finalize_fdt(RISCVServerRefMachineState *s)
                          irq_mmio_phandle);
 }
 
-static void create_fdt(RISCVServerRefMachineState *s,
-                       const MemMapEntry *memmap)
+ساکن خالی create_fdt(RISCVServerRefMachineState *s,
+                       ثابت Mem_Map_اندراج *memmap)
 {
     MachineState *ms = MACHINE(s);
-    uint8_t rng_seed[32];
-    g_autofree char *name = NULL;
+    uint8_t rng_بیج[32];
+    g_autofree حرف *name = تہی;
 
-    ms->fdt = riscv_create_board_device_tree(MACHINE_GET_CLASS(s)->desc,
+    ms->fdt = riscv_create_board_device_درخت(MACHINE_GET_CLASS(s)->desc,
                                              "qemu,riscv-server-ref",
-                                             &s->fdt_size);
+                                             &s->fdt_سائز);
 
     /*
      * This versioning scheme is for informing platform fw only. It is neither:
@@ -356,145 +356,145 @@ static void create_fdt(RISCVServerRefMachineState *s,
      * that might happen before finalize_fdt().
      */
     name = g_strdup_printf("/soc/pci@%"HWADDR_PRIx,
-                           s->memmap[RVSERVER_PCIE_ECAM].base);
-    qemu_fdt_add_subnode(ms->fdt, name);
+                           s->memmap[RVSERVER_PCIE_ECAM].بنیاد);
+    qemu_fdt_جوڑو_subnode(ms->fdt, name);
 
-    qemu_fdt_add_subnode(ms->fdt, "/chosen");
-    qemu_fdt_add_subnode(ms->fdt, "/aliases");
+    qemu_fdt_جوڑو_subnode(ms->fdt, "/chosen");
+    qemu_fdt_جوڑو_subnode(ms->fdt, "/aliases");
 
     /* Pass seed to RNG */
-    qemu_guest_getrandom_nofail(rng_seed, sizeof(rng_seed));
+    qemu_guest_getrandom_nofail(rng_بیج, حجم(rng_بیج));
     qemu_fdt_setprop(ms->fdt, "/chosen", "rng-seed",
-                     rng_seed, sizeof(rng_seed));
+                     rng_بیج, حجم(rng_بیج));
 
-    riscv_create_fdt_flash(ms->fdt, rvserver_ref_memmap[RVSERVER_FLASH].base,
-                           rvserver_ref_memmap[RVSERVER_FLASH].size / 2);
+    riscv_create_fdt_flash(ms->fdt, rvserver_ref_memmap[RVSERVER_FLASH].بنیاد,
+                           rvserver_ref_memmap[RVSERVER_FLASH].سائز / 2);
     create_fdt_pmu(s);
 
 }
 
-static uint64_t rvserver_reset_syscon_read(void *opaque, hwaddr addr,
-                                           unsigned size)
+ساکن uint64_t rvserver_reset_syscon_read(خالی *opaque, hwaddr addr,
+                                           غیرعلامتی سائز)
 {
-    return 0;
+    واپس 0;
 }
 
-static void rvserver_reset_syscon_write(void *opaque, hwaddr addr,
-                                        uint64_t val64, unsigned int size)
+ساکن خالی rvserver_reset_syscon_write(خالی *opaque, hwaddr addr,
+                                        uint64_t val64, غیرعلامتی صحیح سائز)
 {
-    switch (val64) {
-    case SYSCON_POWEROFF:
+    انتخاب (val64) {
+    حالت SYSCON_POWEROFF:
         qemu_system_shutdown_request(SHUTDOWN_CAUSE_GUEST_SHUTDOWN);
-        return;
-    case SYSCON_RESET:
+        واپس;
+    حالت SYSCON_RESET:
         qemu_system_reset_request(SHUTDOWN_CAUSE_GUEST_RESET);
-        return;
-    default:
-        break;
+        واپس;
+    طےشدہ:
+        توڑو;
     }
 }
 
-static const MemoryRegionOps rvserver_reset_syscon_ops = {
-    .read = rvserver_reset_syscon_read,
-    .write = rvserver_reset_syscon_write,
+ساکن ثابت حافظہ_Region_Ops rvserver_reset_syscon_ops = {
+    .اقرأ = rvserver_reset_syscon_read,
+    .اكتب = rvserver_reset_syscon_write,
     .endianness = DEVICE_LITTLE_ENDIAN
 };
 
-static void rvserver_ref_machine_done(Notifier *notifier, void *data)
+ساکن خالی rvserver_ref_machine_مکمل(Notifier *notifier, خالی *ڈیٹا)
 {
-    RISCVServerRefMachineState *s = container_of(
-        notifier, RISCVServerRefMachineState, machine_done);
-    const MemMapEntry *memmap = rvserver_ref_memmap;
+    RISCVServerRefMachineState *s = container_کا(
+        notifier, RISCVServerRefMachineState, machine_مکمل);
+    ثابت Mem_Map_اندراج *memmap = rvserver_ref_memmap;
     MachineState *machine = MACHINE(s);
-    hwaddr start_addr = memmap[RVSERVER_DRAM].base;
-    target_ulong firmware_end_addr, kernel_start_addr;
-    const char *firmware_name = riscv_default_firmware_name(&s->soc[0]);
-    uint64_t fdt_load_addr;
-    uint64_t kernel_entry = 0;
-    BlockBackend *pflash_blk0;
+    hwaddr آغاز_addr = memmap[RVSERVER_DRAM].بنیاد;
+    ہدف_ulong firmware_انتہا_addr, kernel_آغاز_addr;
+    ثابت حرف *firmware_name = riscv_default_firmware_name(&s->soc[0]);
+    uint64_t fdt_بھرو_addr;
+    uint64_t kernel_اندراج = 0;
+    بلاک_Backend *pflash_blk0;
     RISCVBootInfo boot_info;
 
     /*
      * An user provided dtb must include everything, including
      * dynamic sysbus devices. Our FDT needs to be finalized.
      */
-    if (machine->dtb == NULL) {
+    اگر (machine->dtb == تہی) {
         finalize_fdt(s);
     }
 
     riscv_boot_info_init(&boot_info, &s->soc[0]);
 
-    firmware_end_addr = riscv_find_and_load_firmware(machine, &boot_info,
+    firmware_انتہا_addr = riscv_ڈھونڈو_and_بھرو_firmware(machine, &boot_info,
                                                      firmware_name,
-                                                     &start_addr, NULL);
+                                                     &آغاز_addr, تہی);
 
     pflash_blk0 = pflash_cfi01_get_blk(s->flash[0]);
-    if (pflash_blk0) {
-        if (machine->firmware && !strcmp(machine->firmware, "none")) {
+    اگر (pflash_blk0) {
+        اگر (machine->firmware && !strcmp(machine->firmware, "none")) {
             /*
              * Pflash was supplied but bios is none and not KVM guest,
              * let's overwrite the address we jump to after reset to
              * the base of the flash.
              */
-            start_addr = rvserver_ref_memmap[RVSERVER_FLASH].base;
-        } else {
+            آغاز_addr = rvserver_ref_memmap[RVSERVER_FLASH].بنیاد;
+        } ورنہ {
             /*
              * Pflash was supplied but either KVM guest or bios is not none.
              * In this case, base of the flash would contain S-mode payload.
              */
-            riscv_setup_firmware_boot(machine);
-            kernel_entry = rvserver_ref_memmap[RVSERVER_FLASH].base;
+            riscv_تیاری_firmware_boot(machine);
+            kernel_اندراج = rvserver_ref_memmap[RVSERVER_FLASH].بنیاد;
         }
     }
 
-    if (machine->kernel_filename && !kernel_entry) {
-        kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
-                                                         firmware_end_addr);
-        riscv_load_kernel(machine, &boot_info, kernel_start_addr, true, NULL);
-        kernel_entry = boot_info.image_low_addr;
+    اگر (machine->kernel_filename && !kernel_اندراج) {
+        kernel_آغاز_addr = riscv_calc_kernel_آغاز_addr(&boot_info,
+                                                         firmware_انتہا_addr);
+        riscv_بھرو_kernel(machine, &boot_info, kernel_آغاز_addr, true, تہی);
+        kernel_اندراج = boot_info.image_کم_addr;
     }
 
-    fdt_load_addr = riscv_compute_fdt_addr(memmap[RVSERVER_DRAM].base,
-                                           memmap[RVSERVER_DRAM].size,
+    fdt_بھرو_addr = riscv_compute_fdt_addr(memmap[RVSERVER_DRAM].بنیاد,
+                                           memmap[RVSERVER_DRAM].سائز,
                                            machine, &boot_info);
 
-    riscv_load_fdt(fdt_load_addr, machine->fdt);
+    riscv_بھرو_fdt(fdt_بھرو_addr, machine->fdt);
 
     /* load the reset vector */
-    riscv_setup_rom_reset_vec(machine, &s->soc[0], start_addr,
-                              rvserver_ref_memmap[RVSERVER_MROM].base,
-                              rvserver_ref_memmap[RVSERVER_MROM].size,
-                              kernel_entry,
-                              fdt_load_addr);
+    riscv_تیاری_rom_reset_vec(machine, &s->soc[0], آغاز_addr,
+                              rvserver_ref_memmap[RVSERVER_MROM].بنیاد,
+                              rvserver_ref_memmap[RVSERVER_MROM].سائز,
+                              kernel_اندراج,
+                              fdt_بھرو_addr);
 }
 
-static bool rvserver_aclint_allowed(void)
+ساکن bool rvserver_aclint_allowed(خالی)
 {
-    return tcg_enabled() || qtest_enabled();
+    واپس tcg_enabled() || qtest_enabled();
 }
 
-static void rvserver_ref_machine_init(MachineState *machine)
+ساکن خالی rvserver_ref_machine_init(MachineState *machine)
 {
-    const MemMapEntry *memmap = rvserver_ref_memmap;
+    ثابت Mem_Map_اندراج *memmap = rvserver_ref_memmap;
     RISCVServerRefMachineState *s = RISCV_SERVER_REF_MACHINE(machine);
-    MemoryRegion *system_memory = get_system_memory();
-    MemoryRegion *mask_rom = g_new(MemoryRegion, 1);
-    MemoryRegion *reset_syscon_io = g_new(MemoryRegion, 1);
+    حافظہ_Region *system_حافظہ = get_system_حافظہ();
+    حافظہ_Region *نقاب_rom = g_new(حافظہ_Region, 1);
+    حافظہ_Region *reset_syscon_io = g_new(حافظہ_Region, 1);
     DeviceState *mmio_irqchip, *pcie_irqchip;
-    int i, base_hartid, hart_count;
-    int socket_count = riscv_socket_count(machine);
-    int imsic_bits;
+    صحیح i, بنیاد_hartid, hart_گنتی;
+    صحیح socket_گنتی = riscv_socket_گنتی(machine);
+    صحیح imsic_بٹ;
 
     /* Check socket count limit */
-    if (RVSERVER_SOCKETS_MAX < socket_count) {
+    اگر (RVSERVER_SOCKETS_MAX < socket_گنتی) {
         error_report("number of sockets/nodes should be less than %d",
             RVSERVER_SOCKETS_MAX);
-        exit(1);
+        باہر_نکلو(1);
     }
 
-    if (!rvserver_aclint_allowed()) {
+    اگر (!rvserver_aclint_allowed()) {
         error_report("'aclint' is only available with TCG acceleration");
-        exit(1);
+        باہر_نکلو(1);
     }
 
     s->memmap = rvserver_ref_memmap;
@@ -511,217 +511,217 @@ static void rvserver_ref_machine_init(MachineState *machine)
      * qtest just want to inspect realized devices using QOM and
      * HMP, so do not set aia_guests in that case.
      */
-    if (qtest_enabled()) {
+    اگر (qtest_enabled()) {
         s->aia_guests = 0;
     }
 
-    imsic_bits = imsic_num_bits(s->aia_guests + 1);
+    imsic_بٹ = imsic_عدد_بٹ(s->aia_guests + 1);
 
     /* Initialize sockets */
-    mmio_irqchip = pcie_irqchip = NULL;
-    for (i = 0; i < socket_count; i++) {
-        g_autofree char *soc_name = g_strdup_printf("soc%d", i);
+    mmio_irqchip = pcie_irqchip = تہی;
+    برائے (i = 0; i < socket_گنتی; i++) {
+        g_autofree حرف *soc_name = g_strdup_printf("soc%d", i);
 
-        if (!riscv_socket_check_hartids(machine, i)) {
+        اگر (!riscv_socket_check_hartids(machine, i)) {
             error_report("discontinuous hartids in socket%d", i);
-            exit(1);
+            باہر_نکلو(1);
         }
 
-        base_hartid = riscv_socket_first_hartid(machine, i);
-        if (base_hartid < 0) {
+        بنیاد_hartid = riscv_socket_پہلا_hartid(machine, i);
+        اگر (بنیاد_hartid < 0) {
             error_report("can't find hartid base for socket%d", i);
-            exit(1);
+            باہر_نکلو(1);
         }
 
-        hart_count = riscv_socket_hart_count(machine, i);
-        if (hart_count < 0) {
+        hart_گنتی = riscv_socket_hart_گنتی(machine, i);
+        اگر (hart_گنتی < 0) {
             error_report("can't find hart count for socket%d", i);
-            exit(1);
+            باہر_نکلو(1);
         }
 
-        object_initialize_child(OBJECT(machine), soc_name, &s->soc[i],
+        object_initialize_بچہ(OBJECT(machine), soc_name, &s->soc[i],
                                 TYPE_RISCV_HART_ARRAY);
-        object_property_set_str(OBJECT(&s->soc[i]), "cpu-type",
+        object_property_سیٹ_str(OBJECT(&s->soc[i]), "cpu-type",
                                 machine->cpu_type, &error_abort);
-        object_property_set_int(OBJECT(&s->soc[i]), "hartid-base",
-                                base_hartid, &error_abort);
-        object_property_set_int(OBJECT(&s->soc[i]), "num-harts",
-                                hart_count, &error_abort);
+        object_property_سیٹ_int(OBJECT(&s->soc[i]), "hartid-base",
+                                بنیاد_hartid, &error_abort);
+        object_property_سیٹ_int(OBJECT(&s->soc[i]), "num-harts",
+                                hart_گنتی, &error_abort);
         sysbus_realize(SYS_BUS_DEVICE(&s->soc[i]), &error_fatal);
 
         /* Per-socket ACLINT MTIMER */
-        riscv_aclint_mtimer_create(system_memory,
-                memmap[RVSERVER_ACLINT].base + i * RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                base_hartid, hart_count,
+        riscv_aclint_mtimer_create(system_حافظہ,
+                memmap[RVSERVER_ACLINT].بنیاد + i * RISCV_ACLINT_DEFAULT_MTIMER_سائز,
+                RISCV_ACLINT_DEFAULT_MTIMER_سائز,
+                بنیاد_hartid, hart_گنتی,
                 RISCV_ACLINT_DEFAULT_MTIMECMP,
                 RISCV_ACLINT_DEFAULT_MTIME,
                 RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
 
         /* Per-socket interrupt controller */
-        s->irqchip[i] = riscv_create_aia(system_memory, true, s->aia_guests,
-                                         IMSIC_HART_SIZE(0),
-                                         IMSIC_HART_SIZE(imsic_bits),
-                                         RVSERVER_IRQCHIP_NUM_SOURCES,
+        s->irqchip[i] = riscv_create_aia(system_حافظہ, true, s->aia_guests,
+                                         IMSIC_HART_سائز(0),
+                                         IMSIC_HART_سائز(imsic_بٹ),
+                                         RVSERVER_IRQCHIP_عدد_SOURCES,
                                          &s->memmap[RVSERVER_APLIC_M],
                                          &s->memmap[RVSERVER_APLIC_S],
                                          &s->memmap[RVSERVER_IMSIC_M],
                                          &s->memmap[RVSERVER_IMSIC_S],
-                                         i, base_hartid, hart_count,
-                                         RVSERVER_IRQCHIP_NUM_MSIS,
-                                         RVSERVER_IRQCHIP_NUM_PRIO_BITS);
+                                         i, بنیاد_hartid, hart_گنتی,
+                                         RVSERVER_IRQCHIP_عدد_MSIS,
+                                         RVSERVER_IRQCHIP_عدد_PRIO_بٹ);
 
         /* Try to use different IRQCHIP instance based device type */
-        if (i == 0) {
+        اگر (i == 0) {
             mmio_irqchip = s->irqchip[i];
             pcie_irqchip = s->irqchip[i];
         }
-        if (i == 1) {
+        اگر (i == 1) {
             pcie_irqchip = s->irqchip[i];
         }
     }
 
     /* register system main memory (actual RAM) */
-    memory_region_add_subregion(system_memory, memmap[RVSERVER_DRAM].base,
+    حافظہ_region_جوڑو_subregion(system_حافظہ, memmap[RVSERVER_DRAM].بنیاد,
         machine->ram);
 
     /* boot rom */
-    memory_region_init_rom(mask_rom, NULL, "riscv_rvserver_ref_board.mrom",
-                           memmap[RVSERVER_MROM].size, &error_fatal);
-    memory_region_add_subregion(system_memory, memmap[RVSERVER_MROM].base,
-                                mask_rom);
+    حافظہ_region_init_rom(نقاب_rom, تہی, "riscv_rvserver_ref_board.mrom",
+                           memmap[RVSERVER_MROM].سائز, &error_fatal);
+    حافظہ_region_جوڑو_subregion(system_حافظہ, memmap[RVSERVER_MROM].بنیاد,
+                                نقاب_rom);
 
-    memory_region_init_io(reset_syscon_io, NULL, &rvserver_reset_syscon_ops,
-                          NULL, "reset_syscon_io",
-                          memmap[RVSERVER_RESET_SYSCON].size);
-    memory_region_add_subregion(system_memory,
-                                memmap[RVSERVER_RESET_SYSCON].base,
+    حافظہ_region_init_io(reset_syscon_io, تہی, &rvserver_reset_syscon_ops,
+                          تہی, "reset_syscon_io",
+                          memmap[RVSERVER_RESET_SYSCON].سائز);
+    حافظہ_region_جوڑو_subregion(system_حافظہ,
+                                memmap[RVSERVER_RESET_SYSCON].بنیاد,
                                 reset_syscon_io);
 
-    riscv_gpex_pcie_init(system_memory, pcie_irqchip,
+    riscv_gpex_pcie_init(system_حافظہ, pcie_irqchip,
                          &rvserver_ref_memmap[RVSERVER_PCIE_ECAM],
                          &rvserver_ref_memmap[RVSERVER_PCIE_MMIO],
-                         &rvserver_ref_memmap[RVSERVER_PCIE_MMIO_HIGH],
+                         &rvserver_ref_memmap[RVSERVER_PCIE_MMIO_بلند],
                          &rvserver_ref_memmap[RVSERVER_PCIE_PIO],
                          RVSERVER_PCIE_IRQ);
 
     s->platform_bus_dev = riscv_create_platform_bus(mmio_irqchip,
                                                     &s->memmap[RVSERVER_PLATFORM_BUS],
                                                     RVSERVER_PLATFORM_BUS_IRQ,
-                                                    RVSERVER_PLATFORM_BUS_NUM_IRQS);
+                                                    RVSERVER_PLATFORM_BUS_عدد_IRQS);
 
-    serial_mm_init(system_memory, memmap[RVSERVER_UART0].base,
-        0, qdev_get_gpio_in(mmio_irqchip, RVSERVER_UART0_IRQ), 399193,
+    serial_mm_init(system_حافظہ, memmap[RVSERVER_UART0].بنیاد,
+        0, qdev_get_gpio_اندر(mmio_irqchip, RVSERVER_UART0_IRQ), 399193,
         serial_hd(0), DEVICE_LITTLE_ENDIAN);
 
-    sysbus_create_simple("goldfish_rtc", memmap[RVSERVER_RTC].base,
-        qdev_get_gpio_in(mmio_irqchip, RVSERVER_RTC_IRQ));
+    sysbus_create_simple("goldfish_rtc", memmap[RVSERVER_RTC].بنیاد,
+        qdev_get_gpio_اندر(mmio_irqchip, RVSERVER_RTC_IRQ));
 
-    for (i = 0; i < ARRAY_SIZE(s->flash); i++) {
+    برائے (i = 0; i < ARRAY_سائز(s->flash); i++) {
         /* Map legacy -drive if=pflash to machine properties */
         pflash_cfi01_legacy_drive(s->flash[i],
                                   drive_get(IF_PFLASH, 0, i));
     }
-    rvserver_flash_maps(s, system_memory);
+    rvserver_flash_maps(s, system_حافظہ);
 
     /* load/create device tree */
-    if (machine->dtb) {
-        machine->fdt = load_device_tree(machine->dtb, &s->fdt_size);
-        if (!machine->fdt) {
+    اگر (machine->dtb) {
+        machine->fdt = بھرو_device_درخت(machine->dtb, &s->fdt_سائز);
+        اگر (!machine->fdt) {
             error_report("load_device_tree() failed");
-            exit(1);
+            باہر_نکلو(1);
         }
-    } else {
+    } ورنہ {
         create_fdt(s, memmap);
     }
 
-    riscv_create_iommu_sys(mmio_irqchip, s->memmap[RVSERVER_IOMMU_SYS].base,
+    riscv_create_iommu_sys(mmio_irqchip, s->memmap[RVSERVER_IOMMU_SYS].بنیاد,
                            IOMMU_SYS_IRQ, false);
 
-    s->machine_done.notify = rvserver_ref_machine_done;
-    qemu_add_machine_init_done_notifier(&s->machine_done);
+    s->machine_مکمل.notify = rvserver_ref_machine_مکمل;
+    qemu_جوڑو_machine_init_مکمل_notifier(&s->machine_مکمل);
 }
 
-static void rvserver_ref_machine_instance_init(Object *obj)
+ساکن خالی rvserver_ref_machine_instance_init(Object *obj)
 {
     RISCVServerRefMachineState *s = RISCV_SERVER_REF_MACHINE(obj);
 
     s->flash[0] = riscv_flash_create(OBJECT(s), "riscv-server-ref.flash0",
-                                     "pflash0", RVSERVER_FLASH_SECTOR_SIZE);
+                                     "pflash0", RVSERVER_FLASH_SECTOR_سائز);
     s->flash[1] = riscv_flash_create(OBJECT(s), "riscv-server-ref.flash1",
-                                     "pflash1", RVSERVER_FLASH_SECTOR_SIZE);
+                                     "pflash1", RVSERVER_FLASH_SECTOR_سائز);
 
     s->aia_guests = RVSERVER_IRQCHIP_DEFAULT_AIA_GUESTS;
 }
 
-static void rvserver_ref_machine_instance_finalize(Object *obj)
+ساکن خالی rvserver_ref_machine_instance_finalize(Object *obj)
 {
     RISCVServerRefMachineState *s = RISCV_SERVER_REF_MACHINE(obj);
 
-    for (int i = 0; i < ARRAY_SIZE(s->flash); i++) {
-        if (s->flash[i] && !qdev_is_realized(DEVICE(s->flash[i]))) {
+    برائے (صحیح i = 0; i < ARRAY_سائز(s->flash); i++) {
+        اگر (s->flash[i] && !qdev_is_realized(DEVICE(s->flash[i]))) {
             object_unref(OBJECT(s->flash[i]));
         }
     }
 }
 
-static char *rvserver_ref_get_aia_guests(Object *obj, Error **errp)
+ساکن حرف *rvserver_ref_get_aia_guests(Object *obj, Error **errp)
 {
     RISCVServerRefMachineState *s = RISCV_SERVER_REF_MACHINE(obj);
-    char val[32];
+    حرف val[32];
 
     sprintf(val, "%d", s->aia_guests);
-    return g_strdup(val);
+    واپس g_strdup(val);
 }
 
-static void rvserver_ref_set_aia_guests(Object *obj, const char *val,
+ساکن خالی rvserver_ref_سیٹ_aia_guests(Object *obj, ثابت حرف *val,
                                         Error **errp)
 {
     RISCVServerRefMachineState *s = RISCV_SERVER_REF_MACHINE(obj);
 
     s->aia_guests = atoi(val);
-    if (s->aia_guests < 0 || s->aia_guests > RVSERVER_IRQCHIP_MAX_GUESTS) {
+    اگر (s->aia_guests < 0 || s->aia_guests > RVSERVER_IRQCHIP_MAX_GUESTS) {
         error_setg(errp, "Invalid number of AIA IMSIC guests");
         error_append_hint(errp, "Valid values be between 0 and %d.\n",
                           RVSERVER_IRQCHIP_MAX_GUESTS);
     }
 }
 
-static const HotplugHandler *
+ساکن ثابت HotplugHandler *
 rvserver_machine_get_hotplug_handler(MachineState *ms, DeviceState *dev)
 {
     MachineClass *mc = MACHINE_GET_CLASS(ms);
 
-    if (device_is_dynamic_sysbus(mc, dev)) {
-        return HOTPLUG_HANDLER(ms);
+    اگر (device_is_dynamic_sysbus(mc, dev)) {
+        واپس HOTPLUG_HANDLER(ms);
     }
 
-    return NULL;
+    واپس تہی;
 }
 
-static void rvserver_machine_device_plug_cb(const HotplugHandler *hotplug_dev,
+ساکن خالی rvserver_machine_device_plug_cb(ثابت HotplugHandler *hotplug_dev,
                                             DeviceState *dev, Error **errp)
 {
     RISCVServerRefMachineState *s = RISCV_SERVER_REF_MACHINE(hotplug_dev);
 
-    if (s->platform_bus_dev) {
+    اگر (s->platform_bus_dev) {
         MachineClass *mc = MACHINE_GET_CLASS(s);
 
-        if (device_is_dynamic_sysbus(mc, dev)) {
+        اگر (device_is_dynamic_sysbus(mc, dev)) {
             platform_bus_link_device(PLATFORM_BUS_DEVICE(s->platform_bus_dev),
                                      SYS_BUS_DEVICE(dev));
         }
     }
 }
 
-static void rvserver_ref_machine_class_init(ObjectClass *oc, const void *data)
+ساکن خالی rvserver_ref_machine_class_init(ObjectClass *oc, ثابت خالی *ڈیٹا)
 {
-    char str[128];
+    حرف str[128];
     MachineClass *mc = MACHINE_CLASS(oc);
     HotplugHandlerClass *hc = HOTPLUG_HANDLER_CLASS(oc);
-    static const char * const valid_cpu_types[] = {
+    ساکن ثابت حرف * ثابت valid_cpu_types[] = {
         TYPE_RISCV_CPU_RVSERVER_REF,
-        NULL
+        تہی
     };
 
     /* Note: this is used as /model in the FDT.  */
@@ -730,47 +730,47 @@ static void rvserver_ref_machine_class_init(ObjectClass *oc, const void *data)
     mc->max_cpus = RVSERVER_CPUS_MAX;
     mc->default_cpu_type = TYPE_RISCV_CPU_RVSERVER_REF;
     mc->valid_cpu_types = valid_cpu_types;
-    mc->pci_allow_0_address = true;
+    mc->pci_allow_0_پتہ = true;
     mc->default_nic = "e1000e";
     mc->possible_cpu_arch_ids = riscv_numa_possible_cpu_arch_ids;
-    mc->cpu_index_to_instance_props = riscv_numa_cpu_index_to_props;
-    mc->get_default_cpu_node_id = riscv_numa_get_default_cpu_node_id;
+    mc->cpu_اشاریہ_مقصد_instance_props = riscv_numa_cpu_اشاریہ_مقصد_props;
+    mc->get_default_cpu_گرہ_id = riscv_numa_get_default_cpu_گرہ_id;
     mc->numa_mem_supported = true;
     /* platform instead of architectural choice */
     mc->cpu_cluster_has_numa_boundary = true;
     mc->default_ram_id = "riscv_rvserver_ref_board.ram";
 
-    object_class_property_add_str(oc, "aia-guests",
+    object_class_property_جوڑو_str(oc, "aia-guests",
                                   rvserver_ref_get_aia_guests,
-                                  rvserver_ref_set_aia_guests);
+                                  rvserver_ref_سیٹ_aia_guests);
     sprintf(str, "Set number of guest MMIO pages for AIA IMSIC. Valid value "
                  "should be between 0 and %d.", RVSERVER_IRQCHIP_MAX_GUESTS);
-    object_class_property_set_description(oc, "aia-guests", str);
+    object_class_property_سیٹ_description(oc, "aia-guests", str);
 
-    assert(!mc->get_hotplug_handler);
+    أكد(!mc->get_hotplug_handler);
     mc->get_hotplug_handler = rvserver_machine_get_hotplug_handler;
     hc->plug = rvserver_machine_device_plug_cb;
-#ifdef CONFIG_TPM
+#اگر_تعریف_شدہ CONFIG_TPM
     machine_class_allow_dynamic_sysbus_dev(mc, TYPE_TPM_TIS_SYSBUS);
-#endif
+#اگر_ختم
 }
 
-static const TypeInfo rvserver_ref_typeinfo = {
+ساکن ثابت TypeInfo rvserver_ref_typeinfo = {
     .name       = TYPE_RISCV_SERVER_REF_MACHINE,
-    .parent     = TYPE_MACHINE,
+    .والد     = TYPE_MACHINE,
     .class_init = rvserver_ref_machine_class_init,
     .instance_init = rvserver_ref_machine_instance_init,
     .instance_finalize = rvserver_ref_machine_instance_finalize,
-    .instance_size = sizeof(RISCVServerRefMachineState),
-    .interfaces = (const InterfaceInfo[]) {
+    .instance_سائز = حجم(RISCVServerRefMachineState),
+    .interfaces = (ثابت InterfaceInfo[]) {
          { TYPE_HOTPLUG_HANDLER },
          { }
     },
 };
 
-static void rvserver_ref_init_register_types(void)
+ساکن خالی rvserver_ref_init_رجسٹر_types(خالی)
 {
-    type_register_static(&rvserver_ref_typeinfo);
+    type_رجسٹر_static(&rvserver_ref_typeinfo);
 }
 
-type_init(rvserver_ref_init_register_types)
+type_init(rvserver_ref_init_رجسٹر_types)

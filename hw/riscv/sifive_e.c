@@ -28,27 +28,27 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/cutils.h"
-#include "qemu/error-report.h"
-#include "qapi/error.h"
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/core/sysbus.h"
-#include "hw/misc/unimp.h"
-#include "target/riscv/cpu.h"
-#include "hw/riscv/riscv_hart.h"
-#include "hw/riscv/sifive_e.h"
-#include "hw/riscv/boot.h"
-#include "hw/char/sifive_uart.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/sifive_plic.h"
-#include "hw/misc/sifive_e_prci.h"
-#include "hw/misc/sifive_e_aon.h"
-#include "chardev/char.h"
-#include "system/system.h"
+#شامل "qemu/osdep.h"
+#شامل "qemu/cutils.h"
+#شامل "qemu/error-report.h"
+#شامل "qapi/error.h"
+#شامل "hw/core/boards.h"
+#شامل "hw/core/loader.h"
+#شامل "hw/core/sysbus.h"
+#شامل "hw/misc/unimp.h"
+#شامل "target/riscv/cpu.h"
+#شامل "hw/riscv/riscv_hart.h"
+#شامل "hw/riscv/sifive_e.h"
+#شامل "hw/riscv/boot.h"
+#شامل "hw/char/sifive_uart.h"
+#شامل "hw/intc/riscv_aclint.h"
+#شامل "hw/intc/sifive_plic.h"
+#شامل "hw/misc/sifive_e_prci.h"
+#شامل "hw/misc/sifive_e_aon.h"
+#شامل "chardev/char.h"
+#شامل "system/system.h"
 
-static const MemMapEntry sifive_e_memmap[] = {
+ساکن ثابت Mem_Map_اندراج sifive_e_memmap[] = {
     [SIFIVE_E_DEV_DEBUG] =    {        0x0,     0x1000 },
     [SIFIVE_E_DEV_MROM] =     {     0x1000,     0x2000 },
     [SIFIVE_E_DEV_OTP] =      {    0x20000,     0x2000 },
@@ -70,37 +70,37 @@ static const MemMapEntry sifive_e_memmap[] = {
     [SIFIVE_E_DEV_DTIM] =     { 0x80000000,     0x4000 }
 };
 
-static void sifive_e_machine_init(MachineState *machine)
+ساکن خالی sifive_e_machine_init(MachineState *machine)
 {
     MachineClass *mc = MACHINE_GET_CLASS(machine);
-    const MemMapEntry *memmap = sifive_e_memmap;
+    ثابت Mem_Map_اندراج *memmap = sifive_e_memmap;
 
     SiFiveEState *s = RISCV_E_MACHINE(machine);
-    MemoryRegion *sys_mem = get_system_memory();
-    int i;
+    حافظہ_Region *sys_mem = get_system_حافظہ();
+    صحیح i;
     RISCVBootInfo boot_info;
 
-    if (machine->ram_size != mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    اگر (machine->ram_سائز != mc->default_ram_سائز) {
+        حرف *sz = سائز_مقصد_str(mc->default_ram_سائز);
         error_report("Invalid RAM size, should be %s", sz);
         g_free(sz);
-        exit(EXIT_FAILURE);
+        باہر_نکلو(EXIT_FAILURE);
     }
 
     /* Initialize SoC */
-    object_initialize_child(OBJECT(machine), "soc", &s->soc, TYPE_RISCV_E_SOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    object_initialize_بچہ(OBJECT(machine), "soc", &s->soc, TYPE_RISCV_E_SOC);
+    qdev_realize(DEVICE(&s->soc), تہی, &error_fatal);
 
     /* Data Tightly Integrated Memory */
-    memory_region_add_subregion(sys_mem,
-        memmap[SIFIVE_E_DEV_DTIM].base, machine->ram);
+    حافظہ_region_جوڑو_subregion(sys_mem,
+        memmap[SIFIVE_E_DEV_DTIM].بنیاد, machine->ram);
 
     /* Mask ROM reset vector */
     uint32_t reset_vec[4];
 
-    if (s->revb) {
+    اگر (s->revb) {
         reset_vec[1] = 0x200102b7;  /* 0x1004: lui     t0,0x20010 */
-    } else {
+    } ورنہ {
         reset_vec[1] = 0x204002b7;  /* 0x1004: lui     t0,0x20400 */
     }
     reset_vec[2] = 0x00028067;      /* 0x1008: jr      t0 */
@@ -108,42 +108,42 @@ static void sifive_e_machine_init(MachineState *machine)
     reset_vec[0] = reset_vec[3] = 0;
 
     /* copy in the reset vector in little_endian byte order */
-    for (i = 0; i < sizeof(reset_vec) >> 2; i++) {
-        reset_vec[i] = cpu_to_le32(reset_vec[i]);
+    برائے (i = 0; i < حجم(reset_vec) >> 2; i++) {
+        reset_vec[i] = cpu_مقصد_le32(reset_vec[i]);
     }
-    rom_add_blob_fixed_as("mrom.reset", reset_vec, sizeof(reset_vec),
-                          memmap[SIFIVE_E_DEV_MROM].base, &address_space_memory);
+    rom_جوڑو_blob_fixed_as("mrom.reset", reset_vec, حجم(reset_vec),
+                          memmap[SIFIVE_E_DEV_MROM].بنیاد, &پتہ_space_حافظہ);
 
     riscv_boot_info_init(&boot_info, &s->soc.cpus);
-    if (machine->kernel_filename) {
-        riscv_load_kernel(machine, &boot_info,
-                          memmap[SIFIVE_E_DEV_DTIM].base,
-                          false, NULL);
+    اگر (machine->kernel_filename) {
+        riscv_بھرو_kernel(machine, &boot_info,
+                          memmap[SIFIVE_E_DEV_DTIM].بنیاد,
+                          false, تہی);
     }
 }
 
-static bool sifive_e_machine_get_revb(Object *obj, Error **errp)
+ساکن bool sifive_e_machine_get_revb(Object *obj, Error **errp)
 {
     SiFiveEState *s = RISCV_E_MACHINE(obj);
 
-    return s->revb;
+    واپس s->revb;
 }
 
-static void sifive_e_machine_set_revb(Object *obj, bool value, Error **errp)
+ساکن خالی sifive_e_machine_سیٹ_revb(Object *obj, bool قدر, Error **errp)
 {
     SiFiveEState *s = RISCV_E_MACHINE(obj);
 
-    s->revb = value;
+    s->revb = قدر;
 }
 
-static void sifive_e_machine_instance_init(Object *obj)
+ساکن خالی sifive_e_machine_instance_init(Object *obj)
 {
     SiFiveEState *s = RISCV_E_MACHINE(obj);
 
     s->revb = false;
 }
 
-static void sifive_e_machine_class_init(ObjectClass *oc, const void *data)
+ساکن خالی sifive_e_machine_class_init(ObjectClass *oc, ثابت خالی *ڈیٹا)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -152,142 +152,142 @@ static void sifive_e_machine_class_init(ObjectClass *oc, const void *data)
     mc->max_cpus = 1;
     mc->default_cpu_type = SIFIVE_E_CPU;
     mc->default_ram_id = "riscv.sifive.e.ram";
-    mc->default_ram_size = sifive_e_memmap[SIFIVE_E_DEV_DTIM].size;
+    mc->default_ram_سائز = sifive_e_memmap[SIFIVE_E_DEV_DTIM].سائز;
 
-    object_class_property_add_bool(oc, "revb", sifive_e_machine_get_revb,
-                                   sifive_e_machine_set_revb);
-    object_class_property_set_description(oc, "revb",
+    object_class_property_جوڑو_bool(oc, "revb", sifive_e_machine_get_revb,
+                                   sifive_e_machine_سیٹ_revb);
+    object_class_property_سیٹ_description(oc, "revb",
                                           "Set on to tell QEMU that it should model "
                                           "the revB HiFive1 board");
 }
 
-static const TypeInfo sifive_e_machine_typeinfo = {
+ساکن ثابت TypeInfo sifive_e_machine_typeinfo = {
     .name       = MACHINE_TYPE_NAME("sifive_e"),
-    .parent     = TYPE_MACHINE,
+    .والد     = TYPE_MACHINE,
     .class_init = sifive_e_machine_class_init,
     .instance_init = sifive_e_machine_instance_init,
-    .instance_size = sizeof(SiFiveEState),
+    .instance_سائز = حجم(SiFiveEState),
 };
 
-static void sifive_e_machine_init_register_types(void)
+ساکن خالی sifive_e_machine_init_رجسٹر_types(خالی)
 {
-    type_register_static(&sifive_e_machine_typeinfo);
+    type_رجسٹر_static(&sifive_e_machine_typeinfo);
 }
 
-type_init(sifive_e_machine_init_register_types)
+type_init(sifive_e_machine_init_رجسٹر_types)
 
-static void sifive_e_soc_init(Object *obj)
+ساکن خالی sifive_e_soc_init(Object *obj)
 {
     SiFiveESoCState *s = RISCV_E_SOC(obj);
 
-    object_initialize_child(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
+    object_initialize_بچہ(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
     /*
      * Set the `num-harts` property later as the machine is potentially not
      * created yet.
      */
-    object_property_set_int(OBJECT(&s->cpus), "resetvec", 0x1004, &error_abort);
-    object_initialize_child(obj, "riscv.sifive.e.gpio0", &s->gpio,
+    object_property_سیٹ_int(OBJECT(&s->cpus), "resetvec", 0x1004, &error_abort);
+    object_initialize_بچہ(obj, "riscv.sifive.e.gpio0", &s->gpio,
                             TYPE_SIFIVE_GPIO);
-    object_initialize_child(obj, "riscv.sifive.e.aon", &s->aon,
+    object_initialize_بچہ(obj, "riscv.sifive.e.aon", &s->aon,
                             TYPE_SIFIVE_E_AON);
 }
 
-static void sifive_e_soc_realize(DeviceState *dev, Error **errp)
+ساکن خالی sifive_e_soc_realize(DeviceState *dev, Error **errp)
 {
     MachineState *ms = MACHINE(qdev_get_machine());
-    const MemMapEntry *memmap = sifive_e_memmap;
+    ثابت Mem_Map_اندراج *memmap = sifive_e_memmap;
     SiFiveESoCState *s = RISCV_E_SOC(dev);
-    MemoryRegion *sys_mem = get_system_memory();
+    حافظہ_Region *sys_mem = get_system_حافظہ();
 
-    object_property_set_str(OBJECT(&s->cpus), "cpu-type", ms->cpu_type,
+    object_property_سیٹ_str(OBJECT(&s->cpus), "cpu-type", ms->cpu_type,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "num-harts", ms->smp.cpus,
+    object_property_سیٹ_int(OBJECT(&s->cpus), "num-harts", ms->smp.cpus,
                             &error_abort);
     sysbus_realize(SYS_BUS_DEVICE(&s->cpus), &error_fatal);
 
     /* Mask ROM */
-    memory_region_init_rom(&s->mask_rom, OBJECT(dev), "riscv.sifive.e.mrom",
-                           memmap[SIFIVE_E_DEV_MROM].size, &error_fatal);
-    memory_region_add_subregion(sys_mem,
-        memmap[SIFIVE_E_DEV_MROM].base, &s->mask_rom);
+    حافظہ_region_init_rom(&s->نقاب_rom, OBJECT(dev), "riscv.sifive.e.mrom",
+                           memmap[SIFIVE_E_DEV_MROM].سائز, &error_fatal);
+    حافظہ_region_جوڑو_subregion(sys_mem,
+        memmap[SIFIVE_E_DEV_MROM].بنیاد, &s->نقاب_rom);
 
     /* MMIO */
-    s->plic = sifive_plic_create(sys_mem, memmap[SIFIVE_E_DEV_PLIC].base,
-        (char *)SIFIVE_E_PLIC_HART_CONFIG, ms->smp.cpus, 0,
-        SIFIVE_E_PLIC_NUM_SOURCES,
-        SIFIVE_E_PLIC_NUM_PRIORITIES,
-        SIFIVE_E_PLIC_PRIORITY_BASE,
-        SIFIVE_E_PLIC_PENDING_BASE,
-        SIFIVE_E_PLIC_ENABLE_BASE,
+    s->plic = sifive_plic_create(sys_mem, memmap[SIFIVE_E_DEV_PLIC].بنیاد,
+        (حرف *)SIFIVE_E_PLIC_HART_CONFIG, ms->smp.cpus, 0,
+        SIFIVE_E_PLIC_عدد_SOURCES,
+        SIFIVE_E_PLIC_عدد_PRIORITIES,
+        SIFIVE_E_PLIC_ترجیح_بنیاد,
+        SIFIVE_E_PLIC_PENDING_بنیاد,
+        SIFIVE_E_PLIC_ENABLE_بنیاد,
         SIFIVE_E_PLIC_ENABLE_STRIDE,
-        SIFIVE_E_PLIC_CONTEXT_BASE,
+        SIFIVE_E_PLIC_CONTEXT_بنیاد,
         SIFIVE_E_PLIC_CONTEXT_STRIDE,
-        memmap[SIFIVE_E_DEV_PLIC].size);
-    riscv_aclint_swi_create(sys_mem, memmap[SIFIVE_E_DEV_CLINT].base,
+        memmap[SIFIVE_E_DEV_PLIC].سائز);
+    riscv_aclint_swi_create(sys_mem, memmap[SIFIVE_E_DEV_CLINT].بنیاد,
         0, ms->smp.cpus, false);
-    riscv_aclint_mtimer_create(sys_mem, memmap[SIFIVE_E_DEV_CLINT].base +
-            RISCV_ACLINT_SWI_SIZE,
-        RISCV_ACLINT_DEFAULT_MTIMER_SIZE, 0, ms->smp.cpus,
+    riscv_aclint_mtimer_create(sys_mem, memmap[SIFIVE_E_DEV_CLINT].بنیاد +
+            RISCV_ACLINT_SWI_سائز,
+        RISCV_ACLINT_DEFAULT_MTIMER_سائز, 0, ms->smp.cpus,
         RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
         SIFIVE_E_LFCLK_DEFAULT_FREQ, false);
-    sifive_e_prci_create(memmap[SIFIVE_E_DEV_PRCI].base);
+    sifive_e_prci_create(memmap[SIFIVE_E_DEV_PRCI].بنیاد);
 
     /* AON */
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->aon), errp)) {
-        return;
+    اگر (!sysbus_realize(SYS_BUS_DEVICE(&s->aon), errp)) {
+        واپس;
     }
 
     /* Map AON registers */
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->aon), 0, memmap[SIFIVE_E_DEV_AON].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->aon), 0, memmap[SIFIVE_E_DEV_AON].بنیاد);
 
     /* GPIO */
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gpio), errp)) {
-        return;
+    اگر (!sysbus_realize(SYS_BUS_DEVICE(&s->gpio), errp)) {
+        واپس;
     }
 
     /* Map GPIO registers */
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gpio), 0, memmap[SIFIVE_E_DEV_GPIO0].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gpio), 0, memmap[SIFIVE_E_DEV_GPIO0].بنیاد);
 
     /* Pass all GPIOs to the SOC layer so they are available to the board */
-    qdev_pass_gpios(DEVICE(&s->gpio), dev, NULL);
+    qdev_pass_gpios(DEVICE(&s->gpio), dev, تہی);
 
     /* Connect GPIO interrupts to the PLIC */
-    for (int i = 0; i < 32; i++) {
+    برائے (صحیح i = 0; i < 32; i++) {
         sysbus_connect_irq(SYS_BUS_DEVICE(&s->gpio), i,
-                           qdev_get_gpio_in(DEVICE(s->plic),
+                           qdev_get_gpio_اندر(DEVICE(s->plic),
                                             SIFIVE_E_GPIO0_IRQ0 + i));
     }
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->aon), 0,
-                       qdev_get_gpio_in(DEVICE(s->plic),
+                       qdev_get_gpio_اندر(DEVICE(s->plic),
                                         SIFIVE_E_AON_WDT_IRQ));
 
-    sifive_uart_create(sys_mem, memmap[SIFIVE_E_DEV_UART0].base,
-        serial_hd(0), qdev_get_gpio_in(DEVICE(s->plic), SIFIVE_E_UART0_IRQ));
+    sifive_uart_create(sys_mem, memmap[SIFIVE_E_DEV_UART0].بنیاد,
+        serial_hd(0), qdev_get_gpio_اندر(DEVICE(s->plic), SIFIVE_E_UART0_IRQ));
     create_unimplemented_device("riscv.sifive.e.qspi0",
-        memmap[SIFIVE_E_DEV_QSPI0].base, memmap[SIFIVE_E_DEV_QSPI0].size);
+        memmap[SIFIVE_E_DEV_QSPI0].بنیاد, memmap[SIFIVE_E_DEV_QSPI0].سائز);
     create_unimplemented_device("riscv.sifive.e.pwm0",
-        memmap[SIFIVE_E_DEV_PWM0].base, memmap[SIFIVE_E_DEV_PWM0].size);
-    sifive_uart_create(sys_mem, memmap[SIFIVE_E_DEV_UART1].base,
-        serial_hd(1), qdev_get_gpio_in(DEVICE(s->plic), SIFIVE_E_UART1_IRQ));
+        memmap[SIFIVE_E_DEV_PWM0].بنیاد, memmap[SIFIVE_E_DEV_PWM0].سائز);
+    sifive_uart_create(sys_mem, memmap[SIFIVE_E_DEV_UART1].بنیاد,
+        serial_hd(1), qdev_get_gpio_اندر(DEVICE(s->plic), SIFIVE_E_UART1_IRQ));
     create_unimplemented_device("riscv.sifive.e.qspi1",
-        memmap[SIFIVE_E_DEV_QSPI1].base, memmap[SIFIVE_E_DEV_QSPI1].size);
+        memmap[SIFIVE_E_DEV_QSPI1].بنیاد, memmap[SIFIVE_E_DEV_QSPI1].سائز);
     create_unimplemented_device("riscv.sifive.e.pwm1",
-        memmap[SIFIVE_E_DEV_PWM1].base, memmap[SIFIVE_E_DEV_PWM1].size);
+        memmap[SIFIVE_E_DEV_PWM1].بنیاد, memmap[SIFIVE_E_DEV_PWM1].سائز);
     create_unimplemented_device("riscv.sifive.e.qspi2",
-        memmap[SIFIVE_E_DEV_QSPI2].base, memmap[SIFIVE_E_DEV_QSPI2].size);
+        memmap[SIFIVE_E_DEV_QSPI2].بنیاد, memmap[SIFIVE_E_DEV_QSPI2].سائز);
     create_unimplemented_device("riscv.sifive.e.pwm2",
-        memmap[SIFIVE_E_DEV_PWM2].base, memmap[SIFIVE_E_DEV_PWM2].size);
+        memmap[SIFIVE_E_DEV_PWM2].بنیاد, memmap[SIFIVE_E_DEV_PWM2].سائز);
 
     /* Flash memory */
-    memory_region_init_rom(&s->xip_mem, OBJECT(dev), "riscv.sifive.e.xip",
-                           memmap[SIFIVE_E_DEV_XIP].size, &error_fatal);
-    memory_region_add_subregion(sys_mem, memmap[SIFIVE_E_DEV_XIP].base,
+    حافظہ_region_init_rom(&s->xip_mem, OBJECT(dev), "riscv.sifive.e.xip",
+                           memmap[SIFIVE_E_DEV_XIP].سائز, &error_fatal);
+    حافظہ_region_جوڑو_subregion(sys_mem, memmap[SIFIVE_E_DEV_XIP].بنیاد,
         &s->xip_mem);
 }
 
-static void sifive_e_soc_class_init(ObjectClass *oc, const void *data)
+ساکن خالی sifive_e_soc_class_init(ObjectClass *oc, ثابت خالی *ڈیٹا)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
@@ -296,17 +296,17 @@ static void sifive_e_soc_class_init(ObjectClass *oc, const void *data)
     dc->user_creatable = false;
 }
 
-static const TypeInfo sifive_e_soc_type_info = {
+ساکن ثابت TypeInfo sifive_e_soc_type_info = {
     .name = TYPE_RISCV_E_SOC,
-    .parent = TYPE_DEVICE,
-    .instance_size = sizeof(SiFiveESoCState),
+    .والد = TYPE_DEVICE,
+    .instance_سائز = حجم(SiFiveESoCState),
     .instance_init = sifive_e_soc_init,
     .class_init = sifive_e_soc_class_init,
 };
 
-static void sifive_e_soc_register_types(void)
+ساکن خالی sifive_e_soc_رجسٹر_types(خالی)
 {
-    type_register_static(&sifive_e_soc_type_info);
+    type_رجسٹر_static(&sifive_e_soc_type_info);
 }
 
-type_init(sifive_e_soc_register_types)
+type_init(sifive_e_soc_رجسٹر_types)

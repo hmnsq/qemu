@@ -5,22 +5,22 @@
  * Copyright (c) 2026 Kuan-Wei Chiu <visitorckw@gmail.com>
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "hw/riscv/cv1800b.h"
-#include "hw/core/qdev-properties.h"
-#include "target/riscv/cpu-qom.h"
-#include "system/system.h"
-#include "hw/intc/riscv_aclint.h"
-#include "system/address-spaces.h"
-#include "hw/intc/sifive_plic.h"
-#include "target/riscv/cpu.h"
-#include "hw/riscv/boot.h"
-#include "hw/sd/sdhci.h"
-#include "hw/misc/unimp.h"
+#شامل "qemu/osdep.h"
+#شامل "qapi/error.h"
+#شامل "hw/riscv/cv1800b.h"
+#شامل "hw/core/qdev-properties.h"
+#شامل "target/riscv/cpu-qom.h"
+#شامل "system/system.h"
+#شامل "hw/intc/riscv_aclint.h"
+#شامل "system/address-spaces.h"
+#شامل "hw/intc/sifive_plic.h"
+#شامل "target/riscv/cpu.h"
+#شامل "hw/riscv/boot.h"
+#شامل "hw/sd/sdhci.h"
+#شامل "hw/misc/unimp.h"
 
-const MemMapEntry cv1800b_memmap[] = {
-    [CV1800B_DEV_TOP_MISC]     = { 0x03000000,      0x1000 },
+ثابت Mem_Map_اندراج cv1800b_memmap[] = {
+    [CV1800_B_DEV_چوٹی_MISC]     = { 0x03000000,      0x1000 },
     [CV1800B_DEV_PINMUX]       = { 0x03001000,      0x1000 },
     [CV1800B_DEV_CLK]          = { 0x03002000,      0x1000 },
     [CV1800B_DEV_RST]          = { 0x03003000,      0x1000 },
@@ -36,124 +36,124 @@ const MemMapEntry cv1800b_memmap[] = {
     [CV1800B_DEV_DRAM]         = { 0x80000000,         0x0 },
 };
 
-static void cv1800b_soc_instance_init(Object *obj)
+ساکن خالی cv1800b_soc_instance_init(Object *obj)
 {
     CV1800BSoCState *s = CV1800B_SOC(obj);
 
-    object_initialize_child(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
-    qdev_prop_set_uint32(DEVICE(&s->cpus), "hartid-base", 0);
-    qdev_prop_set_string(DEVICE(&s->cpus), "cpu-type", TYPE_RISCV_CPU_THEAD_C906);
-    qdev_prop_set_uint64(DEVICE(&s->cpus), "resetvec",
-                         cv1800b_memmap[CV1800B_DEV_ROM].base);
+    object_initialize_بچہ(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
+    qdev_prop_سیٹ_uint32(DEVICE(&s->cpus), "hartid-base", 0);
+    qdev_prop_سیٹ_string(DEVICE(&s->cpus), "cpu-type", TYPE_RISCV_CPU_THEAD_C906);
+    qdev_prop_سیٹ_uint64(DEVICE(&s->cpus), "resetvec",
+                         cv1800b_memmap[CV1800B_DEV_ROM].بنیاد);
 
-    object_initialize_child(obj, "clk", &s->clk, TYPE_CV1800B_CLK);
-    object_initialize_child(obj, "uart", &s->uart, TYPE_DW8250);
-    object_initialize_child(obj, "sdhci", &s->sdhci, TYPE_SYSBUS_SDHCI);
+    object_initialize_بچہ(obj, "clk", &s->clk, TYPE_CV1800B_CLK);
+    object_initialize_بچہ(obj, "uart", &s->uart, TYPE_DW8250);
+    object_initialize_بچہ(obj, "sdhci", &s->sdhci, TYPE_SYSBUS_SDHCI);
 }
 
-static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
+ساکن خالی cv1800b_soc_realize(DeviceState *dev, Error **errp)
 {
     CV1800BSoCState *s = CV1800B_SOC(dev);
     MachineState *ms = MACHINE(qdev_get_machine());
-    uint32_t num_harts = ms->smp.cpus;
-    MemoryRegion *system_memory = get_system_memory();
-    char *plic_hart_config;
+    uint32_t عدد_harts = ms->smp.cpus;
+    حافظہ_Region *system_حافظہ = get_system_حافظہ();
+    حرف *plic_hart_config;
 
-    qdev_prop_set_uint32(DEVICE(&s->cpus), "num-harts", num_harts);
+    qdev_prop_سیٹ_uint32(DEVICE(&s->cpus), "num-harts", عدد_harts);
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
-        return;
+    اگر (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
+        واپس;
     }
 
-    memory_region_init_rom(&s->rom, OBJECT(dev), "cv1800b.rom",
-                           cv1800b_memmap[CV1800B_DEV_ROM].size, &error_fatal);
-    memory_region_add_subregion(system_memory,
-                                cv1800b_memmap[CV1800B_DEV_ROM].base, &s->rom);
+    حافظہ_region_init_rom(&s->rom, OBJECT(dev), "cv1800b.rom",
+                           cv1800b_memmap[CV1800B_DEV_ROM].سائز, &error_fatal);
+    حافظہ_region_جوڑو_subregion(system_حافظہ,
+                                cv1800b_memmap[CV1800B_DEV_ROM].بنیاد, &s->rom);
 
-    riscv_aclint_swi_create(system_memory,
-                            cv1800b_memmap[CV1800B_DEV_CLINT].base,
-                            0, num_harts, false);
-    riscv_aclint_mtimer_create(system_memory,
-                               cv1800b_memmap[CV1800B_DEV_CLINT].base +
-                               RISCV_ACLINT_SWI_SIZE,
-                               RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                               0, num_harts, RISCV_ACLINT_DEFAULT_MTIMECMP,
+    riscv_aclint_swi_create(system_حافظہ,
+                            cv1800b_memmap[CV1800B_DEV_CLINT].بنیاد,
+                            0, عدد_harts, false);
+    riscv_aclint_mtimer_create(system_حافظہ,
+                               cv1800b_memmap[CV1800B_DEV_CLINT].بنیاد +
+                               RISCV_ACLINT_SWI_سائز,
+                               RISCV_ACLINT_DEFAULT_MTIMER_سائز,
+                               0, عدد_harts, RISCV_ACLINT_DEFAULT_MTIMECMP,
                                RISCV_ACLINT_DEFAULT_MTIME,
                                RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
 
-    plic_hart_config = riscv_plic_hart_config_string(num_harts);
+    plic_hart_config = riscv_plic_hart_config_string(عدد_harts);
     s->plic = sifive_plic_create(
-        system_memory,
-        cv1800b_memmap[CV1800B_DEV_PLIC].base,
+        system_حافظہ,
+        cv1800b_memmap[CV1800B_DEV_PLIC].بنیاد,
         plic_hart_config,
-        num_harts,
+        عدد_harts,
         0,
-        CV1800B_PLIC_NUM_SOURCES,
-        CV1800B_PLIC_NUM_PRIORITIES,
+        CV1800_B_PLIC_عدد_SOURCES,
+        CV1800_B_PLIC_عدد_PRIORITIES,
         0x0,
         0x1000,
         0x2000,
         0x80,
         0x200000,
         0x1000,
-        cv1800b_memmap[CV1800B_DEV_PLIC].size);
+        cv1800b_memmap[CV1800B_DEV_PLIC].سائز);
 
     g_free(plic_hart_config);
 
-    qdev_prop_set_uint8(DEVICE(&s->uart), "regshift", 2);
-    qdev_prop_set_chr(DEVICE(&s->uart), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
-        return;
+    qdev_prop_سیٹ_uint8(DEVICE(&s->uart), "regshift", 2);
+    qdev_prop_سیٹ_chr(DEVICE(&s->uart), "chardev", serial_hd(0));
+    اگر (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
+        واپس;
     }
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->uart), 0, cv1800b_memmap[CV1800B_DEV_UART0].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->uart), 0, cv1800b_memmap[CV1800B_DEV_UART0].بنیاد);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->uart), 0,
-                    qdev_get_gpio_in(DEVICE(s->plic), CV1800B_UART0_IRQ));
+                    qdev_get_gpio_اندر(DEVICE(s->plic), CV1800B_UART0_IRQ));
 
-    qdev_prop_set_uint8(DEVICE(&s->sdhci), "sd-spec-version", 3);
-    qdev_prop_set_uint64(DEVICE(&s->sdhci), "capareg", 0x056900b9);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->sdhci), errp)) {
-        return;
+    qdev_prop_سیٹ_uint8(DEVICE(&s->sdhci), "sd-spec-version", 3);
+    qdev_prop_سیٹ_uint64(DEVICE(&s->sdhci), "capareg", 0x056900b9);
+    اگر (!sysbus_realize(SYS_BUS_DEVICE(&s->sdhci), errp)) {
+        واپس;
     }
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->sdhci), 0, cv1800b_memmap[CV1800B_DEV_SD0].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->sdhci), 0, cv1800b_memmap[CV1800B_DEV_SD0].بنیاد);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->sdhci), 0,
-                       qdev_get_gpio_in(DEVICE(s->plic), CV1800B_SD0_IRQ));
+                       qdev_get_gpio_اندر(DEVICE(s->plic), CV1800B_SD0_IRQ));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->clk), errp)) {
-        return;
+    اگر (!sysbus_realize(SYS_BUS_DEVICE(&s->clk), errp)) {
+        واپس;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->clk), 0,
-                    cv1800b_memmap[CV1800B_DEV_CLK].base);
+                    cv1800b_memmap[CV1800B_DEV_CLK].بنیاد);
 
     create_unimplemented_device("cv1800b.top_misc",
-                                cv1800b_memmap[CV1800B_DEV_TOP_MISC].base,
-                                cv1800b_memmap[CV1800B_DEV_TOP_MISC].size);
+                                cv1800b_memmap[CV1800_B_DEV_چوٹی_MISC].بنیاد,
+                                cv1800b_memmap[CV1800_B_DEV_چوٹی_MISC].سائز);
 
     create_unimplemented_device("cv1800b.pinmux",
-                                cv1800b_memmap[CV1800B_DEV_PINMUX].base,
-                                cv1800b_memmap[CV1800B_DEV_PINMUX].size);
+                                cv1800b_memmap[CV1800B_DEV_PINMUX].بنیاد,
+                                cv1800b_memmap[CV1800B_DEV_PINMUX].سائز);
 
     create_unimplemented_device("cv1800b.rst",
-                                cv1800b_memmap[CV1800B_DEV_RST].base,
-                                cv1800b_memmap[CV1800B_DEV_RST].size);
+                                cv1800b_memmap[CV1800B_DEV_RST].بنیاد,
+                                cv1800b_memmap[CV1800B_DEV_RST].سائز);
 
     create_unimplemented_device("cv1800b.wdt",
-                                cv1800b_memmap[CV1800B_DEV_WDT].base,
-                                cv1800b_memmap[CV1800B_DEV_WDT].size);
+                                cv1800b_memmap[CV1800B_DEV_WDT].بنیاد,
+                                cv1800b_memmap[CV1800B_DEV_WDT].سائز);
 
     create_unimplemented_device("cv1800b.gpio0_3",
-                                cv1800b_memmap[CV1800B_DEV_GPIO].base,
-                                cv1800b_memmap[CV1800B_DEV_GPIO].size);
+                                cv1800b_memmap[CV1800B_DEV_GPIO].بنیاد,
+                                cv1800b_memmap[CV1800B_DEV_GPIO].سائز);
 
     create_unimplemented_device("cv1800b.rtc_gpio",
-                                cv1800b_memmap[CV1800B_DEV_RTC_GPIO].base,
-                                cv1800b_memmap[CV1800B_DEV_RTC_GPIO].size);
+                                cv1800b_memmap[CV1800B_DEV_RTC_GPIO].بنیاد,
+                                cv1800b_memmap[CV1800B_DEV_RTC_GPIO].سائز);
 
     create_unimplemented_device("cv1800b.rtc_io",
-                                cv1800b_memmap[CV1800B_DEV_RTC_IO].base,
-                                cv1800b_memmap[CV1800B_DEV_RTC_IO].size);
+                                cv1800b_memmap[CV1800B_DEV_RTC_IO].بنیاد,
+                                cv1800b_memmap[CV1800B_DEV_RTC_IO].سائز);
 }
 
-static void cv1800b_soc_class_init(ObjectClass *oc, const void *data)
+ساکن خالی cv1800b_soc_class_init(ObjectClass *oc, ثابت خالی *ڈیٹا)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
@@ -161,17 +161,17 @@ static void cv1800b_soc_class_init(ObjectClass *oc, const void *data)
     dc->user_creatable = false;
 }
 
-static const TypeInfo cv1800b_soc_type_info = {
+ساکن ثابت TypeInfo cv1800b_soc_type_info = {
     .name = TYPE_CV1800B_SOC,
-    .parent = TYPE_DEVICE,
-    .instance_size = sizeof(CV1800BSoCState),
+    .والد = TYPE_DEVICE,
+    .instance_سائز = حجم(CV1800BSoCState),
     .instance_init = cv1800b_soc_instance_init,
     .class_init = cv1800b_soc_class_init,
 };
 
-static void cv1800b_soc_register_types(void)
+ساکن خالی cv1800b_soc_رجسٹر_types(خالی)
 {
-    type_register_static(&cv1800b_soc_type_info);
+    type_رجسٹر_static(&cv1800b_soc_type_info);
 }
 
-type_init(cv1800b_soc_register_types)
+type_init(cv1800b_soc_رجسٹر_types)
