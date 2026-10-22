@@ -9,20 +9,20 @@
 #ifndef HW_RISCV_AIA_H
 #define HW_RISCV_AIA_H
 
-#include "exec/hwaddr.h"
+#அந்தர்பாவ "exec/hwaddr.h"
 
-uint32_t imsic_num_bits(uint32_t count);
+uint32_t imsic_இலக்கம்_bits(uint32_t மொத்தம்);
 
 DeviceState *riscv_create_aia(MemoryRegion *container,
-                             bool msimode, int aia_guests,
+                             bool msimode, முழு aia_guests,
                              uint32_t m_imsic_stride,
                              uint32_t s_imsic_stride,
-                             uint16_t num_sources,
-                             const MemMapEntry *aplic_m,
-                             const MemMapEntry *aplic_s,
-                             const MemMapEntry *imsic_m,
-                             const MemMapEntry *imsic_s,
-                             int socket, int base_hartid, int hart_count,
-                             uint32_t num_msis, uint32_t num_prio_bits);
+                             uint16_t இலக்கம்_sources,
+                             மாறிலி MemMapEntry *aplic_m,
+                             மாறிலி MemMapEntry *aplic_s,
+                             மாறிலி MemMapEntry *imsic_m,
+                             மாறிலி MemMapEntry *imsic_s,
+                             முழு socket, முழு base_hartid, முழு hart_மொத்தம்,
+                             uint32_t இலக்கம்_msis, uint32_t இலக்கம்_prio_bits);
 
 #endif

@@ -16,168 +16,168 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/units.h"
-#include "qemu/error-report.h"
-#include "qapi/error.h"
-#include "hw/core/boards.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/riscv/numa.h"
-#include "system/device_tree.h"
+#அந்தர்பாவ "qemu/osdep.h"
+#அந்தர்பாவ "qemu/units.h"
+#அந்தர்பாவ "qemu/error-report.h"
+#அந்தர்பாவ "qapi/error.h"
+#அந்தர்பாவ "hw/core/boards.h"
+#அந்தர்பாவ "hw/core/qdev-properties.h"
+#அந்தர்பாவ "hw/riscv/numa.h"
+#அந்தர்பாவ "system/device_tree.h"
 
-bool riscv_numa_enabled(const MachineState *ms)
+bool riscv_numa_enabled(மாறிலி MachineState *ms)
 {
-    return (ms->numa_state && ms->numa_state->num_nodes) ? true : false;
+    திரும்பு (ms->numa_state && ms->numa_state->இலக்கம்_nodes) ? true : false;
 }
 
-int riscv_socket_count(const MachineState *ms)
+முழு riscv_socket_மொத்தம்(மாறிலி MachineState *ms)
 {
-    return (riscv_numa_enabled(ms)) ? ms->numa_state->num_nodes : 1;
+    திரும்பு (riscv_numa_enabled(ms)) ? ms->numa_state->இலக்கம்_nodes : 1;
 }
 
-int riscv_socket_first_hartid(const MachineState *ms, int socket_id)
+முழு riscv_socket_first_hartid(மாறிலி MachineState *ms, முழு socket_id)
 {
-    int i, first_hartid = ms->smp.cpus;
+    முழு i, first_hartid = ms->smp.cpus;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? 0 : -1;
+    எனில் (!riscv_numa_enabled(ms)) {
+        திரும்பு (!socket_id) ? 0 : -1;
     }
 
-    for (i = 0; i < ms->smp.cpus; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
-            continue;
+    க்கு (i = 0; i < ms->smp.cpus; i++) {
+        எனில் (ms->possible_cpus->cpus[i].props.முனை_id != socket_id) {
+            தொடர்;
         }
-        if (i < first_hartid) {
+        எனில் (i < first_hartid) {
             first_hartid = i;
         }
     }
 
-    return (first_hartid < ms->smp.cpus) ? first_hartid : -1;
+    திரும்பு (first_hartid < ms->smp.cpus) ? first_hartid : -1;
 }
 
-int riscv_socket_last_hartid(const MachineState *ms, int socket_id)
+முழு riscv_socket_last_hartid(மாறிலி MachineState *ms, முழு socket_id)
 {
-    int i, last_hartid = -1;
+    முழு i, last_hartid = -1;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->smp.cpus - 1 : -1;
+    எனில் (!riscv_numa_enabled(ms)) {
+        திரும்பு (!socket_id) ? ms->smp.cpus - 1 : -1;
     }
 
-    for (i = 0; i < ms->smp.cpus; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
-            continue;
+    க்கு (i = 0; i < ms->smp.cpus; i++) {
+        எனில் (ms->possible_cpus->cpus[i].props.முனை_id != socket_id) {
+            தொடர்;
         }
-        if (i > last_hartid) {
+        எனில் (i > last_hartid) {
             last_hartid = i;
         }
     }
 
-    return (last_hartid < ms->smp.cpus) ? last_hartid : -1;
+    திரும்பு (last_hartid < ms->smp.cpus) ? last_hartid : -1;
 }
 
-int riscv_socket_hart_count(const MachineState *ms, int socket_id)
+முழு riscv_socket_hart_மொத்தம்(மாறிலி MachineState *ms, முழு socket_id)
 {
-    int first_hartid, last_hartid;
+    முழு first_hartid, last_hartid;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->smp.cpus : -1;
+    எனில் (!riscv_numa_enabled(ms)) {
+        திரும்பு (!socket_id) ? ms->smp.cpus : -1;
     }
 
     first_hartid = riscv_socket_first_hartid(ms, socket_id);
-    if (first_hartid < 0) {
-        return -1;
+    எனில் (first_hartid < 0) {
+        திரும்பு -1;
     }
 
     last_hartid = riscv_socket_last_hartid(ms, socket_id);
-    if (last_hartid < 0) {
-        return -1;
+    எனில் (last_hartid < 0) {
+        திரும்பு -1;
     }
 
-    if (first_hartid > last_hartid) {
-        return -1;
+    எனில் (first_hartid > last_hartid) {
+        திரும்பு -1;
     }
 
-    return last_hartid - first_hartid + 1;
+    திரும்பு last_hartid - first_hartid + 1;
 }
 
-bool riscv_socket_check_hartids(const MachineState *ms, int socket_id)
+bool riscv_socket_check_hartids(மாறிலி MachineState *ms, முழு socket_id)
 {
-    int i, first_hartid, last_hartid;
+    முழு i, first_hartid, last_hartid;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? true : false;
+    எனில் (!riscv_numa_enabled(ms)) {
+        திரும்பு (!socket_id) ? true : false;
     }
 
     first_hartid = riscv_socket_first_hartid(ms, socket_id);
-    if (first_hartid < 0) {
-        return false;
+    எனில் (first_hartid < 0) {
+        திரும்பு false;
     }
 
     last_hartid = riscv_socket_last_hartid(ms, socket_id);
-    if (last_hartid < 0) {
-        return false;
+    எனில் (last_hartid < 0) {
+        திரும்பு false;
     }
 
-    for (i = first_hartid; i <= last_hartid; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
-            return false;
+    க்கு (i = first_hartid; i <= last_hartid; i++) {
+        எனில் (ms->possible_cpus->cpus[i].props.முனை_id != socket_id) {
+            திரும்பு false;
         }
     }
 
-    return true;
+    திரும்பு true;
 }
 
-uint64_t riscv_socket_mem_offset(const MachineState *ms, int socket_id)
+uint64_t riscv_socket_mem_offset(மாறிலி MachineState *ms, முழு socket_id)
 {
-    int i;
+    முழு i;
     uint64_t mem_offset = 0;
 
-    if (!riscv_numa_enabled(ms)) {
-        return 0;
+    எனில் (!riscv_numa_enabled(ms)) {
+        திரும்பு 0;
     }
 
-    for (i = 0; i < ms->numa_state->num_nodes; i++) {
-        if (i == socket_id) {
-            break;
+    க்கு (i = 0; i < ms->numa_state->இலக்கம்_nodes; i++) {
+        எனில் (i == socket_id) {
+            நிறுத்து;
         }
-        mem_offset += ms->numa_state->nodes[i].node_mem;
+        mem_offset += ms->numa_state->nodes[i].முனை_mem;
     }
 
-    return (i == socket_id) ? mem_offset : 0;
+    திரும்பு (i == socket_id) ? mem_offset : 0;
 }
 
-uint64_t riscv_socket_mem_size(const MachineState *ms, int socket_id)
+uint64_t riscv_socket_mem_size(மாறிலி MachineState *ms, முழு socket_id)
 {
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->ram_size : 0;
+    எனில் (!riscv_numa_enabled(ms)) {
+        திரும்பு (!socket_id) ? ms->ram_size : 0;
     }
 
-    return (socket_id < ms->numa_state->num_nodes) ?
-            ms->numa_state->nodes[socket_id].node_mem : 0;
+    திரும்பு (socket_id < ms->numa_state->இலக்கம்_nodes) ?
+            ms->numa_state->nodes[socket_id].முனை_mem : 0;
 }
 
-void riscv_socket_fdt_write_id(const MachineState *ms, const char *node_name,
-                               int socket_id)
+வெறுமை riscv_socket_fdt_write_id(மாறிலி MachineState *ms, மாறிலி எழுத்து *முனை_name,
+                               முழு socket_id)
 {
-    if (riscv_numa_enabled(ms)) {
-        qemu_fdt_setprop_cell(ms->fdt, node_name, "numa-node-id", socket_id);
+    எனில் (riscv_numa_enabled(ms)) {
+        qemu_fdt_setprop_cell(ms->fdt, முனை_name, "numa-node-id", socket_id);
     }
 }
 
-void riscv_socket_fdt_write_distance_matrix(const MachineState *ms)
+வெறுமை riscv_socket_fdt_write_distance_matrix(மாறிலி MachineState *ms)
 {
-    int i, j, idx;
-    g_autofree uint32_t *dist_matrix = NULL;
+    முழு i, j, idx;
+    g_autofree uint32_t *dist_matrix = வெற்று;
     uint32_t dist_matrix_size;
 
-    if (riscv_numa_enabled(ms) && ms->numa_state->have_numa_distance) {
-        dist_matrix_size = riscv_socket_count(ms) * riscv_socket_count(ms);
-        dist_matrix_size *= (3 * sizeof(uint32_t));
+    எனில் (riscv_numa_enabled(ms) && ms->numa_state->have_numa_distance) {
+        dist_matrix_size = riscv_socket_மொத்தம்(ms) * riscv_socket_மொத்தம்(ms);
+        dist_matrix_size *= (3 * அளவு(uint32_t));
         dist_matrix = g_malloc0(dist_matrix_size);
 
-        for (i = 0; i < riscv_socket_count(ms); i++) {
-            for (j = 0; j < riscv_socket_count(ms); j++) {
-                idx = (i * riscv_socket_count(ms) + j) * 3;
+        க்கு (i = 0; i < riscv_socket_மொத்தம்(ms); i++) {
+            க்கு (j = 0; j < riscv_socket_மொத்தம்(ms); j++) {
+                idx = (i * riscv_socket_மொத்தம்(ms) + j) * 3;
                 dist_matrix[idx + 0] = cpu_to_be32(i);
                 dist_matrix[idx + 1] = cpu_to_be32(j);
                 dist_matrix[idx + 2] =
@@ -197,46 +197,46 @@ CpuInstanceProperties
 riscv_numa_cpu_index_to_props(MachineState *ms, unsigned cpu_index)
 {
     MachineClass *mc = MACHINE_GET_CLASS(ms);
-    const CPUArchIdList *possible_cpus = mc->possible_cpu_arch_ids(ms);
+    மாறிலி CPUArchIdList *possible_cpus = mc->possible_cpu_arch_ids(ms);
 
-    assert(cpu_index < possible_cpus->len);
-    return possible_cpus->cpus[cpu_index].props;
+    ப்ரதிஜ்ஞா(cpu_index < possible_cpus->len);
+    திரும்பு possible_cpus->cpus[cpu_index].props;
 }
 
-int64_t riscv_numa_get_default_cpu_node_id(const MachineState *ms, int idx)
+int64_t riscv_numa_get_default_cpu_முனை_id(மாறிலி MachineState *ms, முழு idx)
 {
     int64_t nidx = 0;
 
-    if (ms->numa_state->num_nodes > ms->smp.cpus) {
+    எனில் (ms->numa_state->இலக்கம்_nodes > ms->smp.cpus) {
         error_report("Number of NUMA nodes (%d)"
                      " cannot exceed the number of available CPUs (%u).",
-                     ms->numa_state->num_nodes, ms->smp.cpus);
+                     ms->numa_state->இலக்கம்_nodes, ms->smp.cpus);
         exit(EXIT_FAILURE);
     }
-    if (ms->numa_state->num_nodes) {
-        nidx = idx / (ms->smp.cpus / ms->numa_state->num_nodes);
-        if (ms->numa_state->num_nodes <= nidx) {
-            nidx = ms->numa_state->num_nodes - 1;
+    எனில் (ms->numa_state->இலக்கம்_nodes) {
+        nidx = idx / (ms->smp.cpus / ms->numa_state->இலக்கம்_nodes);
+        எனில் (ms->numa_state->இலக்கம்_nodes <= nidx) {
+            nidx = ms->numa_state->இலக்கம்_nodes - 1;
         }
     }
 
-    return nidx;
+    திரும்பு nidx;
 }
 
-const CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
+மாறிலி CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
 {
-    int n;
-    unsigned int max_cpus = ms->smp.max_cpus;
+    முழு n;
+    unsigned முழு max_cpus = ms->smp.max_cpus;
 
-    if (ms->possible_cpus) {
-        assert(ms->possible_cpus->len == max_cpus);
-        return ms->possible_cpus;
+    எனில் (ms->possible_cpus) {
+        ப்ரதிஜ்ஞா(ms->possible_cpus->len == max_cpus);
+        திரும்பு ms->possible_cpus;
     }
 
-    ms->possible_cpus = g_malloc0(sizeof(CPUArchIdList) +
-                                  sizeof(CPUArchId) * max_cpus);
+    ms->possible_cpus = g_malloc0(அளவு(CPUArchIdList) +
+                                  அளவு(CPUArchId) * max_cpus);
     ms->possible_cpus->len = max_cpus;
-    for (n = 0; n < ms->possible_cpus->len; n++) {
+    க்கு (n = 0; n < ms->possible_cpus->len; n++) {
         ms->possible_cpus->cpus[n].type = ms->cpu_type;
         ms->possible_cpus->cpus[n].arch_id = n;
         ms->possible_cpus->cpus[n].props.has_socket_id = true;
@@ -253,5 +253,5 @@ const CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
             n % ms->smp.threads;
     }
 
-    return ms->possible_cpus;
+    திரும்பு ms->possible_cpus;
 }

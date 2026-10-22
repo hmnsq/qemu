@@ -9,18 +9,18 @@
  *
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "qemu/module.h"
-#include "hw/riscv/cps.h"
-#include "hw/core/qdev-properties.h"
-#include "system/reset.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/riscv_aplic.h"
-#include "hw/intc/riscv_imsic.h"
-#include "hw/pci/msi.h"
+#அந்தர்பாவ "qemu/osdep.h"
+#அந்தர்பாவ "qapi/error.h"
+#அந்தர்பாவ "qemu/module.h"
+#அந்தர்பாவ "hw/riscv/cps.h"
+#அந்தர்பாவ "hw/core/qdev-properties.h"
+#அந்தர்பாவ "system/reset.h"
+#அந்தர்பாவ "hw/intc/riscv_aclint.h"
+#அந்தர்பாவ "hw/intc/riscv_aplic.h"
+#அந்தர்பாவ "hw/intc/riscv_imsic.h"
+#அந்தர்பாவ "hw/pci/msi.h"
 
-static void riscv_cps_init(Object *obj)
+நிலையான வெறுமை riscv_cps_init(Object *obj)
 {
     SysBusDevice *sbd = SYS_BUS_DEVICE(obj);
     RISCVCPSState *s = RISCV_CPS(obj);
@@ -33,54 +33,54 @@ static void riscv_cps_init(Object *obj)
     sysbus_init_mmio(sbd, &s->container);
 }
 
-static void main_cpu_reset(void *opaque)
+நிலையான வெறுமை main_cpu_reset(வெறுமை *opaque)
 {
     CPUState *cs = opaque;
 
     cpu_reset(cs);
 }
 
-static void riscv_cps_realize(DeviceState *dev, Error **errp)
+நிலையான வெறுமை riscv_cps_realize(DeviceState *dev, Error **errp)
 {
     RISCVCPSState *s = RISCV_CPS(dev);
     RISCVCPU *cpu;
-    int i;
+    முழு i;
 
     /* Validate num_vp */
-    if (s->num_vp == 0) {
+    எனில் (s->இலக்கம்_vp == 0) {
         error_setg(errp, "num-vp must be at least 1");
-        return;
+        திரும்பு;
     }
-    if (s->num_vp > MAX_HARTS) {
+    எனில் (s->இலக்கம்_vp > MAX_HARTS) {
         error_setg(errp, "num-vp cannot exceed %d", MAX_HARTS);
-        return;
+        திரும்பு;
     }
 
     /* Allocate CPU array */
-    s->cpus = g_new0(CPUState *, s->num_vp);
+    s->cpus = g_new0(CPUState *, s->இலக்கம்_vp);
 
     /* Set up cpu_index and mhartid for avaiable CPUs. */
-    int harts_in_cluster = s->num_hart * s->num_core;
-    int num_of_clusters = s->num_vp / harts_in_cluster;
-    for (i = 0; i < s->num_vp; i++) {
+    முழு harts_in_cluster = s->இலக்கம்_hart * s->இலக்கம்_core;
+    முழு இலக்கம்_of_clusters = s->இலக்கம்_vp / harts_in_cluster;
+    க்கு (i = 0; i < s->இலக்கம்_vp; i++) {
         cpu = RISCV_CPU(object_new(s->cpu_type));
 
         /* All VPs are halted on reset. Leave powering up to CPC. */
         object_property_set_bool(OBJECT(cpu), "start-powered-off", true,
                                  &error_abort);
 
-        if (!qdev_realize_and_unref(DEVICE(cpu), NULL, errp)) {
-            return;
+        எனில் (!qdev_realize_and_unref(DEVICE(cpu), வெற்று, errp)) {
+            திரும்பு;
         }
 
         /* Store CPU in array */
         s->cpus[i] = CPU(cpu);
 
         /* Set up mhartid */
-        int cluster_id = i / harts_in_cluster;
-        int hart_id = (i % harts_in_cluster) % s->num_hart;
-        int core_id = (i % harts_in_cluster) / s->num_hart;
-        int mhartid = (cluster_id << MHARTID_CLUSTER_SHIFT) +
+        முழு cluster_id = i / harts_in_cluster;
+        முழு hart_id = (i % harts_in_cluster) % s->இலக்கம்_hart;
+        முழு core_id = (i % harts_in_cluster) / s->இலக்கம்_hart;
+        முழு mhartid = (cluster_id << MHARTID_CLUSTER_SHIFT) +
                       (core_id << MHARTID_CORE_SHIFT) +
                       (hart_id << MHARTID_HART_SHIFT);
         cpu->env.mhartid = mhartid;
@@ -91,23 +91,23 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
     object_initialize_child(OBJECT(dev), "cpc", &s->cpc, TYPE_RISCV_CPC);
     object_property_set_uint(OBJECT(&s->cpc), "cluster-id", 0,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->cpc), "num-vp", s->num_vp,
+    object_property_set_uint(OBJECT(&s->cpc), "num-vp", s->இலக்கம்_vp,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->cpc), "num-hart", s->num_hart,
+    object_property_set_uint(OBJECT(&s->cpc), "num-hart", s->இலக்கம்_hart,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->cpc), "num-core", s->num_core,
+    object_property_set_uint(OBJECT(&s->cpc), "num-core", s->இலக்கம்_core,
                             &error_abort);
 
     /* Pass CPUs to CPC using link properties */
-    for (i = 0; i < s->num_vp; i++) {
-        char *propname = g_strdup_printf("cpu[%d]", i);
+    க்கு (i = 0; i < s->இலக்கம்_vp; i++) {
+        எழுத்து *propname = g_strdup_printf("cpu[%d]", i);
         object_property_set_link(OBJECT(&s->cpc), propname,
                                 OBJECT(s->cpus[i]), &error_abort);
         g_free(propname);
     }
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpc), errp)) {
-        return;
+    எனில் (!sysbus_realize(SYS_BUS_DEVICE(&s->cpc), errp)) {
+        திரும்பு;
     }
 
     memory_region_add_subregion(&s->container, 0,
@@ -117,7 +117,7 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
     object_initialize_child(OBJECT(dev), "gcr", &s->gcr, TYPE_RISCV_GCR);
     object_property_set_uint(OBJECT(&s->gcr), "cluster-id", 0,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->gcr), "num-vp", s->num_vp,
+    object_property_set_uint(OBJECT(&s->gcr), "num-vp", s->இலக்கம்_vp,
                             &error_abort);
     object_property_set_int(OBJECT(&s->gcr), "gcr-rev", 0xa00,
                             &error_abort);
@@ -125,14 +125,14 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
                             &error_abort);
     object_property_set_link(OBJECT(&s->gcr), "cpc", OBJECT(&s->cpc.mr),
                              &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gcr), errp)) {
-        return;
+    எனில் (!sysbus_realize(SYS_BUS_DEVICE(&s->gcr), errp)) {
+        திரும்பு;
     }
 
     memory_region_add_subregion(&s->container, s->gcr_base,
                             sysbus_mmio_get_region(SYS_BUS_DEVICE(&s->gcr), 0));
 
-    for (i = 0; i < num_of_clusters; i++) {
+    க்கு (i = 0; i < இலக்கம்_of_clusters; i++) {
         uint64_t cm_base = GLOBAL_CM_BASE + (CM_SIZE * i);
         uint32_t hartid_base = i << MHARTID_CLUSTER_SHIFT;
         s->aplic = riscv_aplic_create(&s->container,
@@ -140,16 +140,16 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
                                       AIA_PLIC_M_SIZE,
                                       hartid_base, /* hartid_base */
                                       MAX_HARTS, /* num_harts */
-                                      APLIC_NUM_SOURCES,
-                                      APLIC_NUM_PRIO_BITS,
-                                      false, true, NULL);
+                                      APLIC_இலக்கம்_SOURCES,
+                                      APLIC_இலக்கம்_PRIO_BITS,
+                                      false, true, வெற்று);
         riscv_aplic_create(&s->container,
                            cm_base + AIA_PLIC_S_OFFSET,
                            AIA_PLIC_S_SIZE,
                            hartid_base, /* hartid_base */
                            MAX_HARTS, /* num_harts */
-                           APLIC_NUM_SOURCES,
-                           APLIC_NUM_PRIO_BITS,
+                           APLIC_இலக்கம்_SOURCES,
+                           APLIC_இலக்கம்_PRIO_BITS,
                            false, false, s->aplic);
         /* PLIC changes msi_nonbroken to ture. We revert the change. */
         msi_nonbroken = false;
@@ -168,15 +168,15 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
     }
 }
 
-static const Property riscv_cps_properties[] = {
-    DEFINE_PROP_UINT32("num-vp", RISCVCPSState, num_vp, 1),
-    DEFINE_PROP_UINT32("num-hart", RISCVCPSState, num_hart, 1),
-    DEFINE_PROP_UINT32("num-core", RISCVCPSState, num_core, 1),
+நிலையான மாறிலி Property riscv_cps_properties[] = {
+    DEFINE_PROP_UINT32("num-vp", RISCVCPSState, இலக்கம்_vp, 1),
+    DEFINE_PROP_UINT32("num-hart", RISCVCPSState, இலக்கம்_hart, 1),
+    DEFINE_PROP_UINT32("num-core", RISCVCPSState, இலக்கம்_core, 1),
     DEFINE_PROP_UINT64("gcr-base", RISCVCPSState, gcr_base, GCR_BASE_ADDR),
     DEFINE_PROP_STRING("cpu-type", RISCVCPSState, cpu_type),
 };
 
-static void riscv_cps_class_init(ObjectClass *klass, const void *data)
+நிலையான வெறுமை riscv_cps_class_init(ObjectClass *klass, மாறிலி வெறுமை *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
 
@@ -184,15 +184,15 @@ static void riscv_cps_class_init(ObjectClass *klass, const void *data)
     device_class_set_props(dc, riscv_cps_properties);
 }
 
-static const TypeInfo riscv_cps_info = {
+நிலையான மாறிலி TypeInfo riscv_cps_info = {
     .name = TYPE_RISCV_CPS,
     .parent = TYPE_SYS_BUS_DEVICE,
-    .instance_size = sizeof(RISCVCPSState),
+    .instance_size = அளவு(RISCVCPSState),
     .instance_init = riscv_cps_init,
     .class_init = riscv_cps_class_init,
 };
 
-static void riscv_cps_register_types(void)
+நிலையான வெறுமை riscv_cps_register_types(வெறுமை)
 {
     type_register_static(&riscv_cps_info);
 }

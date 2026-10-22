@@ -18,20 +18,20 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "qemu/module.h"
-#include "system/reset.h"
-#include "system/qtest.h"
-#include "qemu/cutils.h"
-#include "hw/core/sysbus.h"
-#include "target/riscv/cpu.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/riscv/riscv_hart.h"
-#include "qemu/error-report.h"
+#அந்தர்பாவ "qemu/osdep.h"
+#அந்தர்பாவ "qapi/error.h"
+#அந்தர்பாவ "qemu/module.h"
+#அந்தர்பாவ "system/reset.h"
+#அந்தர்பாவ "system/qtest.h"
+#அந்தர்பாவ "qemu/cutils.h"
+#அந்தர்பாவ "hw/core/sysbus.h"
+#அந்தர்பாவ "target/riscv/cpu.h"
+#அந்தர்பாவ "hw/core/qdev-properties.h"
+#அந்தர்பாவ "hw/riscv/riscv_hart.h"
+#அந்தர்பாவ "qemu/error-report.h"
 
-static const Property riscv_harts_props[] = {
-    DEFINE_PROP_UINT32("num-harts", RISCVHartArrayState, num_harts, 1),
+நிலையான மாறிலி Property riscv_harts_props[] = {
+    DEFINE_PROP_UINT32("num-harts", RISCVHartArrayState, இலக்கம்_harts, 1),
     DEFINE_PROP_UINT32("hartid-base", RISCVHartArrayState, hartid_base, 0),
     DEFINE_PROP_STRING("cpu-type", RISCVHartArrayState, cpu_type),
     DEFINE_PROP_UINT64("resetvec", RISCVHartArrayState, resetvec,
@@ -48,100 +48,100 @@ static const Property riscv_harts_props[] = {
      * defined by "rnmi-exception-vector".
      */
     DEFINE_PROP_ARRAY("rnmi-interrupt-vector", RISCVHartArrayState,
-                      num_rnmi_irqvec, rnmi_irqvec, qdev_prop_uint64,
+                      இலக்கம்_rnmi_irqvec, rnmi_irqvec, qdev_prop_uint64,
                       uint64_t),
     DEFINE_PROP_ARRAY("rnmi-exception-vector", RISCVHartArrayState,
-                      num_rnmi_excpvec, rnmi_excpvec, qdev_prop_uint64,
+                      இலக்கம்_rnmi_excpvec, rnmi_excpvec, qdev_prop_uint64,
                       uint64_t),
     DEFINE_PROP_LINK("memory", RISCVHartArrayState, memory,
                      TYPE_MEMORY_REGION, MemoryRegion *),
 };
 
-static void riscv_harts_cpu_reset(void *opaque)
+நிலையான வெறுமை riscv_harts_cpu_reset(வெறுமை *opaque)
 {
     RISCVCPU *cpu = opaque;
     cpu_reset(CPU(cpu));
 }
 
-#if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
-static void csr_call(char *cmd, uint64_t cpu_num, int csrno, uint64_t *val)
+#எனில் defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
+நிலையான வெறுமை csr_call(எழுத்து *cmd, uint64_t cpu_இலக்கம், முழு csrno, uint64_t *val)
 {
-    RISCVCPU *cpu = RISCV_CPU(cpu_by_arch_id(cpu_num));
+    RISCVCPU *cpu = RISCV_CPU(cpu_by_arch_id(cpu_இலக்கம்));
     CPURISCVState *env = &cpu->env;
 
     RISCVException ret = RISCV_EXCP_NONE;
-    if (strcmp(cmd, "get_csr") == 0) {
+    எனில் (strcmp(cmd, "get_csr") == 0) {
         ret = riscv_csr_read_i64(env, csrno, val);
-    } else if (strcmp(cmd, "set_csr") == 0) {
+    } இல்லையெனில் எனில் (strcmp(cmd, "set_csr") == 0) {
         ret = riscv_csr_write_i64(env, csrno, *val);
     }
 
     g_assert(ret == RISCV_EXCP_NONE);
 }
 
-static bool csr_qtest_callback(CharFrontend *chr, gchar **words)
+நிலையான bool csr_qtest_callback(CharFrontend *chr, gchar **சொற்கள்)
 {
-    if (strcmp(words[0], "csr") == 0) {
+    எனில் (strcmp(சொற்கள்[0], "csr") == 0) {
 
         uint64_t cpu;
         uint64_t val;
-        int rc, csr;
+        முழு rc, csr;
 
-        rc = qemu_strtou64(words[2], NULL, 0, &cpu);
+        rc = qemu_strtou64(சொற்கள்[2], வெற்று, 0, &cpu);
         g_assert(rc == 0);
-        rc = qemu_strtoi(words[3], NULL, 0, &csr);
+        rc = qemu_strtoi(சொற்கள்[3], வெற்று, 0, &csr);
         g_assert(rc == 0);
-        rc = qemu_strtou64(words[4], NULL, 0, &val);
+        rc = qemu_strtou64(சொற்கள்[4], வெற்று, 0, &val);
         g_assert(rc == 0);
-        csr_call(words[1], cpu, csr, &val);
+        csr_call(சொற்கள்[1], cpu, csr, &val);
 
         qtest_sendf(chr, "OK 0 %"PRIx64"\n", val);
 
-        return true;
+        திரும்பு true;
     }
 
-    return false;
+    திரும்பு false;
 }
 
-static void riscv_cpu_register_csr_qtest_callback(void)
+நிலையான வெறுமை riscv_cpu_register_csr_qtest_callback(வெறுமை)
 {
-    static bool first = true;
-    if (first) {
+    நிலையான bool first = true;
+    எனில் (first) {
         first = false;
         qtest_set_command_cb(csr_qtest_callback);
     }
 }
 #endif
 
-static bool riscv_hart_realize(RISCVHartArrayState *s, int idx,
-                               char *cpu_type, Error **errp)
+நிலையான bool riscv_hart_realize(RISCVHartArrayState *s, முழு idx,
+                               எழுத்து *cpu_type, Error **errp)
 {
     object_initialize_child(OBJECT(s), "harts[*]", &s->harts[idx], cpu_type);
     qdev_prop_set_uint64(DEVICE(&s->harts[idx]), "resetvec", s->resetvec);
 
     /* Use private memory instead of system_memory if provided */
-    if (s->memory) {
+    எனில் (s->memory) {
         object_property_set_link(OBJECT(&s->harts[idx]), "memory",
                                  OBJECT(s->memory), &error_abort);
     }
 
-    if (s->harts[idx].cfg.ext_smrnmi) {
-        if (idx < s->num_rnmi_irqvec) {
+    எனில் (s->harts[idx].cfg.ext_smrnmi) {
+        எனில் (idx < s->இலக்கம்_rnmi_irqvec) {
             qdev_prop_set_uint64(DEVICE(&s->harts[idx]),
                                  "rnmi-interrupt-vector", s->rnmi_irqvec[idx]);
         }
 
-        if (idx < s->num_rnmi_excpvec) {
+        எனில் (idx < s->இலக்கம்_rnmi_excpvec) {
             qdev_prop_set_uint64(DEVICE(&s->harts[idx]),
                                  "rnmi-exception-vector", s->rnmi_excpvec[idx]);
         }
-    } else {
-        if (s->num_rnmi_irqvec > 0) {
+    } இல்லையெனில் {
+        எனில் (s->இலக்கம்_rnmi_irqvec > 0) {
             warn_report_once("rnmi-interrupt-vector property is ignored "
                              "because Smrnmi extension is not enabled.");
         }
 
-        if (s->num_rnmi_excpvec > 0) {
+        எனில் (s->இலக்கம்_rnmi_excpvec > 0) {
             warn_report_once("rnmi-exception-vector property is ignored "
                              "because Smrnmi extension is not enabled.");
         }
@@ -149,30 +149,30 @@ static bool riscv_hart_realize(RISCVHartArrayState *s, int idx,
 
     s->harts[idx].env.mhartid = s->hartid_base + idx;
     qemu_register_reset(riscv_harts_cpu_reset, &s->harts[idx]);
-    return qdev_realize(DEVICE(&s->harts[idx]), NULL, errp);
+    திரும்பு qdev_realize(DEVICE(&s->harts[idx]), வெற்று, errp);
 }
 
-static void riscv_harts_realize(DeviceState *dev, Error **errp)
+நிலையான வெறுமை riscv_harts_realize(DeviceState *dev, Error **errp)
 {
     RISCVHartArrayState *s = RISCV_HART_ARRAY(dev);
-    int n;
+    முழு n;
 
-    s->harts = g_new0(RISCVCPU, s->num_harts);
+    s->harts = g_new0(RISCVCPU, s->இலக்கம்_harts);
 
-#if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
-    if (qtest_enabled()) {
+#எனில் defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
+    எனில் (qtest_enabled()) {
         riscv_cpu_register_csr_qtest_callback();
     }
 #endif
 
-    for (n = 0; n < s->num_harts; n++) {
-        if (!riscv_hart_realize(s, n, s->cpu_type, errp)) {
-            return;
+    க்கு (n = 0; n < s->இலக்கம்_harts; n++) {
+        எனில் (!riscv_hart_realize(s, n, s->cpu_type, errp)) {
+            திரும்பு;
         }
     }
 }
 
-static void riscv_harts_class_init(ObjectClass *klass, const void *data)
+நிலையான வெறுமை riscv_harts_class_init(ObjectClass *klass, மாறிலி வெறுமை *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
 
@@ -180,14 +180,14 @@ static void riscv_harts_class_init(ObjectClass *klass, const void *data)
     dc->realize = riscv_harts_realize;
 }
 
-static const TypeInfo riscv_harts_info = {
+நிலையான மாறிலி TypeInfo riscv_harts_info = {
     .name          = TYPE_RISCV_HART_ARRAY,
     .parent        = TYPE_SYS_BUS_DEVICE,
-    .instance_size = sizeof(RISCVHartArrayState),
+    .instance_size = அளவு(RISCVHartArrayState),
     .class_init    = riscv_harts_class_init,
 };
 
-static void riscv_harts_register_types(void)
+நிலையான வெறுமை riscv_harts_register_types(வெறுமை)
 {
     type_register_static(&riscv_harts_info);
 }
