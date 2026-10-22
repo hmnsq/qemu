@@ -1,0 +1,475 @@
+# What is still missing
+
+76 languages. Each line says in how many languages it is missing.
+
+## Files in languages BURP cannot read yet
+
+
+## Keywords with no word in a language's table
+
+- guru:EXIT_FAILURE: 71
+- guru:size_t: 71
+- guru:sprintf: 71
+- guru:atoi: 71
+- guru:strcmp: 70
+- guru:memset: 70
+- guru:#define: 66
+- guru:#endif: 66
+- guru:#ifndef: 66
+- guru:#error: 66
+- guru:#ifdef: 66
+- guru:unsigned: 62
+- guru:exit: 62
+- guru:long: 62
+- guru:strlen: 62
+- guru:memcpy: 62
+- guru:void: 25
+- guru:static: 25
+- guru:const: 25
+- guru:NULL: 25
+- guru:goto: 25
+- guru:switch: 25
+- guru:default: 25
+- guru:assert: 25
+- guru:typedef: 25
+- guru:continue: 25
+- guru:read: 25
+- guru:write: 25
+- guru:do: 25
+- guru:for: 9
+- guru:char: 9
+- guru:case: 9
+- guru:sizeof: 9
+- guru:break: 9
+- guru:struct: 9
+- guru:enum: 9
+- guru:inline: 9
+- guru:if: 1
+- guru:return: 1
+- guru:int: 1
+- guru:else: 1
+- guru:while: 1
+- guru:#if: 1
+
+## Names with no dictionary entry (the most common first)
+
+- `s`: 76
+- `memmap`: 76
+- `fdt`: 76
+- `i`: 76
+- `uint32_t`: 76
+- `ms`: 76
+- `machine`: 76
+- `name`: 76
+- `dev`: 76
+- `nodename`: 76
+- `addr`: 76
+- `uint64_t`: 76
+- `ctx`: 76
+- `mc`: 76
+- `SYS_BUS_DEVICE`: 76
+- `socket`: 76
+- `obj`: 76
+- `qemu_fdt_setprop_cell`: 76
+- `OBJECT`: 76
+- `build_append_int_noprefix`: 76
+- `cpu`: 76
+- `soc`: 76
+- `cpus`: 76
+- `DEVICE`: 76
+- `hwaddr`: 76
+- `create_unimplemented_device`: 76
+- `errp`: 76
+- `RISCVIOMMUState`: 76
+- `val`: 76
+- `props`: 76
+- `MachineState`: 76
+- `qemu_fdt_setprop_string`: 76
+- `error_fatal`: 76
+- `boot_info`: 76
+- `g_strdup_printf`: 76
+- `dc`: 76
+- `g_autofree`: 76
+- `intc_phandles`: 76
+- `smp`: 76
+- `sc`: 76
+- `iommu`: 76
+- `pass`: 76
+- `oc`: 76
+- `error_abort`: 76
+- `sysbus_realize`: 76
+- `plic`: 76
+- `DeviceState`: 76
+- `GENMASK_ULL`: 76
+- `devid`: 76
+- `iotlb`: 76
+- `qemu_fdt_setprop_cells`: 76
+- `iot`: 76
+- `g_free`: 76
+- `Object`: 76
+- `iova`: 76
+- `error_report`: 76
+- `aia_type`: 76
+- `RISCVIOMMUEntry`: 76
+- `info`: 76
+- `cmd`: 76
+- `RISCVVirtState`: 76
+- `harts`: 76
+- `socket_id`: 76
+- `pte`: 76
+- `as`: 76
+- `reset_vec`: 76
+- `sysbus_connect_irq`: 76
+- `cap`: 76
+- `Error`: 76
+- `MACHINE`: 76
+- `sysbus_mmio_map`: 76
+- `opaque`: 76
+- `bus`: 76
+- `idx`: 76
+- `RISCVIOMMUContext`: 76
+- `qemu_fdt_setprop`: 76
+- `phandle`: 76
+- `perm`: 76
+- `sys_mem`: 76
+- `tc`: 76
+- `gpointer`: 76
+- `n`: 76
+- `arg`: 76
+- `numa_enabled`: 76
+- `firmware_name`: 76
+- `len`: 76
+- `kernel_filename`: 76
+- `flash`: 76
+- `g_new0`: 76
+- `cv1800b_memmap`: 76
+- `uint8_t`: 76
+- `gatp`: 76
+- `res`: 76
+- `aml_append`: 76
+- `tables`: 76
+- `MachineClass`: 76
+- `riscv_iommu_reg_get32`: 76
+- `regs`: 76
+- `ev`: 76
+- `linker`: 76
+- `aia_guests`: 76
+- `cfg`: 76
+- `ObjectClass`: 76
+- `class_init`: 76
+- `TypeInfo`: 76
+- `dword0`: 76
+- `process_id`: 76
+- `regs_ro`: 76
+- `ret`: 76
+- `firmware`: 76
+- `irqchip`: 76
+- `tables_blob`: 76
+- `MEMTX_OK`: 76
+- `ctx_cache`: 76
+- `stl_le_p`: 76
+- `ams`: 76
+- `scope`: 76
+- `g_new`: 76
+- `irq`: 76
+- `serial_hd`: 76
+- `klass`: 76
+- `qemu_fdt_setprop_sized_cells`: 76
+- `possible_cpus`: 76
+- `satp`: 76
+- `iot_cache`: 76
+- `type_init`: 76
+- `hdr`: 76
+- `PPN_PHYS`: 76
+- `MEMTX_ACCESS_ERROR`: 76
+- `rvserver_ref_memmap`: 76
+- `build_state`: 76
+- `RISCVBootInfo`: 76
+- `instance_init`: 76
+- `devfn`: 76
+- `u_cpus`: 76
+- `numa_state`: 76
+- `pscid`: 76
+- `gscid`: 76
+- `func`: 76
+- `fault`: 76
+- `RISCVHartArrayState`: 76
+- `uart`: 76
+- `HWADDR_PRIx`: 76
+- `cpu_type`: 76
+- `dma`: 76
+- `riscv_iommu_reg_mod32`: 76
+- `err`: 76
+- `attrs`: 76
+- `filename`: 76
+- `dtb`: 76
+- `mem`: 76
+- `oem_id`: 76
+- `kvm_enabled`: 76
+- `lcd_content`: 76
+- `plic_hart_config`: 76
+- `fdt_event_ctr_map`: 76
+- `ctr_idx`: 76
+- `mmio_irqchip`: 76
+- `ctrl`: 76
+- `IOMMU_NONE`: 76
+- `ref`: 76
+- `irq_mmio_phandle`: 76
+- `phandle_pos`: 76
+- `xplic_phandles`: 76
+- `max_cpus`: 76
+- `RISCV_ACLINT_DEFAULT_MTIME`: 76
+- `qdev_realize`: 76
+- `riscv_numa_enabled`: 76
+- `cause`: 76
+- `msimode`: 76
+- `firmware_filename`: 76
+- `stq_le_p`: 76
+- `qdev_new`: 76
+- `desc`: 76
+- `irq_pcie_phandle`: 76
+- `msi_m_phandle`: 76
+- `aplic_addr`: 76
+- `aplic_name`: 76
+- `v`: 76
+- `ptidxbits`: 76
+- `ptesize`: 76
+- `RISCVServerRefMachineState`: 76
+- `TTAtlantisSoCState`: 76
+- `GArray`: 76
+- `Aml`: 76
+- `RISCV_VIRT_MACHINE`: 76
+- `bdf`: 76
+- `aplic_m`: 76
+- `g_assert`: 76
+- `fw_cfg`: 76
+- `DEVICE_LITTLE_ENDIAN`: 76
+- `ram`: 76
+- `TYPE_RISCV_HART_ARRAY`: 76
+- `id`: 76
+- `cpu_name`: 76
+- `plic_phandle`: 76
+- `imsic_name`: 76
+- `msi_s_phandle`: 76
+- `MACHINE_GET_CLASS`: 76
+- `RISCVIOMMUStateSys`: 76
+- `iommu_sys`: 76
+- `ppn`: 76
+- `icvec`: 76
+- `dma_addr_t`: 76
+- `ctrl_clr`: 76
+- `aclint_props`: 76
+- `arch_ids`: 76
+- `container`: 76
+- `riscv_is_32bit`: 76
+- `sysbus_mmio_get_region`: 76
+- `init`: 76
+- `riscv_aclint_mtimer_create`: 76
+- `RISCV_ACLINT_DEFAULT_MTIMECMP`: 76
+- `DeviceClass`: 76
+- `DEVICE_CLASS`: 76
+- `realize`: 76
+- `sysmem`: 76
+- `pmu_name`: 76
+- `iommu_phandle`: 76
+- `msi_pcie_phandle`: 76
+- `sz`: 76
+- `aml_name_decl`: 76
+- `VIRT_CLINT`: 76
+- `aplic_props`: 76
+- `riscv_boot_info_init`: 76
+- `sysbus_realize_and_unref`: 76
+- `default_ram_id`: 76
+- `DEFINE_PROP_UINT32`: 76
+- `sdhci`: 76
+- `aplic_s_phandle`: 76
+- `eth0`: 76
+- `e_cpus`: 76
+- `j`: 76
+- `RISCV_IOMMU_REG_CQCSR`: 76
+- `ta`: 76
+- `RISCVIOMMUSpace`: 76
+- `intn`: 76
+- `ddtp`: 76
+- `regb`: 76
+- `sss`: 76
+- `cs`: 76
+- `env`: 76
+- `MiB`: 76
+- `boston_memmap`: 76
+- `default_cpu_type`: 76
+- `RISCVCPU`: 76
+- `riscv_aclint_swi_create`: 76
+- `RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ`: 76
+- `clust_name`: 76
+- `cpu_ptr`: 76
+- `plic_cells`: 76
+- `flashsize`: 76
+- `MACHINE_CLASS`: 76
+- `TYPE_MACHINE`: 76
+- `valid_cpu_types`: 76
+- `RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED`: 76
+- `inhibit`: 76
+- `RISCVIOMMUStatePci`: 76
+- `MEMTXATTRS_UNSPECIFIED`: 76
+- `pr`: 76
+- `PTE_W`: 76
+- `de`: 76
+- `aplic_fdt_props`: 76
+- `shakti_c_memmap`: 76
+- `gpio`: 76
+- `prci_phandle`: 76
+- `TT_ATL_DDR_LO`: 76
+- `prcm_rcpu_phandle`: 76
+- `prcm`: 76
+- `VIRT_PLIC`: 76
+- `kernel_cmdline`: 76
+- `cps`: 76
+- `TYPE_DEVICE`: 76
+- `notify`: 76
+- `RISCV_IOMMU_REG_FQCSR`: 76
+- `RISCV_IOMMU_REG_PQCSR`: 76
+- `RISCV_IOMMU_REG_IOCOUNTINH`: 76
+- `riscv_iommu_reg_get64`: 76
+- `ovf`: 76
+- `riscv_iommu_hpm_incr_ctr`: 76
+- `event_id`: 76
+- `rc`: 76
+- `va_skip`: 76
+- `transtag`: 76
+- `pcie_irqchip`: 76
+- `crs`: 76
+- `VIRT_VIRTIO`: 76
+- `AcpiRimtIdMapping`: 76
+- `aplic_s`: 76
+- `const_le32`: 76
+- `BostonState`: 76
+- `error_setg`: 76
+- `qdev_get_machine`: 76
+- `user_creatable`: 76
+- `flashbase`: 76
+- `msi_phandle`: 76
+- `aclint_mtimer_cells`: 76
+- `notifier`: 76
+- `gem0`: 76
+- `dinfo`: 76
+
+## Comments with no translation
+
+- Reserved: 76
+- Type: 76
+- Flags: 76
+- Initialize SoC: 76
+- fall through: 76
+- Revision: 76
+- Reason: Uses serial_hds in realize function, thus can't be used twice: 76
+- load the reset vector: 76
+- boot rom: 76
+- Hardware ID: 76
+- csrr   a0, mhartid: 76
+- PLIC: 76
+- CLINT: 76
+- UART: 76
+- FPGA Fabric: 76
+- Check socket count limit: 76
+- Initialize sockets: 76
+- register system main memory (actual RAM): 76
+- load/create device tree: 76
+- platform instead of architectural choice: 76
+- ACPI Processor UID: 76
+- The RISC-V Advanced Interrupt Architecture, Chapter 1.2. Limits: 76
+- 1:  auipc  t0, %pcrel_hi(fw_dyn): 76
+- addi   a2, t0, %pcrel_lo(1b): 76
+- hartid_base: 76
+- num_harts: 76
+- M-level IMSIC node: 76
+- S-level IMSIC node: 76
+- M-level APLIC node: 76
+- S-level APLIC node: 76
+- Per-socket PLIC hart topology configuration string: 76
+- Per-socket PLIC: 76
+- unimplemented devices: 76
+- * Set the `num-harts` property later as the machine is potentially not
+     * created yet.: 76
+- * The cluster must be realized after the RISC-V hart array container,
+     * as the container's CPU : 76
+- * Add L2-LIM at reset size.
+     * This should be reduced in size as the L2 Cache Controller WayEnab: 76
+- create PLIC hart topology configuration string: 76
+- Register RAM: 76
+- Boot ROM: 76
+- Flash memory: 76
+- Header fields: 76
+- Translation attributes fields: 76
+- FIXME: PCIe bus remapping for attached endpoints.: 76
+- Address range check before first level lookup: 76
+- Read page table entry: 76
+- Invalid PTE: 76
+- Inner PTE, continue walking: 76
+- Reserved leaf PTE flags: PTE_W: 76
+- Reserved leaf PTE flags: PTE_W + PTE_X: 76
+- Misaligned PPN: 76
+- Leaf PTE, translation completed.: 76
+- Continue with G-Stage translation?: 76
+- Can't find leaf PTE: 76
+- caller should keep ref-count for iot_cache object: 76
+- < private >: 76
+- < public >: 76
+- * The "/soc/pci@..." node is needed for PCIE hotplugs
+     * that might happen before finalize_fdt(): 76
+- Pass seed to RNG: 76
+- * An user provided dtb must include everything, including
+     * dynamic sysbus devices. Our FDT nee: 76
+- * Pflash was supplied but bios is none and not KVM guest,
+             * let's overwrite the address: 76
+- * Pflash was supplied but either KVM guest or bios is not none.
+             * In this case, base of: 76
+- Per-socket ACLINT MTIMER: 76
+- Per-socket interrupt controller: 76
+- Try to use different IRQCHIP instance based device type: 76
+- Map legacy -drive if=pflash to machine properties: 76
+- register RAM: 76
+- ROM reset vector: 76
+- ROM: 76
+- copy in the reset vector in little_endian byte order: 76
+- MMIO: 76
+- Pass all GPIOs to the SOC layer so they are available to the board: 76
+- Connect GPIO interrupts to the PLIC: 76
+- * If dynamic firmware is used, it doesn't know where is the next mode
+        * if kernel argument i: 76
+- I2C peripherals: qemu specific: 76
+- not a PCI device: 76
+- IMSIC: 76
+- Total External Interrupt Sources Supported: 76
+- Base Address: 76
+- Proximity Domain: 76
+- PCI Segment number: 76
+- Prevent IMSIC MMIO regions from silently overlapping: 76
+- Per-socket M-level IMSICs: 76
+- Per-socket S-level IMSICs: 76
+- Per-socket M-level APLIC: 76
+- Per-socket S-level APLIC: 76
+- * Return the per-socket PLIC hart topology configuration string
+ * (caller must free with g_free()): 76
+- g_strjoinv() obliges us to cast away const here: 76
+- * This can be used instead of riscv_boot_info_init() if the machine has
+ * discontiguous physical me: 76
+- * We only ship OpenSBI binary bios images in the QEMU source.
+             * For machines that use i: 76
+- * The user didn't specify -bios, or has specified "-bios default".
+         * That means we are goin: 76
+- If not "none" load the firmware: 76
+- * If the user specified an ELF format firmware that could not be
+         * loaded as an ELF, it's p: 76
+- * We want to put the initrd far enough into RAM that when the
+     * kernel is uncompressed it will : 76
+- Some RISC-V machines (e.g. opentitan) don't have a fdt.: 76
+- * NB: Use low address not ELF entry point to ensure that the fw_dynamic
+     * behaviour when loadin: 76
+- * For 32 bit CPUs 'image_low_addr' can be sign-extended by
+     * load_elf_ram_sym().: 76
+- * This function makes an assumption that the DRAM interval
+ * 'dram_base' + 'dram_size' is contiguou: 76
+- Should only fail if we've built a corrupted tree: 76
+- If initrd is successfully loaded, place DTB after it.: 76
+- If only kernel is successfully loaded, place DTB after it.: 76
