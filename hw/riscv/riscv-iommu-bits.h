@@ -23,7 +23,7 @@
  * struct riscv_iommu_fq_record - Fault/Event Queue Record
  * See section 3.2 for more info.
  */
-struct riscv_iommu_fq_record {
+بنية riscv_iommu_fq_record {
     uint64_t hdr;
     uint64_t _reserved;
     uint64_t iotval;
@@ -40,7 +40,7 @@ struct riscv_iommu_fq_record {
  * struct riscv_iommu_pq_record - PCIe Page Request record
  * For more infos on the PCIe Page Request queue see chapter 3.3.
  */
-struct riscv_iommu_pq_record {
+بنية riscv_iommu_pq_record {
       uint64_t hdr;
       uint64_t payload;
 };
@@ -97,7 +97,7 @@ struct riscv_iommu_pq_record {
 #define RISCV_IOMMU_CAP_PD17            BIT_ULL(39)
 #define RISCV_IOMMU_CAP_PD20            BIT_ULL(40)
 
-enum riscv_iommu_igs_modes {
+تعداد riscv_iommu_igs_modes {
     RISCV_IOMMU_CAP_IGS_MSI = 0,
     RISCV_IOMMU_CAP_IGS_WSI,
     RISCV_IOMMU_CAP_IGS_BOTH
@@ -115,7 +115,7 @@ enum riscv_iommu_igs_modes {
 #define RISCV_IOMMU_DDTP_BUSY           BIT_ULL(4)
 #define RISCV_IOMMU_DDTP_PPN            RISCV_IOMMU_PPN_FIELD
 
-enum riscv_iommu_ddtp_modes {
+تعداد riscv_iommu_ddtp_modes {
     RISCV_IOMMU_DDTP_MODE_OFF = 0,
     RISCV_IOMMU_DDTP_MODE_BARE = 1,
     RISCV_IOMMU_DDTP_MODE_1LVL = 2,
@@ -193,15 +193,15 @@ enum riscv_iommu_ddtp_modes {
 #define RISCV_IOMMU_IPSR_PMIP           BIT(2)
 #define RISCV_IOMMU_IPSR_PIP            BIT(3)
 
-enum {
+تعداد {
     RISCV_IOMMU_INTR_CQ,
     RISCV_IOMMU_INTR_FQ,
     RISCV_IOMMU_INTR_PM,
     RISCV_IOMMU_INTR_PQ,
-    RISCV_IOMMU_INTR_COUNT
+    RISCV_IOMMU_INTR_کيراءن
 };
 
-#define RISCV_IOMMU_IOCOUNT_NUM         31
+#define RISCV_IOMMU_IOCOUNT_اڠک         31
 
 /* 5.19 Performance monitoring counter overflow status (32bits) */
 #define RISCV_IOMMU_REG_IOCOUNTOVF      0x0058
@@ -234,7 +234,7 @@ enum {
 #define RISCV_IOMMU_IOHPMEVT_IDT        BIT_ULL(62)
 #define RISCV_IOMMU_IOHPMEVT_OF         BIT_ULL(63)
 
-enum RISCV_IOMMU_HPMEVENT_id {
+تعداد RISCV_IOMMU_HPMEVENT_id {
     RISCV_IOMMU_HPMEVENT_INVALID    = 0,
     RISCV_IOMMU_HPMEVENT_URQ        = 1,
     RISCV_IOMMU_HPMEVENT_TRQ        = 2,
@@ -279,7 +279,7 @@ enum RISCV_IOMMU_HPMEVENT_id {
 #define RISCV_IOMMU_DDTE_PPN            RISCV_IOMMU_PPN_FIELD
 
 /* Struct riscv_iommu_dc - Device Context - section 2.1 */
-struct riscv_iommu_dc {
+بنية riscv_iommu_dc {
       uint64_t tc;
       uint64_t iohgatp;
       uint64_t ta;
@@ -312,7 +312,7 @@ struct riscv_iommu_dc {
 #define RISCV_IOMMU_DC_TC_RESERVED      (GENMASK_ULL(23, 12) \
                                          | GENMASK_ULL(63, 32))
 
-enum riscv_iommu_dc_iohgatp_modes {
+تعداد riscv_iommu_dc_iohgatp_modes {
     RISCV_IOMMU_DC_IOHGATP_MODE_BARE = 0,
     RISCV_IOMMU_DC_IOHGATP_MODE_SV32X4 = 8,
     RISCV_IOMMU_DC_IOHGATP_MODE_SV39X4 = 8,
@@ -328,7 +328,7 @@ enum riscv_iommu_dc_iohgatp_modes {
 #define RISCV_IOMMU_DC_FSC_MODE         RISCV_IOMMU_ATP_MODE_FIELD
 
 /* Generic I/O MMU command structure - check section 3.1 */
-struct riscv_iommu_command {
+بنية riscv_iommu_command {
     uint64_t dword0;
     uint64_t dword1;
 };
@@ -372,7 +372,7 @@ struct riscv_iommu_command {
 /* ATS.PRGR payload */
 #define RISCV_IOMMU_CMD_ATS_PRGR_RESP_CODE      GENMASK_ULL(47, 44)
 
-enum riscv_iommu_dc_fsc_atp_modes {
+تعداد riscv_iommu_dc_fsc_atp_modes {
     RISCV_IOMMU_DC_FSC_MODE_BARE = 0,
     RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV32 = 8,
     RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39 = 8,
@@ -383,7 +383,7 @@ enum riscv_iommu_dc_fsc_atp_modes {
     RISCV_IOMMU_DC_FSC_PDTP_MODE_PD20 = 3
 };
 
-enum riscv_iommu_fq_causes {
+تعداد riscv_iommu_fq_causes {
     RISCV_IOMMU_FQ_CAUSE_INST_FAULT           = 1,
     RISCV_IOMMU_FQ_CAUSE_RD_ADDR_MISALIGNED   = 4,
     RISCV_IOMMU_FQ_CAUSE_RD_FAULT             = 5,
@@ -434,7 +434,7 @@ enum riscv_iommu_fq_causes {
 #define RISCV_IOMMU_PC_FSC_PPN          RISCV_IOMMU_ATP_PPN_FIELD
 #define RISCV_IOMMU_PC_FSC_RESERVED     GENMASK_ULL(59, 44)
 
-enum riscv_iommu_fq_ttypes {
+تعداد riscv_iommu_fq_ttypes {
     RISCV_IOMMU_FQ_TTYPE_NONE = 0,
     RISCV_IOMMU_FQ_TTYPE_UADDR_INST_FETCH = 1,
     RISCV_IOMMU_FQ_TTYPE_UADDR_RD = 2,
@@ -443,13 +443,13 @@ enum riscv_iommu_fq_ttypes {
     RISCV_IOMMU_FQ_TTYPE_TADDR_RD = 6,
     RISCV_IOMMU_FQ_TTYPE_TADDR_WR = 7,
     RISCV_IOMMU_FQ_TTYPE_PCIE_ATS_REQ = 8,
-    RISCV_IOMMU_FW_TTYPE_PCIE_MSG_REQ = 9,
+    RISCV_IOMMU_FW_TTYPE_PCIE_ڤسنن_REQ = 9,
 };
 
 /*
  * struct riscv_iommu_msi_pte - MSI Page Table Entry
  */
-struct riscv_iommu_msi_pte {
+بنية riscv_iommu_msi_pte {
       uint64_t pte;
       uint64_t mrif_info;
 };
