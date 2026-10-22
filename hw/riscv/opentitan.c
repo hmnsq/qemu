@@ -18,17 +18,17 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/cutils.h"
-#include "hw/riscv/opentitan.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "hw/core/boards.h"
-#include "hw/misc/unimp.h"
-#include "hw/riscv/boot.h"
-#include "qemu/units.h"
-#include "system/system.h"
-#include "system/address-spaces.h"
+#समावेश "qemu/osdep.h"
+#समावेश "qemu/cutils.h"
+#समावेश "hw/riscv/opentitan.h"
+#समावेश "qapi/error.h"
+#समावेश "qemu/error-report.h"
+#समावेश "hw/core/boards.h"
+#समावेश "hw/misc/unimp.h"
+#समावेश "hw/riscv/boot.h"
+#समावेश "qemu/units.h"
+#समावेश "system/system.h"
+#समावेश "system/address-spaces.h"
 
 /*
  * This version of the OpenTitan machine currently supports
@@ -38,7 +38,7 @@
  * MMIO mapping as per (specified commit):
  * lowRISC/opentitan: hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h
  */
-static const MemMapEntry ibex_memmap[] = {
+अटल स्थिर MemMapEntry ibex_memmap[] = {
     [IBEX_DEV_ROM] =            {  0x00008000,  0x8000      },
     [IBEX_DEV_RAM] =            {  0x10000000,  0x20000     },
     [IBEX_DEV_FLASH] =          {  0x20000000,  0x100000    },
@@ -76,45 +76,45 @@ static const MemMapEntry ibex_memmap[] = {
     [IBEX_DEV_FLASH_VIRTUAL] =  {  0x80000000,  0x80000     },
 };
 
-static void opentitan_machine_init(MachineState *machine)
+अटल व्योम opentitan_machine_init(MachineState *machine)
 {
     MachineClass *mc = MACHINE_GET_CLASS(machine);
     OpenTitanState *s = OPENTITAN_MACHINE(machine);
-    const MemMapEntry *memmap = ibex_memmap;
+    स्थिर MemMapEntry *memmap = ibex_memmap;
     MemoryRegion *sys_mem = get_system_memory();
     RISCVBootInfo boot_info;
 
-    if (machine->ram_size != mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    अगर (machine->ram_आकार != mc->default_ram_आकार) {
+        अक्षर *sz = आकार_to_str(mc->default_ram_आकार);
         error_report("Invalid RAM size, should be %s", sz);
         g_free(sz);
-        exit(EXIT_FAILURE);
+        निकास(निकास_त्रुटि);
     }
 
     /* Initialize SoC */
     object_initialize_child(OBJECT(machine), "soc", &s->soc,
                             TYPE_RISCV_IBEX_SOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&s->soc), शून्य, &error_fatal);
 
     memory_region_add_subregion(sys_mem,
         memmap[IBEX_DEV_RAM].base, machine->ram);
 
     riscv_boot_info_init(&boot_info, &s->soc.cpus);
 
-    if (machine->firmware) {
+    अगर (machine->firmware) {
         hwaddr firmware_load_addr = memmap[IBEX_DEV_RAM].base;
         riscv_load_firmware(machine, &boot_info, machine->firmware,
-                            &firmware_load_addr, NULL);
+                            &firmware_load_addr, शून्य);
     }
 
-    if (machine->kernel_filename) {
+    अगर (machine->kernel_filename) {
         riscv_load_kernel(machine, &boot_info,
                           memmap[IBEX_DEV_RAM].base,
-                          false, NULL);
+                          false, शून्य);
     }
 }
 
-static void opentitan_machine_class_init(ObjectClass *oc, const void *data)
+अटल व्योम opentitan_machine_class_init(ObjectClass *oc, स्थिर व्योम *तथ्य)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -123,12 +123,12 @@ static void opentitan_machine_class_init(ObjectClass *oc, const void *data)
     mc->max_cpus = 1;
     mc->default_cpu_type = TYPE_RISCV_CPU_IBEX;
     mc->default_ram_id = "riscv.lowrisc.ibex.ram";
-    mc->default_ram_size = ibex_memmap[IBEX_DEV_RAM].size;
+    mc->default_ram_आकार = ibex_memmap[IBEX_DEV_RAM].आकार;
 }
 
-static void lowrisc_ibex_soc_init(Object *obj)
+अटल व्योम lowrisc_ibex_soc_init(Object *obj)
 {
-    LowRISCIbexSoCState *s = RISCV_IBEX_SOC(obj);
+    निचला_RISCIbex_So_CState *s = RISCV_IBEX_SOC(obj);
 
     object_initialize_child(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
 
@@ -138,21 +138,21 @@ static void lowrisc_ibex_soc_init(Object *obj)
 
     object_initialize_child(obj, "timer", &s->timer, TYPE_IBEX_TIMER);
 
-    for (int i = 0; i < OPENTITAN_NUM_SPI_HOSTS; i++) {
+    क्रम (पूर्णांक i = 0; i < OPENTITAN_अंक_SPI_HOSTS; i++) {
         object_initialize_child(obj, "spi_host[*]", &s->spi_host[i],
                                 TYPE_IBEX_SPI_HOST);
     }
 }
 
-static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
+अटल व्योम lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
 {
-    const MemMapEntry *memmap = ibex_memmap;
+    स्थिर MemMapEntry *memmap = ibex_memmap;
     DeviceState *dev;
     SysBusDevice *busdev;
     MachineState *ms = MACHINE(qdev_get_machine());
-    LowRISCIbexSoCState *s = RISCV_IBEX_SOC(dev_soc);
+    निचला_RISCIbex_So_CState *s = RISCV_IBEX_SOC(dev_soc);
     MemoryRegion *sys_mem = get_system_memory();
-    int i;
+    पूर्णांक i;
 
     object_property_set_str(OBJECT(&s->cpus), "cpu-type", ms->cpu_type,
                             &error_abort);
@@ -164,16 +164,16 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
 
     /* Boot ROM */
     memory_region_init_rom(&s->rom, OBJECT(dev_soc), "riscv.lowrisc.ibex.rom",
-                           memmap[IBEX_DEV_ROM].size, &error_fatal);
+                           memmap[IBEX_DEV_ROM].आकार, &error_fatal);
     memory_region_add_subregion(sys_mem,
         memmap[IBEX_DEV_ROM].base, &s->rom);
 
     /* Flash memory */
     memory_region_init_rom(&s->flash_mem, OBJECT(dev_soc), "riscv.lowrisc.ibex.flash",
-                           memmap[IBEX_DEV_FLASH].size, &error_fatal);
+                           memmap[IBEX_DEV_FLASH].आकार, &error_fatal);
     memory_region_init_alias(&s->flash_alias, OBJECT(dev_soc),
                              "riscv.lowrisc.ibex.flash_virtual", &s->flash_mem, 0,
-                             memmap[IBEX_DEV_FLASH_VIRTUAL].size);
+                             memmap[IBEX_DEV_FLASH_VIRTUAL].आकार);
     memory_region_add_subregion(sys_mem, memmap[IBEX_DEV_FLASH].base,
                                 &s->flash_mem);
     memory_region_add_subregion(sys_mem, memmap[IBEX_DEV_FLASH_VIRTUAL].base,
@@ -188,14 +188,14 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
     qdev_prop_set_uint32(DEVICE(&s->plic), "enable-stride", 32);
     qdev_prop_set_uint32(DEVICE(&s->plic), "context-base", 0x200000);
     qdev_prop_set_uint32(DEVICE(&s->plic), "context-stride", 8);
-    qdev_prop_set_uint32(DEVICE(&s->plic), "aperture-size", memmap[IBEX_DEV_PLIC].size);
+    qdev_prop_set_uint32(DEVICE(&s->plic), "aperture-size", memmap[IBEX_DEV_PLIC].आकार);
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->plic), errp)) {
-        return;
+    अगर (!sysbus_realize(SYS_BUS_DEVICE(&s->plic), errp)) {
+        वापस;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->plic), 0, memmap[IBEX_DEV_PLIC].base);
 
-    for (i = 0; i < ms->smp.cpus; i++) {
+    क्रम (i = 0; i < ms->smp.cpus; i++) {
         CPUState *cpu = qemu_get_cpu(i);
 
         qdev_connect_gpio_out(DEVICE(&s->plic), ms->smp.cpus + i,
@@ -204,8 +204,8 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
 
     /* UART */
     qdev_prop_set_chr(DEVICE(&(s->uart)), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
-        return;
+    अगर (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
+        वापस;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->uart), 0, memmap[IBEX_DEV_UART].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->uart),
@@ -221,8 +221,8 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
                        3, qdev_get_gpio_in(DEVICE(&s->plic),
                        IBEX_UART0_RX_OVERFLOW_IRQ));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->timer), errp)) {
-        return;
+    अगर (!sysbus_realize(SYS_BUS_DEVICE(&s->timer), errp)) {
+        वापस;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->timer), 0, memmap[IBEX_DEV_TIMER].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->timer),
@@ -233,89 +233,89 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
                                            IRQ_M_TIMER));
 
     /* SPI-Hosts */
-    for (i = 0; i < OPENTITAN_NUM_SPI_HOSTS; ++i) {
+    क्रम (i = 0; i < OPENTITAN_अंक_SPI_HOSTS; ++i) {
         dev = DEVICE(&(s->spi_host[i]));
-        if (!sysbus_realize(SYS_BUS_DEVICE(&s->spi_host[i]), errp)) {
-            return;
+        अगर (!sysbus_realize(SYS_BUS_DEVICE(&s->spi_host[i]), errp)) {
+            वापस;
         }
         busdev = SYS_BUS_DEVICE(dev);
         sysbus_mmio_map(busdev, 0, memmap[IBEX_DEV_SPI_HOST0 + i].base);
 
-        switch (i) {
-        case OPENTITAN_SPI_HOST0:
+        चयन (i) {
+        हाल OPENTITAN_SPI_HOST0:
             sysbus_connect_irq(busdev, 0, qdev_get_gpio_in(DEVICE(&s->plic),
                                 IBEX_SPI_HOST0_ERR_IRQ));
             sysbus_connect_irq(busdev, 1, qdev_get_gpio_in(DEVICE(&s->plic),
                                 IBEX_SPI_HOST0_SPI_EVENT_IRQ));
-            break;
-        case OPENTITAN_SPI_HOST1:
+            अवरोध;
+        हाल OPENTITAN_SPI_HOST1:
             sysbus_connect_irq(busdev, 0, qdev_get_gpio_in(DEVICE(&s->plic),
                                 IBEX_SPI_HOST1_ERR_IRQ));
             sysbus_connect_irq(busdev, 1, qdev_get_gpio_in(DEVICE(&s->plic),
                                 IBEX_SPI_HOST1_SPI_EVENT_IRQ));
-            break;
+            अवरोध;
         }
     }
 
     create_unimplemented_device("riscv.lowrisc.ibex.gpio",
-        memmap[IBEX_DEV_GPIO].base, memmap[IBEX_DEV_GPIO].size);
+        memmap[IBEX_DEV_GPIO].base, memmap[IBEX_DEV_GPIO].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.spi_device",
-        memmap[IBEX_DEV_SPI_DEVICE].base, memmap[IBEX_DEV_SPI_DEVICE].size);
+        memmap[IBEX_DEV_SPI_DEVICE].base, memmap[IBEX_DEV_SPI_DEVICE].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.i2c",
-        memmap[IBEX_DEV_I2C].base, memmap[IBEX_DEV_I2C].size);
+        memmap[IBEX_DEV_I2C].base, memmap[IBEX_DEV_I2C].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.pattgen",
-        memmap[IBEX_DEV_PATTGEN].base, memmap[IBEX_DEV_PATTGEN].size);
+        memmap[IBEX_DEV_PATTGEN].base, memmap[IBEX_DEV_PATTGEN].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.sensor_ctrl",
-        memmap[IBEX_DEV_SENSOR_CTRL].base, memmap[IBEX_DEV_SENSOR_CTRL].size);
+        memmap[IBEX_DEV_SENSOR_CTRL].base, memmap[IBEX_DEV_SENSOR_CTRL].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.otp_ctrl",
-        memmap[IBEX_DEV_OTP_CTRL].base, memmap[IBEX_DEV_OTP_CTRL].size);
+        memmap[IBEX_DEV_OTP_CTRL].base, memmap[IBEX_DEV_OTP_CTRL].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.lc_ctrl",
-        memmap[IBEX_DEV_LC_CTRL].base, memmap[IBEX_DEV_LC_CTRL].size);
+        memmap[IBEX_DEV_LC_CTRL].base, memmap[IBEX_DEV_LC_CTRL].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.pwrmgr",
-        memmap[IBEX_DEV_PWRMGR].base, memmap[IBEX_DEV_PWRMGR].size);
+        memmap[IBEX_DEV_PWRMGR].base, memmap[IBEX_DEV_PWRMGR].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.rstmgr",
-        memmap[IBEX_DEV_RSTMGR].base, memmap[IBEX_DEV_RSTMGR].size);
+        memmap[IBEX_DEV_RSTMGR].base, memmap[IBEX_DEV_RSTMGR].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.clkmgr",
-        memmap[IBEX_DEV_CLKMGR].base, memmap[IBEX_DEV_CLKMGR].size);
+        memmap[IBEX_DEV_CLKMGR].base, memmap[IBEX_DEV_CLKMGR].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.pinmux",
-        memmap[IBEX_DEV_PINMUX].base, memmap[IBEX_DEV_PINMUX].size);
+        memmap[IBEX_DEV_PINMUX].base, memmap[IBEX_DEV_PINMUX].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.aon_timer",
-        memmap[IBEX_DEV_AON_TIMER].base, memmap[IBEX_DEV_AON_TIMER].size);
+        memmap[IBEX_DEV_AON_TIMER].base, memmap[IBEX_DEV_AON_TIMER].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.usbdev",
-        memmap[IBEX_DEV_USBDEV].base, memmap[IBEX_DEV_USBDEV].size);
+        memmap[IBEX_DEV_USBDEV].base, memmap[IBEX_DEV_USBDEV].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.flash_ctrl",
-        memmap[IBEX_DEV_FLASH_CTRL].base, memmap[IBEX_DEV_FLASH_CTRL].size);
+        memmap[IBEX_DEV_FLASH_CTRL].base, memmap[IBEX_DEV_FLASH_CTRL].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.aes",
-        memmap[IBEX_DEV_AES].base, memmap[IBEX_DEV_AES].size);
+        memmap[IBEX_DEV_AES].base, memmap[IBEX_DEV_AES].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.hmac",
-        memmap[IBEX_DEV_HMAC].base, memmap[IBEX_DEV_HMAC].size);
+        memmap[IBEX_DEV_HMAC].base, memmap[IBEX_DEV_HMAC].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.kmac",
-        memmap[IBEX_DEV_KMAC].base, memmap[IBEX_DEV_KMAC].size);
+        memmap[IBEX_DEV_KMAC].base, memmap[IBEX_DEV_KMAC].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.keymgr",
-        memmap[IBEX_DEV_KEYMGR].base, memmap[IBEX_DEV_KEYMGR].size);
+        memmap[IBEX_DEV_KEYMGR].base, memmap[IBEX_DEV_KEYMGR].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.csrng",
-        memmap[IBEX_DEV_CSRNG].base, memmap[IBEX_DEV_CSRNG].size);
+        memmap[IBEX_DEV_CSRNG].base, memmap[IBEX_DEV_CSRNG].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.entropy",
-        memmap[IBEX_DEV_ENTROPY].base, memmap[IBEX_DEV_ENTROPY].size);
+        memmap[IBEX_DEV_ENTROPY].base, memmap[IBEX_DEV_ENTROPY].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.edn0",
-        memmap[IBEX_DEV_EDNO].base, memmap[IBEX_DEV_EDNO].size);
+        memmap[IBEX_DEV_EDNO].base, memmap[IBEX_DEV_EDNO].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.edn1",
-        memmap[IBEX_DEV_EDN1].base, memmap[IBEX_DEV_EDN1].size);
+        memmap[IBEX_DEV_EDN1].base, memmap[IBEX_DEV_EDN1].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.alert_handler",
-        memmap[IBEX_DEV_ALERT_HANDLER].base, memmap[IBEX_DEV_ALERT_HANDLER].size);
+        memmap[IBEX_DEV_ALERT_HANDLER].base, memmap[IBEX_DEV_ALERT_HANDLER].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.sram_ctrl",
-        memmap[IBEX_DEV_SRAM_CTRL].base, memmap[IBEX_DEV_SRAM_CTRL].size);
+        memmap[IBEX_DEV_SRAM_CTRL].base, memmap[IBEX_DEV_SRAM_CTRL].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.otbn",
-        memmap[IBEX_DEV_OTBN].base, memmap[IBEX_DEV_OTBN].size);
+        memmap[IBEX_DEV_OTBN].base, memmap[IBEX_DEV_OTBN].आकार);
     create_unimplemented_device("riscv.lowrisc.ibex.ibex_cfg",
-        memmap[IBEX_DEV_IBEX_CFG].base, memmap[IBEX_DEV_IBEX_CFG].size);
+        memmap[IBEX_DEV_IBEX_CFG].base, memmap[IBEX_DEV_IBEX_CFG].आकार);
 }
 
-static const Property lowrisc_ibex_soc_props[] = {
-    DEFINE_PROP_UINT32("resetvec", LowRISCIbexSoCState, resetvec, 0x20000400),
+अटल स्थिर Property lowrisc_ibex_soc_props[] = {
+    DEFINE_PROP_UINT32("resetvec", निचला_RISCIbex_So_CState, resetvec, 0x20000400),
 };
 
-static void lowrisc_ibex_soc_class_init(ObjectClass *oc, const void *data)
+अटल व्योम lowrisc_ibex_soc_class_init(ObjectClass *oc, स्थिर व्योम *तथ्य)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
@@ -325,17 +325,17 @@ static void lowrisc_ibex_soc_class_init(ObjectClass *oc, const void *data)
     dc->user_creatable = false;
 }
 
-static const TypeInfo open_titan_types[] = {
+अटल स्थिर TypeInfo open_titan_types[] = {
     {
         .name           = TYPE_RISCV_IBEX_SOC,
         .parent         = TYPE_DEVICE,
-        .instance_size  = sizeof(LowRISCIbexSoCState),
+        .instance_आकार  = माप(निचला_RISCIbex_So_CState),
         .instance_init  = lowrisc_ibex_soc_init,
         .class_init     = lowrisc_ibex_soc_class_init,
     }, {
         .name           = TYPE_OPENTITAN_MACHINE,
         .parent         = TYPE_MACHINE,
-        .instance_size  = sizeof(OpenTitanState),
+        .instance_आकार  = माप(OpenTitanState),
         .class_init     = opentitan_machine_class_init,
     }
 };
