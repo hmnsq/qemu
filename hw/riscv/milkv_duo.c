@@ -34,7 +34,7 @@ static void milkv_duo_init(MachineState *machine)
     const char *firmware_name;
     hwaddr firmware_load_addr, firmware_end_addr;
     hwaddr fdt_load_addr = 0;
-    int fdt_size = 0;
+    цео fdt_size = 0;
     uint64_t kernel_entry = 0;
 
     object_initialize_child(OBJECT(machine), "soc", &s->soc, TYPE_CV1800B_SOC);
@@ -52,15 +52,15 @@ static void milkv_duo_init(MachineState *machine)
                                                      firmware_name,
                                                      &firmware_load_addr, NULL);
 
-    if (machine->dtb) {
+    ако (machine->dtb) {
         machine->fdt = load_device_tree(machine->dtb, &fdt_size);
-        if (!machine->fdt) {
+        ако (!machine->fdt) {
             error_report("Failed to load device tree");
             exit(1);
         }
 
-        if (machine->kernel_cmdline && *machine->kernel_cmdline) {
-            if (fdt_path_offset(machine->fdt, "/chosen") < 0) {
+        ако (machine->kernel_cmdline && *machine->kernel_cmdline) {
+            ако (fdt_path_offset(machine->fdt, "/chosen") < 0) {
                 qemu_fdt_add_subnode(machine->fdt, "/chosen");
             }
             qemu_fdt_setprop_string(machine->fdt, "/chosen", "bootargs",
@@ -68,14 +68,14 @@ static void milkv_duo_init(MachineState *machine)
         }
     }
 
-    if (machine->kernel_filename) {
+    ако (machine->kernel_filename) {
         hwaddr kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                                 firmware_end_addr);
         riscv_load_kernel(machine, &boot_info, kernel_start_addr, true, NULL);
         kernel_entry = boot_info.image_low_addr;
     }
 
-    if (machine->dtb) {
+    ако (machine->dtb) {
         fdt_load_addr = riscv_compute_fdt_addr(cv1800b_memmap[CV1800B_DEV_DRAM].base,
                                                machine->ram_size, machine, &boot_info);
         riscv_load_fdt(fdt_load_addr, machine->fdt);

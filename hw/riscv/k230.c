@@ -125,7 +125,7 @@ static void k230_soc_init(Object *obj)
                          memmap[K230_DEV_BOOTROM].base);
 }
 
-static DeviceState *k230_create_plic(int base_hartid, int hartid_count)
+static DeviceState *k230_create_plic(цео base_hartid, цео hartid_count)
 {
     g_autofree char *plic_hart_config = NULL;
 
@@ -133,7 +133,7 @@ static DeviceState *k230_create_plic(int base_hartid, int hartid_count)
     plic_hart_config = riscv_plic_hart_config_string(hartid_count);
 
     /* Per-socket PLIC */
-    return sifive_plic_create(get_system_memory(),
+    врати sifive_plic_create(get_system_memory(),
                               memmap[K230_DEV_PLIC].base,
                               plic_hart_config, hartid_count, base_hartid,
                               K230_PLIC_NUM_SOURCES,
@@ -146,9 +146,9 @@ static DeviceState *k230_create_plic(int base_hartid, int hartid_count)
 }
 
 static void k230_create_uart(MemoryRegion *sys_mem, DeviceState *plic,
-                             int index)
+                             цео index)
 {
-    int uart_dev = K230_DEV_UART0 + index;
+    цео uart_dev = K230_DEV_UART0 + index;
     g_autofree char *name = g_strdup_printf("uart%d", index);
 
     /* Cover the non-16550 part of the SDK's 0x1000 UART window. */
@@ -164,14 +164,14 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
 {
     K230SoCState *s = RISCV_K230_SOC(dev);
     MemoryRegion *sys_mem = get_system_memory();
-    int c908_cpus;
+    цео c908_cpus;
 
     sysbus_realize(SYS_BUS_DEVICE(&s->c908_cpu), &error_fatal);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_cfg), errp)) {
-        return;
+    ако (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_cfg), errp)) {
+        врати;
     }
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_phy), errp)) {
-        return;
+    ако (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_phy), errp)) {
+        врати;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ddr_cfg), 0,
                     memmap[K230_DEV_DDRC_CFG].base);
@@ -208,14 +208,14 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
                                RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
 
     /* UART */
-    for (int i = 0; i < K230_UART_COUNT; i++) {
+    за (цео i = 0; i < K230_UART_COUNT; i++) {
         k230_create_uart(sys_mem, DEVICE(s->c908_plic), i);
     }
 
     /* Watchdog */
-    for (int i = 0; i < 2; i++) {
-        if (!sysbus_realize(SYS_BUS_DEVICE(&s->wdt[i]), errp)) {
-            return;
+    за (цео i = 0; i < 2; i++) {
+        ако (!sysbus_realize(SYS_BUS_DEVICE(&s->wdt[i]), errp)) {
+            врати;
         }
     }
 
@@ -228,8 +228,8 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
                        qdev_get_gpio_in(DEVICE(s->c908_plic), K230_WDT1_IRQ));
 
     /* Gsdma */
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gsdma), errp)) {
-        return;
+    ако (!sysbus_realize(SYS_BUS_DEVICE(&s->gsdma), errp)) {
+        врати;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->gsdma), 0, memmap[K230_DEV_GSDMA].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->gsdma), 0,
@@ -238,16 +238,16 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
     /* Decomp gzip */
     qdev_prop_set_uint64(DEVICE(&s->decomp_gzip), "sram-base",
                          memmap[K230_DEV_SRAM].base);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->decomp_gzip), errp)) {
-        return;
+    ако (!sysbus_realize(SYS_BUS_DEVICE(&s->decomp_gzip), errp)) {
+        врати;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->decomp_gzip), 0,
                     memmap[K230_DEV_DECOMP_GZIP].base);
-    for (int i = 0; i < K230_DECOMP_GZIP_NUM_GPIOS_OUT; i++) {
+    за (цео i = 0; i < K230_DECOMP_GZIP_NUM_GPIOS_OUT; i++) {
         qdev_connect_gpio_out(DEVICE(&s->decomp_gzip), i,
                               qdev_get_gpio_in(DEVICE(&s->gsdma), i));
     }
-    for (int i = 0; i < K230_DECOMP_GZIP_NUM_GPIOS_IN; i++) {
+    за (цео i = 0; i < K230_DECOMP_GZIP_NUM_GPIOS_IN; i++) {
         qdev_connect_gpio_out(DEVICE(&s->gsdma), i,
                               qdev_get_gpio_in(DEVICE(&s->decomp_gzip), i));
     }
@@ -436,21 +436,21 @@ static void k230_direct_boot(K230MachineState *s, MachineState *machine)
     hwaddr start_addr = K230_DIRECT_OPENSBI_ADDR;
     hwaddr firmware_end_addr = 0;
     hwaddr kernel_entry = 0;
-    int fdt_size = 0;
+    цео fdt_size = 0;
 
-    if (machine->firmware && !strcmp(machine->firmware, "none")) {
+    ако (machine->firmware && !strcmp(machine->firmware, "none")) {
         error_report("K230 direct boot requires OpenSBI firmware; omit "
                      "-bios none or pass OpenSBI with -bios");
         exit(EXIT_FAILURE);
     }
 
-    if (!machine->dtb) {
+    ако (!machine->dtb) {
         error_report("K230 direct boot requires -dtb");
         exit(EXIT_FAILURE);
     }
 
     machine->fdt = load_device_tree(machine->dtb, &fdt_size);
-    if (!machine->fdt) {
+    ако (!machine->fdt) {
         error_report("load_device_tree() failed");
         exit(EXIT_FAILURE);
     }
@@ -466,7 +466,7 @@ static void k230_direct_boot(K230MachineState *s, MachineState *machine)
     firmware_end_addr = riscv_find_and_load_firmware(machine, &boot_info,
                                                      firmware_name,
                                                      &start_addr, NULL);
-    if (firmware_end_addr > K230_DIRECT_KERNEL_ADDR) {
+    ако (firmware_end_addr > K230_DIRECT_KERNEL_ADDR) {
         error_report("K230 firmware overlaps kernel address 0x%x",
                      K230_DIRECT_KERNEL_ADDR);
         exit(EXIT_FAILURE);
@@ -484,7 +484,7 @@ static void k230_firmware_boot(K230MachineState *s, MachineState *machine)
     hwaddr start_addr = memmap[K230_DEV_DDRC].base;
     RISCVBootInfo boot_info = {0};
 
-    if (machine->dtb || (machine->kernel_cmdline && *machine->kernel_cmdline)) {
+    ако (machine->dtb || (machine->kernel_cmdline && *machine->kernel_cmdline)) {
         error_report("K230 firmware boot does not support -dtb or -append");
         exit(EXIT_FAILURE);
     }
@@ -504,9 +504,9 @@ static void k230_machine_done(Notifier *notifier, void *data)
                                        machine_done);
     MachineState *machine = MACHINE(s);
 
-    if (machine->kernel_filename) {
+    ако (machine->kernel_filename) {
         k230_direct_boot(s, machine);
-    } else {
+    } инако {
         k230_firmware_boot(s, machine);
     }
 }
@@ -517,7 +517,7 @@ static void k230_machine_init(MachineState *machine)
     K230MachineState *s = RISCV_K230_MACHINE(machine);
     MemoryRegion *sys_mem = get_system_memory();
 
-    if (machine->ram_size < mc->default_ram_size) {
+    ако (machine->ram_size < mc->default_ram_size) {
         char *sz = size_to_str(mc->default_ram_size);
         error_report("Invalid RAM size, should be %s", sz);
         g_free(sz);

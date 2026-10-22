@@ -116,7 +116,7 @@ enum boston_plat_reg {
 static void boston_lcd_event(void *opaque, QEMUChrEvent event)
 {
     BostonState *s = opaque;
-    if (event == CHR_EVENT_OPENED && !s->lcd_inited) {
+    ако (event == CHR_EVENT_OPENED && !s->lcd_inited) {
         qemu_chr_fe_printf(&s->lcd_display, "        ");
         s->lcd_inited = true;
     }
@@ -147,7 +147,7 @@ static uint64_t boston_lcd_read(void *opaque, hwaddr addr,
         break;
     }
 
-    return val;
+    врати val;
 }
 
 static void boston_lcd_write(void *opaque, hwaddr addr,
@@ -194,9 +194,9 @@ static uint64_t boston_platreg_read(void *opaque, hwaddr addr,
     case PLAT_FPGA_BUILD:
     case PLAT_CORE_CL:
     case PLAT_WRAPPER_CL:
-        return 0;
+        врати 0;
     case PLAT_DDR3_STATUS:
-        return PLAT_DDR3_STATUS_LOCKED | PLAT_DDR3_STATUS_CALIBRATED
+        врати PLAT_DDR3_STATUS_LOCKED | PLAT_DDR3_STATUS_CALIBRATED
                | PLAT_DDR3_INTERFACE_RESET;
     case PLAT_MMCM_DIV:
         gic_freq = 25000000 / 1000000;
@@ -204,30 +204,30 @@ static uint64_t boston_platreg_read(void *opaque, hwaddr addr,
         val |= 1 << PLAT_MMCM_DIV_MUL_SHIFT;
         val |= 1 << PLAT_MMCM_DIV_CLK0DIV_SHIFT;
         val |= 1 << PLAT_MMCM_DIV_CLK1DIV_SHIFT;
-        return val;
+        врати val;
     case PLAT_BUILD_CFG:
         val = PLAT_BUILD_CFG_PCIE0_EN;
         val |= PLAT_BUILD_CFG_PCIE1_EN;
         val |= PLAT_BUILD_CFG_PCIE2_EN;
-        return val;
+        врати val;
     case PLAT_DDR_CFG:
         val = s->mach->ram_size / GiB;
         assert(!(val & ~PLAT_DDR_CFG_SIZE));
         val |= PLAT_DDR_CFG_MHZ;
-        return val;
+        врати val;
     default:
         qemu_log_mask(LOG_UNIMP, "Read platform register 0x%" HWADDR_PRIx "\n",
                       addr & 0xffff);
-        return 0;
+        врати 0;
     }
 }
 
 static void boston_platreg_write(void *opaque, hwaddr addr,
                                  uint64_t val, unsigned size)
 {
-    if (size != 4) {
+    ако (size != 4) {
         qemu_log_mask(LOG_UNIMP, "%uB platform register write\n", size);
-        return;
+        врати;
     }
 
     switch (addr & 0xffff) {
@@ -242,7 +242,7 @@ static void boston_platreg_write(void *opaque, hwaddr addr,
         /* read only */
         break;
     case PLAT_SOFTRST_CTL:
-        if (val & PLAT_SOFTRST_CTL_SYSRESET) {
+        ако (val & PLAT_SOFTRST_CTL_SYSRESET) {
             qemu_system_reset_request(SHUTDOWN_CAUSE_GUEST_RESET);
         }
         break;
@@ -278,7 +278,7 @@ type_init(boston_register_types)
 #define NUM_INSNS 6
 static void gen_firmware(uint32_t *p)
 {
-    int i;
+    цео i;
     uint32_t reset_vec[NUM_INSNS] = {
            /* CM relocate */
            0x1fb802b7,     /* li   t0,0x1fb80000   */
@@ -290,7 +290,7 @@ static void gen_firmware(uint32_t *p)
            0x00028067      /* jr   t0              */
     };
 
-    for (i = 0; i < NUM_INSNS; i++) {
+    за (i = 0; i < NUM_INSNS; i++) {
         *p++ = reset_vec[i];
     }
 }
@@ -322,7 +322,7 @@ xilinx_pcie_init(MemoryRegion *sys_mem, uint32_t bus_nr,
 
     qdev_connect_gpio_out_named(dev, "interrupt_out", 0, irq);
 
-    return XILINX_PCIE_HOST(dev);
+    врати XILINX_PCIE_HOST(dev);
 }
 
 static void boston_mach_init(MachineState *machine)
@@ -336,15 +336,15 @@ static void boston_mach_init(MachineState *machine)
     AHCIPCIState *ich9;
     DriveInfo *hd[6];
     Chardev *chr;
-    int fw_size;
+    цео fw_size;
 
-    if ((machine->ram_size % GiB) ||
+    ако ((machine->ram_size % GiB) ||
         (machine->ram_size > (4 * GiB))) {
         error_report("Memory size must be 1GB, 2GB, 3GB, or 4GB");
         exit(1);
     }
 
-    if (machine->smp.cpus / machine->smp.cores / machine->smp.threads > 1) {
+    ако (machine->smp.cpus / machine->smp.cores / machine->smp.threads > 1) {
         error_report(
             "Invalid -smp x,cores=y,threads=z. The max number of clusters "
             "supported is 1");
@@ -429,34 +429,34 @@ static void boston_mach_init(MachineState *machine)
                          "00.1");
     pci_init_nic_devices(&PCI_BRIDGE(&pcie2->root)->sec_bus, "e1000e");
 
-    if (machine->firmware) {
+    ако (machine->firmware) {
         fw_size = load_image_targphys(machine->firmware,
                                       0x1fc00000, 4 * MiB, NULL);
-        if (fw_size == -1) {
+        ако (fw_size == -1) {
             error_report("unable to load firmware image '%s'",
                           machine->firmware);
             exit(1);
         }
-        if (machine->kernel_filename) {
+        ако (machine->kernel_filename) {
                 fw_size = load_image_targphys(machine->kernel_filename,
                                               0x80000000, 64 * MiB, NULL);
-                if (fw_size == -1) {
+                ако (fw_size == -1) {
                     error_report("unable to load kernel image '%s'",
                                   machine->kernel_filename);
                     exit(1);
                 }
         }
-    } else if (machine->kernel_filename) {
+    } инако ако (machine->kernel_filename) {
         fw_size = load_image_targphys(machine->kernel_filename,
                                       0x80000000, 64 * MiB, NULL);
-        if (fw_size == -1) {
+        ако (fw_size == -1) {
             error_report("unable to load kernel image '%s'",
                           machine->kernel_filename);
             exit(1);
         }
 
         gen_firmware(memory_region_get_ram_ptr(flash) + 0x7c00000);
-    } else if (!qtest_enabled()) {
+    } инако ако (!qtest_enabled()) {
         error_report("Please provide either a -kernel or -bios argument");
         exit(1);
     }

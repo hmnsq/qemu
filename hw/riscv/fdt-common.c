@@ -25,11 +25,11 @@
 #define UART_STD_CLOCK_FREQ 3686400 /* 3.6864 MHz */
 
 void *riscv_create_board_device_tree(const char *model, const char *compatible,
-                                     int *fdt_size)
+                                     цео *fdt_size)
 {
     void *fdt = create_device_tree(fdt_size);
 
-    if (!fdt) {
+    ако (!fdt) {
         error_report("create_device_tree() failed");
         exit(1);
     }
@@ -45,11 +45,11 @@ void *riscv_create_board_device_tree(const char *model, const char *compatible,
     qemu_fdt_setprop_cell(fdt, "/soc", "#size-cells", 0x2);
     qemu_fdt_setprop_cell(fdt, "/soc", "#address-cells", 0x2);
 
-    return fdt;
+    врати fdt;
 }
 
 void riscv_create_fdt_socket_memory(void *fdt, hwaddr addr, uint64_t size,
-                                    int socket_id, bool numa_enabled)
+                                    цео socket_id, bool numa_enabled)
 {
     g_autofree char *mem_name = g_strdup_printf("/memory@%"HWADDR_PRIx, addr);
 
@@ -57,14 +57,14 @@ void riscv_create_fdt_socket_memory(void *fdt, hwaddr addr, uint64_t size,
     qemu_fdt_setprop_sized_cells(fdt, mem_name, "reg", 2, addr, 2, size);
     qemu_fdt_setprop_string(fdt, mem_name, "device_type", "memory");
 
-    if (numa_enabled) {
+    ако (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, mem_name, "numa-node-id", socket_id);
     }
 }
 
 void riscv_create_fdt_socket_clint(void *fdt, hwaddr addr, uint64_t size,
-                                   int socket_id, uint32_t *intc_phandles,
-                                   int num_harts, bool numa_enabled)
+                                   цео socket_id, uint32_t *intc_phandles,
+                                   цео num_harts, bool numa_enabled)
 {
     g_autofree uint32_t *clint_cells = g_new0(uint32_t, num_harts * 4);
     g_autofree char *clint_name = NULL;
@@ -72,7 +72,7 @@ void riscv_create_fdt_socket_clint(void *fdt, hwaddr addr, uint64_t size,
         "sifive,clint0", "riscv,clint0"
     };
 
-    for (int cpu = 0; cpu < num_harts; cpu++) {
+    за (цео cpu = 0; cpu < num_harts; cpu++) {
         clint_cells[cpu * 4 + 0] = cpu_to_be32(intc_phandles[cpu]);
         clint_cells[cpu * 4 + 1] = cpu_to_be32(IRQ_M_SOFT);
         clint_cells[cpu * 4 + 2] = cpu_to_be32(intc_phandles[cpu]);
@@ -89,7 +89,7 @@ void riscv_create_fdt_socket_clint(void *fdt, hwaddr addr, uint64_t size,
     qemu_fdt_setprop(fdt, clint_name, "interrupts-extended",
                      clint_cells, num_harts * sizeof(uint32_t) * 4);
 
-    if (numa_enabled) {
+    ако (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, clint_name, "numa-node-id", socket_id);
     }
 }
@@ -107,7 +107,7 @@ void riscv_fdt_create_cpu_socket_subnode(void *fdt,
 
 static void
 create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
-                               int cpu, int socket_id, int socket_hartid_base,
+                               цео cpu, цео socket_id, цео socket_hartid_base,
                                uint32_t *phandle, uint32_t *intc_phandles,
                                bool numa_enabled, bool is_32_bit)
 {
@@ -125,12 +125,12 @@ create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
      * of the CPU FDT creation (i.e. the /cpus/cpu@N subnode)
      * is still being done by the board.
      */
-    if (!is_sifive_u) {
+    ако (!is_sifive_u) {
         int8_t satp_mode_max = cpu_ptr->cfg.max_satp_mode;
 
         qemu_fdt_add_subnode(fdt, cpu_name);
 
-        if (satp_mode_max != -1) {
+        ако (satp_mode_max != -1) {
             g_autofree char *sv_name = NULL;
             sv_name = g_strdup_printf("riscv,%s",
                                       satp_mode_str(satp_mode_max, is_32_bit));
@@ -138,17 +138,17 @@ create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
         }
         riscv_isa_write_fdt(cpu_ptr, fdt, cpu_name);
 
-        if (cpu_ptr->cfg.ext_zicbom) {
+        ако (cpu_ptr->cfg.ext_zicbom) {
             qemu_fdt_setprop_cell(fdt, cpu_name, "riscv,cbom-block-size",
                                   cpu_ptr->cfg.cbom_blocksize);
         }
 
-        if (cpu_ptr->cfg.ext_zicboz) {
+        ако (cpu_ptr->cfg.ext_zicboz) {
             qemu_fdt_setprop_cell(fdt, cpu_name, "riscv,cboz-block-size",
                                   cpu_ptr->cfg.cboz_blocksize);
         }
 
-        if (cpu_ptr->cfg.ext_zicbop) {
+        ако (cpu_ptr->cfg.ext_zicbop) {
             qemu_fdt_setprop_cell(fdt, cpu_name, "riscv,cbop-block-size",
                                   cpu_ptr->cfg.cbop_blocksize);
         }
@@ -159,7 +159,7 @@ create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
     qemu_fdt_setprop_cell(fdt, cpu_name, "reg",
                           socket_hartid_base + cpu);
     qemu_fdt_setprop_string(fdt, cpu_name, "device_type", "cpu");
-    if (numa_enabled) {
+    ако (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, cpu_name, "numa-node-id", socket_id);
     }
     qemu_fdt_setprop_cell(fdt, cpu_name, "phandle", cpu_phandle);
@@ -181,8 +181,8 @@ create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
 }
 
 void riscv_create_fdt_socket_cpus(void *fdt, RISCVCPU *socket_harts,
-                                  int socket_id, int num_harts_socket,
-                                  int socket_hartid_base, uint32_t *phandle,
+                                  цео socket_id, цео num_harts_socket,
+                                  цео socket_hartid_base, uint32_t *phandle,
                                   uint32_t *intc_phandles, bool numa_enabled,
                                   bool is_32_bit)
 {
@@ -191,7 +191,7 @@ void riscv_create_fdt_socket_cpus(void *fdt, RISCVCPU *socket_harts,
     clust_name = g_strdup_printf("/cpus/cpu-map/cluster%d", socket_id);
     qemu_fdt_add_subnode(fdt, clust_name);
 
-    for (int cpu = num_harts_socket - 1; cpu >= 0; cpu--) {
+    за (цео cpu = num_harts_socket - 1; cpu >= 0; cpu--) {
         RISCVCPU *cpu_ptr = &socket_harts[cpu];
 
         create_fdt_socket_cpu_internal(fdt, clust_name, cpu_ptr, cpu,
@@ -203,8 +203,8 @@ void riscv_create_fdt_socket_cpus(void *fdt, RISCVCPU *socket_harts,
 
 void
 riscv_create_fdt_socket_cpu_sifive(void *fdt, char *clust_name,
-                                   int cpu_id, int socket_id,
-                                   int socket_hartid_base, uint32_t *phandle,
+                                   цео cpu_id, цео socket_id,
+                                   цео socket_hartid_base, uint32_t *phandle,
                                    uint32_t *intc_phandles)
 {
     create_fdt_socket_cpu_internal(fdt, clust_name, NULL, cpu_id,
@@ -216,7 +216,7 @@ void riscv_create_fdt_plic(void *fdt, hwaddr addr, uint64_t size,
                            uint32_t plic_phandle, uint32_t int_cells,
                            uint32_t addr_cells, uint32_t *plic_cells,
                            uint32_t cells_size, uint32_t ndev_sources,
-                           bool numa_enabled, int socket_id)
+                           bool numa_enabled, цео socket_id)
 {
     g_autofree char *nodename = NULL;
     static const char * const plic_compat[2] = {
@@ -236,7 +236,7 @@ void riscv_create_fdt_plic(void *fdt, hwaddr addr, uint64_t size,
     qemu_fdt_setprop_sized_cells(fdt, nodename, "reg",
                                  2, addr, 2, size);
     qemu_fdt_setprop_cell(fdt, nodename, "riscv,ndev", ndev_sources);
-    if (numa_enabled) {
+    ако (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, nodename, "numa-node-id", socket_id);
     }
     qemu_fdt_setprop_cell(fdt, nodename, "phandle", plic_phandle);
@@ -323,14 +323,14 @@ void riscv_create_fdt_syscon(void *fdt, uint32_t *next_phandle,
     name = g_strdup_printf("/soc/syscon@%"HWADDR_PRIx, addr);
     qemu_fdt_add_subnode(fdt, name);
 
-    if (sifive_test_compat) {
+    ако (sifive_test_compat) {
         static const char * const compat[3] = {
             "sifive,test1", "sifive,test0", "syscon"
         };
 
         qemu_fdt_setprop_string_array(fdt, name, "compatible",
                                       (char **)&compat, ARRAY_SIZE(compat));
-    } else {
+    } инако {
         qemu_fdt_setprop_string(fdt, name, "compatible", "syscon");
     }
 
@@ -390,14 +390,14 @@ uint32_t riscv_create_fdt_riscv_iommu_sys(void *fdt, hwaddr addr, hwaddr size,
 
     qemu_fdt_setprop_cell(fdt, iommu_node, "msi-parent", msi_phandle);
 
-    return iommu_phandle;
+    врати iommu_phandle;
 }
 
 static void create_pcie_irq_map(void *fdt, char *nodename,
                                 uint32_t irqchip_phandle,
                                 RISCVAIAType aia_type, uint32_t pcie_irq)
 {
-    int pin, dev;
+    цео pin, dev;
     uint32_t irq_map_stride = 0;
     uint32_t full_irq_map[PCI_NUM_PINS * PCI_NUM_PINS *
                           FDT_MAX_INT_MAP_WIDTH] = {};
@@ -412,12 +412,12 @@ static void create_pcie_irq_map(void *fdt, char *nodename,
      * possible slot) seeing the interrupt-map-mask will allow the table
      * to wrap to any number of devices.
      */
-    for (dev = 0; dev < PCI_NUM_PINS; dev++) {
-        int devfn = dev * 0x8;
+    за (dev = 0; dev < PCI_NUM_PINS; dev++) {
+        цео devfn = dev * 0x8;
 
-        for (pin = 0; pin < PCI_NUM_PINS; pin++) {
-            int irq_nr = pcie_irq + ((pin + PCI_SLOT(devfn)) % PCI_NUM_PINS);
-            int i = 0;
+        за (pin = 0; pin < PCI_NUM_PINS; pin++) {
+            цео irq_nr = pcie_irq + ((pin + PCI_SLOT(devfn)) % PCI_NUM_PINS);
+            цео i = 0;
 
             /* Fill PCI address cells */
             irq_map[i] = cpu_to_be32(devfn << 8);
@@ -431,11 +431,11 @@ static void create_pcie_irq_map(void *fdt, char *nodename,
             irq_map[i++] = cpu_to_be32(irqchip_phandle);
             irq_map[i++] = cpu_to_be32(irq_nr);
 
-            if (aia_type != AIA_TYPE_NONE) {
+            ако (aia_type != AIA_TYPE_NONE) {
                 irq_map[i++] = cpu_to_be32(0x4);
             }
 
-            if (!irq_map_stride) {
+            ако (!irq_map_stride) {
                 irq_map_stride = i;
             }
             irq_map += irq_map_stride;
@@ -454,7 +454,7 @@ static void create_pcie_irq_map(void *fdt, char *nodename,
  * NOTE: this function uses a "/soc/pci@..." FDT subnode that
  * should be created beforehand.
  */
-void riscv_create_fdt_pcie(void *fdt, int aia_type, bool has_iommu_sys,
+void riscv_create_fdt_pcie(void *fdt, цео aia_type, bool has_iommu_sys,
                            const MemMapEntry *pcie_ecam,
                            const MemMapEntry *pcie_pio,
                            const MemMapEntry *pcie_mmio,
@@ -477,7 +477,7 @@ void riscv_create_fdt_pcie(void *fdt, int aia_type, bool has_iommu_sys,
                            pcie_ecam->size / PCIE_MMCFG_SIZE_MIN - 1);
     qemu_fdt_setprop(fdt, name, "dma-coherent", NULL, 0);
 
-    if (aia_type == AIA_TYPE_APLIC_IMSIC) {
+    ако (aia_type == AIA_TYPE_APLIC_IMSIC) {
         qemu_fdt_setprop_cell(fdt, name, "msi-parent", msi_pcie_phandle);
     }
 
@@ -494,7 +494,7 @@ void riscv_create_fdt_pcie(void *fdt, int aia_type, bool has_iommu_sys,
         2, high_pcie->base,
         2, high_pcie->base, 2, high_pcie->size);
 
-    if (has_iommu_sys) {
+    ако (has_iommu_sys) {
         qemu_fdt_setprop_cells(fdt, name, "iommu-map",
                                0, iommu_sys_phandle, 0, 0x10000);
     }
@@ -519,12 +519,12 @@ static void create_fdt_one_imsic(void *fdt, IMSICFdtProps *props,
     imsic_cells = g_new0(uint32_t, props->smp_cpus * 2);
     imsic_regs = g_new0(uint32_t, props->socket_count * 4);
 
-    for (int cpu = 0; cpu < props->smp_cpus; cpu++) {
+    за (цео cpu = 0; cpu < props->smp_cpus; cpu++) {
         imsic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         imsic_cells[cpu * 2 + 1] = cpu_to_be32(m_mode ? IRQ_M_EXT : IRQ_S_EXT);
     }
 
-    for (int socket = 0; socket < props->socket_count; socket++) {
+    за (цео socket = 0; socket < props->socket_count; socket++) {
         hwaddr imsic_addr = base_addr + socket * props->imsic_group_max_size;
         uint32_t imsic_size = IMSIC_HART_SIZE(imsic_guest_bits) *
                               soc[socket].num_harts;
@@ -533,7 +533,7 @@ static void create_fdt_one_imsic(void *fdt, IMSICFdtProps *props,
         imsic_regs[socket * 4 + 1] = cpu_to_be32(imsic_addr);
         imsic_regs[socket * 4 + 2] = 0;
         imsic_regs[socket * 4 + 3] = cpu_to_be32(imsic_size);
-        if (imsic_max_hart_per_socket < soc[socket].num_harts) {
+        ако (imsic_max_hart_per_socket < soc[socket].num_harts) {
             imsic_max_hart_per_socket = soc[socket].num_harts;
         }
     }
@@ -557,12 +557,12 @@ static void create_fdt_one_imsic(void *fdt, IMSICFdtProps *props,
     qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,num-ids",
                           props->irqchip_num_msis);
 
-    if (imsic_guest_bits) {
+    ако (imsic_guest_bits) {
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,guest-index-bits",
                               imsic_guest_bits);
     }
 
-    if (props->socket_count > 1) {
+    ако (props->socket_count > 1) {
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,hart-index-bits",
                               imsic_num_bits(imsic_max_hart_per_socket));
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,group-index-bits",
@@ -577,15 +577,15 @@ void riscv_create_fdt_imsic(void *fdt, IMSICFdtProps *props,
                             uint32_t *next_phandle, uint32_t *intc_phandles,
                             uint32_t *msi_m_phandle, uint32_t *msi_s_phandle)
 {
-    if (next_phandle) {
+    ако (next_phandle) {
         *msi_m_phandle = (*next_phandle)++;
         *msi_s_phandle = (*next_phandle)++;
-    } else {
+    } инако {
         *msi_m_phandle = qemu_fdt_alloc_phandle(fdt);
         *msi_s_phandle = qemu_fdt_alloc_phandle(fdt);
     }
 
-    if (props->imsic_m_base) {
+    ако (props->imsic_m_base) {
         /* M-level IMSIC node */
         create_fdt_one_imsic(fdt, props, props->imsic_m_base,
                              intc_phandles, *msi_m_phandle, true, 0);
@@ -601,7 +601,7 @@ void riscv_create_fdt_imsic(void *fdt, IMSICFdtProps *props,
 /* Caller must free string after use */
 static char *fdt_get_aplic_nodename(hwaddr aplic_addr)
 {
-    return g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIx,
+    врати g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIx,
                            aplic_addr);
 }
 
@@ -619,7 +619,7 @@ static void create_fdt_one_aplic(void *fdt, APLICFdtProps *props,
         "qemu,aplic", "riscv,aplic"
     };
 
-    for (int cpu = 0; cpu < props->num_harts; cpu++) {
+    за (цео cpu = 0; cpu < props->num_harts; cpu++) {
         aplic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         aplic_cells[cpu * 2 + 1] = cpu_to_be32(m_mode ? IRQ_M_EXT : IRQ_S_EXT);
     }
@@ -634,10 +634,10 @@ static void create_fdt_one_aplic(void *fdt, APLICFdtProps *props,
                           "#interrupt-cells", FDT_APLIC_INT_CELLS);
     qemu_fdt_setprop(fdt, aplic_name, "interrupt-controller", NULL, 0);
 
-    if (props->aia_type == AIA_TYPE_APLIC) {
+    ако (props->aia_type == AIA_TYPE_APLIC) {
         qemu_fdt_setprop(fdt, aplic_name, "interrupts-extended",
                          aplic_cells, props->num_harts * sizeof(uint32_t) * 2);
-    } else {
+    } инако {
         qemu_fdt_setprop_cell(fdt, aplic_name, "msi-parent", msi_phandle);
     }
 
@@ -646,7 +646,7 @@ static void create_fdt_one_aplic(void *fdt, APLICFdtProps *props,
     qemu_fdt_setprop_cell(fdt, aplic_name, "riscv,num-sources",
                           props->irqchip_num_sources);
 
-    if (aplic_child_phandle) {
+    ако (aplic_child_phandle) {
         qemu_fdt_setprop_cell(fdt, aplic_name, "riscv,children",
                               aplic_child_phandle);
         qemu_fdt_setprop_cells(fdt, aplic_name, "riscv,delegation",
@@ -654,7 +654,7 @@ static void create_fdt_one_aplic(void *fdt, APLICFdtProps *props,
                                props->irqchip_num_sources);
     }
 
-    if (props->numa_enabled) {
+    ако (props->numa_enabled) {
         qemu_fdt_setprop_cell(fdt, aplic_name, "numa-node-id", props->socket);
     }
 
@@ -671,15 +671,15 @@ void riscv_create_fdt_socket_aplic(void *fdt, APLICFdtProps *props,
     uint32_t aplic_m_phandle, aplic_s_phandle;
     hwaddr aplic_addr;
 
-    if (next_phandle) {
+    ако (next_phandle) {
         aplic_m_phandle = (*next_phandle)++;
         aplic_s_phandle = (*next_phandle)++;
-    } else {
+    } инако {
         aplic_m_phandle = qemu_fdt_alloc_phandle(fdt);
         aplic_s_phandle = qemu_fdt_alloc_phandle(fdt);
     }
 
-    if (props->aplic_m) {
+    ако (props->aplic_m) {
         /* M-level APLIC node */
         aplic_addr = props->aplic_m->base + (props->aplic_m->size * props->socket);
         create_fdt_one_aplic(fdt, props, aplic_addr, props->aplic_m->size,
@@ -695,7 +695,7 @@ void riscv_create_fdt_socket_aplic(void *fdt, APLICFdtProps *props,
                          aplic_s_phandle, 0,
                          false);
 
-    if (!props->socket && props->platform_bus_irq) {
+    ако (!props->socket && props->platform_bus_irq) {
         g_autofree char *aplic_name = fdt_get_aplic_nodename(aplic_addr);
         platform_bus_add_all_fdt_nodes(fdt, aplic_name,
                                        props->platform_bus->base,
@@ -715,13 +715,13 @@ void riscv_create_fdt_socket_aclint(void *fdt, ACLINTFdtProps *props,
     g_autofree uint32_t *aclint_mtimer_cells = NULL;
     hwaddr addr, size;
     char *name;
-    int cpu;
+    цео cpu;
 
     aclint_mswi_cells = g_new0(uint32_t, props->num_harts * 2);
     aclint_mtimer_cells = g_new0(uint32_t, props->num_harts * 2);
     aclint_sswi_cells = g_new0(uint32_t, props->num_harts * 2);
 
-    for (cpu = 0; cpu < props->num_harts; cpu++) {
+    за (cpu = 0; cpu < props->num_harts; cpu++) {
         aclint_mswi_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         aclint_mswi_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_M_SOFT);
         aclint_mtimer_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
@@ -730,7 +730,7 @@ void riscv_create_fdt_socket_aclint(void *fdt, ACLINTFdtProps *props,
         aclint_sswi_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_S_SOFT);
     }
 
-    if (props->aia_type != AIA_TYPE_APLIC_IMSIC) {
+    ако (props->aia_type != AIA_TYPE_APLIC_IMSIC) {
         addr = props->clint->base + (props->clint->size * props->socket);
         name = g_strdup_printf("/soc/mswi@%"HWADDR_PRIx, addr);
 
@@ -743,18 +743,18 @@ void riscv_create_fdt_socket_aclint(void *fdt, ACLINTFdtProps *props,
         qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
         qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 0);
 
-        if (props->numa_enabled) {
+        ако (props->numa_enabled) {
             qemu_fdt_setprop_cell(fdt, name, "numa-node-id", props->socket);
         }
 
         g_free(name);
     }
 
-    if (props->aia_type == AIA_TYPE_APLIC_IMSIC) {
+    ако (props->aia_type == AIA_TYPE_APLIC_IMSIC) {
         addr = props->clint->base +
                (RISCV_ACLINT_DEFAULT_MTIMER_SIZE * props->socket);
         size = RISCV_ACLINT_DEFAULT_MTIMER_SIZE;
-    } else {
+    } инако {
         addr = props->clint->base + RISCV_ACLINT_SWI_SIZE +
                (props->clint->size * props->socket);
         size = props->clint->size - RISCV_ACLINT_SWI_SIZE;
@@ -773,13 +773,13 @@ void riscv_create_fdt_socket_aclint(void *fdt, ACLINTFdtProps *props,
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
                      aclint_mtimer_cells, aclint_cells_size);
 
-    if (props->numa_enabled) {
+    ако (props->numa_enabled) {
         qemu_fdt_setprop_cell(fdt, name, "numa-node-id", props->socket);
     }
 
     g_free(name);
 
-    if (props->aia_type != AIA_TYPE_APLIC_IMSIC) {
+    ако (props->aia_type != AIA_TYPE_APLIC_IMSIC) {
         addr = props->aclint_sswi->base
                + (props->aclint_sswi->size * props->socket);
 
@@ -794,7 +794,7 @@ void riscv_create_fdt_socket_aclint(void *fdt, ACLINTFdtProps *props,
         qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
         qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 0);
 
-        if (props->numa_enabled) {
+        ако (props->numa_enabled) {
             qemu_fdt_setprop_cell(fdt, name, "numa-node-id", props->socket);
         }
 
@@ -804,11 +804,11 @@ void riscv_create_fdt_socket_aclint(void *fdt, ACLINTFdtProps *props,
 
 char *riscv_fdt_get_uart_nodename(hwaddr addr)
 {
-    return g_strdup_printf("/soc/serial@%"HWADDR_PRIx, addr);
+    врати g_strdup_printf("/soc/serial@%"HWADDR_PRIx, addr);
 }
 
 void riscv_create_fdt_uart(void *fdt, const MemMapEntry *uart_mem,
-                           int uart_irq, int aia_type,
+                           цео uart_irq, цео aia_type,
                            uint32_t irq_phandle)
 {
     g_autofree char *name = riscv_fdt_get_uart_nodename(uart_mem->base);
@@ -822,15 +822,15 @@ void riscv_create_fdt_uart(void *fdt, const MemMapEntry *uart_mem,
     qemu_fdt_setprop_cell(fdt, name, "clock-frequency", UART_STD_CLOCK_FREQ);
     qemu_fdt_setprop_cell(fdt, name, "interrupt-parent", irq_phandle);
 
-    if (aia_type == AIA_TYPE_NONE) {
+    ако (aia_type == AIA_TYPE_NONE) {
         qemu_fdt_setprop_cell(fdt, name, "interrupts", uart_irq);
-    } else {
+    } инако {
         qemu_fdt_setprop_cells(fdt, name, "interrupts", uart_irq, 0x4);
     }
 }
 
 void riscv_create_fdt_rtc(void *fdt, const MemMapEntry *rtc_mem,
-                          int rtc_irq, int aia_type,
+                          цео rtc_irq, цео aia_type,
                           uint32_t irq_phandle)
 {
     g_autofree char *name = NULL;
@@ -843,9 +843,9 @@ void riscv_create_fdt_rtc(void *fdt, const MemMapEntry *rtc_mem,
                                  2, rtc_mem->base,
                                  2, rtc_mem->size);
     qemu_fdt_setprop_cell(fdt, name, "interrupt-parent", irq_phandle);
-    if (aia_type == AIA_TYPE_NONE) {
+    ако (aia_type == AIA_TYPE_NONE) {
         qemu_fdt_setprop_cell(fdt, name, "interrupts", rtc_irq);
-    } else {
+    } инако {
         qemu_fdt_setprop_cells(fdt, name, "interrupts", rtc_irq, 0x4);
     }
 }
