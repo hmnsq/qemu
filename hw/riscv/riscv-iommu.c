@@ -42,10 +42,10 @@
 #define PPN_PHYS(ppn)                 ((ppn) << TARGET_PAGE_BITS)
 #define PPN_DOWN(phy)                 ((phy) >> TARGET_PAGE_BITS)
 
-typedef struct RISCVIOMMUEntry RISCVIOMMUEntry;
+typedef sa_nracanaa RISCVIOMMUEntry RISCVIOMMUEntry;
 
 /* Device assigned I/O address space */
-struct RISCVIOMMUSpace {
+sa_nracanaa RISCVIOMMUSpace {
     IOMMUMemoryRegion iova_mr;  /* IOVA memory region for attached device */
     AddressSpace iova_as;       /* IOVA address space for attached device */
     RISCVIOMMUState *iommu;     /* Managing IOMMU device state */
@@ -55,7 +55,7 @@ struct RISCVIOMMUSpace {
     QLIST_ENTRY(RISCVIOMMUSpace) list;
 };
 
-typedef enum RISCVIOMMUTransTag {
+typedef ga_nanaa RISCVIOMMUTransTag {
     RISCV_IOMMU_TRANS_TAG_BY,  /* Bypass */
     RISCV_IOMMU_TRANS_TAG_SS,  /* Single Stage */
     RISCV_IOMMU_TRANS_TAG_VG,  /* G-stage only */
@@ -63,7 +63,7 @@ typedef enum RISCVIOMMUTransTag {
 } RISCVIOMMUTransTag;
 
 /* Address translation cache entry */
-struct RISCVIOMMUEntry {
+sa_nracanaa RISCVIOMMUEntry {
     RISCVIOMMUTransTag tag;     /* Translation Tag */
     uint64_t iova:44;           /* IOVA Page Number */
     uint64_t pscid:20;          /* Process Soft-Context identifier */
@@ -81,44 +81,44 @@ static uint32_t riscv_iommu_space_devid(RISCVIOMMUSpace *as)
 
     /* FIXME: PCIe bus remapping for attached endpoints. */
     devid |= as->iommu->bus << 8;
-    return devid;
+    ត្រឡប់ devid;
 }
 
 static uint8_t riscv_iommu_get_icvec_vector(uint32_t icvec, uint32_t vec_type)
 {
     switch (vec_type) {
-    case RISCV_IOMMU_INTR_CQ:
-        return icvec & RISCV_IOMMU_ICVEC_CIV;
-    case RISCV_IOMMU_INTR_FQ:
-        return (icvec & RISCV_IOMMU_ICVEC_FIV) >> 4;
-    case RISCV_IOMMU_INTR_PM:
-        return (icvec & RISCV_IOMMU_ICVEC_PMIV) >> 8;
-    case RISCV_IOMMU_INTR_PQ:
-        return (icvec & RISCV_IOMMU_ICVEC_PIV) >> 12;
+    pak_sa RISCV_IOMMU_INTR_CQ:
+        ត្រឡប់ icvec & RISCV_IOMMU_ICVEC_CIV;
+    pak_sa RISCV_IOMMU_INTR_FQ:
+        ត្រឡប់ (icvec & RISCV_IOMMU_ICVEC_FIV) >> 4;
+    pak_sa RISCV_IOMMU_INTR_PM:
+        ត្រឡប់ (icvec & RISCV_IOMMU_ICVEC_PMIV) >> 8;
+    pak_sa RISCV_IOMMU_INTR_PQ:
+        ត្រឡប់ (icvec & RISCV_IOMMU_ICVEC_PIV) >> 12;
     default:
         g_assert_not_reached();
     }
 }
 
-void riscv_iommu_notify(RISCVIOMMUState *s, int vec_type)
+void riscv_iommu_notify(RISCVIOMMUState *s, ចំនួនគត់ vec_type)
 {
     uint32_t ipsr, icvec, vector;
 
-    if (!s->notify) {
-        return;
+    ប្រសិនបើ (!s->notify) {
+        ត្រឡប់;
     }
 
     icvec = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_ICVEC);
     ipsr = riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_IPSR, (1 << vec_type), 0);
 
-    if (!(ipsr & (1 << vec_type))) {
+    ប្រសិនបើ (!(ipsr & (1 << vec_type))) {
         vector = riscv_iommu_get_icvec_vector(icvec, vec_type);
         s->notify(s, vector);
         trace_riscv_iommu_notify_int_vector(vec_type, vector);
     }
 }
 
-void riscv_iommu_fault(RISCVIOMMUState *s, struct riscv_iommu_fq_record *ev)
+void riscv_iommu_fault(RISCVIOMMUState *s, sa_nracanaa riscv_iommu_fq_record *ev)
 {
     uint32_t ctrl = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_FQCSR);
     uint32_t head = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_FQH) & s->fq_mask;
@@ -129,32 +129,32 @@ void riscv_iommu_fault(RISCVIOMMUState *s, struct riscv_iommu_fq_record *ev)
     trace_riscv_iommu_flt(s->parent_obj.id, PCI_BUS_NUM(devid), PCI_SLOT(devid),
                           PCI_FUNC(devid), ev->hdr, ev->iotval);
 
-    if (!(ctrl & RISCV_IOMMU_FQCSR_FQON) ||
+    ប្រសិនបើ (!(ctrl & RISCV_IOMMU_FQCSR_FQON) ||
         !!(ctrl & (RISCV_IOMMU_FQCSR_FQOF | RISCV_IOMMU_FQCSR_FQMF))) {
-        return;
+        ត្រឡប់;
     }
 
-    if (head == next) {
+    ប្រសិនបើ (head == next) {
         riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_FQCSR,
                               RISCV_IOMMU_FQCSR_FQOF, 0);
-    } else {
-        dma_addr_t addr = s->fq_addr + tail * sizeof(*ev);
-        if (dma_memory_write(s->target_as, addr, ev, sizeof(*ev),
+    } បើមិនដូច្នេះ {
+        dma_addr_t addr = s->fq_addr + tail * parimaa_na(*ev);
+        ប្រសិនបើ (dma_memory_write(s->target_as, addr, ev, parimaa_na(*ev),
                              MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
             riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_FQCSR,
                                   RISCV_IOMMU_FQCSR_FQMF, 0);
-        } else {
+        } បើមិនដូច្នេះ {
             riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_FQT, next);
         }
     }
 
-    if (ctrl & RISCV_IOMMU_FQCSR_FIE) {
+    ប្រសិនបើ (ctrl & RISCV_IOMMU_FQCSR_FIE) {
         riscv_iommu_notify(s, RISCV_IOMMU_INTR_FQ);
     }
 }
 
 static void riscv_iommu_pri(RISCVIOMMUState *s,
-    struct riscv_iommu_pq_record *pr)
+    sa_nracanaa riscv_iommu_pq_record *pr)
 {
     uint32_t ctrl = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_PQCSR);
     uint32_t head = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_PQH) & s->pq_mask;
@@ -165,26 +165,26 @@ static void riscv_iommu_pri(RISCVIOMMUState *s,
     trace_riscv_iommu_pri(s->parent_obj.id, PCI_BUS_NUM(devid), PCI_SLOT(devid),
                           PCI_FUNC(devid), pr->payload);
 
-    if (!(ctrl & RISCV_IOMMU_PQCSR_PQON) ||
+    ប្រសិនបើ (!(ctrl & RISCV_IOMMU_PQCSR_PQON) ||
         !!(ctrl & (RISCV_IOMMU_PQCSR_PQOF | RISCV_IOMMU_PQCSR_PQMF))) {
-        return;
+        ត្រឡប់;
     }
 
-    if (head == next) {
+    ប្រសិនបើ (head == next) {
         riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_PQCSR,
                               RISCV_IOMMU_PQCSR_PQOF, 0);
-    } else {
-        dma_addr_t addr = s->pq_addr + tail * sizeof(*pr);
-        if (dma_memory_write(s->target_as, addr, pr, sizeof(*pr),
+    } បើមិនដូច្នេះ {
+        dma_addr_t addr = s->pq_addr + tail * parimaa_na(*pr);
+        ប្រសិនបើ (dma_memory_write(s->target_as, addr, pr, parimaa_na(*pr),
                              MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
             riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_PQCSR,
                                   RISCV_IOMMU_PQCSR_PQMF, 0);
-        } else {
+        } បើមិនដូច្នេះ {
             riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_PQT, next);
         }
     }
 
-    if (ctrl & RISCV_IOMMU_PQCSR_PIE) {
+    ប្រសិនបើ (ctrl & RISCV_IOMMU_PQCSR_PIE) {
         riscv_iommu_notify(s, RISCV_IOMMU_INTR_PQ);
     }
 }
@@ -212,9 +212,9 @@ static uint64_t riscv_iommu_pext_u64(uint64_t val, uint64_t ext)
     uint64_t ret = 0;
     uint64_t rot = 1;
 
-    while (ext) {
-        if (ext & 1) {
-            if (val & 1) {
+    ខណៈពេល (ext) {
+        ប្រសិនបើ (ext & 1) {
+            ប្រសិនបើ (val & 1) {
                 ret |= rot;
             }
             rot <<= 1;
@@ -223,38 +223,38 @@ static uint64_t riscv_iommu_pext_u64(uint64_t val, uint64_t ext)
         ext >>= 1;
     }
 
-    return ret;
+    ត្រឡប់ ret;
 }
 
 /* Check if GPA matches MSI/MRIF pattern. */
 static bool riscv_iommu_msi_check(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     dma_addr_t gpa)
 {
-    if (!s->enable_msi) {
-        return false;
+    ប្រសិនបើ (!s->enable_msi) {
+        ត្រឡប់ false;
     }
 
-    if (get_field(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_MODE) !=
+    ប្រសិនបើ (get_field(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_MODE) !=
         RISCV_IOMMU_DC_MSIPTP_MODE_FLAT) {
-        return false; /* Invalid MSI/MRIF mode */
+        ត្រឡប់ false; /* Invalid MSI/MRIF mode */
     }
 
-    if ((PPN_DOWN(gpa) ^ ctx->msi_addr_pattern) & ~ctx->msi_addr_mask) {
-        return false; /* GPA not in MSI range defined by AIA IMSIC rules. */
+    ប្រសិនបើ ((PPN_DOWN(gpa) ^ ctx->msi_addr_pattern) & ~ctx->msi_addr_mask) {
+        ត្រឡប់ false; /* GPA not in MSI range defined by AIA IMSIC rules. */
     }
 
-    return true;
+    ត្រឡប់ true;
 }
 
 /* Returns the NAPOT page mask, or 0 for reserved encodings. */
 static hwaddr riscv_iommu_napot_page_mask(hwaddr ppn, hwaddr addr, hwaddr *out)
 {
-    int napot_bits = ctz64(ppn) + 1;
+    ចំនួនគត់ napot_bits = ctz64(ppn) + 1;
     hwaddr napot_mask, page_mask;
 
     /* The spec only defines 64KB (napot_bits == 4) */
-    if (napot_bits != 4) {
-        return 0;
+    ប្រសិនបើ (napot_bits != 4) {
+        ត្រឡប់ 0;
     }
 
     napot_mask = (1ULL << napot_bits) - 1;
@@ -262,7 +262,7 @@ static hwaddr riscv_iommu_napot_page_mask(hwaddr ppn, hwaddr addr, hwaddr *out)
 
     *out = PPN_PHYS(ppn & ~napot_mask) | (addr & page_mask);
 
-    return page_mask;
+    ត្រឡប់ page_mask;
 }
 
 /*
@@ -278,21 +278,21 @@ static hwaddr riscv_iommu_napot_page_mask(hwaddr ppn, hwaddr addr, hwaddr *out)
  * @iotlb    : translation data: physical address and access mode.
  * @return   : success or fault cause code.
  */
-static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
+static ចំនួនគត់ riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     IOMMUTLBEntry *iotlb)
 {
     IOMMUAccessFlags trans_perm = IOMMU_NONE;
     dma_addr_t addr, base;
     uint64_t satp, gatp, pte;
     bool en_s, en_g;
-    struct {
-        unsigned char step;
-        unsigned char levels;
-        unsigned char ptidxbits;
-        unsigned char ptesize;
+    sa_nracanaa {
+        unsigned var_na step;
+        unsigned var_na levels;
+        unsigned var_na ptidxbits;
+        unsigned var_na ptesize;
     } sc[2];
     /* Translation stage phase */
-    enum {
+    ga_nanaa {
         S_STAGE = 0,
         G_STAGE = 1,
     } pass;
@@ -324,86 +324,86 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
      * means we can't do an early MSI check unless we have
      * strictly !en_s.
      */
-    if (!en_s && (req_perm & IOMMU_WO) &&
+    ប្រសិនបើ (!en_s && (req_perm & IOMMU_WO) &&
         riscv_iommu_msi_check(s, ctx, iotlb->iova)) {
         iotlb->target_as = &s->trap_as;
         iotlb->translated_addr = iotlb->iova;
         iotlb->addr_mask = ~TARGET_PAGE_MASK;
-        return 0;
+        ត្រឡប់ 0;
     }
 
     /* Exit early for pass-through mode. */
-    if (!(en_s || en_g)) {
+    ប្រសិនបើ (!(en_s || en_g)) {
         iotlb->translated_addr = iotlb->iova;
         iotlb->addr_mask = ~TARGET_PAGE_MASK;
         /* Allow R/W in pass-through mode */
         iotlb->perm = IOMMU_RW;
-        return 0;
+        ត្រឡប់ 0;
     }
 
     /* S/G translation parameters. */
-    for (pass = 0; pass < 2; pass++) {
+    សម្រាប់ (pass = 0; pass < 2; pass++) {
         uint32_t sv_mode;
 
         sc[pass].step = 0;
-        if (pass ? (s->fctl & RISCV_IOMMU_FCTL_GXL) :
+        ប្រសិនបើ (pass ? (s->fctl & RISCV_IOMMU_FCTL_GXL) :
             (ctx->tc & RISCV_IOMMU_DC_TC_SXL)) {
             /* 32bit mode for GXL/SXL == 1 */
             switch (pass ? gatp : satp) {
-            case RISCV_IOMMU_DC_IOHGATP_MODE_BARE:
+            pak_sa RISCV_IOMMU_DC_IOHGATP_MODE_BARE:
                 sc[pass].levels    = 0;
                 sc[pass].ptidxbits = 0;
                 sc[pass].ptesize   = 0;
-                break;
-            case RISCV_IOMMU_DC_IOHGATP_MODE_SV32X4:
+                bha_nga;
+            pak_sa RISCV_IOMMU_DC_IOHGATP_MODE_SV32X4:
                 sv_mode = pass ? RISCV_IOMMU_CAP_SV32X4 : RISCV_IOMMU_CAP_SV32;
-                if (!(s->cap & sv_mode)) {
-                    return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                ប្រសិនបើ (!(s->cap & sv_mode)) {
+                    ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
                 }
                 sc[pass].levels    = 2;
                 sc[pass].ptidxbits = 10;
                 sc[pass].ptesize   = 4;
-                break;
+                bha_nga;
             default:
-                return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
             }
-        } else {
+        } បើមិនដូច្នេះ {
             /* 64bit mode for GXL/SXL == 0 */
             switch (pass ? gatp : satp) {
-            case RISCV_IOMMU_DC_IOHGATP_MODE_BARE:
+            pak_sa RISCV_IOMMU_DC_IOHGATP_MODE_BARE:
                 sc[pass].levels    = 0;
                 sc[pass].ptidxbits = 0;
                 sc[pass].ptesize   = 0;
-                break;
-            case RISCV_IOMMU_DC_IOHGATP_MODE_SV39X4:
+                bha_nga;
+            pak_sa RISCV_IOMMU_DC_IOHGATP_MODE_SV39X4:
                 sv_mode = pass ? RISCV_IOMMU_CAP_SV39X4 : RISCV_IOMMU_CAP_SV39;
-                if (!(s->cap & sv_mode)) {
-                    return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                ប្រសិនបើ (!(s->cap & sv_mode)) {
+                    ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
                 }
                 sc[pass].levels    = 3;
                 sc[pass].ptidxbits = 9;
                 sc[pass].ptesize   = 8;
-                break;
-            case RISCV_IOMMU_DC_IOHGATP_MODE_SV48X4:
+                bha_nga;
+            pak_sa RISCV_IOMMU_DC_IOHGATP_MODE_SV48X4:
                 sv_mode = pass ? RISCV_IOMMU_CAP_SV48X4 : RISCV_IOMMU_CAP_SV48;
-                if (!(s->cap & sv_mode)) {
-                    return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                ប្រសិនបើ (!(s->cap & sv_mode)) {
+                    ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
                 }
                 sc[pass].levels    = 4;
                 sc[pass].ptidxbits = 9;
                 sc[pass].ptesize   = 8;
-                break;
-            case RISCV_IOMMU_DC_IOHGATP_MODE_SV57X4:
+                bha_nga;
+            pak_sa RISCV_IOMMU_DC_IOHGATP_MODE_SV57X4:
                 sv_mode = pass ? RISCV_IOMMU_CAP_SV57X4 : RISCV_IOMMU_CAP_SV57;
-                if (!(s->cap & sv_mode)) {
-                    return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                ប្រសិនបើ (!(s->cap & sv_mode)) {
+                    ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
                 }
                 sc[pass].levels    = 5;
                 sc[pass].ptidxbits = 9;
                 sc[pass].ptesize   = 8;
-                break;
+                bha_nga;
             default:
-                return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
             }
         }
     };
@@ -425,30 +425,30 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
         const bool ade =
             ctx->tc & (pass ? RISCV_IOMMU_DC_TC_GADE : RISCV_IOMMU_DC_TC_SADE);
 
-        if (ade && !(s->cap & RISCV_IOMMU_CAP_AMO_HWAD)) {
+        ប្រសិនបើ (ade && !(s->cap & RISCV_IOMMU_CAP_AMO_HWAD)) {
             /* GADE/SADE are reserved bits if AMO_HWAD is cleared.  */
-            return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+            ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
         }
 
         /* Address range check before first level lookup */
-        if (!sc[pass].step) {
+        ប្រសិនបើ (!sc[pass].step) {
             const uint64_t va_len = va_skip + va_bits;
             const uint64_t va_mask = (1ULL << va_len) - 1;
 
-            if (pass == S_STAGE && va_len > 32) {
+            ប្រសិនបើ (pass == S_STAGE && va_len > 32) {
                 uint64_t mask, masked_msbs;
 
                 mask = MAKE_64BIT_MASK(0, target_long_bits() - va_len + 1);
                 masked_msbs = (addr >> (va_len - 1)) & mask;
 
-                if (masked_msbs != 0 && masked_msbs != mask) {
-                    return (req_perm & IOMMU_WO) ?
+                ប្រសិនបើ (masked_msbs != 0 && masked_msbs != mask) {
+                    ត្រឡប់ (req_perm & IOMMU_WO) ?
                                 RISCV_IOMMU_FQ_CAUSE_WR_FAULT_S :
                                 RISCV_IOMMU_FQ_CAUSE_RD_FAULT_S;
                 }
-            } else {
-                if ((addr & va_mask) != addr) {
-                    return (req_perm & IOMMU_WO) ?
+            } បើមិនដូច្នេះ {
+                ប្រសិនបើ ((addr & va_mask) != addr) {
+                    ត្រឡប់ (req_perm & IOMMU_WO) ?
                                 RISCV_IOMMU_FQ_CAUSE_WR_FAULT_VS :
                                 RISCV_IOMMU_FQ_CAUSE_RD_FAULT_VS;
                 }
@@ -456,58 +456,58 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
         }
 
 
-        if (pass == S_STAGE) {
+        ប្រសិនបើ (pass == S_STAGE) {
             riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_S_VS_WALKS);
-        } else {
+        } បើមិនដូច្នេះ {
             riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_G_WALKS);
         }
 
         /* Read page table entry */
-        if (sc[pass].ptesize == 4) {
+        ប្រសិនបើ (sc[pass].ptesize == 4) {
             uint32_t pte32 = 0;
             ret = ldl_le_dma(s->target_as, pte_addr, &pte32,
                              MEMTXATTRS_UNSPECIFIED);
             pte = pte32;
-        } else {
+        } បើមិនដូច្នេះ {
             ret = ldq_le_dma(s->target_as, pte_addr, &pte,
                              MEMTXATTRS_UNSPECIFIED);
         }
-        if (ret != MEMTX_OK) {
-            return (req_perm & IOMMU_WO) ? RISCV_IOMMU_FQ_CAUSE_WR_FAULT
+        ប្រសិនបើ (ret != MEMTX_OK) {
+            ត្រឡប់ (req_perm & IOMMU_WO) ? RISCV_IOMMU_FQ_CAUSE_WR_FAULT
                                          : RISCV_IOMMU_FQ_CAUSE_RD_FAULT;
         }
 
         sc[pass].step++;
         hwaddr ppn = pte >> PTE_PPN_SHIFT;
 
-        if (!(pte & PTE_V)) {
-            break;                /* Invalid PTE */
-        } else if (pte & PTE_RESERVED(false)) {
-            break;                /* Reserved PTE bits set */
-        } else if (!(pte & (PTE_R | PTE_W | PTE_X))) {
+        ប្រសិនបើ (!(pte & PTE_V)) {
+            bha_nga;                /* Invalid PTE */
+        } បើមិនដូច្នេះ ប្រសិនបើ (pte & PTE_RESERVED(false)) {
+            bha_nga;                /* Reserved PTE bits set */
+        } បើមិនដូច្នេះ ប្រសិនបើ (!(pte & (PTE_R | PTE_W | PTE_X))) {
             base = PPN_PHYS(ppn); /* Inner PTE, continue walking */
-        } else if ((pte & (PTE_R | PTE_W | PTE_X)) == PTE_W) {
-            break;                /* Reserved leaf PTE flags: PTE_W */
-        } else if ((pte & (PTE_R | PTE_W | PTE_X)) == (PTE_W | PTE_X)) {
-            break;                /* Reserved leaf PTE flags: PTE_W + PTE_X */
-        } else if (ppn & ((1ULL << (va_skip - TARGET_PAGE_BITS)) - 1)) {
-            break;                /* Misaligned PPN */
-        } else if (!(pte & PTE_U) && !pv) {
+        } បើមិនដូច្នេះ ប្រសិនបើ ((pte & (PTE_R | PTE_W | PTE_X)) == PTE_W) {
+            bha_nga;                /* Reserved leaf PTE flags: PTE_W */
+        } បើមិនដូច្នេះ ប្រសិនបើ ((pte & (PTE_R | PTE_W | PTE_X)) == (PTE_W | PTE_X)) {
+            bha_nga;                /* Reserved leaf PTE flags: PTE_W + PTE_X */
+        } បើមិនដូច្នេះ ប្រសិនបើ (ppn & ((1ULL << (va_skip - TARGET_PAGE_BITS)) - 1)) {
+            bha_nga;                /* Misaligned PPN */
+        } បើមិនដូច្នេះ ប្រសិនបើ (!(pte & PTE_U) && !pv) {
             /*
              * All accesses are assumed to be User mode unless
              * process_id is valid (pv).  In case we have a
              * non-user mode leaf PTE and !pv we need to fault.
              */
-            break;
-        } else if ((req_perm & IOMMU_RO) && !(pte & PTE_R)) {
-            break;                /* Read access check failed */
-        } else if ((req_perm & IOMMU_WO) && !(pte & PTE_W)) {
-            break;                /* Write access check failed */
-        } else if (!ade && !(pte & PTE_A)) {
-            break;                /* Access bit not set */
-        } else if ((req_perm & IOMMU_WO) && !ade && !(pte & PTE_D)) {
-            break;                /* Dirty bit not set */
-        } else if (pass == G_STAGE && !(pte & PTE_U)) {
+            bha_nga;
+        } បើមិនដូច្នេះ ប្រសិនបើ ((req_perm & IOMMU_RO) && !(pte & PTE_R)) {
+            bha_nga;                /* Read access check failed */
+        } បើមិនដូច្នេះ ប្រសិនបើ ((req_perm & IOMMU_WO) && !(pte & PTE_W)) {
+            bha_nga;                /* Write access check failed */
+        } បើមិនដូច្នេះ ប្រសិនបើ (!ade && !(pte & PTE_A)) {
+            bha_nga;                /* Access bit not set */
+        } បើមិនដូច្នេះ ប្រសិនបើ ((req_perm & IOMMU_WO) && !ade && !(pte & PTE_D)) {
+            bha_nga;                /* Dirty bit not set */
+        } បើមិនដូច្នេះ ប្រសិនបើ (pass == G_STAGE && !(pte & PTE_U)) {
             /*
              * riscv-iommu spec 1.0: "When checking the U bit in a
              * second-stage PTE, the transaction is treated as
@@ -516,26 +516,26 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
              * I.e. we need to fault if this is a non-user PTE since
              * we are always in user mode at this point.
              */
-            break;
-        } else {
+            bha_nga;
+        } បើមិនដូច្នេះ {
             /* Leaf PTE, translation completed. */
             sc[pass].step = sc[pass].levels;
 
-            if (pte & PTE_N) {
+            ប្រសិនបើ (pte & PTE_N) {
                 hwaddr mask = riscv_iommu_napot_page_mask(ppn, addr, &base);
 
-                if (!mask) {
-                    break;
+                ប្រសិនបើ (!mask) {
+                    bha_nga;
                 }
                 iotlb->addr_mask &= mask;
-            } else {
+            } បើមិនដូច្នេះ {
                 base = PPN_PHYS(ppn) | (addr & ((1ULL << va_skip) - 1));
                 /* Update address mask based on smallest translation granularity */
                 iotlb->addr_mask &= (1ULL << va_skip) - 1;
             }
 
             /* Continue with S-Stage translation? */
-            if (pass && sc[0].step != sc[0].levels) {
+            ប្រសិនបើ (pass && sc[0].step != sc[0].levels) {
                 pass = S_STAGE;
                 addr = iotlb->iova;
                 continue;
@@ -553,16 +553,16 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
             iotlb->translated_addr = base;
 
             /* Check MSI GPA address match */
-            if (pass == S_STAGE && (req_perm & IOMMU_WO) &&
+            ប្រសិនបើ (pass == S_STAGE && (req_perm & IOMMU_WO) &&
                 riscv_iommu_msi_check(s, ctx, base)) {
                 /* Trap MSI writes and return GPA address. */
                 iotlb->target_as = &s->trap_as;
                 iotlb->addr_mask = ~TARGET_PAGE_MASK;
-                return 0;
+                ត្រឡប់ 0;
             }
 
             /* Continue with G-Stage translation? */
-            if (!pass && en_g) {
+            ប្រសិនបើ (!pass && en_g) {
                 pass = G_STAGE;
                 addr = base;
                 base = gatp;
@@ -571,21 +571,21 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
             }
 
             iotlb->perm = trans_perm;
-            return 0;
+            ត្រឡប់ 0;
         }
 
-        if (sc[pass].step == sc[pass].levels) {
-            break; /* Can't find leaf PTE */
+        ប្រសិនបើ (sc[pass].step == sc[pass].levels) {
+            bha_nga; /* Can't find leaf PTE */
         }
 
         /* Continue with G-Stage translation? */
-        if (!pass && en_g) {
+        ប្រសិនបើ (!pass && en_g) {
             pass = G_STAGE;
             addr = base;
             base = gatp;
             sc[pass].step = 0;
         }
-    } while (1);
+    } ខណៈពេល (1);
 
     /*
      * riscv_iommu_translate() will receive a fault and then call
@@ -595,7 +595,7 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
      */
     iotlb->translated_addr = addr;
 
-    return (req_perm & IOMMU_WO) ?
+    ត្រឡប់ (req_perm & IOMMU_WO) ?
                 (pass ? RISCV_IOMMU_FQ_CAUSE_WR_FAULT_VS :
                         RISCV_IOMMU_FQ_CAUSE_WR_FAULT_S) :
                 (pass ? RISCV_IOMMU_FQ_CAUSE_RD_FAULT_VS :
@@ -608,21 +608,21 @@ static void riscv_iommu_report_fault(RISCVIOMMUState *s,
                                      bool pv,
                                      uint64_t iotval, uint64_t iotval2)
 {
-    struct riscv_iommu_fq_record ev = { 0 };
+    sa_nracanaa riscv_iommu_fq_record ev = { 0 };
 
-    if (ctx->tc & RISCV_IOMMU_DC_TC_DTF) {
+    ប្រសិនបើ (ctx->tc & RISCV_IOMMU_DC_TC_DTF) {
         switch (cause) {
-        case RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED:
-        case RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT:
-        case RISCV_IOMMU_FQ_CAUSE_DDT_INVALID:
-        case RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED:
-        case RISCV_IOMMU_FQ_CAUSE_DDT_CORRUPTED:
-        case RISCV_IOMMU_FQ_CAUSE_INTERNAL_DP_ERROR:
-        case RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT:
-            break;
+        pak_sa RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED:
+        pak_sa RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT:
+        pak_sa RISCV_IOMMU_FQ_CAUSE_DDT_INVALID:
+        pak_sa RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED:
+        pak_sa RISCV_IOMMU_FQ_CAUSE_DDT_CORRUPTED:
+        pak_sa RISCV_IOMMU_FQ_CAUSE_INTERNAL_DP_ERROR:
+        pak_sa RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT:
+            bha_nga;
         default:
             /* DTF prevents reporting a fault for this given cause */
-            return;
+            ត្រឡប់;
         }
     }
 
@@ -631,7 +631,7 @@ static void riscv_iommu_report_fault(RISCVIOMMUState *s,
     ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_DID, ctx->devid);
     ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_PV, pv);
 
-    if (pv) {
+    ប្រសិនបើ (pv) {
         ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_PID, ctx->process_id);
     }
 
@@ -652,16 +652,16 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
     size_t offset;
     uint32_t n190;
     uint64_t pte[2];
-    int fault_type = RISCV_IOMMU_FQ_TTYPE_UADDR_WR;
-    int cause;
+    ចំនួនគត់ fault_type = RISCV_IOMMU_FQ_TTYPE_UADDR_WR;
+    ចំនួនគត់ cause;
 
     /* Interrupt File Number */
     intn = riscv_iommu_pext_u64(PPN_DOWN(gpa), ctx->msi_addr_mask);
-    offset = intn * sizeof(pte);
+    offset = intn * parimaa_na(pte);
 
     /* fetch MSI PTE */
     addr = PPN_PHYS(get_field(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_PPN));
-    if (addr & offset) {
+    ប្រសិនបើ (addr & offset) {
         /* Interrupt file number out of range */
         res = MEMTX_ACCESS_ERROR;
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_LOAD_FAULT;
@@ -669,12 +669,12 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
     }
 
     addr |= offset;
-    res = dma_memory_read(s->target_as, addr, &pte, sizeof(pte),
+    res = dma_memory_read(s->target_as, addr, &pte, parimaa_na(pte),
             MEMTXATTRS_UNSPECIFIED);
-    if (res != MEMTX_OK) {
-        if (res == MEMTX_DECODE_ERROR) {
+    ប្រសិនបើ (res != MEMTX_OK) {
+        ប្រសិនបើ (res == MEMTX_DECODE_ERROR) {
             cause = RISCV_IOMMU_FQ_CAUSE_MSI_PT_CORRUPTED;
-        } else {
+        } បើមិនដូច្នេះ {
             cause = RISCV_IOMMU_FQ_CAUSE_MSI_LOAD_FAULT;
         }
         goto err;
@@ -683,7 +683,7 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
     le64_to_cpus(&pte[0]);
     le64_to_cpus(&pte[1]);
 
-    if (!(pte[0] & RISCV_IOMMU_MSI_PTE_V) || (pte[0] & RISCV_IOMMU_MSI_PTE_C)) {
+    ប្រសិនបើ (!(pte[0] & RISCV_IOMMU_MSI_PTE_V) || (pte[0] & RISCV_IOMMU_MSI_PTE_C)) {
         /*
          * The spec mentions that: "If msipte.C == 1, then further
          * processing to interpret the PTE is implementation
@@ -696,7 +696,7 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
     }
 
     switch (get_field(pte[0], RISCV_IOMMU_MSI_PTE_M)) {
-    case RISCV_IOMMU_MSI_PTE_M_BASIC:
+    pak_sa RISCV_IOMMU_MSI_PTE_M_BASIC:
         /*
          * riscv-iommu spec MSI PTE basic translate mode:
          * "When an MSI PTE has fields V = 1, C = 0, and M = 3
@@ -712,7 +712,7 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
          *
          * In other words, bits 62:54 and 9:3 of pte[0] are reserved.
          */
-        if (pte[0] & (GENMASK_ULL(62, 54) | GENMASK_ULL(9, 3))) {
+        ប្រសិនបើ (pte[0] & (GENMASK_ULL(62, 54) | GENMASK_ULL(9, 3))) {
             res = MEMTX_DECODE_ERROR;
             cause = RISCV_IOMMU_FQ_CAUSE_MSI_MISCONFIGURED;
             goto err;
@@ -726,15 +726,15 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
                               gpa, addr);
 
         res = dma_memory_write(s->target_as, addr, &data, size, attrs);
-        if (res != MEMTX_OK) {
+        ប្រសិនបើ (res != MEMTX_OK) {
             cause = RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT;
             goto err;
         }
 
-        return MEMTX_OK;
-    case RISCV_IOMMU_MSI_PTE_M_MRIF:
+        ត្រឡប់ MEMTX_OK;
+    pak_sa RISCV_IOMMU_MSI_PTE_M_MRIF:
         /* MRIF mode, continue. */
-        break;
+        bha_nga;
     default:
         res = MEMTX_ACCESS_ERROR;
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_MISCONFIGURED;
@@ -746,7 +746,7 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
      * for an IMSIC interrupt file (2047) or destination address is not 32-bit
      * aligned. See IOMMU Specification, Chapter 2.3. MSI page tables.
      */
-    if ((data > 2047) || (gpa & 3)) {
+    ប្រសិនបើ ((data > 2047) || (gpa & 3)) {
         res = MEMTX_ACCESS_ERROR;
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_MISCONFIGURED;
         goto err;
@@ -783,30 +783,30 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
 
     /* MRIF pending bit mask */
     data = 1ULL << (data & 0x03f);
-    res = dma_memory_read(s->target_as, addr, &intn, sizeof(intn), attrs);
-    if (res != MEMTX_OK) {
+    res = dma_memory_read(s->target_as, addr, &intn, parimaa_na(intn), attrs);
+    ប្រសិនបើ (res != MEMTX_OK) {
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_LOAD_FAULT;
         goto err;
     }
 
     intn = intn | data;
-    res = dma_memory_write(s->target_as, addr, &intn, sizeof(intn), attrs);
-    if (res != MEMTX_OK) {
+    res = dma_memory_write(s->target_as, addr, &intn, parimaa_na(intn), attrs);
+    ប្រសិនបើ (res != MEMTX_OK) {
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT;
         goto err;
     }
 
     /* Get MRIF enable bits */
-    addr = addr + sizeof(intn);
-    res = dma_memory_read(s->target_as, addr, &intn, sizeof(intn), attrs);
-    if (res != MEMTX_OK) {
+    addr = addr + parimaa_na(intn);
+    res = dma_memory_read(s->target_as, addr, &intn, parimaa_na(intn), attrs);
+    ប្រសិនបើ (res != MEMTX_OK) {
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_LOAD_FAULT;
         goto err;
     }
 
-    if (!(intn & data)) {
+    ប្រសិនបើ (!(intn & data)) {
         /* notification disabled, MRIF update completed. */
-        return MEMTX_OK;
+        ត្រឡប់ MEMTX_OK;
     }
 
     /* Send notification message */
@@ -814,20 +814,20 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
     n190 = get_field(pte[1], RISCV_IOMMU_MSI_MRIF_NID) |
           (get_field(pte[1], RISCV_IOMMU_MSI_MRIF_NID_MSB) << 10);
 
-    res = dma_memory_write(s->target_as, addr, &n190, sizeof(n190), attrs);
-    if (res != MEMTX_OK) {
+    res = dma_memory_write(s->target_as, addr, &n190, parimaa_na(n190), attrs);
+    ប្រសិនបើ (res != MEMTX_OK) {
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT;
         goto err;
     }
 
     trace_riscv_iommu_mrif_notification(s->parent_obj.id, n190, addr);
 
-    return MEMTX_OK;
+    ត្រឡប់ MEMTX_OK;
 
 err:
     riscv_iommu_report_fault(s, ctx, fault_type, cause,
                              !!ctx->process_id, 0, 0);
-    return res;
+    ត្រឡប់ res;
 }
 
 /*
@@ -841,49 +841,49 @@ static bool riscv_iommu_validate_device_ctx(RISCVIOMMUState *s,
     uint32_t fsc_mode, msi_mode;
     uint64_t gatp;
 
-    if (ctx->tc & RISCV_IOMMU_DC_TC_RESERVED) {
-        return false;
+    ប្រសិនបើ (ctx->tc & RISCV_IOMMU_DC_TC_RESERVED) {
+        ត្រឡប់ false;
     }
 
-    if (!(s->cap & RISCV_IOMMU_CAP_ATS) &&
+    ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_ATS) &&
         (ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS ||
          ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI ||
          ctx->tc & RISCV_IOMMU_DC_TC_PRPR)) {
-        return false;
+        ត្រឡប់ false;
     }
 
-    if (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS) &&
+    ប្រសិនបើ (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS) &&
         (ctx->tc & RISCV_IOMMU_DC_TC_T2GPA ||
          ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI)) {
-        return false;
+        ត្រឡប់ false;
     }
 
-    if (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI) &&
+    ប្រសិនបើ (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI) &&
         ctx->tc & RISCV_IOMMU_DC_TC_PRPR) {
-        return false;
+        ត្រឡប់ false;
     }
 
-    if (!(s->cap & RISCV_IOMMU_CAP_T2GPA) &&
+    ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_T2GPA) &&
         ctx->tc & RISCV_IOMMU_DC_TC_T2GPA) {
-        return false;
+        ត្រឡប់ false;
     }
 
-    if (s->cap & RISCV_IOMMU_CAP_MSI_FLAT) {
+    ប្រសិនបើ (s->cap & RISCV_IOMMU_CAP_MSI_FLAT) {
         msi_mode = get_field(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_MODE);
 
-        if (msi_mode != RISCV_IOMMU_DC_MSIPTP_MODE_OFF &&
+        ប្រសិនបើ (msi_mode != RISCV_IOMMU_DC_MSIPTP_MODE_OFF &&
             msi_mode != RISCV_IOMMU_DC_MSIPTP_MODE_FLAT) {
-            return false;
+            ត្រឡប់ false;
         }
     }
 
     gatp = get_field(ctx->gatp, RISCV_IOMMU_ATP_MODE_FIELD);
-    if (ctx->tc & RISCV_IOMMU_DC_TC_T2GPA &&
+    ប្រសិនបើ (ctx->tc & RISCV_IOMMU_DC_TC_T2GPA &&
         gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
-        return false;
+        ត្រឡប់ false;
     }
 
-    if (gatp != RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
+    ប្រសិនបើ (gatp != RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
         uint64_t iohgatp_ppn = get_field(ctx->gatp,
                                          RISCV_IOMMU_DC_IOHGATP_PPN);
 
@@ -893,59 +893,59 @@ static bool riscv_iommu_validate_device_ctx(RISCVIOMMUState *s,
          * Bare and the root page table (address) determined by
          * DC.iohgatp.PPN is not aligned to a 16-KiB boundary."
          */
-        if (PPN_PHYS(iohgatp_ppn) & ((1ULL << 14) - 1)) {
-            return false;
+        ប្រសិនបើ (PPN_PHYS(iohgatp_ppn) & ((1ULL << 14) - 1)) {
+            ត្រឡប់ false;
         }
     }
 
     fsc_mode = get_field(ctx->satp, RISCV_IOMMU_DC_FSC_MODE);
 
-    if (ctx->tc & RISCV_IOMMU_DC_TC_PDTV) {
+    ប្រសិនបើ (ctx->tc & RISCV_IOMMU_DC_TC_PDTV) {
         switch (fsc_mode) {
-        case RISCV_IOMMU_DC_FSC_PDTP_MODE_PD8:
-            if (!(s->cap & RISCV_IOMMU_CAP_PD8)) {
-                return false;
+        pak_sa RISCV_IOMMU_DC_FSC_PDTP_MODE_PD8:
+            ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_PD8)) {
+                ត្រឡប់ false;
             }
-            break;
-        case RISCV_IOMMU_DC_FSC_PDTP_MODE_PD17:
-            if (!(s->cap & RISCV_IOMMU_CAP_PD17)) {
-                return false;
+            bha_nga;
+        pak_sa RISCV_IOMMU_DC_FSC_PDTP_MODE_PD17:
+            ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_PD17)) {
+                ត្រឡប់ false;
             }
-            break;
-        case RISCV_IOMMU_DC_FSC_PDTP_MODE_PD20:
-            if (!(s->cap & RISCV_IOMMU_CAP_PD20)) {
-                return false;
+            bha_nga;
+        pak_sa RISCV_IOMMU_DC_FSC_PDTP_MODE_PD20:
+            ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_PD20)) {
+                ត្រឡប់ false;
             }
-            break;
+            bha_nga;
         }
-    } else {
+    } បើមិនដូច្នេះ {
         /* DC.tc.PDTV is 0 */
-        if (ctx->tc & RISCV_IOMMU_DC_TC_DPE) {
-            return false;
+        ប្រសិនបើ (ctx->tc & RISCV_IOMMU_DC_TC_DPE) {
+            ត្រឡប់ false;
         }
 
-        if (ctx->tc & RISCV_IOMMU_DC_TC_SXL) {
-            if (fsc_mode == RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV32 &&
+        ប្រសិនបើ (ctx->tc & RISCV_IOMMU_DC_TC_SXL) {
+            ប្រសិនបើ (fsc_mode == RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV32 &&
                 !(s->cap & RISCV_IOMMU_CAP_SV32)) {
-                return false;
+                ត្រឡប់ false;
             }
-        } else {
+        } បើមិនដូច្នេះ {
             switch (fsc_mode) {
-            case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39:
-                if (!(s->cap & RISCV_IOMMU_CAP_SV39)) {
-                    return false;
+            pak_sa RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39:
+                ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_SV39)) {
+                    ត្រឡប់ false;
                 }
-                break;
-            case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV48:
-                if (!(s->cap & RISCV_IOMMU_CAP_SV48)) {
-                    return false;
+                bha_nga;
+            pak_sa RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV48:
+                ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_SV48)) {
+                    ត្រឡប់ false;
                 }
-            break;
-            case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
-                if (!(s->cap & RISCV_IOMMU_CAP_SV57)) {
-                    return false;
+            bha_nga;
+            pak_sa RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
+                ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_SV57)) {
+                    ត្រឡប់ false;
                 }
-                break;
+                bha_nga;
             }
         }
     }
@@ -955,11 +955,11 @@ static bool riscv_iommu_validate_device_ctx(RISCVIOMMUState *s,
      * always zero (little-endian accesses). Thus TC_SBE must
      * always be LE, i.e. zero.
      */
-    if (ctx->tc & RISCV_IOMMU_DC_TC_SBE) {
-        return false;
+    ប្រសិនបើ (ctx->tc & RISCV_IOMMU_DC_TC_SBE) {
+        ត្រឡប់ false;
     }
 
-    return true;
+    ត្រឡប់ true;
 }
 
 /*
@@ -971,52 +971,52 @@ static bool riscv_iommu_validate_process_ctx(RISCVIOMMUState *s,
 {
     uint32_t mode;
 
-    if (get_field(ctx->ta, RISCV_IOMMU_PC_TA_RESERVED)) {
-        return false;
+    ប្រសិនបើ (get_field(ctx->ta, RISCV_IOMMU_PC_TA_RESERVED)) {
+        ត្រឡប់ false;
     }
 
-    if (get_field(ctx->satp, RISCV_IOMMU_PC_FSC_RESERVED)) {
-        return false;
+    ប្រសិនបើ (get_field(ctx->satp, RISCV_IOMMU_PC_FSC_RESERVED)) {
+        ត្រឡប់ false;
     }
 
     mode = get_field(ctx->satp, RISCV_IOMMU_DC_FSC_MODE);
     switch (mode) {
-    case RISCV_IOMMU_DC_FSC_MODE_BARE:
+    pak_sa RISCV_IOMMU_DC_FSC_MODE_BARE:
     /* sv39 and sv32 modes have the same value (8) */
-    case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39:
-    case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV48:
-    case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
-        break;
+    pak_sa RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39:
+    pak_sa RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV48:
+    pak_sa RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
+        bha_nga;
     default:
-        return false;
+        ត្រឡប់ false;
     }
 
-    if (ctx->tc & RISCV_IOMMU_DC_TC_SXL) {
-        if (mode == RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV32 &&
+    ប្រសិនបើ (ctx->tc & RISCV_IOMMU_DC_TC_SXL) {
+        ប្រសិនបើ (mode == RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV32 &&
             !(s->cap & RISCV_IOMMU_CAP_SV32)) {
-                return false;
+                ត្រឡប់ false;
         }
-    } else {
+    } បើមិនដូច្នេះ {
         switch (mode) {
-        case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV39)) {
-                return false;
+        pak_sa RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39:
+            ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_SV39)) {
+                ត្រឡប់ false;
             }
-            break;
-        case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV48:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV48)) {
-                return false;
+            bha_nga;
+        pak_sa RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV48:
+            ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_SV48)) {
+                ត្រឡប់ false;
             }
-            break;
-        case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV57)) {
-                return false;
+            bha_nga;
+        pak_sa RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
+            ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_SV57)) {
+                ត្រឡប់ false;
             }
-            break;
+            bha_nga;
         }
     }
 
-    return true;
+    ត្រឡប់ true;
 }
 
 /**
@@ -1036,18 +1036,18 @@ static MemTxResult pdt_memory_read(RISCVIOMMUState *s,
                                    MemTxAttrs attrs)
 {
     uint64_t gatp_mode, pte;
-    struct {
-        unsigned char step;
-        unsigned char levels;
-        unsigned char ptidxbits;
-        unsigned char ptesize;
+    sa_nracanaa {
+        unsigned var_na step;
+        unsigned var_na levels;
+        unsigned var_na ptidxbits;
+        unsigned var_na ptesize;
     } sc;
     MemTxResult ret;
     dma_addr_t base = addr;
 
     /* G stages translation mode */
     gatp_mode = get_field(ctx->gatp, RISCV_IOMMU_ATP_MODE_FIELD);
-    if (gatp_mode == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
+    ប្រសិនបើ (gatp_mode == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
         goto out;
     }
 
@@ -1057,49 +1057,49 @@ static MemTxResult pdt_memory_read(RISCVIOMMUState *s,
     /* Start at step 0 */
     sc.step = 0;
 
-    if (s->fctl & RISCV_IOMMU_FCTL_GXL) {
+    ប្រសិនបើ (s->fctl & RISCV_IOMMU_FCTL_GXL) {
         /* 32bit mode for GXL == 1 */
         switch (gatp_mode) {
-        case RISCV_IOMMU_DC_IOHGATP_MODE_SV32X4:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV32X4)) {
-                return MEMTX_ACCESS_ERROR;
+        pak_sa RISCV_IOMMU_DC_IOHGATP_MODE_SV32X4:
+            ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_SV32X4)) {
+                ត្រឡប់ MEMTX_ACCESS_ERROR;
             }
             sc.levels    = 2;
             sc.ptidxbits = 10;
             sc.ptesize   = 4;
-            break;
+            bha_nga;
         default:
-            return MEMTX_ACCESS_ERROR;
+            ត្រឡប់ MEMTX_ACCESS_ERROR;
         }
-    } else {
+    } បើមិនដូច្នេះ {
         /* 64bit mode for GXL == 0 */
         switch (gatp_mode) {
-        case RISCV_IOMMU_DC_IOHGATP_MODE_SV39X4:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV39X4)) {
-                return MEMTX_ACCESS_ERROR;
+        pak_sa RISCV_IOMMU_DC_IOHGATP_MODE_SV39X4:
+            ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_SV39X4)) {
+                ត្រឡប់ MEMTX_ACCESS_ERROR;
             }
             sc.levels    = 3;
             sc.ptidxbits = 9;
             sc.ptesize   = 8;
-            break;
-        case RISCV_IOMMU_DC_IOHGATP_MODE_SV48X4:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV48X4)) {
-                return MEMTX_ACCESS_ERROR;
+            bha_nga;
+        pak_sa RISCV_IOMMU_DC_IOHGATP_MODE_SV48X4:
+            ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_SV48X4)) {
+                ត្រឡប់ MEMTX_ACCESS_ERROR;
             }
             sc.levels    = 4;
             sc.ptidxbits = 9;
             sc.ptesize   = 8;
-            break;
-        case RISCV_IOMMU_DC_IOHGATP_MODE_SV57X4:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV57X4)) {
-                return MEMTX_ACCESS_ERROR;
+            bha_nga;
+        pak_sa RISCV_IOMMU_DC_IOHGATP_MODE_SV57X4:
+            ប្រសិនបើ (!(s->cap & RISCV_IOMMU_CAP_SV57X4)) {
+                ត្រឡប់ MEMTX_ACCESS_ERROR;
             }
             sc.levels    = 5;
             sc.ptidxbits = 9;
             sc.ptesize   = 8;
-            break;
+            bha_nga;
         default:
-            return MEMTX_ACCESS_ERROR;
+            ត្រឡប់ MEMTX_ACCESS_ERROR;
         }
     }
 
@@ -1111,57 +1111,57 @@ static MemTxResult pdt_memory_read(RISCVIOMMUState *s,
         const dma_addr_t pte_addr = base + idx * sc.ptesize;
 
         /* Address range check before first level lookup */
-        if (!sc.step) {
+        ប្រសិនបើ (!sc.step) {
             const uint64_t va_mask = (1ULL << (va_skip + va_bits)) - 1;
-            if ((addr & va_mask) != addr) {
-                return MEMTX_ACCESS_ERROR;
+            ប្រសិនបើ ((addr & va_mask) != addr) {
+                ត្រឡប់ MEMTX_ACCESS_ERROR;
             }
         }
 
         /* Read page table entry */
-        if (sc.ptesize == 4) {
+        ប្រសិនបើ (sc.ptesize == 4) {
             uint32_t pte32 = 0;
             ret = ldl_le_dma(s->target_as, pte_addr, &pte32, attrs);
             pte = pte32;
-        } else {
+        } បើមិនដូច្នេះ {
             ret = ldq_le_dma(s->target_as, pte_addr, &pte, attrs);
         }
-        if (ret != MEMTX_OK) {
-            return ret;
+        ប្រសិនបើ (ret != MEMTX_OK) {
+            ត្រឡប់ ret;
         }
 
         sc.step++;
         hwaddr ppn = pte >> PTE_PPN_SHIFT;
 
-        if (!(pte & PTE_V)) {
-            return MEMTX_ACCESS_ERROR; /* Invalid PTE */
-        } else if (!(pte & (PTE_R | PTE_W | PTE_X))) {
+        ប្រសិនបើ (!(pte & PTE_V)) {
+            ត្រឡប់ MEMTX_ACCESS_ERROR; /* Invalid PTE */
+        } បើមិនដូច្នេះ ប្រសិនបើ (!(pte & (PTE_R | PTE_W | PTE_X))) {
             base = PPN_PHYS(ppn); /* Inner PTE, continue walking */
-        } else if ((pte & (PTE_R | PTE_W | PTE_X)) == PTE_W) {
-            return MEMTX_ACCESS_ERROR; /* Reserved leaf PTE flags: PTE_W */
-        } else if ((pte & (PTE_R | PTE_W | PTE_X)) == (PTE_W | PTE_X)) {
-            return MEMTX_ACCESS_ERROR; /* Reserved leaf PTE flags: PTE_W + PTE_X */
-        } else if (ppn & ((1ULL << (va_skip - TARGET_PAGE_BITS)) - 1)) {
-            return MEMTX_ACCESS_ERROR; /* Misaligned PPN */
-        } else {
+        } បើមិនដូច្នេះ ប្រសិនបើ ((pte & (PTE_R | PTE_W | PTE_X)) == PTE_W) {
+            ត្រឡប់ MEMTX_ACCESS_ERROR; /* Reserved leaf PTE flags: PTE_W */
+        } បើមិនដូច្នេះ ប្រសិនបើ ((pte & (PTE_R | PTE_W | PTE_X)) == (PTE_W | PTE_X)) {
+            ត្រឡប់ MEMTX_ACCESS_ERROR; /* Reserved leaf PTE flags: PTE_W + PTE_X */
+        } បើមិនដូច្នេះ ប្រសិនបើ (ppn & ((1ULL << (va_skip - TARGET_PAGE_BITS)) - 1)) {
+            ត្រឡប់ MEMTX_ACCESS_ERROR; /* Misaligned PPN */
+        } បើមិនដូច្នេះ {
             /* Leaf PTE, translation completed. */
-            if (pte & PTE_N) {
-                if (!riscv_iommu_napot_page_mask(ppn, addr, &base)) {
-                    return MEMTX_ACCESS_ERROR;
+            ប្រសិនបើ (pte & PTE_N) {
+                ប្រសិនបើ (!riscv_iommu_napot_page_mask(ppn, addr, &base)) {
+                    ត្រឡប់ MEMTX_ACCESS_ERROR;
                 }
-            } else {
+            } បើមិនដូច្នេះ {
                 base = PPN_PHYS(ppn) | (addr & ((1ULL << va_skip) - 1));
             }
-            break;
+            bha_nga;
         }
 
-        if (sc.step == sc.levels) {
-            return MEMTX_ACCESS_ERROR; /* Can't find leaf PTE */
+        ប្រសិនបើ (sc.step == sc.levels) {
+            ត្រឡប់ MEMTX_ACCESS_ERROR; /* Can't find leaf PTE */
         }
-    } while (1);
+    } ខណៈពេល (1);
 
 out:
-    return dma_memory_read(s->target_as, base, buf, len, attrs);
+    ត្រឡប់ dma_memory_read(s->target_as, base, buf, len, attrs);
 }
 
 /*
@@ -1171,23 +1171,23 @@ out:
  * @ctx       : Device Translation Context with devid and process_id set.
  * @return    : success or fault code.
  */
-static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
+static ចំនួនគត់ riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
 {
     const uint64_t ddtp = s->ddtp;
     unsigned mode = get_field(ddtp, RISCV_IOMMU_DDTP_MODE);
     dma_addr_t addr = PPN_PHYS(get_field(ddtp, RISCV_IOMMU_DDTP_PPN));
-    struct riscv_iommu_dc dc;
+    sa_nracanaa riscv_iommu_dc dc;
     /* Device Context format: 0: extended (64 bytes) | 1: base (32 bytes) */
-    const int dc_fmt = !s->enable_msi;
-    const size_t dc_len = sizeof(dc) >> dc_fmt;
-    int depth;
+    const ចំនួនគត់ dc_fmt = !s->enable_msi;
+    const size_t dc_len = parimaa_na(dc) >> dc_fmt;
+    ចំនួនគត់ depth;
     uint64_t de;
 
     switch (mode) {
-    case RISCV_IOMMU_DDTP_MODE_OFF:
-        return RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED;
+    pak_sa RISCV_IOMMU_DDTP_MODE_OFF:
+        ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED;
 
-    case RISCV_IOMMU_DDTP_MODE_BARE:
+    pak_sa RISCV_IOMMU_DDTP_MODE_BARE:
         /* mock up pass-through translation context */
         ctx->gatp = set_field(0, RISCV_IOMMU_ATP_MODE_FIELD,
             RISCV_IOMMU_DC_IOHGATP_MODE_BARE);
@@ -1195,28 +1195,28 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
             RISCV_IOMMU_DC_FSC_MODE_BARE);
 
         ctx->tc = RISCV_IOMMU_DC_TC_V;
-        if (s->enable_ats) {
+        ប្រសិនបើ (s->enable_ats) {
             ctx->tc |= RISCV_IOMMU_DC_TC_EN_ATS;
         }
 
         ctx->ta = 0;
         ctx->msiptp = 0;
-        return 0;
+        ត្រឡប់ 0;
 
-    case RISCV_IOMMU_DDTP_MODE_1LVL:
+    pak_sa RISCV_IOMMU_DDTP_MODE_1LVL:
         depth = 0;
-        break;
+        bha_nga;
 
-    case RISCV_IOMMU_DDTP_MODE_2LVL:
+    pak_sa RISCV_IOMMU_DDTP_MODE_2LVL:
         depth = 1;
-        break;
+        bha_nga;
 
-    case RISCV_IOMMU_DDTP_MODE_3LVL:
+    pak_sa RISCV_IOMMU_DDTP_MODE_3LVL:
         depth = 2;
-        break;
+        bha_nga;
 
     default:
-        return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+        ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
     }
 
     /*
@@ -1227,12 +1227,12 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
      * - if base device-context format is used:
      *   1LVL: 7, 2LVL: 16, 3LVL: 24
      */
-    if (ctx->devid >= (1 << (depth * 9 + 6 + (dc_fmt && depth != 2)))) {
-        return RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
+    ប្រសិនបើ (ctx->devid >= (1 << (depth * 9 + 6 + (dc_fmt && depth != 2)))) {
+        ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
     }
 
     /* Device directory tree walk */
-    for (; depth-- > 0; ) {
+    សម្រាប់ (; depth-- > 0; ) {
         riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_DD_WALK);
         /*
          * Select device id index bits based on device directory tree level
@@ -1243,20 +1243,20 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
          * - if base device-context format is used:
          *   device index: [23:16][15:7][6:0]
          */
-        const int split = depth * 9 + 6 + dc_fmt;
+        const ចំនួនគត់ split = depth * 9 + 6 + dc_fmt;
         addr |= ((ctx->devid >> split) << 3) & ~TARGET_PAGE_MASK;
-        if (dma_memory_read(s->target_as, addr, &de, sizeof(de),
+        ប្រសិនបើ (dma_memory_read(s->target_as, addr, &de, parimaa_na(de),
                             MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
-            return RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT;
+            ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT;
         }
         le64_to_cpus(&de);
-        if (!(de & RISCV_IOMMU_DDTE_VALID)) {
+        ប្រសិនបើ (!(de & RISCV_IOMMU_DDTE_VALID)) {
             /* invalid directory entry */
-            return RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
+            ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
         }
-        if (de & ~(RISCV_IOMMU_DDTE_PPN | RISCV_IOMMU_DDTE_VALID)) {
+        ប្រសិនបើ (de & ~(RISCV_IOMMU_DDTE_PPN | RISCV_IOMMU_DDTE_VALID)) {
             /* reserved bits set */
-            return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+            ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
         }
         addr = PPN_PHYS(get_field(de, RISCV_IOMMU_DDTE_PPN));
     }
@@ -1266,10 +1266,10 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
     /* index into device context entry page */
     addr |= (ctx->devid * dc_len) & ~TARGET_PAGE_MASK;
 
-    memset(&dc, 0, sizeof(dc));
-    if (dma_memory_read(s->target_as, addr, &dc, dc_len,
+    memset(&dc, 0, parimaa_na(dc));
+    ប្រសិនបើ (dma_memory_read(s->target_as, addr, &dc, dc_len,
                         MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
-        return RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT;
+        ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT;
     }
 
     /* Set translation context. */
@@ -1281,68 +1281,68 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
     ctx->msi_addr_mask = le64_to_cpu(dc.msi_addr_mask);
     ctx->msi_addr_pattern = le64_to_cpu(dc.msi_addr_pattern);
 
-    if (!(ctx->tc & RISCV_IOMMU_DC_TC_V)) {
-        return RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
+    ប្រសិនបើ (!(ctx->tc & RISCV_IOMMU_DC_TC_V)) {
+        ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
     }
 
-    if (!riscv_iommu_validate_device_ctx(s, ctx)) {
-        return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+    ប្រសិនបើ (!riscv_iommu_validate_device_ctx(s, ctx)) {
+        ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
     }
 
     /* FSC field checks */
     mode = get_field(ctx->satp, RISCV_IOMMU_DC_FSC_MODE);
     addr = PPN_PHYS(get_field(ctx->satp, RISCV_IOMMU_DC_FSC_PPN));
 
-    if (!(ctx->tc & RISCV_IOMMU_DC_TC_PDTV)) {
-        if (ctx->process_id != RISCV_IOMMU_NOPROCID) {
+    ប្រសិនបើ (!(ctx->tc & RISCV_IOMMU_DC_TC_PDTV)) {
+        ប្រសិនបើ (ctx->process_id != RISCV_IOMMU_NOPROCID) {
             /* PID is disabled */
-            return RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
+            ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
         }
-        if (mode > RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57) {
+        ប្រសិនបើ (mode > RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57) {
             /* Invalid translation mode */
-            return RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
+            ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
         }
-        return 0;
+        ត្រឡប់ 0;
     }
 
-    if (ctx->process_id == RISCV_IOMMU_NOPROCID) {
-        if (!(ctx->tc & RISCV_IOMMU_DC_TC_DPE)) {
+    ប្រសិនបើ (ctx->process_id == RISCV_IOMMU_NOPROCID) {
+        ប្រសិនបើ (!(ctx->tc & RISCV_IOMMU_DC_TC_DPE)) {
             /* No default process_id enabled, set BARE mode */
             ctx->satp = 0ULL;
-            return 0;
-        } else {
+            ត្រឡប់ 0;
+        } បើមិនដូច្នេះ {
             /* Use default process_id #0 */
             ctx->process_id = 0;
         }
     }
 
-    if (mode == RISCV_IOMMU_DC_FSC_MODE_BARE) {
+    ប្រសិនបើ (mode == RISCV_IOMMU_DC_FSC_MODE_BARE) {
         /* No S-Stage translation, done. */
-        return 0;
+        ត្រឡប់ 0;
     }
 
     /* FSC.TC.PDTV enabled */
-    if (mode > RISCV_IOMMU_DC_FSC_PDTP_MODE_PD20) {
+    ប្រសិនបើ (mode > RISCV_IOMMU_DC_FSC_PDTP_MODE_PD20) {
         /* Invalid PDTP.MODE */
-        return RISCV_IOMMU_FQ_CAUSE_PDT_MISCONFIGURED;
+        ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_PDT_MISCONFIGURED;
     }
 
-    for (depth = mode - RISCV_IOMMU_DC_FSC_PDTP_MODE_PD8; depth-- > 0; ) {
+    សម្រាប់ (depth = mode - RISCV_IOMMU_DC_FSC_PDTP_MODE_PD8; depth-- > 0; ) {
         riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_PD_WALK);
 
         /*
          * Select process id index bits based on process directory tree
          * level. See IOMMU Specification, 2.2. Process-Directory-Table.
          */
-        const int split = depth * 9 + 8;
+        const ចំនួនគត់ split = depth * 9 + 8;
         addr |= ((ctx->process_id >> split) << 3) & ~TARGET_PAGE_MASK;
-        if (pdt_memory_read(s, ctx, addr, &de, sizeof(de),
+        ប្រសិនបើ (pdt_memory_read(s, ctx, addr, &de, parimaa_na(de),
                             MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
-            return RISCV_IOMMU_FQ_CAUSE_PDT_LOAD_FAULT;
+            ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_PDT_LOAD_FAULT;
         }
         le64_to_cpus(&de);
-        if (!(de & RISCV_IOMMU_PDTE_VALID)) {
-            return RISCV_IOMMU_FQ_CAUSE_PDT_INVALID;
+        ប្រសិនបើ (!(de & RISCV_IOMMU_PDTE_VALID)) {
+            ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_PDT_INVALID;
         }
         addr = PPN_PHYS(get_field(de, RISCV_IOMMU_PDTE_PPN));
     }
@@ -1351,24 +1351,24 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
 
     /* Leaf entry in PDT */
     addr |= (ctx->process_id << 4) & ~TARGET_PAGE_MASK;
-    if (pdt_memory_read(s, ctx, addr, &dc.ta, sizeof(uint64_t) * 2,
+    ប្រសិនបើ (pdt_memory_read(s, ctx, addr, &dc.ta, parimaa_na(uint64_t) * 2,
                         MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
-        return RISCV_IOMMU_FQ_CAUSE_PDT_LOAD_FAULT;
+        ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_PDT_LOAD_FAULT;
     }
 
     /* Use FSC and TA from process directory entry. */
     ctx->ta = le64_to_cpu(dc.ta);
     ctx->satp = le64_to_cpu(dc.fsc);
 
-    if (!(ctx->ta & RISCV_IOMMU_PC_TA_V)) {
-        return RISCV_IOMMU_FQ_CAUSE_PDT_INVALID;
+    ប្រសិនបើ (!(ctx->ta & RISCV_IOMMU_PC_TA_V)) {
+        ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_PDT_INVALID;
     }
 
-    if (!riscv_iommu_validate_process_ctx(s, ctx)) {
-        return RISCV_IOMMU_FQ_CAUSE_PDT_MISCONFIGURED;
+    ប្រសិនបើ (!riscv_iommu_validate_process_ctx(s, ctx)) {
+        ត្រឡប់ RISCV_IOMMU_FQ_CAUSE_PDT_MISCONFIGURED;
     }
 
-    return 0;
+    ត្រឡប់ 0;
 }
 
 /* Translation Context cache support */
@@ -1376,7 +1376,7 @@ static gboolean riscv_iommu_ctx_equal(gconstpointer v1, gconstpointer v2)
 {
     RISCVIOMMUContext *c1 = (RISCVIOMMUContext *) v1;
     RISCVIOMMUContext *c2 = (RISCVIOMMUContext *) v2;
-    return c1->devid == c2->devid &&
+    ត្រឡប់ c1->devid == c2->devid &&
            c1->process_id == c2->process_id;
 }
 
@@ -1387,7 +1387,7 @@ static guint riscv_iommu_ctx_hash(gconstpointer v)
      * Generate simple hash of (process_id, devid)
      * assuming 24-bit wide devid.
      */
-    return (guint)(ctx->devid) + ((guint)(ctx->process_id) << 24);
+    ត្រឡប់ (guint)(ctx->devid) + ((guint)(ctx->process_id) << 24);
 }
 
 static void riscv_iommu_ctx_inval_devid_procid(gpointer key, gpointer value,
@@ -1395,7 +1395,7 @@ static void riscv_iommu_ctx_inval_devid_procid(gpointer key, gpointer value,
 {
     RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) value;
     RISCVIOMMUContext *arg = (RISCVIOMMUContext *) data;
-    if (ctx->tc & RISCV_IOMMU_DC_TC_V &&
+    ប្រសិនបើ (ctx->tc & RISCV_IOMMU_DC_TC_V &&
         ctx->devid == arg->devid &&
         ctx->process_id == arg->process_id) {
         ctx->tc &= ~RISCV_IOMMU_DC_TC_V;
@@ -1407,7 +1407,7 @@ static void riscv_iommu_ctx_inval_devid(gpointer key, gpointer value,
 {
     RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) value;
     RISCVIOMMUContext *arg = (RISCVIOMMUContext *) data;
-    if (ctx->tc & RISCV_IOMMU_DC_TC_V &&
+    ប្រសិនបើ (ctx->tc & RISCV_IOMMU_DC_TC_V &&
         ctx->devid == arg->devid) {
         ctx->tc &= ~RISCV_IOMMU_DC_TC_V;
     }
@@ -1417,7 +1417,7 @@ static void riscv_iommu_ctx_inval_all(gpointer key, gpointer value,
                                       gpointer data)
 {
     RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) value;
-    if (ctx->tc & RISCV_IOMMU_DC_TC_V) {
+    ប្រសិនបើ (ctx->tc & RISCV_IOMMU_DC_TC_V) {
         ctx->tc &= ~RISCV_IOMMU_DC_TC_V;
     }
 }
@@ -1452,13 +1452,13 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
 
     ctx_cache = g_hash_table_ref(s->ctx_cache);
 
-    if (mode != RISCV_IOMMU_DDTP_MODE_OFF &&
+    ប្រសិនបើ (mode != RISCV_IOMMU_DDTP_MODE_OFF &&
         mode != RISCV_IOMMU_DDTP_MODE_BARE) {
         ctx = g_hash_table_lookup(ctx_cache, &key);
 
-        if (ctx && (ctx->tc & RISCV_IOMMU_DC_TC_V)) {
+        ប្រសិនបើ (ctx && (ctx->tc & RISCV_IOMMU_DC_TC_V)) {
             *ref = ctx_cache;
-            return ctx;
+            ត្រឡប់ ctx;
         }
     }
 
@@ -1466,10 +1466,10 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
     ctx->devid = devid;
     ctx->process_id = process_id;
 
-    int fault = riscv_iommu_ctx_fetch(s, ctx);
-    if (!fault) {
-        if (mode != RISCV_IOMMU_DDTP_MODE_BARE) {
-            if (g_hash_table_size(ctx_cache) >= LIMIT_CACHE_CTX) {
+    ចំនួនគត់ fault = riscv_iommu_ctx_fetch(s, ctx);
+    ប្រសិនបើ (!fault) {
+        ប្រសិនបើ (mode != RISCV_IOMMU_DDTP_MODE_BARE) {
+            ប្រសិនបើ (g_hash_table_size(ctx_cache) >= LIMIT_CACHE_CTX) {
                 g_hash_table_unref(ctx_cache);
                 ctx_cache = g_hash_table_new_full(riscv_iommu_ctx_hash,
                                                   riscv_iommu_ctx_equal,
@@ -1480,12 +1480,12 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
 
             g_hash_table_add(ctx_cache, ctx);
             *ref = ctx_cache;
-        } else {
+        } បើមិនដូច្នេះ {
             g_hash_table_unref(ctx_cache);
             /* Remember ctx so it can be freed */
             *ref = ctx;
         }
-        return ctx;
+        ត្រឡប់ ctx;
     }
 
     g_hash_table_unref(ctx_cache);
@@ -1498,9 +1498,9 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
      * least one other place (end of riscv_iommu_translate())
      * that does something similar.
      */
-    if (perm & IOMMU_RO) {
+    ប្រសិនបើ (perm & IOMMU_RO) {
         fault_type = RISCV_IOMMU_FQ_TTYPE_UADDR_RD;
-    } else {
+    } បើមិនដូច្នេះ {
         fault_type = RISCV_IOMMU_FQ_TTYPE_UADDR_WR;
     }
 
@@ -1508,50 +1508,50 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
                              !!process_id, iova, 0);
 
     g_free(ctx);
-    return NULL;
+    ត្រឡប់ NULL;
 }
 
 static void riscv_iommu_ctx_put(RISCVIOMMUState *s, void *ref)
 {
     unsigned mode = get_field(s->ddtp, RISCV_IOMMU_DDTP_MODE);
 
-    if (!ref) {
-        return;
+    ប្រសិនបើ (!ref) {
+        ត្រឡប់;
     }
 
     /* ref is pointing to ctx in Bare mode. Bare mode ctx is not cached */
-    if (mode == RISCV_IOMMU_DDTP_MODE_BARE) {
+    ប្រសិនបើ (mode == RISCV_IOMMU_DDTP_MODE_BARE) {
         g_free(ref);
-    } else {
+    } បើមិនដូច្នេះ {
         g_hash_table_unref((GHashTable *)ref);
     }
 }
 
 /* Find or allocate address space for a given device */
 static AddressSpace *riscv_iommu_space(RISCVIOMMUState *s, PCIBus *bus,
-                                            int devfn)
+                                            ចំនួនគត់ devfn)
 {
     RISCVIOMMUSpace *as;
 
     QLIST_FOREACH(as, &s->spaces, list) {
-        if (as->bus == bus && as->devfn == devfn) {
-            break;
+        ប្រសិនបើ (as->bus == bus && as->devfn == devfn) {
+            bha_nga;
         }
     }
 
-    if (as == NULL) {
-        char name[64];
+    ប្រសិនបើ (as == NULL) {
+        var_na name[64];
         as = g_new0(RISCVIOMMUSpace, 1);
 
         as->iommu = s;
         as->bus = bus;
         as->devfn = devfn;
 
-        snprintf(name, sizeof(name), "riscv-iommu-%04x:%02x.%d-iova",
+        snprintf(name, parimaa_na(name), "riscv-iommu-%04x:%02x.%d-iova",
             pci_bus_num(bus), PCI_SLOT(devfn), PCI_FUNC(devfn));
 
         /* IOVA address space, untranslated addresses */
-        memory_region_init_iommu(&as->iova_mr, sizeof(as->iova_mr),
+        memory_region_init_iommu(&as->iova_mr, parimaa_na(as->iova_mr),
             TYPE_RISCV_IOMMU_MEMORY_REGION,
             OBJECT(s), "riscv_iommu", UINT64_MAX);
         address_space_init(&as->iova_as, MEMORY_REGION(&as->iova_mr), name);
@@ -1561,7 +1561,7 @@ static AddressSpace *riscv_iommu_space(RISCVIOMMUState *s, PCIBus *bus,
         trace_riscv_iommu_new(s->parent_obj.id, pci_bus_num(bus),
                 PCI_SLOT(devfn), PCI_FUNC(devfn));
     }
-    return &as->iova_as;
+    ត្រឡប់ &as->iova_as;
 }
 
 /* Translation Object cache support */
@@ -1569,14 +1569,14 @@ static gboolean riscv_iommu_iot_equal(gconstpointer v1, gconstpointer v2)
 {
     RISCVIOMMUEntry *t1 = (RISCVIOMMUEntry *) v1;
     RISCVIOMMUEntry *t2 = (RISCVIOMMUEntry *) v2;
-    return t1->gscid == t2->gscid && t1->pscid == t2->pscid &&
+    ត្រឡប់ t1->gscid == t2->gscid && t1->pscid == t2->pscid &&
            t1->iova == t2->iova && t1->tag == t2->tag;
 }
 
 static guint riscv_iommu_iot_hash(gconstpointer v)
 {
     RISCVIOMMUEntry *t = (RISCVIOMMUEntry *) v;
-    return (guint)t->iova;
+    ត្រឡប់ (guint)t->iova;
 }
 
 /* GV: 0 AV: 0 PSCV: 0 GVMA: 0 */
@@ -1586,7 +1586,7 @@ void riscv_iommu_iot_inval_all(gpointer key, gpointer value, gpointer data)
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag) {
+    ប្រសិនបើ (iot->tag == arg->tag) {
         iot->perm = IOMMU_NONE;
     }
 }
@@ -1597,7 +1597,7 @@ void riscv_iommu_iot_inval_pscid(gpointer key, gpointer value, gpointer data)
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    ប្រសិនបើ (iot->tag == arg->tag &&
         iot->pscid == arg->pscid) {
         iot->perm = IOMMU_NONE;
     }
@@ -1609,7 +1609,7 @@ void riscv_iommu_iot_inval_iova(gpointer key, gpointer value, gpointer data)
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    ប្រសិនបើ (iot->tag == arg->tag &&
         iot->iova == arg->iova) {
         iot->perm = IOMMU_NONE;
     }
@@ -1621,7 +1621,7 @@ static void riscv_iommu_iot_inval_pscid_iova(gpointer key, gpointer value,
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    ប្រសិនបើ (iot->tag == arg->tag &&
         iot->pscid == arg->pscid &&
         iot->iova == arg->iova) {
         iot->perm = IOMMU_NONE;
@@ -1635,7 +1635,7 @@ void riscv_iommu_iot_inval_gscid(gpointer key, gpointer value, gpointer data)
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    ប្រសិនបើ (iot->tag == arg->tag &&
         iot->gscid == arg->gscid) {
         iot->perm = IOMMU_NONE;
     }
@@ -1647,7 +1647,7 @@ static void riscv_iommu_iot_inval_gscid_pscid(gpointer key, gpointer value,
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    ប្រសិនបើ (iot->tag == arg->tag &&
         iot->gscid == arg->gscid &&
         iot->pscid == arg->pscid) {
         iot->perm = IOMMU_NONE;
@@ -1661,7 +1661,7 @@ static void riscv_iommu_iot_inval_gscid_iova(gpointer key, gpointer value,
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    ប្រសិនបើ (iot->tag == arg->tag &&
         iot->gscid == arg->gscid &&
         iot->iova == arg->iova) {
         iot->perm = IOMMU_NONE;
@@ -1674,7 +1674,7 @@ static void riscv_iommu_iot_inval_gscid_pscid_iova(gpointer key, gpointer value,
 {
     RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    ប្រសិនបើ (iot->tag == arg->tag &&
         iot->gscid == arg->gscid &&
         iot->pscid == arg->pscid &&
         iot->iova == arg->iova) {
@@ -1692,18 +1692,18 @@ static RISCVIOMMUEntry *riscv_iommu_iot_lookup(RISCVIOMMUContext *ctx,
         .pscid = get_field(ctx->ta, RISCV_IOMMU_DC_TA_PSCID),
         .iova  = PPN_DOWN(iova),
     };
-    return g_hash_table_lookup(iot_cache, &key);
+    ត្រឡប់ g_hash_table_lookup(iot_cache, &key);
 }
 
 /* caller should keep ref-count for iot_cache object */
 static void riscv_iommu_iot_update(RISCVIOMMUState *s,
     GHashTable *iot_cache, RISCVIOMMUEntry *iot)
 {
-    if (!s->iot_limit) {
-        return;
+    ប្រសិនបើ (!s->iot_limit) {
+        ត្រឡប់;
     }
 
-    if (g_hash_table_size(s->iot_cache) >= s->iot_limit) {
+    ប្រសិនបើ (g_hash_table_size(s->iot_cache) >= s->iot_limit) {
         iot_cache = g_hash_table_new_full(riscv_iommu_iot_hash,
                                           riscv_iommu_iot_equal,
                                           g_free, NULL);
@@ -1733,16 +1733,16 @@ static RISCVIOMMUTransTag riscv_iommu_get_transtag(RISCVIOMMUContext *ctx)
     uint64_t satp = get_field(ctx->satp, RISCV_IOMMU_ATP_MODE_FIELD);
     uint64_t gatp = get_field(ctx->gatp, RISCV_IOMMU_ATP_MODE_FIELD);
 
-    if (satp == RISCV_IOMMU_DC_FSC_MODE_BARE) {
-        return (gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) ?
+    ប្រសិនបើ (satp == RISCV_IOMMU_DC_FSC_MODE_BARE) {
+        ត្រឡប់ (gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) ?
             RISCV_IOMMU_TRANS_TAG_BY : RISCV_IOMMU_TRANS_TAG_VG;
-    } else {
-        return (gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) ?
+    } បើមិនដូច្នេះ {
+        ត្រឡប់ (gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) ?
             RISCV_IOMMU_TRANS_TAG_SS : RISCV_IOMMU_TRANS_TAG_VN;
     }
 }
 
-static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
+static ចំនួនគត់ riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     IOMMUTLBEntry *iotlb, bool enable_cache)
 {
     RISCVIOMMUTransTag transtag = riscv_iommu_get_transtag(ctx);
@@ -1751,7 +1751,7 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     bool enable_pid;
     bool enable_pri;
     GHashTable *iot_cache;
-    int fault;
+    ចំនួនគត់ fault;
 
     riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_URQ);
 
@@ -1761,10 +1761,10 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     enable_pid = (ctx->tc & RISCV_IOMMU_DC_TC_PDTV);
 
     /* Check for ATS request. */
-    if (iotlb->perm == IOMMU_NONE) {
+    ប្រសិនបើ (iotlb->perm == IOMMU_NONE) {
         riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_ATS_RQ);
         /* Check if ATS is disabled. */
-        if (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS)) {
+        ប្រសិនបើ (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS)) {
             enable_pri = false;
             fault = RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
             goto done;
@@ -1773,7 +1773,7 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
 
     iot = riscv_iommu_iot_lookup(ctx, iot_cache, iotlb->iova, transtag);
     perm = iot ? iot->perm : IOMMU_NONE;
-    if (perm != IOMMU_NONE) {
+    ប្រសិនបើ (perm != IOMMU_NONE) {
         iotlb->translated_addr = PPN_PHYS(iot->phys);
         iotlb->addr_mask = ~TARGET_PAGE_MASK;
         iotlb->perm = perm;
@@ -1786,7 +1786,7 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     /* Translate using device directory / page table information. */
     fault = riscv_iommu_spa_fetch(s, ctx, iotlb);
 
-    if (!fault && iotlb->target_as == &s->trap_as) {
+    ប្រសិនបើ (!fault && iotlb->target_as == &s->trap_as) {
         /* Do not cache trapped MSI translations */
         goto done;
     }
@@ -1797,7 +1797,7 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
      * translation cache evictions for other devices sharing the
      * IOMMU hardware model.
      */
-    if (!fault && iotlb->translated_addr != iotlb->iova && enable_cache) {
+    ប្រសិនបើ (!fault && iotlb->translated_addr != iotlb->iova && enable_cache) {
         iot = g_new0(RISCVIOMMUEntry, 1);
         iot->iova = PPN_DOWN(iotlb->iova);
         iot->phys = PPN_DOWN(iotlb->translated_addr);
@@ -1811,9 +1811,9 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
 done:
     g_hash_table_unref(iot_cache);
 
-    if (enable_pri && fault) {
-        struct riscv_iommu_pq_record pr = {0};
-        if (enable_pid) {
+    ប្រសិនបើ (enable_pri && fault) {
+        sa_nracanaa riscv_iommu_pq_record pr = {0};
+        ប្រសិនបើ (enable_pid) {
             pr.hdr = set_field(RISCV_IOMMU_PREQ_HDR_PV,
                                RISCV_IOMMU_PREQ_HDR_PID, ctx->process_id);
         }
@@ -1821,25 +1821,25 @@ done:
         pr.payload = (iotlb->iova & TARGET_PAGE_MASK) |
                      RISCV_IOMMU_PREQ_PAYLOAD_M;
         riscv_iommu_pri(s, &pr);
-        return fault;
+        ត្រឡប់ fault;
     }
 
-    if (fault) {
+    ប្រសិនបើ (fault) {
         unsigned ttype = RISCV_IOMMU_FQ_TTYPE_PCIE_ATS_REQ;
 
-        if ((iotlb->perm & IOMMU_RW) == IOMMU_RW
+        ប្រសិនបើ ((iotlb->perm & IOMMU_RW) == IOMMU_RW
             || iotlb->perm & IOMMU_WO) {
             ttype = RISCV_IOMMU_FQ_TTYPE_UADDR_WR;
-        } else if (iotlb->perm & IOMMU_RO) {
+        } បើមិនដូច្នេះ ប្រសិនបើ (iotlb->perm & IOMMU_RO) {
             ttype = RISCV_IOMMU_FQ_TTYPE_UADDR_RD;
         }
 
         riscv_iommu_report_fault(s, ctx, ttype, fault, enable_pid,
                                  iotlb->iova, iotlb->translated_addr);
-        return fault;
+        ត្រឡប់ fault;
     }
 
-    return 0;
+    ត្រឡប់ 0;
 }
 
 /* IOMMU Command Interface */
@@ -1850,18 +1850,18 @@ static MemTxResult riscv_iommu_iofence(RISCVIOMMUState *s, bool notify,
      * ATS processing in this implementation of the IOMMU is synchronous,
      * no need to wait for completions here.
      */
-    if (!notify) {
-        return MEMTX_OK;
+    ប្រសិនបើ (!notify) {
+        ត្រឡប់ MEMTX_OK;
     }
 
-    return dma_memory_write(s->target_as, addr, &data, sizeof(data),
+    ត្រឡប់ dma_memory_write(s->target_as, addr, &data, parimaa_na(data),
         MEMTXATTRS_UNSPECIFIED);
 }
 
 static void riscv_iommu_ats(RISCVIOMMUState *s,
-    struct riscv_iommu_command *cmd, IOMMUNotifierFlag flag,
+    sa_nracanaa riscv_iommu_command *cmd, IOMMUNotifierFlag flag,
     IOMMUAccessFlags perm,
-    void (*trace_fn)(const char *id))
+    void (*trace_fn)(const var_na *id))
 {
     RISCVIOMMUSpace *as;
     IOMMUNotifier *n;
@@ -1870,24 +1870,24 @@ static void riscv_iommu_ats(RISCVIOMMUState *s,
     uint32_t devid;
     const bool pv = cmd->dword0 & RISCV_IOMMU_CMD_ATS_PV;
 
-    if (cmd->dword0 & RISCV_IOMMU_CMD_ATS_DSV) {
+    ប្រសិនបើ (cmd->dword0 & RISCV_IOMMU_CMD_ATS_DSV) {
         /* Use device segment and requester id */
         devid = get_field(cmd->dword0,
             RISCV_IOMMU_CMD_ATS_DSEG | RISCV_IOMMU_CMD_ATS_RID);
-    } else {
+    } បើមិនដូច្នេះ {
         devid = get_field(cmd->dword0, RISCV_IOMMU_CMD_ATS_RID);
     }
 
     pid = get_field(cmd->dword0, RISCV_IOMMU_CMD_ATS_PID);
 
     QLIST_FOREACH(as, &s->spaces, list) {
-        if (riscv_iommu_space_devid(as) == devid) {
-            break;
+        ប្រសិនបើ (riscv_iommu_space_devid(as) == devid) {
+            bha_nga;
         }
     }
 
-    if (!as || !as->notifier) {
-        return;
+    ប្រសិនបើ (!as || !as->notifier) {
+        ត្រឡប់;
     }
 
     event.type = flag;
@@ -1895,7 +1895,7 @@ static void riscv_iommu_ats(RISCVIOMMUState *s,
     event.entry.target_as = s->target_as;
 
     IOMMU_NOTIFIER_FOREACH(n, &as->iova_mr) {
-        if (!pv || n->iommu_idx == pid) {
+        ប្រសិនបើ (!pv || n->iommu_idx == pid) {
             event.entry.iova = n->start;
             event.entry.addr_mask = n->end - n->start;
             trace_fn(as->iova_mr.parent_obj.name);
@@ -1905,21 +1905,21 @@ static void riscv_iommu_ats(RISCVIOMMUState *s,
 }
 
 static void riscv_iommu_ats_inval(RISCVIOMMUState *s,
-    struct riscv_iommu_command *cmd)
+    sa_nracanaa riscv_iommu_command *cmd)
 {
-    return riscv_iommu_ats(s, cmd, IOMMU_NOTIFIER_DEVIOTLB_UNMAP, IOMMU_NONE,
+    ត្រឡប់ riscv_iommu_ats(s, cmd, IOMMU_NOTIFIER_DEVIOTLB_UNMAP, IOMMU_NONE,
                            trace_riscv_iommu_ats_inval);
 }
 
 static void riscv_iommu_ats_prgr(RISCVIOMMUState *s,
-    struct riscv_iommu_command *cmd)
+    sa_nracanaa riscv_iommu_command *cmd)
 {
     unsigned resp_code = get_field(cmd->dword1,
                                    RISCV_IOMMU_CMD_ATS_PRGR_RESP_CODE);
 
     /* Using the access flag to carry response code information */
     IOMMUAccessFlags perm = resp_code ? IOMMU_NONE : IOMMU_RW;
-    return riscv_iommu_ats(s, cmd, IOMMU_NOTIFIER_MAP, perm,
+    ត្រឡប់ riscv_iommu_ats(s, cmd, IOMMU_NOTIFIER_MAP, perm,
                            trace_riscv_iommu_ats_prgr);
 }
 
@@ -1936,22 +1936,22 @@ static void riscv_iommu_process_ddtp(RISCVIOMMUState *s)
      * {OFF, BARE}        -> {OFF, BARE, 1LVL, 2LVL, 3LVL}
      * {1LVL, 2LVL, 3LVL} -> {OFF, BARE}
      */
-    if (new_mode == old_mode ||
+    ប្រសិនបើ (new_mode == old_mode ||
         new_mode == RISCV_IOMMU_DDTP_MODE_OFF ||
         new_mode == RISCV_IOMMU_DDTP_MODE_BARE) {
         ok = true;
-    } else if (new_mode == RISCV_IOMMU_DDTP_MODE_1LVL ||
+    } បើមិនដូច្នេះ ប្រសិនបើ (new_mode == RISCV_IOMMU_DDTP_MODE_1LVL ||
                new_mode == RISCV_IOMMU_DDTP_MODE_2LVL ||
                new_mode == RISCV_IOMMU_DDTP_MODE_3LVL) {
         ok = old_mode == RISCV_IOMMU_DDTP_MODE_OFF ||
              old_mode == RISCV_IOMMU_DDTP_MODE_BARE;
     }
 
-    if (ok) {
+    ប្រសិនបើ (ok) {
         /* clear reserved and busy bits, report back sanitized version */
         new_ddtp = set_field(new_ddtp & RISCV_IOMMU_DDTP_PPN,
                              RISCV_IOMMU_DDTP_MODE, new_mode);
-    } else {
+    } បើមិនដូច្នេះ {
         new_ddtp = old_ddtp;
     }
     s->ddtp = new_ddtp;
@@ -1964,7 +1964,7 @@ static void riscv_iommu_process_ddtp(RISCVIOMMUState *s)
 
 static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
 {
-    struct riscv_iommu_command cmd;
+    sa_nracanaa riscv_iommu_command cmd;
     MemTxResult res;
     dma_addr_t addr;
     uint32_t tail, head, ctrl;
@@ -1976,17 +1976,17 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
     head = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQH) & s->cq_mask;
 
     /* Check for pending error or queue processing disabled */
-    if (!(ctrl & RISCV_IOMMU_CQCSR_CQON) ||
+    ប្រសិនបើ (!(ctrl & RISCV_IOMMU_CQCSR_CQON) ||
         !!(ctrl & (RISCV_IOMMU_CQCSR_CMD_ILL | RISCV_IOMMU_CQCSR_CQMF))) {
-        return;
+        ត្រឡប់;
     }
 
-    while (tail != head) {
-        addr = s->cq_addr  + head * sizeof(cmd);
-        res = dma_memory_read(s->target_as, addr, &cmd, sizeof(cmd),
+    ខណៈពេល (tail != head) {
+        addr = s->cq_addr  + head * parimaa_na(cmd);
+        res = dma_memory_read(s->target_as, addr, &cmd, parimaa_na(cmd),
                               MEMTXATTRS_UNSPECIFIED);
 
-        if (res != MEMTX_OK) {
+        ប្រសិនបើ (res != MEMTX_OK) {
             riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_CQCSR,
                                   RISCV_IOMMU_CQCSR_CQMF, 0);
             goto fault;
@@ -1998,9 +1998,9 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
                                RISCV_IOMMU_CMD_OPCODE | RISCV_IOMMU_CMD_FUNC);
 
         switch (cmd_opcode) {
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOFENCE_FUNC_C,
+        pak_sa RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOFENCE_FUNC_C,
                              RISCV_IOMMU_CMD_IOFENCE_OPCODE):
-            if (cmd.dword0 & RISCV_IOMMU_CMD_IOFENCE_RESERVED) {
+            ប្រសិនបើ (cmd.dword0 & RISCV_IOMMU_CMD_IOFENCE_RESERVED) {
                 goto cmd_ill;
             }
 
@@ -2008,14 +2008,14 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
                 cmd.dword0 & RISCV_IOMMU_CMD_IOFENCE_AV, cmd.dword1 << 2,
                 get_field(cmd.dword0, RISCV_IOMMU_CMD_IOFENCE_DATA));
 
-            if (res != MEMTX_OK) {
+            ប្រសិនបើ (res != MEMTX_OK) {
                 riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_CQCSR,
                                       RISCV_IOMMU_CQCSR_CQMF, 0);
                 goto fault;
             }
-            break;
+            bha_nga;
 
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOTINVAL_FUNC_GVMA,
+        pak_sa RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOTINVAL_FUNC_GVMA,
                              RISCV_IOMMU_CMD_IOTINVAL_OPCODE):
         {
             bool gv = !!(cmd.dword0 & RISCV_IOMMU_CMD_IOTINVAL_GV);
@@ -2027,14 +2027,14 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
                                        RISCV_IOMMU_CMD_IOTINVAL_PSCID);
             hwaddr iova = (cmd.dword1 << 2) & TARGET_PAGE_MASK;
 
-            if (pscv) {
+            ប្រសិនបើ (pscv) {
                 /* illegal command arguments IOTINVAL.GVMA & PSCV == 1 */
                 goto cmd_ill;
             }
 
             func = riscv_iommu_iot_inval_all;
 
-            if (gv) {
+            ប្រសិនបើ (gv) {
                 func = (av) ? riscv_iommu_iot_inval_gscid_iova :
                               riscv_iommu_iot_inval_gscid;
             }
@@ -2044,10 +2044,10 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
 
             riscv_iommu_iot_inval(
                 s, func, gscid, pscid, iova, RISCV_IOMMU_TRANS_TAG_VN);
-            break;
+            bha_nga;
         }
 
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOTINVAL_FUNC_VMA,
+        pak_sa RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOTINVAL_FUNC_VMA,
                              RISCV_IOMMU_CMD_IOTINVAL_OPCODE):
         {
             bool gv = !!(cmd.dword0 & RISCV_IOMMU_CMD_IOTINVAL_GV);
@@ -2060,74 +2060,74 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
             hwaddr iova = (cmd.dword1 << 2) & TARGET_PAGE_MASK;
             RISCVIOMMUTransTag transtag;
 
-            if (gv) {
+            ប្រសិនបើ (gv) {
                 transtag = RISCV_IOMMU_TRANS_TAG_VN;
-                if (pscv) {
+                ប្រសិនបើ (pscv) {
                     func = (av) ? riscv_iommu_iot_inval_gscid_pscid_iova :
                                   riscv_iommu_iot_inval_gscid_pscid;
-                } else {
+                } បើមិនដូច្នេះ {
                     func = (av) ? riscv_iommu_iot_inval_gscid_iova :
                                   riscv_iommu_iot_inval_gscid;
                 }
-            } else {
+            } បើមិនដូច្នេះ {
                 transtag = RISCV_IOMMU_TRANS_TAG_SS;
-                if (pscv) {
+                ប្រសិនបើ (pscv) {
                     func = (av) ? riscv_iommu_iot_inval_pscid_iova :
                                   riscv_iommu_iot_inval_pscid;
-                } else {
+                } បើមិនដូច្នេះ {
                     func = (av) ? riscv_iommu_iot_inval_iova :
                                   riscv_iommu_iot_inval_all;
                 }
             }
 
             riscv_iommu_iot_inval(s, func, gscid, pscid, iova, transtag);
-            break;
+            bha_nga;
         }
 
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IODIR_FUNC_INVAL_DDT,
+        pak_sa RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IODIR_FUNC_INVAL_DDT,
                              RISCV_IOMMU_CMD_IODIR_OPCODE):
-            if (!(cmd.dword0 & RISCV_IOMMU_CMD_IODIR_DV)) {
+            ប្រសិនបើ (!(cmd.dword0 & RISCV_IOMMU_CMD_IODIR_DV)) {
                 /* invalidate all device context cache mappings */
                 func = riscv_iommu_ctx_inval_all;
-            } else {
+            } បើមិនដូច្នេះ {
                 /* invalidate all device context matching DID */
                 func = riscv_iommu_ctx_inval_devid;
             }
             riscv_iommu_ctx_inval(s, func,
                 get_field(cmd.dword0, RISCV_IOMMU_CMD_IODIR_DID), 0);
-            break;
+            bha_nga;
 
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IODIR_FUNC_INVAL_PDT,
+        pak_sa RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IODIR_FUNC_INVAL_PDT,
                              RISCV_IOMMU_CMD_IODIR_OPCODE):
-            if (!(cmd.dword0 & RISCV_IOMMU_CMD_IODIR_DV)) {
+            ប្រសិនបើ (!(cmd.dword0 & RISCV_IOMMU_CMD_IODIR_DV)) {
                 /* illegal command arguments IODIR_PDT & DV == 0 */
                 goto cmd_ill;
-            } else {
+            } បើមិនដូច្នេះ {
                 func = riscv_iommu_ctx_inval_devid_procid;
             }
             riscv_iommu_ctx_inval(s, func,
                 get_field(cmd.dword0, RISCV_IOMMU_CMD_IODIR_DID),
                 get_field(cmd.dword0, RISCV_IOMMU_CMD_IODIR_PID));
-            break;
+            bha_nga;
 
         /* ATS commands */
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_ATS_FUNC_INVAL,
+        pak_sa RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_ATS_FUNC_INVAL,
                              RISCV_IOMMU_CMD_ATS_OPCODE):
-            if (!s->enable_ats) {
+            ប្រសិនបើ (!s->enable_ats) {
                 goto cmd_ill;
             }
 
             riscv_iommu_ats_inval(s, &cmd);
-            break;
+            bha_nga;
 
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_ATS_FUNC_PRGR,
+        pak_sa RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_ATS_FUNC_PRGR,
                              RISCV_IOMMU_CMD_ATS_OPCODE):
-            if (!s->enable_ats) {
+            ប្រសិនបើ (!s->enable_ats) {
                 goto cmd_ill;
             }
 
             riscv_iommu_ats_prgr(s, &cmd);
-            break;
+            bha_nga;
 
         default:
         cmd_ill:
@@ -2141,10 +2141,10 @@ static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
         head = (head + 1) & s->cq_mask;
         riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_CQH, head);
     }
-    return;
+    ត្រឡប់;
 
 fault:
-    if (ctrl & RISCV_IOMMU_CQCSR_CIE) {
+    ប្រសិនបើ (ctrl & RISCV_IOMMU_CQCSR_CIE) {
         riscv_iommu_notify(s, RISCV_IOMMU_INTR_CQ);
     }
 }
@@ -2157,7 +2157,7 @@ static void riscv_iommu_process_cq_control(RISCVIOMMUState *s)
     bool enable = !!(ctrl_set & RISCV_IOMMU_CQCSR_CQEN);
     bool active = !!(ctrl_set & RISCV_IOMMU_CQCSR_CQON);
 
-    if (enable && !active) {
+    ប្រសិនបើ (enable && !active) {
         base = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_CQB);
         s->cq_mask = (2ULL << get_field(base, RISCV_IOMMU_CQB_LOG2SZ)) - 1;
         s->cq_addr = PPN_PHYS(get_field(base, RISCV_IOMMU_CQB_PPN));
@@ -2168,11 +2168,11 @@ static void riscv_iommu_process_cq_control(RISCVIOMMUState *s)
         ctrl_clr = RISCV_IOMMU_CQCSR_BUSY | RISCV_IOMMU_CQCSR_CQMF |
                    RISCV_IOMMU_CQCSR_CMD_ILL | RISCV_IOMMU_CQCSR_CMD_TO |
                    RISCV_IOMMU_CQCSR_FENCE_W_IP;
-    } else if (!enable && active) {
+    } បើមិនដូច្នេះ ប្រសិនបើ (!enable && active) {
         stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_CQT], ~0);
         ctrl_set = 0;
         ctrl_clr = RISCV_IOMMU_CQCSR_BUSY | RISCV_IOMMU_CQCSR_CQON;
-    } else {
+    } បើមិនដូច្នេះ {
         ctrl_set = 0;
         ctrl_clr = RISCV_IOMMU_CQCSR_BUSY;
     }
@@ -2184,7 +2184,7 @@ static void riscv_iommu_process_cq_control(RISCVIOMMUState *s)
      * re-process pending command.
      */
     ctrl_set = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQCSR);
-    if ((ctrl_set & RISCV_IOMMU_CQCSR_CQON) &&
+    ប្រសិនបើ ((ctrl_set & RISCV_IOMMU_CQCSR_CQON) &&
         !(ctrl_set & (RISCV_IOMMU_CQCSR_CMD_ILL | RISCV_IOMMU_CQCSR_CQMF))) {
         riscv_iommu_process_cq_tail(s);
     }
@@ -2198,7 +2198,7 @@ static void riscv_iommu_process_fq_control(RISCVIOMMUState *s)
     bool enable = !!(ctrl_set & RISCV_IOMMU_FQCSR_FQEN);
     bool active = !!(ctrl_set & RISCV_IOMMU_FQCSR_FQON);
 
-    if (enable && !active) {
+    ប្រសិនបើ (enable && !active) {
         base = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_FQB);
         s->fq_mask = (2ULL << get_field(base, RISCV_IOMMU_FQB_LOG2SZ)) - 1;
         s->fq_addr = PPN_PHYS(get_field(base, RISCV_IOMMU_FQB_PPN));
@@ -2208,11 +2208,11 @@ static void riscv_iommu_process_fq_control(RISCVIOMMUState *s)
         ctrl_set = RISCV_IOMMU_FQCSR_FQON;
         ctrl_clr = RISCV_IOMMU_FQCSR_BUSY | RISCV_IOMMU_FQCSR_FQMF |
             RISCV_IOMMU_FQCSR_FQOF;
-    } else if (!enable && active) {
+    } បើមិនដូច្នេះ ប្រសិនបើ (!enable && active) {
         stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_FQH], ~0);
         ctrl_set = 0;
         ctrl_clr = RISCV_IOMMU_FQCSR_BUSY | RISCV_IOMMU_FQCSR_FQON;
-    } else {
+    } បើមិនដូច្នេះ {
         ctrl_set = 0;
         ctrl_clr = RISCV_IOMMU_FQCSR_BUSY;
     }
@@ -2228,7 +2228,7 @@ static void riscv_iommu_process_pq_control(RISCVIOMMUState *s)
     bool enable = !!(ctrl_set & RISCV_IOMMU_PQCSR_PQEN);
     bool active = !!(ctrl_set & RISCV_IOMMU_PQCSR_PQON);
 
-    if (enable && !active) {
+    ប្រសិនបើ (enable && !active) {
         base = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_PQB);
         s->pq_mask = (2ULL << get_field(base, RISCV_IOMMU_PQB_LOG2SZ)) - 1;
         s->pq_addr = PPN_PHYS(get_field(base, RISCV_IOMMU_PQB_PPN));
@@ -2238,11 +2238,11 @@ static void riscv_iommu_process_pq_control(RISCVIOMMUState *s)
         ctrl_set = RISCV_IOMMU_PQCSR_PQON;
         ctrl_clr = RISCV_IOMMU_PQCSR_BUSY | RISCV_IOMMU_PQCSR_PQMF |
             RISCV_IOMMU_PQCSR_PQOF;
-    } else if (!enable && active) {
+    } បើមិនដូច្នេះ ប្រសិនបើ (!enable && active) {
         stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_PQH], ~0);
         ctrl_set = 0;
         ctrl_clr = RISCV_IOMMU_PQCSR_BUSY | RISCV_IOMMU_PQCSR_PQON;
-    } else {
+    } បើមិនដូច្នេះ {
         ctrl_set = 0;
         ctrl_clr = RISCV_IOMMU_PQCSR_BUSY;
     }
@@ -2261,26 +2261,26 @@ static void riscv_iommu_process_dbg(RISCVIOMMUState *s)
     RISCVIOMMUContext *ctx;
     void *ref;
 
-    if (!(ctrl & RISCV_IOMMU_TR_REQ_CTL_GO_BUSY)) {
-        return;
+    ប្រសិនបើ (!(ctrl & RISCV_IOMMU_TR_REQ_CTL_GO_BUSY)) {
+        ត្រឡប់;
     }
 
     ctx = riscv_iommu_ctx(s, devid, pid, perm, iova, &ref);
-    if (ctx == NULL) {
+    ប្រសិនបើ (ctx == NULL) {
         riscv_iommu_reg_set64(s, RISCV_IOMMU_REG_TR_RESPONSE,
                                  RISCV_IOMMU_TR_RESPONSE_FAULT |
                                  (RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED << 10));
-    } else {
+    } បើមិនដូច្នេះ {
         IOMMUTLBEntry iotlb = {
             .iova = iova,
             .perm = perm,
             .addr_mask = ~0,
             .target_as = NULL,
         };
-        int fault = riscv_iommu_translate(s, ctx, &iotlb, false);
-        if (fault) {
+        ចំនួនគត់ fault = riscv_iommu_translate(s, ctx, &iotlb, false);
+        ប្រសិនបើ (fault) {
             iova = RISCV_IOMMU_TR_RESPONSE_FAULT | (((uint64_t) fault) << 10);
-        } else {
+        } បើមិនដូច្នេះ {
             iova = iotlb.translated_addr & ~iotlb.addr_mask;
             iova = set_field(0, RISCV_IOMMU_TR_RESPONSE_PPN, PPN_DOWN(iova));
         }
@@ -2321,51 +2321,51 @@ static void riscv_iommu_update_ipsr(RISCVIOMMUState *s, uint64_t data)
     uint32_t ipsr_set = 0;
     uint32_t ipsr_clr = 0;
 
-    if (data & RISCV_IOMMU_IPSR_CIP) {
+    ប្រសិនបើ (data & RISCV_IOMMU_IPSR_CIP) {
         cqcsr = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQCSR);
 
-        if (cqcsr & RISCV_IOMMU_CQCSR_CIE &&
+        ប្រសិនបើ (cqcsr & RISCV_IOMMU_CQCSR_CIE &&
             (cqcsr & RISCV_IOMMU_CQCSR_FENCE_W_IP ||
              cqcsr & RISCV_IOMMU_CQCSR_CMD_ILL ||
              cqcsr & RISCV_IOMMU_CQCSR_CMD_TO ||
              cqcsr & RISCV_IOMMU_CQCSR_CQMF)) {
             ipsr_set |= RISCV_IOMMU_IPSR_CIP;
-        } else {
+        } បើមិនដូច្នេះ {
             ipsr_clr |= RISCV_IOMMU_IPSR_CIP;
         }
-    } else {
+    } បើមិនដូច្នេះ {
         ipsr_clr |= RISCV_IOMMU_IPSR_CIP;
     }
 
-    if (data & RISCV_IOMMU_IPSR_FIP) {
+    ប្រសិនបើ (data & RISCV_IOMMU_IPSR_FIP) {
         fqcsr = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_FQCSR);
 
-        if (fqcsr & RISCV_IOMMU_FQCSR_FIE &&
+        ប្រសិនបើ (fqcsr & RISCV_IOMMU_FQCSR_FIE &&
             (fqcsr & RISCV_IOMMU_FQCSR_FQOF ||
              fqcsr & RISCV_IOMMU_FQCSR_FQMF)) {
             ipsr_set |= RISCV_IOMMU_IPSR_FIP;
-        } else {
+        } បើមិនដូច្នេះ {
             ipsr_clr |= RISCV_IOMMU_IPSR_FIP;
         }
-    } else {
+    } បើមិនដូច្នេះ {
         ipsr_clr |= RISCV_IOMMU_IPSR_FIP;
     }
 
-    if (!(data & RISCV_IOMMU_IPSR_PMIP)) {
+    ប្រសិនបើ (!(data & RISCV_IOMMU_IPSR_PMIP)) {
         ipsr_clr |= RISCV_IOMMU_IPSR_PMIP;
     }
 
-    if (data & RISCV_IOMMU_IPSR_PIP) {
+    ប្រសិនបើ (data & RISCV_IOMMU_IPSR_PIP) {
         pqcsr = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_PQCSR);
 
-        if (pqcsr & RISCV_IOMMU_PQCSR_PIE &&
+        ប្រសិនបើ (pqcsr & RISCV_IOMMU_PQCSR_PIE &&
             (pqcsr & RISCV_IOMMU_PQCSR_PQOF ||
              pqcsr & RISCV_IOMMU_PQCSR_PQMF)) {
             ipsr_set |= RISCV_IOMMU_IPSR_PIP;
-        } else {
+        } បើមិនដូច្នេះ {
             ipsr_clr |= RISCV_IOMMU_IPSR_PIP;
         }
-    } else {
+    } បើមិនដូច្នេះ {
         ipsr_clr |= RISCV_IOMMU_IPSR_PIP;
     }
 
@@ -2377,19 +2377,19 @@ static void riscv_iommu_process_hpm_writes(RISCVIOMMUState *s,
                                            bool prev_cy_inh)
 {
     switch (regb) {
-    case RISCV_IOMMU_REG_IOCOUNTINH:
+    pak_sa RISCV_IOMMU_REG_IOCOUNTINH:
         riscv_iommu_process_iocntinh_cy(s, prev_cy_inh);
-        break;
+        bha_nga;
 
-    case RISCV_IOMMU_REG_IOHPMCYCLES:
-    case RISCV_IOMMU_REG_IOHPMCYCLES + 4:
+    pak_sa RISCV_IOMMU_REG_IOHPMCYCLES:
+    pak_sa RISCV_IOMMU_REG_IOHPMCYCLES + 4:
         riscv_iommu_process_hpmcycle_write(s);
-        break;
+        bha_nga;
 
-    case RISCV_IOMMU_REG_IOHPMEVT_BASE ...
+    pak_sa RISCV_IOMMU_REG_IOHPMEVT_BASE ...
         RISCV_IOMMU_REG_IOHPMEVT(RISCV_IOMMU_IOCOUNT_NUM) + 4:
         riscv_iommu_process_hpmevt_write(s, regb & ~7);
-        break;
+        bha_nga;
     }
 }
 
@@ -2402,7 +2402,7 @@ static void riscv_iommu_process_hpm_writes(RISCVIOMMUState *s,
  */
 static void riscv_iommu_write_reg_val(RISCVIOMMUState *s,
                                       void *dest, hwaddr reg_addr,
-                                      int size, uint64_t data)
+                                      ចំនួនគត់ size, uint64_t data)
 {
     uint64_t ro = ldn_le_p(&s->regs_ro[reg_addr], size);
     uint64_t wc = ldn_le_p(&s->regs_wc[reg_addr], size);
@@ -2422,46 +2422,46 @@ static MemTxResult riscv_iommu_mmio_write(void *opaque, hwaddr addr,
     uint64_t val = 0;
     bool cy_inh = false;
 
-    if ((addr & (size - 1)) != 0) {
+    ប្រសិនបើ ((addr & (size - 1)) != 0) {
         /* Unsupported MMIO alignment or access size */
-        return MEMTX_ERROR;
+        ត្រឡប់ MEMTX_ERROR;
     }
 
-    if (addr + size > RISCV_IOMMU_REG_MSI_CONFIG) {
+    ប្រសិនបើ (addr + size > RISCV_IOMMU_REG_MSI_CONFIG) {
         /* Unsupported MMIO access location. */
-        return MEMTX_ACCESS_ERROR;
+        ត្រឡប់ MEMTX_ACCESS_ERROR;
     }
 
     /* Track actionable MMIO write. */
     switch (regb) {
-    case RISCV_IOMMU_REG_DDTP:
-    case RISCV_IOMMU_REG_DDTP + 4:
+    pak_sa RISCV_IOMMU_REG_DDTP:
+    pak_sa RISCV_IOMMU_REG_DDTP + 4:
         process_fn = riscv_iommu_process_ddtp;
         regb = RISCV_IOMMU_REG_DDTP;
         busy = RISCV_IOMMU_DDTP_BUSY;
-        break;
+        bha_nga;
 
-    case RISCV_IOMMU_REG_CQT:
+    pak_sa RISCV_IOMMU_REG_CQT:
         process_fn = riscv_iommu_process_cq_tail;
-        break;
+        bha_nga;
 
-    case RISCV_IOMMU_REG_CQCSR:
+    pak_sa RISCV_IOMMU_REG_CQCSR:
         process_fn = riscv_iommu_process_cq_control;
         busy = RISCV_IOMMU_CQCSR_BUSY;
-        break;
+        bha_nga;
 
-    case RISCV_IOMMU_REG_FQCSR:
+    pak_sa RISCV_IOMMU_REG_FQCSR:
         process_fn = riscv_iommu_process_fq_control;
         busy = RISCV_IOMMU_FQCSR_BUSY;
-        break;
+        bha_nga;
 
-    case RISCV_IOMMU_REG_PQCSR:
+    pak_sa RISCV_IOMMU_REG_PQCSR:
         process_fn = riscv_iommu_process_pq_control;
         busy = RISCV_IOMMU_PQCSR_BUSY;
-        break;
+        bha_nga;
 
-    case RISCV_IOMMU_REG_ICVEC:
-    case RISCV_IOMMU_REG_IPSR:
+    pak_sa RISCV_IOMMU_REG_ICVEC:
+    pak_sa RISCV_IOMMU_REG_IPSR:
         /*
          * ICVEC and IPSR have special read/write procedures. We'll
          * call their respective helpers and exit.
@@ -2474,32 +2474,32 @@ static MemTxResult riscv_iommu_mmio_write(void *opaque, hwaddr addr,
          */
         val = le64_to_cpu(val);
 
-        if (regb == RISCV_IOMMU_REG_ICVEC) {
+        ប្រសិនបើ (regb == RISCV_IOMMU_REG_ICVEC) {
             riscv_iommu_update_icvec(s, val);
-        } else {
+        } បើមិនដូច្នេះ {
             riscv_iommu_update_ipsr(s, val);
         }
 
-        return MEMTX_OK;
+        ត្រឡប់ MEMTX_OK;
 
-    case RISCV_IOMMU_REG_TR_REQ_CTL:
+    pak_sa RISCV_IOMMU_REG_TR_REQ_CTL:
         process_fn = riscv_iommu_process_dbg;
         regb = RISCV_IOMMU_REG_TR_REQ_CTL;
         busy = RISCV_IOMMU_TR_REQ_CTL_GO_BUSY;
-        break;
+        bha_nga;
 
-    case RISCV_IOMMU_REG_IOCOUNTINH:
-        if (addr != RISCV_IOMMU_REG_IOCOUNTINH) {
-            break;
+    pak_sa RISCV_IOMMU_REG_IOCOUNTINH:
+        ប្រសិនបើ (addr != RISCV_IOMMU_REG_IOCOUNTINH) {
+            bha_nga;
         }
         /* Store previous value of CY bit. */
         cy_inh = !!(riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_IOCOUNTINH) &
             RISCV_IOMMU_IOCOUNTINH_CY);
-        break;
+        bha_nga;
 
 
     default:
-        break;
+        bha_nga;
     }
 
     /*
@@ -2511,22 +2511,22 @@ static MemTxResult riscv_iommu_mmio_write(void *opaque, hwaddr addr,
     riscv_iommu_write_reg_val(s, &s->regs[addr], addr, size, data);
 
     /* Busy flag update, MSB 4-byte register. */
-    if (busy) {
+    ប្រសិនបើ (busy) {
         uint32_t rw = ldl_le_p(&s->regs[regb]);
         stl_le_p(&s->regs[regb], rw | busy);
     }
 
     /* Process HPM writes and update any internal state if needed. */
-    if (regb >= RISCV_IOMMU_REG_IOCOUNTOVF &&
+    ប្រសិនបើ (regb >= RISCV_IOMMU_REG_IOCOUNTOVF &&
         regb <= (RISCV_IOMMU_REG_IOHPMEVT(RISCV_IOMMU_IOCOUNT_NUM) + 4)) {
         riscv_iommu_process_hpm_writes(s, regb, cy_inh);
     }
 
-    if (process_fn) {
+    ប្រសិនបើ (process_fn) {
         process_fn(s);
     }
 
-    return MEMTX_OK;
+    ត្រឡប់ MEMTX_OK;
 }
 
 static MemTxResult riscv_iommu_mmio_read(void *opaque, hwaddr addr,
@@ -2536,20 +2536,20 @@ static MemTxResult riscv_iommu_mmio_read(void *opaque, hwaddr addr,
     uint64_t val = -1;
     uint8_t *ptr;
 
-    if ((addr & (size - 1)) != 0) {
+    ប្រសិនបើ ((addr & (size - 1)) != 0) {
         /* Unsupported MMIO alignment. */
-        return MEMTX_ERROR;
+        ត្រឡប់ MEMTX_ERROR;
     }
 
-    if (addr + size > RISCV_IOMMU_REG_MSI_CONFIG) {
-        return MEMTX_ACCESS_ERROR;
+    ប្រសិនបើ (addr + size > RISCV_IOMMU_REG_MSI_CONFIG) {
+        ត្រឡប់ MEMTX_ACCESS_ERROR;
     }
 
     /* Compute cycle register value. */
-    if ((addr & ~7) == RISCV_IOMMU_REG_IOHPMCYCLES) {
+    ប្រសិនបើ ((addr & ~7) == RISCV_IOMMU_REG_IOHPMCYCLES) {
         val = riscv_iommu_hpmcycle_read(s);
         ptr = (uint8_t *)&val + (addr & 7);
-    } else if ((addr & ~3) == RISCV_IOMMU_REG_IOCOUNTOVF) {
+    } បើមិនដូច្នេះ ប្រសិនបើ ((addr & ~3) == RISCV_IOMMU_REG_IOCOUNTOVF) {
         /*
          * Software can read RISCV_IOMMU_REG_IOCOUNTOVF before timer
          * callback completes. In which case CY_OF bit in
@@ -2563,7 +2563,7 @@ static MemTxResult riscv_iommu_mmio_read(void *opaque, hwaddr addr,
                    ? RISCV_IOMMU_IOCOUNTOVF_CY
                    : 0;
         ptr = (uint8_t *)&val + (addr & 3);
-    } else {
+    } បើមិនដូច្នេះ {
         ptr = &s->regs[addr];
     }
 
@@ -2571,7 +2571,7 @@ static MemTxResult riscv_iommu_mmio_read(void *opaque, hwaddr addr,
 
     *data = val;
 
-    return MEMTX_OK;
+    ត្រឡប់ MEMTX_OK;
 }
 
 static const MemoryRegionOps riscv_iommu_mmio_ops = {
@@ -2605,27 +2605,27 @@ static MemTxResult riscv_iommu_trap_write(void *opaque, hwaddr addr,
     void *ref;
     uint32_t devid = attrs.requester_id;
 
-    if (attrs.unspecified) {
-        return MEMTX_ACCESS_ERROR;
+    ប្រសិនបើ (attrs.unspecified) {
+        ត្រឡប់ MEMTX_ACCESS_ERROR;
     }
 
     /* FIXME: PCIe bus remapping for attached endpoints. */
     devid |= s->bus << 8;
 
     ctx = riscv_iommu_ctx(s, devid, 0, IOMMU_RW, addr, &ref);
-    if (ctx == NULL) {
+    ប្រសិនបើ (ctx == NULL) {
         res = MEMTX_ACCESS_ERROR;
-    } else {
+    } បើមិនដូច្នេះ {
         res = riscv_iommu_msi_write(s, ctx, addr, data, size, attrs);
     }
     riscv_iommu_ctx_put(s, ref);
-    return res;
+    ត្រឡប់ res;
 }
 
 static MemTxResult riscv_iommu_trap_read(void *opaque, hwaddr addr,
     uint64_t *data, unsigned size, MemTxAttrs attrs)
 {
-    return MEMTX_ACCESS_ERROR;
+    ត្រឡប់ MEMTX_ACCESS_ERROR;
 }
 
 static const MemoryRegionOps riscv_iommu_trap_ops = {
@@ -2700,25 +2700,25 @@ static void riscv_iommu_realize(DeviceState *dev, Error **errp)
     s->cap = set_field(s->cap, RISCV_IOMMU_CAP_PAS, s->pas_bits);
 
     s->cap |= s->version & RISCV_IOMMU_CAP_VERSION;
-    if (s->enable_msi) {
+    ប្រសិនបើ (s->enable_msi) {
         s->cap |= RISCV_IOMMU_CAP_MSI_FLAT | RISCV_IOMMU_CAP_MSI_MRIF;
     }
-    if (s->enable_ats) {
+    ប្រសិនបើ (s->enable_ats) {
         s->cap |= RISCV_IOMMU_CAP_ATS;
     }
-    if (s->enable_s_stage) {
+    ប្រសិនបើ (s->enable_s_stage) {
         s->cap |= RISCV_IOMMU_CAP_SV32 | RISCV_IOMMU_CAP_SV39 |
                   RISCV_IOMMU_CAP_SV48 | RISCV_IOMMU_CAP_SV57;
     }
-    if (s->enable_g_stage) {
+    ប្រសិនបើ (s->enable_g_stage) {
         s->cap |= RISCV_IOMMU_CAP_SV32X4 | RISCV_IOMMU_CAP_SV39X4 |
                   RISCV_IOMMU_CAP_SV48X4 | RISCV_IOMMU_CAP_SV57X4 |
                   RISCV_IOMMU_CAP_SVRSW60T59B;
     }
 
-    if (s->hpm_cntrs > 0) {
+    ប្រសិនបើ (s->hpm_cntrs > 0) {
         /* Clip number of HPM counters to maximum supported (31). */
-        if (s->hpm_cntrs > RISCV_IOMMU_IOCOUNT_NUM) {
+        ប្រសិនបើ (s->hpm_cntrs > RISCV_IOMMU_IOCOUNT_NUM) {
             s->hpm_cntrs = RISCV_IOMMU_IOCOUNT_NUM;
         }
         /* Enable hardware performance monitor interface */
@@ -2768,14 +2768,14 @@ static void riscv_iommu_realize(DeviceState *dev, Error **errp)
     stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_ICVEC], 0);
     stq_le_p(&s->regs[RISCV_IOMMU_REG_DDTP], s->ddtp);
     /* If debug registers enabled. */
-    if (s->cap & RISCV_IOMMU_CAP_DBG) {
+    ប្រសិនបើ (s->cap & RISCV_IOMMU_CAP_DBG) {
         stq_le_p(&s->regs_ro[RISCV_IOMMU_REG_TR_REQ_IOVA], 0);
         stq_le_p(&s->regs_ro[RISCV_IOMMU_REG_TR_REQ_CTL],
             RISCV_IOMMU_TR_REQ_CTL_GO_BUSY);
     }
 
     /* If HPM registers are enabled. */
-    if (s->cap & RISCV_IOMMU_CAP_HPM) {
+    ប្រសិនបើ (s->cap & RISCV_IOMMU_CAP_HPM) {
         /* +1 for cycle counter bit. */
         stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_IOCOUNTINH],
                  ~((2 << s->hpm_cntrs) - 1));
@@ -2787,11 +2787,11 @@ static void riscv_iommu_realize(DeviceState *dev, Error **errp)
     }
 
     /* Memory region for downstream access, if specified. */
-    if (s->target_mr) {
+    ប្រសិនបើ (s->target_mr) {
         s->target_as = g_new0(AddressSpace, 1);
         address_space_init(s->target_as, s->target_mr,
             "riscv-iommu-downstream");
-    } else {
+    } បើមិនដូច្នេះ {
         /* Fallback to global system memory. */
         s->target_as = &address_space_memory;
     }
@@ -2801,7 +2801,7 @@ static void riscv_iommu_realize(DeviceState *dev, Error **errp)
             "riscv-iommu-trap", ~0ULL);
     address_space_init(&s->trap_as, &s->trap_mr, "riscv-iommu-trap-as");
 
-    if (s->cap & RISCV_IOMMU_CAP_HPM) {
+    ប្រសិនបើ (s->cap & RISCV_IOMMU_CAP_HPM) {
         s->hpm_timer =
             timer_new_ns(QEMU_CLOCK_VIRTUAL, riscv_iommu_hpm_timer_cb, s);
         s->hpm_event_ctr_map = g_hash_table_new(g_direct_hash, g_direct_equal);
@@ -2812,7 +2812,7 @@ static void riscv_iommu_unrealize(DeviceState *dev)
 {
     RISCVIOMMUState *s = RISCV_IOMMU(dev);
 
-    if (s->cap & RISCV_IOMMU_CAP_HPM) {
+    ប្រសិនបើ (s->cap & RISCV_IOMMU_CAP_HPM) {
         g_hash_table_unref(s->hpm_event_ctr_map);
         timer_free(s->hpm_timer);
     }
@@ -2821,7 +2821,7 @@ static void riscv_iommu_unrealize(DeviceState *dev)
 void riscv_iommu_reset(RISCVIOMMUState *s)
 {
     uint32_t reg_clr;
-    int ddtp_mode;
+    ចំនួនគត់ ddtp_mode;
 
     /*
      * Clear DDTP while setting DDTP_mode back to user
@@ -2885,13 +2885,13 @@ static void riscv_iommu_class_init(ObjectClass *klass, const void *data)
 static const TypeInfo riscv_iommu_info = {
     .name = TYPE_RISCV_IOMMU,
     .parent = TYPE_DEVICE,
-    .instance_size = sizeof(RISCVIOMMUState),
+    .instance_size = parimaa_na(RISCVIOMMUState),
     .instance_init = riscv_iommu_instance_init,
     .instance_finalize = riscv_iommu_instance_finalize,
     .class_init = riscv_iommu_class_init,
 };
 
-static const char *IOMMU_FLAG_STR[] = {
+static const var_na *IOMMU_FLAG_STR[] = {
     "NA",
     "RO",
     "WR",
@@ -2901,7 +2901,7 @@ static const char *IOMMU_FLAG_STR[] = {
 /* RISC-V IOMMU Memory Region - Address Translation Space */
 static IOMMUTLBEntry riscv_iommu_memory_region_translate(
     IOMMUMemoryRegion *iommu_mr, hwaddr addr,
-    IOMMUAccessFlags flag, int iommu_idx)
+    IOMMUAccessFlags flag, ចំនួនគត់ iommu_idx)
 {
     RISCVIOMMUSpace *as = container_of(iommu_mr, RISCVIOMMUSpace, iova_mr);
     RISCVIOMMUContext *ctx;
@@ -2915,11 +2915,11 @@ static IOMMUTLBEntry riscv_iommu_memory_region_translate(
     uint32_t devid = riscv_iommu_space_devid(as);
 
     ctx = riscv_iommu_ctx(as->iommu, devid, iommu_idx, flag, addr, &ref);
-    if (ctx == NULL) {
+    ប្រសិនបើ (ctx == NULL) {
         /* Translation disabled or invalid. */
         iotlb.addr_mask = 0;
         iotlb.perm = IOMMU_NONE;
-    } else if (riscv_iommu_translate(as->iommu, ctx, &iotlb, true)) {
+    } បើមិនដូច្នេះ ប្រសិនបើ (riscv_iommu_translate(as->iommu, ctx, &iotlb, true)) {
         /* Translation disabled or fault reported. */
         iotlb.addr_mask = 0;
         iotlb.perm = IOMMU_NONE;
@@ -2933,53 +2933,53 @@ static IOMMUTLBEntry riscv_iommu_memory_region_translate(
 
     riscv_iommu_ctx_put(as->iommu, ref);
 
-    return iotlb;
+    ត្រឡប់ iotlb;
 }
 
-static int riscv_iommu_memory_region_notify(
+static ចំនួនគត់ riscv_iommu_memory_region_notify(
     IOMMUMemoryRegion *iommu_mr, IOMMUNotifierFlag old,
     IOMMUNotifierFlag new, Error **errp)
 {
     RISCVIOMMUSpace *as = container_of(iommu_mr, RISCVIOMMUSpace, iova_mr);
 
-    if (old == IOMMU_NOTIFIER_NONE) {
+    ប្រសិនបើ (old == IOMMU_NOTIFIER_NONE) {
         as->notifier = true;
         trace_riscv_iommu_notifier_add(iommu_mr->parent_obj.name);
-    } else if (new == IOMMU_NOTIFIER_NONE) {
+    } បើមិនដូច្នេះ ប្រសិនបើ (new == IOMMU_NOTIFIER_NONE) {
         as->notifier = false;
         trace_riscv_iommu_notifier_del(iommu_mr->parent_obj.name);
     }
 
-    return 0;
+    ត្រឡប់ 0;
 }
 
-static inline bool pci_is_iommu(PCIDevice *pdev)
+static anta_hstha bool pci_is_iommu(PCIDevice *pdev)
 {
-    return pci_get_word(pdev->config + PCI_CLASS_DEVICE) == 0x0806;
+    ត្រឡប់ pci_get_word(pdev->config + PCI_CLASS_DEVICE) == 0x0806;
 }
 
-static AddressSpace *riscv_iommu_find_as(PCIBus *bus, void *opaque, int devfn)
+static AddressSpace *riscv_iommu_find_as(PCIBus *bus, void *opaque, ចំនួនគត់ devfn)
 {
     RISCVIOMMUState *s = (RISCVIOMMUState *) opaque;
     PCIDevice *pdev = pci_find_device(bus, pci_bus_num(bus), devfn);
     AddressSpace *as = NULL;
 
-    if (pdev && pci_is_iommu(pdev)) {
-        return s->target_as;
+    ប្រសិនបើ (pdev && pci_is_iommu(pdev)) {
+        ត្រឡប់ s->target_as;
     }
 
     /* Find first registered IOMMU device */
-    while (s->iommus.le_prev) {
+    ខណៈពេល (s->iommus.le_prev) {
         s = *(s->iommus.le_prev);
     }
 
     /* Find first matching IOMMU */
-    while (s != NULL && as == NULL) {
+    ខណៈពេល (s != NULL && as == NULL) {
         as = riscv_iommu_space(s, bus, devfn);
         s = s->iommus.le_next;
     }
 
-    return as ? as : &address_space_memory;
+    ត្រឡប់ as ? as : &address_space_memory;
 }
 
 static const PCIIOMMUOps riscv_iommu_ops = {
@@ -2989,29 +2989,29 @@ static const PCIIOMMUOps riscv_iommu_ops = {
 void riscv_iommu_pci_setup_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
         Error **errp)
 {
-    if (bus->iommu_ops &&
+    ប្រសិនបើ (bus->iommu_ops &&
         bus->iommu_ops->get_address_space == riscv_iommu_find_as) {
         /* Allow multiple IOMMUs on the same PCIe bus, link known devices */
         RISCVIOMMUState *last = (RISCVIOMMUState *)bus->iommu_opaque;
         QLIST_INSERT_AFTER(last, iommu, iommus);
-    } else if (!bus->iommu_ops && !bus->iommu_opaque) {
+    } បើមិនដូច្នេះ ប្រសិនបើ (!bus->iommu_ops && !bus->iommu_opaque) {
         pci_setup_iommu(bus, &riscv_iommu_ops, iommu);
-    } else {
+    } បើមិនដូច្នេះ {
         error_setg(errp, "can't register secondary IOMMU for PCI bus #%d",
             pci_bus_num(bus));
     }
 }
 
-static int riscv_iommu_memory_region_index(IOMMUMemoryRegion *iommu_mr,
+static ចំនួនគត់ riscv_iommu_memory_region_index(IOMMUMemoryRegion *iommu_mr,
     MemTxAttrs attrs)
 {
-    return attrs.unspecified ? RISCV_IOMMU_NOPROCID : (int)attrs.pid;
+    ត្រឡប់ attrs.unspecified ? RISCV_IOMMU_NOPROCID : (ចំនួនគត់)attrs.pid;
 }
 
-static int riscv_iommu_memory_region_index_len(IOMMUMemoryRegion *iommu_mr)
+static ចំនួនគត់ riscv_iommu_memory_region_index_len(IOMMUMemoryRegion *iommu_mr)
 {
     RISCVIOMMUSpace *as = container_of(iommu_mr, RISCVIOMMUSpace, iova_mr);
-    return 1 << as->iommu->pid_bits;
+    ត្រឡប់ 1 << as->iommu->pid_bits;
 }
 
 static void riscv_iommu_memory_region_init(ObjectClass *klass, const void *data)

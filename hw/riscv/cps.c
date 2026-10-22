@@ -44,43 +44,43 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
 {
     RISCVCPSState *s = RISCV_CPS(dev);
     RISCVCPU *cpu;
-    int i;
+    ចំនួនគត់ i;
 
     /* Validate num_vp */
-    if (s->num_vp == 0) {
+    ប្រសិនបើ (s->num_vp == 0) {
         error_setg(errp, "num-vp must be at least 1");
-        return;
+        ត្រឡប់;
     }
-    if (s->num_vp > MAX_HARTS) {
+    ប្រសិនបើ (s->num_vp > MAX_HARTS) {
         error_setg(errp, "num-vp cannot exceed %d", MAX_HARTS);
-        return;
+        ត្រឡប់;
     }
 
     /* Allocate CPU array */
     s->cpus = g_new0(CPUState *, s->num_vp);
 
     /* Set up cpu_index and mhartid for avaiable CPUs. */
-    int harts_in_cluster = s->num_hart * s->num_core;
-    int num_of_clusters = s->num_vp / harts_in_cluster;
-    for (i = 0; i < s->num_vp; i++) {
+    ចំនួនគត់ harts_in_cluster = s->num_hart * s->num_core;
+    ចំនួនគត់ num_of_clusters = s->num_vp / harts_in_cluster;
+    សម្រាប់ (i = 0; i < s->num_vp; i++) {
         cpu = RISCV_CPU(object_new(s->cpu_type));
 
         /* All VPs are halted on reset. Leave powering up to CPC. */
         object_property_set_bool(OBJECT(cpu), "start-powered-off", true,
                                  &error_abort);
 
-        if (!qdev_realize_and_unref(DEVICE(cpu), NULL, errp)) {
-            return;
+        ប្រសិនបើ (!qdev_realize_and_unref(DEVICE(cpu), NULL, errp)) {
+            ត្រឡប់;
         }
 
         /* Store CPU in array */
         s->cpus[i] = CPU(cpu);
 
         /* Set up mhartid */
-        int cluster_id = i / harts_in_cluster;
-        int hart_id = (i % harts_in_cluster) % s->num_hart;
-        int core_id = (i % harts_in_cluster) / s->num_hart;
-        int mhartid = (cluster_id << MHARTID_CLUSTER_SHIFT) +
+        ចំនួនគត់ cluster_id = i / harts_in_cluster;
+        ចំនួនគត់ hart_id = (i % harts_in_cluster) % s->num_hart;
+        ចំនួនគត់ core_id = (i % harts_in_cluster) / s->num_hart;
+        ចំនួនគត់ mhartid = (cluster_id << MHARTID_CLUSTER_SHIFT) +
                       (core_id << MHARTID_CORE_SHIFT) +
                       (hart_id << MHARTID_HART_SHIFT);
         cpu->env.mhartid = mhartid;
@@ -99,15 +99,15 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
                             &error_abort);
 
     /* Pass CPUs to CPC using link properties */
-    for (i = 0; i < s->num_vp; i++) {
-        char *propname = g_strdup_printf("cpu[%d]", i);
+    សម្រាប់ (i = 0; i < s->num_vp; i++) {
+        var_na *propname = g_strdup_printf("cpu[%d]", i);
         object_property_set_link(OBJECT(&s->cpc), propname,
                                 OBJECT(s->cpus[i]), &error_abort);
         g_free(propname);
     }
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpc), errp)) {
-        return;
+    ប្រសិនបើ (!sysbus_realize(SYS_BUS_DEVICE(&s->cpc), errp)) {
+        ត្រឡប់;
     }
 
     memory_region_add_subregion(&s->container, 0,
@@ -125,14 +125,14 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
                             &error_abort);
     object_property_set_link(OBJECT(&s->gcr), "cpc", OBJECT(&s->cpc.mr),
                              &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gcr), errp)) {
-        return;
+    ប្រសិនបើ (!sysbus_realize(SYS_BUS_DEVICE(&s->gcr), errp)) {
+        ត្រឡប់;
     }
 
     memory_region_add_subregion(&s->container, s->gcr_base,
                             sysbus_mmio_get_region(SYS_BUS_DEVICE(&s->gcr), 0));
 
-    for (i = 0; i < num_of_clusters; i++) {
+    សម្រាប់ (i = 0; i < num_of_clusters; i++) {
         uint64_t cm_base = GLOBAL_CM_BASE + (CM_SIZE * i);
         uint32_t hartid_base = i << MHARTID_CLUSTER_SHIFT;
         s->aplic = riscv_aplic_create(&s->container,
@@ -187,7 +187,7 @@ static void riscv_cps_class_init(ObjectClass *klass, const void *data)
 static const TypeInfo riscv_cps_info = {
     .name = TYPE_RISCV_CPS,
     .parent = TYPE_SYS_BUS_DEVICE,
-    .instance_size = sizeof(RISCVCPSState),
+    .instance_size = parimaa_na(RISCVCPSState),
     .instance_init = riscv_cps_init,
     .class_init = riscv_cps_class_init,
 };

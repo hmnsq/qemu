@@ -56,14 +56,14 @@ static const MemMapEntry xiangshan_kmh_memmap[] = {
 
 static DeviceState *xiangshan_kmh_create_aia(uint32_t num_harts)
 {
-    int i;
+    ចំនួនគត់ i;
     const MemMapEntry *memmap = xiangshan_kmh_memmap;
     hwaddr addr = 0;
     DeviceState *aplic_m = NULL;
 
     /* M-level IMSICs */
     addr = memmap[XIANGSHAN_KMH_IMSIC_M].base;
-    for (i = 0; i < num_harts; i++) {
+    សម្រាប់ (i = 0; i < num_harts; i++) {
         riscv_imsic_create(get_system_memory(),
                            addr + i * IMSIC_HART_SIZE(0), i, true,
                            1, XIANGSHAN_KMH_IMSIC_NUM_IDS);
@@ -71,7 +71,7 @@ static DeviceState *xiangshan_kmh_create_aia(uint32_t num_harts)
 
     /* S-level IMSICs */
     addr = memmap[XIANGSHAN_KMH_IMSIC_S].base;
-    for (i = 0; i < num_harts; i++) {
+    សម្រាប់ (i = 0; i < num_harts; i++) {
         riscv_imsic_create(get_system_memory(), addr +
                            i * IMSIC_HART_SIZE(XIANGSHAN_KMH_IMSIC_GUEST_BITS),
                            i, false, 1 + XIANGSHAN_KMH_IMSIC_GUEST_BITS,
@@ -92,7 +92,7 @@ static DeviceState *xiangshan_kmh_create_aia(uint32_t num_harts)
                        0, 0, XIANGSHAN_KMH_APLIC_NUM_SOURCES,
                        1, true, false, aplic_m);
 
-    return aplic_m;
+    ត្រឡប់ aplic_m;
 }
 
 static void xiangshan_kmh_soc_realize(DeviceState *dev, Error **errp)
@@ -154,7 +154,7 @@ static void xiangshan_kmh_soc_instance_init(Object *obj)
 static const TypeInfo xiangshan_kmh_soc_info = {
     .name = TYPE_XIANGSHAN_KMH_SOC,
     .parent = TYPE_DEVICE,
-    .instance_size = sizeof(XiangshanKmhSoCState),
+    .instance_size = parimaa_na(XiangshanKmhSoCState),
     .instance_init = xiangshan_kmh_soc_instance_init,
     .class_init = xiangshan_kmh_soc_class_init,
 };
@@ -190,7 +190,7 @@ static void xiangshan_kmh_machine_init(MachineState *machine)
                               start_addr,
                               memmap[XIANGSHAN_KMH_ROM].base,
                               memmap[XIANGSHAN_KMH_ROM].size, 0, 0);
-    if (machine->firmware) {
+    ប្រសិនបើ (machine->firmware) {
         riscv_load_firmware(machine, &boot_info, machine->firmware,
                             &start_addr, NULL);
     }
@@ -201,7 +201,7 @@ static void xiangshan_kmh_machine_init(MachineState *machine)
 static void xiangshan_kmh_machine_class_init(ObjectClass *klass, const void *data)
 {
     MachineClass *mc = MACHINE_CLASS(klass);
-    static const char *const valid_cpu_types[] = {
+    static const var_na *const valid_cpu_types[] = {
         TYPE_RISCV_CPU_XIANGSHAN_KMH,
         NULL
     };
@@ -218,7 +218,7 @@ static void xiangshan_kmh_machine_class_init(ObjectClass *klass, const void *dat
 static const TypeInfo xiangshan_kmh_machine_info = {
     .name = TYPE_XIANGSHAN_KMH_MACHINE,
     .parent = TYPE_MACHINE,
-    .instance_size = sizeof(XiangshanKmhState),
+    .instance_size = parimaa_na(XiangshanKmhState),
     .class_init = xiangshan_kmh_machine_class_init,
 };
 
