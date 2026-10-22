@@ -13,30 +13,30 @@
  * For more information, see <https://www.kendryte.com/en/proDetail/230>
  */
 
-#include "qemu/osdep.h"
-#include "cpu-qom.h"
-#include "qemu/cutils.h"
-#include "qemu/error-report.h"
-#include "qapi/error.h"
-#include "system/device_tree.h"
-#include "system/system.h"
-#include "system/memory.h"
-#include "target/riscv/cpu.h"
-#include "hw/core/loader.h"
-#include "hw/core/sysbus.h"
-#include "hw/riscv/k230.h"
-#include "hw/riscv/boot.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/sifive_plic.h"
-#include "hw/char/serial-mm.h"
-#include "hw/misc/unimp.h"
+#ಅನ್ತರ್ಭಾವ "qemu/osdep.h"
+#ಅನ್ತರ್ಭಾವ "cpu-qom.h"
+#ಅನ್ತರ್ಭಾವ "qemu/cutils.h"
+#ಅನ್ತರ್ಭಾವ "qemu/error-report.h"
+#ಅನ್ತರ್ಭಾವ "qapi/error.h"
+#ಅನ್ತರ್ಭಾವ "system/device_tree.h"
+#ಅನ್ತರ್ಭಾವ "system/system.h"
+#ಅನ್ತರ್ಭಾವ "system/memory.h"
+#ಅನ್ತರ್ಭಾವ "target/riscv/cpu.h"
+#ಅನ್ತರ್ಭಾವ "hw/core/loader.h"
+#ಅನ್ತರ್ಭಾವ "hw/core/sysbus.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/k230.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/boot.h"
+#ಅನ್ತರ್ಭಾವ "hw/intc/riscv_aclint.h"
+#ಅನ್ತರ್ಭಾವ "hw/intc/sifive_plic.h"
+#ಅನ್ತರ್ಭಾವ "hw/char/serial-mm.h"
+#ಅನ್ತರ್ಭಾವ "hw/misc/unimp.h"
 
 /* Align K230_SDK k230_canmv_defconfig */
 #define K230_DIRECT_OPENSBI_ADDR 0x8000000
 #define K230_DIRECT_KERNEL_ADDR  0x8200000
 #define K230_DIRECT_DTB_ADDR     0xa000000
 
-static const MemMapEntry memmap[] = {
+ಸ್ಥಿರ ಧ್ರುವ MemMapEntry memmap[] = {
     [K230_DEV_DDRC] =         { 0x00000000,  0x80000000 },
     [K230_DEV_KPU_L2_CACHE] = { 0x80000000,  0x00200000 },
     [K230_DEV_SRAM] =         { 0x80200000,  0x00200000 },
@@ -102,7 +102,7 @@ static const MemMapEntry memmap[] = {
     [K230_DEV_CLINT] =        { 0xF04000000, 0x00400000 },
 };
 
-static void k230_soc_init(Object *obj)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_soc_init(Object *obj)
 {
     K230SoCState *s = RISCV_K230_SOC(obj);
     RISCVHartArrayState *cpu0 = &s->c908_cpu;
@@ -125,19 +125,19 @@ static void k230_soc_init(Object *obj)
                          memmap[K230_DEV_BOOTROM].base);
 }
 
-static DeviceState *k230_create_plic(int base_hartid, int hartid_count)
+ಸ್ಥಿರ DeviceState *k230_create_plic(ಪೂರ್ಣಾಙ್ಕ base_hartid, ಪೂರ್ಣಾಙ್ಕ hartid_ಎಣಿಕೆ)
 {
-    g_autofree char *plic_hart_config = NULL;
+    g_autofree ವರ್ಣ *plic_hart_config = ರಿಕ್ತ;
 
     /* Per-socket PLIC hart topology configuration string */
-    plic_hart_config = riscv_plic_hart_config_string(hartid_count);
+    plic_hart_config = riscv_plic_hart_config_string(hartid_ಎಣಿಕೆ);
 
     /* Per-socket PLIC */
-    return sifive_plic_create(get_system_memory(),
+    ಪ್ರತ್ಯಾಗಮ sifive_plic_create(get_system_memory(),
                               memmap[K230_DEV_PLIC].base,
-                              plic_hart_config, hartid_count, base_hartid,
-                              K230_PLIC_NUM_SOURCES,
-                              K230_PLIC_NUM_PRIORITIES,
+                              plic_hart_config, hartid_ಎಣಿಕೆ, base_hartid,
+                              K230_PLIC_ಅಂಕೆ_SOURCES,
+                              K230_PLIC_ಅಂಕೆ_PRIORITIES,
                               K230_PLIC_PRIORITY_BASE, K230_PLIC_PENDING_BASE,
                               K230_PLIC_ENABLE_BASE, K230_PLIC_ENABLE_STRIDE,
                               K230_PLIC_CONTEXT_BASE,
@@ -145,11 +145,11 @@ static DeviceState *k230_create_plic(int base_hartid, int hartid_count)
                               memmap[K230_DEV_PLIC].size);
 }
 
-static void k230_create_uart(MemoryRegion *sys_mem, DeviceState *plic,
-                             int index)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_create_uart(MemoryRegion *sys_mem, DeviceState *plic,
+                             ಪೂರ್ಣಾಙ್ಕ index)
 {
-    int uart_dev = K230_DEV_UART0 + index;
-    g_autofree char *name = g_strdup_printf("uart%d", index);
+    ಪೂರ್ಣಾಙ್ಕ uart_dev = K230_DEV_UART0 + index;
+    g_autofree ವರ್ಣ *name = g_strdup_printf("uart%d", index);
 
     /* Cover the non-16550 part of the SDK's 0x1000 UART window. */
     create_unimplemented_device(name, memmap[uart_dev].base,
@@ -160,25 +160,25 @@ static void k230_create_uart(MemoryRegion *sys_mem, DeviceState *plic,
                    399193, serial_hd(index), DEVICE_LITTLE_ENDIAN);
 }
 
-static void k230_soc_realize(DeviceState *dev, Error **errp)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_soc_realize(DeviceState *dev, Error **errp)
 {
     K230SoCState *s = RISCV_K230_SOC(dev);
     MemoryRegion *sys_mem = get_system_memory();
-    int c908_cpus;
+    ಪೂರ್ಣಾಙ್ಕ c908_cpus;
 
     sysbus_realize(SYS_BUS_DEVICE(&s->c908_cpu), &error_fatal);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_cfg), errp)) {
-        return;
+    ಯದಿ (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_cfg), errp)) {
+        ಪ್ರತ್ಯಾಗಮ;
     }
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_phy), errp)) {
-        return;
+    ಯದಿ (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_phy), errp)) {
+        ಪ್ರತ್ಯಾಗಮ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ddr_cfg), 0,
                     memmap[K230_DEV_DDRC_CFG].base);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ddr_phy), 0,
                     memmap[K230_DEV_DDR_PHY].base);
 
-    c908_cpus = s->c908_cpu.num_harts;
+    c908_cpus = s->c908_cpu.ಅಂಕೆ_harts;
 
     /* SRAM */
     memory_region_init_ram(&s->sram, OBJECT(dev), "sram",
@@ -208,14 +208,14 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
                                RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
 
     /* UART */
-    for (int i = 0; i < K230_UART_COUNT; i++) {
+    ಪ್ರತಿ (ಪೂರ್ಣಾಙ್ಕ i = 0; i < K230_UART_ಎಣಿಕೆ; i++) {
         k230_create_uart(sys_mem, DEVICE(s->c908_plic), i);
     }
 
     /* Watchdog */
-    for (int i = 0; i < 2; i++) {
-        if (!sysbus_realize(SYS_BUS_DEVICE(&s->wdt[i]), errp)) {
-            return;
+    ಪ್ರತಿ (ಪೂರ್ಣಾಙ್ಕ i = 0; i < 2; i++) {
+        ಯದಿ (!sysbus_realize(SYS_BUS_DEVICE(&s->wdt[i]), errp)) {
+            ಪ್ರತ್ಯಾಗಮ;
         }
     }
 
@@ -228,8 +228,8 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
                        qdev_get_gpio_in(DEVICE(s->c908_plic), K230_WDT1_IRQ));
 
     /* Gsdma */
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gsdma), errp)) {
-        return;
+    ಯದಿ (!sysbus_realize(SYS_BUS_DEVICE(&s->gsdma), errp)) {
+        ಪ್ರತ್ಯಾಗಮ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->gsdma), 0, memmap[K230_DEV_GSDMA].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->gsdma), 0,
@@ -238,16 +238,16 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
     /* Decomp gzip */
     qdev_prop_set_uint64(DEVICE(&s->decomp_gzip), "sram-base",
                          memmap[K230_DEV_SRAM].base);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->decomp_gzip), errp)) {
-        return;
+    ಯದಿ (!sysbus_realize(SYS_BUS_DEVICE(&s->decomp_gzip), errp)) {
+        ಪ್ರತ್ಯಾಗಮ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->decomp_gzip), 0,
                     memmap[K230_DEV_DECOMP_GZIP].base);
-    for (int i = 0; i < K230_DECOMP_GZIP_NUM_GPIOS_OUT; i++) {
+    ಪ್ರತಿ (ಪೂರ್ಣಾಙ್ಕ i = 0; i < K230_DECOMP_GZIP_ಅಂಕೆ_GPIOS_OUT; i++) {
         qdev_connect_gpio_out(DEVICE(&s->decomp_gzip), i,
                               qdev_get_gpio_in(DEVICE(&s->gsdma), i));
     }
-    for (int i = 0; i < K230_DECOMP_GZIP_NUM_GPIOS_IN; i++) {
+    ಪ್ರತಿ (ಪೂರ್ಣಾಙ್ಕ i = 0; i < K230_DECOMP_GZIP_ಅಂಕೆ_GPIOS_IN; i++) {
         qdev_connect_gpio_out(DEVICE(&s->gsdma), i,
                               qdev_get_gpio_in(DEVICE(&s->decomp_gzip), i));
     }
@@ -407,50 +407,50 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
                                 memmap[K230_DEV_FLASH].size);
 }
 
-static void k230_soc_class_init(ObjectClass *oc, const void *data)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_soc_class_init(ObjectClass *oc, ಧ್ರುವ ಶೂನ್ಯ *data)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
     dc->realize = k230_soc_realize;
 }
 
-static const TypeInfo k230_soc_type_info = {
+ಸ್ಥಿರ ಧ್ರುವ TypeInfo k230_soc_type_info = {
     .name = TYPE_RISCV_K230_SOC,
     .parent = TYPE_DEVICE,
-    .instance_size = sizeof(K230SoCState),
+    .instance_size = ಪರಿಮಾಣ(K230SoCState),
     .instance_init = k230_soc_init,
     .class_init = k230_soc_class_init,
 };
 
-static void k230_soc_register_types(void)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_soc_register_types(ಶೂನ್ಯ)
 {
     type_register_static(&k230_soc_type_info);
 }
 
 type_init(k230_soc_register_types)
 
-static void k230_direct_boot(K230MachineState *s, MachineState *machine)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_direct_boot(K230MachineState *s, MachineState *machine)
 {
-    const char *firmware_name = riscv_default_firmware_name(&s->soc.c908_cpu);
+    ಧ್ರುವ ವರ್ಣ *firmware_name = riscv_default_firmware_name(&s->soc.c908_cpu);
     RISCVBootInfo boot_info = {0};
     hwaddr start_addr = K230_DIRECT_OPENSBI_ADDR;
     hwaddr firmware_end_addr = 0;
     hwaddr kernel_entry = 0;
-    int fdt_size = 0;
+    ಪೂರ್ಣಾಙ್ಕ fdt_size = 0;
 
-    if (machine->firmware && !strcmp(machine->firmware, "none")) {
+    ಯದಿ (machine->firmware && !strcmp(machine->firmware, "none")) {
         error_report("K230 direct boot requires OpenSBI firmware; omit "
                      "-bios none or pass OpenSBI with -bios");
         exit(EXIT_FAILURE);
     }
 
-    if (!machine->dtb) {
+    ಯದಿ (!machine->dtb) {
         error_report("K230 direct boot requires -dtb");
         exit(EXIT_FAILURE);
     }
 
-    machine->fdt = load_device_tree(machine->dtb, &fdt_size);
-    if (!machine->fdt) {
+    machine->fdt = load_device_ವೃಕ್ಷ(machine->dtb, &fdt_size);
+    ಯದಿ (!machine->fdt) {
         error_report("load_device_tree() failed");
         exit(EXIT_FAILURE);
     }
@@ -458,15 +458,15 @@ static void k230_direct_boot(K230MachineState *s, MachineState *machine)
     qemu_fdt_add_path(machine->fdt, "/chosen");
 
     riscv_boot_info_init(&boot_info, &s->soc.c908_cpu);
-    riscv_load_kernel(machine, &boot_info, K230_DIRECT_KERNEL_ADDR, true, NULL);
-    kernel_entry = boot_info.image_low_addr;
+    riscv_load_kernel(machine, &boot_info, K230_DIRECT_KERNEL_ADDR, true, ರಿಕ್ತ);
+    kernel_entry = boot_info.image_ಕೆಳಗಿನ_addr;
 
     riscv_load_fdt(K230_DIRECT_DTB_ADDR, machine->fdt);
 
     firmware_end_addr = riscv_find_and_load_firmware(machine, &boot_info,
                                                      firmware_name,
-                                                     &start_addr, NULL);
-    if (firmware_end_addr > K230_DIRECT_KERNEL_ADDR) {
+                                                     &start_addr, ರಿಕ್ತ);
+    ಯದಿ (firmware_end_addr > K230_DIRECT_KERNEL_ADDR) {
         error_report("K230 firmware overlaps kernel address 0x%x",
                      K230_DIRECT_KERNEL_ADDR);
         exit(EXIT_FAILURE);
@@ -478,47 +478,47 @@ static void k230_direct_boot(K230MachineState *s, MachineState *machine)
                               K230_DIRECT_DTB_ADDR);
 }
 
-static void k230_firmware_boot(K230MachineState *s, MachineState *machine)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_firmware_boot(K230MachineState *s, MachineState *machine)
 {
-    const char *firmware_name = riscv_default_firmware_name(&s->soc.c908_cpu);
+    ಧ್ರುವ ವರ್ಣ *firmware_name = riscv_default_firmware_name(&s->soc.c908_cpu);
     hwaddr start_addr = memmap[K230_DEV_DDRC].base;
     RISCVBootInfo boot_info = {0};
 
-    if (machine->dtb || (machine->kernel_cmdline && *machine->kernel_cmdline)) {
+    ಯದಿ (machine->dtb || (machine->kernel_cmdline && *machine->kernel_cmdline)) {
         error_report("K230 firmware boot does not support -dtb or -append");
         exit(EXIT_FAILURE);
     }
 
     riscv_boot_info_init(&boot_info, &s->soc.c908_cpu);
     riscv_find_and_load_firmware(machine, &boot_info, firmware_name,
-                                 &start_addr, NULL);
+                                 &start_addr, ರಿಕ್ತ);
 
     riscv_setup_rom_reset_vec(machine, &s->soc.c908_cpu, start_addr,
                               memmap[K230_DEV_BOOTROM].base,
                               memmap[K230_DEV_BOOTROM].size, 0, 0);
 }
 
-static void k230_machine_done(Notifier *notifier, void *data)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_machine_done(Notifier *notifier, ಶೂನ್ಯ *data)
 {
     K230MachineState *s = container_of(notifier, K230MachineState,
                                        machine_done);
     MachineState *machine = MACHINE(s);
 
-    if (machine->kernel_filename) {
+    ಯದಿ (machine->kernel_filename) {
         k230_direct_boot(s, machine);
-    } else {
+    } ಅನ್ಯಥಾ {
         k230_firmware_boot(s, machine);
     }
 }
 
-static void k230_machine_init(MachineState *machine)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_machine_init(MachineState *machine)
 {
     MachineClass *mc = MACHINE_GET_CLASS(machine);
     K230MachineState *s = RISCV_K230_MACHINE(machine);
     MemoryRegion *sys_mem = get_system_memory();
 
-    if (machine->ram_size < mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    ಯದಿ (machine->ram_size < mc->default_ram_size) {
+        ವರ್ಣ *sz = size_to_str(mc->default_ram_size);
         error_report("Invalid RAM size, should be %s", sz);
         g_free(sz);
         exit(EXIT_FAILURE);
@@ -527,7 +527,7 @@ static void k230_machine_init(MachineState *machine)
     /* Initialize SoC */
     object_initialize_child(OBJECT(machine), "soc", &s->soc,
                             TYPE_RISCV_K230_SOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&s->soc), ರಿಕ್ತ, &error_fatal);
 
     /* Data Memory */
     memory_region_add_subregion(sys_mem, memmap[K230_DEV_DDRC].base,
@@ -537,11 +537,11 @@ static void k230_machine_init(MachineState *machine)
     qemu_add_machine_init_done_notifier(&s->machine_done);
 }
 
-static void k230_machine_instance_init(Object *obj)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_machine_instance_init(Object *obj)
 {
 }
 
-static void k230_machine_class_init(ObjectClass *oc, const void *data)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_machine_class_init(ObjectClass *oc, ಧ್ರುವ ಶೂನ್ಯ *data)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -552,15 +552,15 @@ static void k230_machine_class_init(ObjectClass *oc, const void *data)
     mc->default_ram_size = memmap[K230_DEV_DDRC].size;
 }
 
-static const TypeInfo k230_machine_typeinfo = {
+ಸ್ಥಿರ ಧ್ರುವ TypeInfo k230_machine_typeinfo = {
     .name       = TYPE_RISCV_K230_MACHINE,
     .parent     = TYPE_MACHINE,
     .class_init = k230_machine_class_init,
     .instance_init = k230_machine_instance_init,
-    .instance_size = sizeof(K230MachineState),
+    .instance_size = ಪರಿಮಾಣ(K230MachineState),
 };
 
-static void k230_machine_init_register_types(void)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_machine_init_register_types(ಶೂನ್ಯ)
 {
     type_register_static(&k230_machine_typeinfo);
 }
