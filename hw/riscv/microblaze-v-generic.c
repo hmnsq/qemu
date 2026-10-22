@@ -56,7 +56,7 @@ static void mb_v_generic_init(MachineState *machine)
     ram_addr_t ram_size = machine->ram_size;
     DeviceState *dev, *dma, *eth0;
     Object *ds, *cs;
-    int i;
+    ཧྲིལ i;
     RISCVCPU *cpu;
     hwaddr ddr_base = MEMORY_BASEADDR;
     MemoryRegion *phys_lmb_bram = g_new(MemoryRegion, 1);
@@ -86,7 +86,7 @@ static void mb_v_generic_init(MachineState *machine)
     sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, INTC_BASEADDR);
     sysbus_connect_irq(SYS_BUS_DEVICE(dev), 0,
                        qdev_get_gpio_in(DEVICE(cpu), 11));
-    for (i = 0; i < 32; i++) {
+    དོན་ལུ (i = 0; i < 32; i++) {
         irq[i] = qdev_get_gpio_in(dev, i);
     }
 

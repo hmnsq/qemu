@@ -59,7 +59,7 @@
  */
 #define RISCV_IOMMU_PCI_ICVEC_VECTORS 0x3333
 
-typedef struct RISCVIOMMUStatePci {
+typedef sa_nracanaa RISCVIOMMUStatePci {
     PCIDevice        pci;     /* Parent PCIe device state */
     uint16_t         vendor_id;
     uint16_t         device_id;
@@ -73,7 +73,7 @@ static void riscv_iommu_pci_notify(RISCVIOMMUState *iommu, unsigned vector)
 {
     RISCVIOMMUStatePci *s = container_of(iommu, RISCVIOMMUStatePci, iommu);
 
-    if (msix_enabled(&(s->pci))) {
+    གལ་སྲིད (msix_enabled(&(s->pci))) {
         msix_notify(&(s->pci), vector);
     }
 }
@@ -105,22 +105,22 @@ static void riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
     pci_register_bar(dev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY |
                      PCI_BASE_ADDRESS_MEM_TYPE_64, &s->bar0);
 
-    int ret = msix_init(dev, RISCV_IOMMU_PCI_MSIX_VECTORS,
+    ཧྲིལ ret = msix_init(dev, RISCV_IOMMU_PCI_MSIX_VECTORS,
                         &s->bar0, 0, RISCV_IOMMU_REG_MSI_CONFIG,
                         &s->bar0, 0, RISCV_IOMMU_REG_MSI_CONFIG + 256, 0, &err);
 
-    if (ret == -ENOTSUP) {
+    གལ་སྲིད (ret == -ENOTSUP) {
         /*
          * MSI-x is not supported by the platform.
          * Driver should use timer/polling based notification handlers.
          */
         warn_report_err(err);
-    } else if (ret < 0) {
+    } དེ་མིན གལ་སྲིད (ret < 0) {
         error_propagate(errp, err);
-        return;
-    } else {
+        ལོག;
+    } དེ་མིན {
         /* Mark all ICVEC MSIx vectors as used */
-        for (int i = 0; i < RISCV_IOMMU_PCI_MSIX_VECTORS; i++) {
+        དོན་ལུ (ཧྲིལ i = 0; i < RISCV_IOMMU_PCI_MSIX_VECTORS; i++) {
             msix_vector_use(dev, i);
         }
 
@@ -128,11 +128,11 @@ static void riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
     }
 
     PCIBus *bus = pci_device_root_bus(dev);
-    if (!bus) {
+    གལ་སྲིད (!bus) {
         error_setg(errp, "can't find PCIe root port for %02x:%02x.%x",
             pci_bus_num(pci_get_bus(dev)), PCI_SLOT(dev->devfn),
             PCI_FUNC(dev->devfn));
-        return;
+        ལོག;
     }
 
     riscv_iommu_pci_setup_iommu(iommu, bus, errp);
@@ -205,7 +205,7 @@ static const TypeInfo riscv_iommu_pci = {
     .parent = TYPE_PCI_DEVICE,
     .class_init = riscv_iommu_pci_class_init,
     .instance_init = riscv_iommu_pci_init,
-    .instance_size = sizeof(RISCVIOMMUStatePci),
+    .instance_size = parimaa_na(RISCVIOMMUStatePci),
     .interfaces = (const InterfaceInfo[]) {
         { INTERFACE_PCIE_DEVICE },
         { },

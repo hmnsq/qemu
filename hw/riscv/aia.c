@@ -17,15 +17,15 @@ uint32_t imsic_num_bits(uint32_t count)
 {
     uint32_t ret = 0;
 
-    while (BIT(ret) < count) {
+    སྐབས (BIT(ret) < count) {
         ret++;
     }
 
-    return ret;
+    ལོག ret;
 }
 
 DeviceState *riscv_create_aia(MemoryRegion *container,
-                             bool msimode, int aia_guests,
+                             bool msimode, ཧྲིལ aia_guests,
                              uint32_t m_imsic_stride,
                              uint32_t s_imsic_stride,
                              uint16_t num_sources,
@@ -33,10 +33,10 @@ DeviceState *riscv_create_aia(MemoryRegion *container,
                              const MemMapEntry *aplic_s,
                              const MemMapEntry *imsic_m,
                              const MemMapEntry *imsic_s,
-                             int socket, int base_hartid, int hart_count,
+                             ཧྲིལ socket, ཧྲིལ base_hartid, ཧྲིལ hart_count,
                              uint32_t num_msis, uint32_t num_prio_bits)
 {
-    int i;
+    ཧྲིལ i;
     hwaddr addr = 0;
     DeviceState *aplic_s_dev = NULL;
     DeviceState *aplic_m_dev = NULL;
@@ -48,11 +48,11 @@ DeviceState *riscv_create_aia(MemoryRegion *container,
     g_assert(s_imsic_stride >= IMSIC_HART_SIZE(imsic_num_bits(1 + aia_guests)));
     g_assert(m_imsic_stride >= IMSIC_HART_SIZE(0));
 
-    if (msimode) {
-        if (!kvm_enabled()) {
+    གལ་སྲིད (msimode) {
+        གལ་སྲིད (!kvm_enabled()) {
             /* Per-socket M-level IMSICs */
             addr = imsic_m->base + socket * (1U << IMSIC_MMIO_GROUP_MIN_SHIFT);
-            for (i = 0; i < hart_count; i++) {
+            དོན་ལུ (i = 0; i < hart_count; i++) {
                 riscv_imsic_create(container,
                                    addr + i * m_imsic_stride,
                                    base_hartid + i, true, 1,
@@ -62,7 +62,7 @@ DeviceState *riscv_create_aia(MemoryRegion *container,
 
         /* Per-socket S-level IMSICs */
         addr = imsic_s->base + socket * (1U << IMSIC_MMIO_GROUP_MIN_SHIFT);
-        for (i = 0; i < hart_count; i++) {
+        དོན་ལུ (i = 0; i < hart_count; i++) {
             riscv_imsic_create(container,
                                addr + i * s_imsic_stride,
                                base_hartid + i, false, 1 + aia_guests,
@@ -70,7 +70,7 @@ DeviceState *riscv_create_aia(MemoryRegion *container,
         }
     }
 
-    if (!kvm_enabled()) {
+    གལ་སྲིད (!kvm_enabled()) {
         /* Per-socket M-level APLIC */
         aplic_m_dev = riscv_aplic_create(container,
                                      aplic_m->base + socket * aplic_m->size,
@@ -92,9 +92,9 @@ DeviceState *riscv_create_aia(MemoryRegion *container,
                                  num_prio_bits,
                                  msimode, false, aplic_m_dev);
 
-    if (kvm_enabled() && msimode) {
+    གལ་སྲིད (kvm_enabled() && msimode) {
         riscv_aplic_set_kvm_msicfgaddr(RISCV_APLIC(aplic_s_dev), addr);
     }
 
-    return kvm_enabled() ? aplic_s_dev : aplic_m_dev;
+    ལོག kvm_enabled() ? aplic_s_dev : aplic_m_dev;
 }
