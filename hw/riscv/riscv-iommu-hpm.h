@@ -19,15 +19,15 @@
 #ifndef HW_RISCV_IOMMU_HPM_H
 #define HW_RISCV_IOMMU_HPM_H
 
-#include "qom/object.h"
-#include "hw/riscv/riscv-iommu.h"
+#ضمن "qom/object.h"
+#ضمن "hw/riscv/riscv-iommu.h"
 
 uint64_t riscv_iommu_hpmcycle_read(RISCVIOMMUState *s);
-void riscv_iommu_hpm_incr_ctr(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
+فراغ riscv_iommu_hpm_incr_ctr(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
                               unsigned event_id);
-void riscv_iommu_hpm_timer_cb(void *priv);
-void riscv_iommu_process_iocntinh_cy(RISCVIOMMUState *s, bool prev_cy_inh);
-void riscv_iommu_process_hpmcycle_write(RISCVIOMMUState *s);
-void riscv_iommu_process_hpmevt_write(RISCVIOMMUState *s, uint32_t evt_reg);
+فراغ riscv_iommu_hpm_timer_cb(فراغ *priv);
+فراغ riscv_iommu_process_iocntinh_cy(RISCVIOMMUState *s, bool prev_cy_inh);
+فراغ riscv_iommu_process_hpmcycle_write(RISCVIOMMUState *s);
+فراغ riscv_iommu_process_hpmevt_write(RISCVIOMMUState *s, uint32_t evt_reg);
 
 #endif
