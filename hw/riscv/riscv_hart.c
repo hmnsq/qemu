@@ -18,19 +18,19 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "qemu/module.h"
-#include "system/reset.h"
-#include "system/qtest.h"
-#include "qemu/cutils.h"
-#include "hw/core/sysbus.h"
-#include "target/riscv/cpu.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/riscv/riscv_hart.h"
-#include "qemu/error-report.h"
+#ضمن "qemu/osdep.h"
+#ضمن "qapi/error.h"
+#ضمن "qemu/module.h"
+#ضمن "system/reset.h"
+#ضمن "system/qtest.h"
+#ضمن "qemu/cutils.h"
+#ضمن "hw/core/sysbus.h"
+#ضمن "target/riscv/cpu.h"
+#ضمن "hw/core/qdev-properties.h"
+#ضمن "hw/riscv/riscv_hart.h"
+#ضمن "qemu/error-report.h"
 
-static const Property riscv_harts_props[] = {
+ساكن ثابت Property riscv_harts_props[] = {
     DEFINE_PROP_UINT32("num-harts", RISCVHartArrayState, num_harts, 1),
     DEFINE_PROP_UINT32("hartid-base", RISCVHartArrayState, hartid_base, 0),
     DEFINE_PROP_STRING("cpu-type", RISCVHartArrayState, cpu_type),
@@ -57,91 +57,91 @@ static const Property riscv_harts_props[] = {
                      TYPE_MEMORY_REGION, MemoryRegion *),
 };
 
-static void riscv_harts_cpu_reset(void *opaque)
+ساكن فراغ riscv_harts_cpu_reset(فراغ *opaque)
 {
     RISCVCPU *cpu = opaque;
     cpu_reset(CPU(cpu));
 }
 
-#if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
-static void csr_call(char *cmd, uint64_t cpu_num, int csrno, uint64_t *val)
+#ܐܢ defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
+ساكن فراغ csr_call(حرف *cmd, uint64_t cpu_num, صحيح csrno, uint64_t *val)
 {
     RISCVCPU *cpu = RISCV_CPU(cpu_by_arch_id(cpu_num));
     CPURISCVState *env = &cpu->env;
 
     RISCVException ret = RISCV_EXCP_NONE;
-    if (strcmp(cmd, "get_csr") == 0) {
+    ܐܢ (strcmp(cmd, "get_csr") == 0) {
         ret = riscv_csr_read_i64(env, csrno, val);
-    } else if (strcmp(cmd, "set_csr") == 0) {
+    } ܐܚܪܢܐ ܐܢ (strcmp(cmd, "set_csr") == 0) {
         ret = riscv_csr_write_i64(env, csrno, *val);
     }
 
     g_assert(ret == RISCV_EXCP_NONE);
 }
 
-static bool csr_qtest_callback(CharFrontend *chr, gchar **words)
+ساكن bool csr_qtest_callback(CharFrontend *chr, gchar **words)
 {
-    if (strcmp(words[0], "csr") == 0) {
+    ܐܢ (strcmp(words[0], "csr") == 0) {
 
         uint64_t cpu;
         uint64_t val;
-        int rc, csr;
+        صحيح rc, csr;
 
-        rc = qemu_strtou64(words[2], NULL, 0, &cpu);
+        rc = qemu_strtou64(words[2], عدم, 0, &cpu);
         g_assert(rc == 0);
-        rc = qemu_strtoi(words[3], NULL, 0, &csr);
+        rc = qemu_strtoi(words[3], عدم, 0, &csr);
         g_assert(rc == 0);
-        rc = qemu_strtou64(words[4], NULL, 0, &val);
+        rc = qemu_strtou64(words[4], عدم, 0, &val);
         g_assert(rc == 0);
         csr_call(words[1], cpu, csr, &val);
 
         qtest_sendf(chr, "OK 0 %"PRIx64"\n", val);
 
-        return true;
+        ܦܢܐ true;
     }
 
-    return false;
+    ܦܢܐ false;
 }
 
-static void riscv_cpu_register_csr_qtest_callback(void)
+ساكن فراغ riscv_cpu_register_csr_qtest_callback(فراغ)
 {
-    static bool first = true;
-    if (first) {
+    ساكن bool first = true;
+    ܐܢ (first) {
         first = false;
         qtest_set_command_cb(csr_qtest_callback);
     }
 }
 #endif
 
-static bool riscv_hart_realize(RISCVHartArrayState *s, int idx,
-                               char *cpu_type, Error **errp)
+ساكن bool riscv_hart_realize(RISCVHartArrayState *s, صحيح idx,
+                               حرف *cpu_type, Error **errp)
 {
     object_initialize_child(OBJECT(s), "harts[*]", &s->harts[idx], cpu_type);
     qdev_prop_set_uint64(DEVICE(&s->harts[idx]), "resetvec", s->resetvec);
 
     /* Use private memory instead of system_memory if provided */
-    if (s->memory) {
+    ܐܢ (s->memory) {
         object_property_set_link(OBJECT(&s->harts[idx]), "memory",
                                  OBJECT(s->memory), &error_abort);
     }
 
-    if (s->harts[idx].cfg.ext_smrnmi) {
-        if (idx < s->num_rnmi_irqvec) {
+    ܐܢ (s->harts[idx].cfg.ext_smrnmi) {
+        ܐܢ (idx < s->num_rnmi_irqvec) {
             qdev_prop_set_uint64(DEVICE(&s->harts[idx]),
                                  "rnmi-interrupt-vector", s->rnmi_irqvec[idx]);
         }
 
-        if (idx < s->num_rnmi_excpvec) {
+        ܐܢ (idx < s->num_rnmi_excpvec) {
             qdev_prop_set_uint64(DEVICE(&s->harts[idx]),
                                  "rnmi-exception-vector", s->rnmi_excpvec[idx]);
         }
-    } else {
-        if (s->num_rnmi_irqvec > 0) {
+    } ܐܚܪܢܐ {
+        ܐܢ (s->num_rnmi_irqvec > 0) {
             warn_report_once("rnmi-interrupt-vector property is ignored "
                              "because Smrnmi extension is not enabled.");
         }
 
-        if (s->num_rnmi_excpvec > 0) {
+        ܐܢ (s->num_rnmi_excpvec > 0) {
             warn_report_once("rnmi-exception-vector property is ignored "
                              "because Smrnmi extension is not enabled.");
         }
@@ -149,30 +149,30 @@ static bool riscv_hart_realize(RISCVHartArrayState *s, int idx,
 
     s->harts[idx].env.mhartid = s->hartid_base + idx;
     qemu_register_reset(riscv_harts_cpu_reset, &s->harts[idx]);
-    return qdev_realize(DEVICE(&s->harts[idx]), NULL, errp);
+    ܦܢܐ qdev_realize(DEVICE(&s->harts[idx]), عدم, errp);
 }
 
-static void riscv_harts_realize(DeviceState *dev, Error **errp)
+ساكن فراغ riscv_harts_realize(DeviceState *dev, Error **errp)
 {
     RISCVHartArrayState *s = RISCV_HART_ARRAY(dev);
-    int n;
+    صحيح n;
 
     s->harts = g_new0(RISCVCPU, s->num_harts);
 
-#if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
-    if (qtest_enabled()) {
+#ܐܢ defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
+    ܐܢ (qtest_enabled()) {
         riscv_cpu_register_csr_qtest_callback();
     }
 #endif
 
-    for (n = 0; n < s->num_harts; n++) {
-        if (!riscv_hart_realize(s, n, s->cpu_type, errp)) {
-            return;
+    لكل (n = 0; n < s->num_harts; n++) {
+        ܐܢ (!riscv_hart_realize(s, n, s->cpu_type, errp)) {
+            ܦܢܐ;
         }
     }
 }
 
-static void riscv_harts_class_init(ObjectClass *klass, const void *data)
+ساكن فراغ riscv_harts_class_init(ObjectClass *klass, ثابت فراغ *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
 
@@ -180,14 +180,14 @@ static void riscv_harts_class_init(ObjectClass *klass, const void *data)
     dc->realize = riscv_harts_realize;
 }
 
-static const TypeInfo riscv_harts_info = {
+ساكن ثابت TypeInfo riscv_harts_info = {
     .name          = TYPE_RISCV_HART_ARRAY,
     .parent        = TYPE_SYS_BUS_DEVICE,
-    .instance_size = sizeof(RISCVHartArrayState),
+    .instance_size = حجم(RISCVHartArrayState),
     .class_init    = riscv_harts_class_init,
 };
 
-static void riscv_harts_register_types(void)
+ساكن فراغ riscv_harts_register_types(فراغ)
 {
     type_register_static(&riscv_harts_info);
 }
