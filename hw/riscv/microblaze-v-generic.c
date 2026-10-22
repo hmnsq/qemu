@@ -13,18 +13,18 @@
  *     and by Michal Simek <michal.simek@amd.com>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/units.h"
-#include "qapi/error.h"
-#include "target/riscv/cpu.h"
-#include "hw/core/sysbus.h"
-#include "system/system.h"
-#include "net/net.h"
-#include "hw/core/boards.h"
-#include "hw/char/serial-mm.h"
-#include "system/address-spaces.h"
-#include "hw/char/xilinx_uartlite.h"
-#include "hw/misc/unimp.h"
+#ضمن "qemu/osdep.h"
+#ضمن "qemu/units.h"
+#ضمن "qapi/error.h"
+#ضمن "target/riscv/cpu.h"
+#ضمن "hw/core/sysbus.h"
+#ضمن "system/system.h"
+#ضمن "net/net.h"
+#ضمن "hw/core/boards.h"
+#ضمن "hw/char/serial-mm.h"
+#ضمن "system/address-spaces.h"
+#ضمن "hw/char/xilinx_uartlite.h"
+#ضمن "hw/misc/unimp.h"
 
 #define LMB_BRAM_SIZE (128 * KiB)
 #define MEMORY_BASEADDR 0x80000000
@@ -51,12 +51,12 @@
 #define AXIDMA_IRQ1         8
 #define AXIDMA_IRQ0         9
 
-static void mb_v_generic_init(MachineState *machine)
+ساكن فراغ mb_v_generic_init(MachineState *machine)
 {
     ram_addr_t ram_size = machine->ram_size;
     DeviceState *dev, *dma, *eth0;
     Object *ds, *cs;
-    int i;
+    صحيح i;
     RISCVCPU *cpu;
     hwaddr ddr_base = MEMORY_BASEADDR;
     MemoryRegion *phys_lmb_bram = g_new(MemoryRegion, 1);
@@ -65,16 +65,16 @@ static void mb_v_generic_init(MachineState *machine)
     MemoryRegion *sysmem = get_system_memory();
 
     cpu = RISCV_CPU(object_new(machine->cpu_type));
-    object_property_set_bool(OBJECT(cpu), "h", false, NULL);
-    object_property_set_bool(OBJECT(cpu), "d", false, NULL);
-    qdev_realize(DEVICE(cpu), NULL, &error_abort);
+    object_property_set_bool(OBJECT(cpu), "h", false, عدم);
+    object_property_set_bool(OBJECT(cpu), "d", false, عدم);
+    qdev_realize(DEVICE(cpu), عدم, &error_abort);
     /* Attach emulated BRAM through the LMB.  */
-    memory_region_init_ram(phys_lmb_bram, NULL,
+    memory_region_init_ram(phys_lmb_bram, عدم,
                            "mb_v.lmb_bram", LMB_BRAM_SIZE,
                            &error_fatal);
     memory_region_add_subregion(sysmem, 0x00000000, phys_lmb_bram);
 
-    memory_region_init_ram(phys_ram, NULL, "mb_v.ram",
+    memory_region_init_ram(phys_ram, عدم, "mb_v.ram",
                            ram_size, &error_fatal);
     memory_region_add_subregion(sysmem, ddr_base, phys_ram);
 
@@ -86,7 +86,7 @@ static void mb_v_generic_init(MachineState *machine)
     sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, INTC_BASEADDR);
     sysbus_connect_irq(SYS_BUS_DEVICE(dev), 0,
                        qdev_get_gpio_in(DEVICE(cpu), 11));
-    for (i = 0; i < 32; i++) {
+    لكل (i = 0; i < 32; i++) {
         irq[i] = qdev_get_gpio_in(dev, i);
     }
 
@@ -124,7 +124,7 @@ static void mb_v_generic_init(MachineState *machine)
     /* Emaclite */
     dev = qdev_new("xlnx.xps-ethernetlite");
     qdev_prop_set_enum(dev, "endianness", ENDIAN_MODE_LITTLE);
-    qemu_configure_nic_device(dev, true, NULL);
+    qemu_configure_nic_device(dev, true, عدم);
     qdev_prop_set_uint32(dev, "tx-ping-pong", 0);
     qdev_prop_set_uint32(dev, "rx-ping-pong", 0);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
@@ -140,10 +140,10 @@ static void mb_v_generic_init(MachineState *machine)
     object_property_add_child(qdev_get_machine(), "xilinx-dma", OBJECT(dma));
 
     ds = object_property_get_link(OBJECT(dma),
-                                  "axistream-connected-target", NULL);
+                                  "axistream-connected-target", عدم);
     cs = object_property_get_link(OBJECT(dma),
-                                  "axistream-control-connected-target", NULL);
-    qemu_configure_nic_device(eth0, true, NULL);
+                                  "axistream-control-connected-target", عدم);
+    qemu_configure_nic_device(eth0, true, عدم);
     qdev_prop_set_uint32(eth0, "rxmem", 0x1000);
     qdev_prop_set_uint32(eth0, "txmem", 0x1000);
     object_property_set_link(OBJECT(eth0), "axistream-connected", ds,
@@ -155,9 +155,9 @@ static void mb_v_generic_init(MachineState *machine)
     sysbus_connect_irq(SYS_BUS_DEVICE(eth0), 0, irq[AXIENET_IRQ]);
 
     ds = object_property_get_link(OBJECT(eth0),
-                                  "axistream-connected-target", NULL);
+                                  "axistream-connected-target", عدم);
     cs = object_property_get_link(OBJECT(eth0),
-                                  "axistream-control-connected-target", NULL);
+                                  "axistream-control-connected-target", عدم);
     qdev_prop_set_uint32(dma, "freqhz", 100000000);
     object_property_set_link(OBJECT(dma), "axistream-connected", ds,
                              &error_abort);
@@ -176,7 +176,7 @@ static void mb_v_generic_init(MachineState *machine)
     create_unimplemented_device("qspi", QSPI_BASEADDR, 0x10000);
 }
 
-static void mb_v_generic_machine_init(MachineClass *mc)
+ساكن فراغ mb_v_generic_machine_init(MachineClass *mc)
 {
     mc->desc = "AMD Microblaze-V generic platform";
     mc->init = mb_v_generic_init;
