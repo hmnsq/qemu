@@ -34,36 +34,36 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/error-report.h"
-#include "qemu/units.h"
-#include "qemu/cutils.h"
-#include "qapi/error.h"
-#include "qapi/visitor.h"
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/core/sysbus.h"
-#include "chardev/char.h"
-#include "hw/cpu/cluster.h"
-#include "target/riscv/cpu.h"
-#include "hw/misc/unimp.h"
-#include "hw/riscv/boot.h"
-#include "hw/riscv/riscv_hart.h"
-#include "hw/riscv/microchip_pfsoc.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/sifive_plic.h"
-#include "system/device_tree.h"
-#include "system/system.h"
+#అన్తర్భావ "qemu/osdep.h"
+#అన్తర్భావ "qemu/error-report.h"
+#అన్తర్భావ "qemu/units.h"
+#అన్తర్భావ "qemu/cutils.h"
+#అన్తర్భావ "qapi/error.h"
+#అన్తర్భావ "qapi/visitor.h"
+#అన్తర్భావ "hw/core/boards.h"
+#అన్తర్భావ "hw/core/loader.h"
+#అన్తర్భావ "hw/core/sysbus.h"
+#అన్తర్భావ "chardev/char.h"
+#అన్తర్భావ "hw/cpu/cluster.h"
+#అన్తర్భావ "target/riscv/cpu.h"
+#అన్తర్భావ "hw/misc/unimp.h"
+#అన్తర్భావ "hw/riscv/boot.h"
+#అన్తర్భావ "hw/riscv/riscv_hart.h"
+#అన్తర్భావ "hw/riscv/microchip_pfsoc.h"
+#అన్తర్భావ "hw/intc/riscv_aclint.h"
+#అన్తర్భావ "hw/intc/sifive_plic.h"
+#అన్తర్భావ "system/device_tree.h"
+#అన్తర్భావ "system/system.h"
 
 /*
  * The BIOS image used by this machine is called Hart Software Services (HSS).
  * See https://github.com/polarfire-soc/hart-software-services
  */
-#define BIOS_FILENAME   "hss.bin"
-#define RESET_VECTOR    0x20220000
+#నిర్వచించు BIOS_FILENAME   "hss.bin"
+#నిర్వచించు RESET_సదిశ    0x20220000
 
 /* GEM version */
-#define GEM_REVISION    0x0107010c
+#నిర్వచించు GEM_REVISION    0x0107010c
 
 /*
  * The complete description of the whole PolarFire SoC memory map is scattered
@@ -83,7 +83,7 @@
  *   - Register Map/PF_SoC_RegMap_V1_1/MPFS250T/mpfs250t_ioscb_memmap_dri.htm
  *     describes the complete IOSCB modules memory maps
  */
-static const MemMapEntry microchip_pfsoc_memmap[] = {
+స్థిర స్థిరరాశి Mem_Map_నమోదు microchip_pfsoc_memmap[] = {
     [MICROCHIP_PFSOC_RSVD0] =           {        0x0,        0x100 },
     [MICROCHIP_PFSOC_DEBUG] =           {      0x100,        0xf00 },
     [MICROCHIP_PFSOC_E51_DTIM] =        {  0x1000000,       0x2000 },
@@ -127,7 +127,7 @@ static const MemMapEntry microchip_pfsoc_memmap[] = {
     [MICROCHIP_PFSOC_GPIO2] =           { 0x20122000,       0x1000 },
     [MICROCHIP_PFSOC_RTC] =             { 0x20124000,       0x1000 },
     [MICROCHIP_PFSOC_ENVM_CFG] =        { 0x20200000,       0x1000 },
-    [MICROCHIP_PFSOC_ENVM_DATA] =       { 0x20220000,      0x20000 },
+    [MICROCHIP_PFSOC_ENVM_దత్తాంశం] =       { 0x20220000,      0x20000 },
     [MICROCHIP_PFSOC_USB] =             { 0x20201000,       0x1000 },
     [MICROCHIP_PFSOC_QSPI_XIP] =        { 0x21000000,    0x1000000 },
     [MICROCHIP_PFSOC_IOSCB] =           { 0x30000000,   0x10000000 },
@@ -141,72 +141,72 @@ static const MemMapEntry microchip_pfsoc_memmap[] = {
 
 };
 
-static void microchip_pfsoc_soc_instance_init(Object *obj)
+స్థిర శూన్య microchip_pfsoc_soc_instance_init(Object *obj)
 {
     MicrochipPFSoCState *s = MICROCHIP_PFSOC(obj);
 
-    object_initialize_child(obj, "e-cluster", &s->e_cluster, TYPE_CPU_CLUSTER);
-    qdev_prop_set_uint32(DEVICE(&s->e_cluster), "cluster-id", 0);
+    object_initialize_బిడ్డ(obj, "e-cluster", &s->e_cluster, TYPE_CPU_CLUSTER);
+    qdev_prop_సమితి_uint32(DEVICE(&s->e_cluster), "cluster-id", 0);
 
-    object_initialize_child(OBJECT(&s->e_cluster), "e-cpus", &s->e_cpus,
+    object_initialize_బిడ్డ(OBJECT(&s->e_cluster), "e-cpus", &s->e_cpus,
                             TYPE_RISCV_HART_ARRAY);
-    qdev_prop_set_uint32(DEVICE(&s->e_cpus), "num-harts", 1);
-    qdev_prop_set_uint32(DEVICE(&s->e_cpus), "hartid-base", 0);
-    qdev_prop_set_string(DEVICE(&s->e_cpus), "cpu-type",
+    qdev_prop_సమితి_uint32(DEVICE(&s->e_cpus), "num-harts", 1);
+    qdev_prop_సమితి_uint32(DEVICE(&s->e_cpus), "hartid-base", 0);
+    qdev_prop_సమితి_string(DEVICE(&s->e_cpus), "cpu-type",
                          TYPE_RISCV_CPU_SIFIVE_E51);
-    qdev_prop_set_uint64(DEVICE(&s->e_cpus), "resetvec", RESET_VECTOR);
+    qdev_prop_సమితి_uint64(DEVICE(&s->e_cpus), "resetvec", RESET_సదిశ);
 
-    object_initialize_child(obj, "u-cluster", &s->u_cluster, TYPE_CPU_CLUSTER);
-    qdev_prop_set_uint32(DEVICE(&s->u_cluster), "cluster-id", 1);
+    object_initialize_బిడ్డ(obj, "u-cluster", &s->u_cluster, TYPE_CPU_CLUSTER);
+    qdev_prop_సమితి_uint32(DEVICE(&s->u_cluster), "cluster-id", 1);
 
-    object_initialize_child(OBJECT(&s->u_cluster), "u-cpus", &s->u_cpus,
+    object_initialize_బిడ్డ(OBJECT(&s->u_cluster), "u-cpus", &s->u_cpus,
                             TYPE_RISCV_HART_ARRAY);
     /*
      * Set the `num-harts` property later as the machine is potentially not
      * created yet.
      */
-    qdev_prop_set_uint32(DEVICE(&s->u_cpus), "hartid-base", 1);
-    qdev_prop_set_string(DEVICE(&s->u_cpus), "cpu-type",
+    qdev_prop_సమితి_uint32(DEVICE(&s->u_cpus), "hartid-base", 1);
+    qdev_prop_సమితి_string(DEVICE(&s->u_cpus), "cpu-type",
                          TYPE_RISCV_CPU_SIFIVE_U54);
-    qdev_prop_set_uint64(DEVICE(&s->u_cpus), "resetvec", RESET_VECTOR);
+    qdev_prop_సమితి_uint64(DEVICE(&s->u_cpus), "resetvec", RESET_సదిశ);
 
-    object_initialize_child(obj, "dma-controller", &s->dma,
+    object_initialize_బిడ్డ(obj, "dma-controller", &s->dma,
                             TYPE_SIFIVE_PDMA);
 
-    object_initialize_child(obj, "sysreg", &s->sysreg,
+    object_initialize_బిడ్డ(obj, "sysreg", &s->sysreg,
                             TYPE_MCHP_PFSOC_SYSREG);
 
-    object_initialize_child(obj, "ddr-sgmii-phy", &s->ddr_sgmii_phy,
+    object_initialize_బిడ్డ(obj, "ddr-sgmii-phy", &s->ddr_sgmii_phy,
                             TYPE_MCHP_PFSOC_DDR_SGMII_PHY);
-    object_initialize_child(obj, "ddr-cfg", &s->ddr_cfg,
+    object_initialize_బిడ్డ(obj, "ddr-cfg", &s->ddr_cfg,
                             TYPE_MCHP_PFSOC_DDR_CFG);
 
-    object_initialize_child(obj, "gem0", &s->gem0, TYPE_CADENCE_GEM);
-    object_initialize_child(obj, "gem1", &s->gem1, TYPE_CADENCE_GEM);
+    object_initialize_బిడ్డ(obj, "gem0", &s->gem0, TYPE_CADENCE_GEM);
+    object_initialize_బిడ్డ(obj, "gem1", &s->gem1, TYPE_CADENCE_GEM);
 
-    object_initialize_child(obj, "sd-controller", &s->sdhci,
+    object_initialize_బిడ్డ(obj, "sd-controller", &s->sdhci,
                             TYPE_CADENCE_SDHCI);
 
-    object_initialize_child(obj, "ioscb", &s->ioscb, TYPE_MCHP_PFSOC_IOSCB);
+    object_initialize_బిడ్డ(obj, "ioscb", &s->ioscb, TYPE_MCHP_PFSOC_IOSCB);
 }
 
-static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
+స్థిర శూన్య microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
 {
     MachineState *ms = MACHINE(qdev_get_machine());
     MicrochipIcicleKitState *iks = MICROCHIP_ICICLE_KIT_MACHINE(ms);
     MicrochipPFSoCState *s = MICROCHIP_PFSOC(dev);
-    const MemMapEntry *memmap = microchip_pfsoc_memmap;
-    MemoryRegion *system_memory = get_system_memory();
-    MemoryRegion *rsvd0_mem = g_new(MemoryRegion, 1);
-    MemoryRegion *e51_dtim_mem = g_new(MemoryRegion, 1);
-    MemoryRegion *l2lim_mem = g_new(MemoryRegion, 1);
-    MemoryRegion *envm_data = g_new(MemoryRegion, 1);
-    MemoryRegion *qspi_xip_mem = g_new(MemoryRegion, 1);
-    char *plic_hart_config;
-    int i;
+    స్థిరరాశి Mem_Map_నమోదు *memmap = microchip_pfsoc_memmap;
+    జ్ఞాపకం_Region *system_జ్ఞాపకం = get_system_జ్ఞాపకం();
+    జ్ఞాపకం_Region *rsvd0_mem = g_new(జ్ఞాపకం_Region, 1);
+    జ్ఞాపకం_Region *e51_dtim_mem = g_new(జ్ఞాపకం_Region, 1);
+    జ్ఞాపకం_Region *l2lim_mem = g_new(జ్ఞాపకం_Region, 1);
+    జ్ఞాపకం_Region *envm_దత్తాంశం = g_new(జ్ఞాపకం_Region, 1);
+    జ్ఞాపకం_Region *qspi_xip_mem = g_new(జ్ఞాపకం_Region, 1);
+    అక్షరం *plic_hart_config;
+    పూర్ణాంకం i;
 
     sysbus_realize(SYS_BUS_DEVICE(&s->e_cpus), &error_abort);
-    qdev_prop_set_uint32(DEVICE(&s->u_cpus), "num-harts", ms->smp.cpus - 1);
+    qdev_prop_సమితి_uint32(DEVICE(&s->u_cpus), "num-harts", ms->smp.cpus - 1);
     sysbus_realize(SYS_BUS_DEVICE(&s->u_cpus), &error_abort);
     /*
      * The cluster must be realized after the RISC-V hart array container,
@@ -214,53 +214,53 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
      * CPU must exist and have been parented into the cluster before the
      * cluster is realized.
      */
-    qdev_realize(DEVICE(&s->e_cluster), NULL, &error_abort);
-    qdev_realize(DEVICE(&s->u_cluster), NULL, &error_abort);
+    qdev_realize(DEVICE(&s->e_cluster), ఖాళీ, &error_abort);
+    qdev_realize(DEVICE(&s->u_cluster), ఖాళీ, &error_abort);
 
     /* Reserved Memory at address 0 */
-    memory_region_init_ram(rsvd0_mem, NULL, "microchip.pfsoc.rsvd0_mem",
-                           memmap[MICROCHIP_PFSOC_RSVD0].size, &error_fatal);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_RSVD0].base,
+    జ్ఞాపకం_region_init_ram(rsvd0_mem, ఖాళీ, "microchip.pfsoc.rsvd0_mem",
+                           memmap[MICROCHIP_PFSOC_RSVD0].కొలత, &error_fatal);
+    జ్ఞాపకం_region_కూడు_subregion(system_జ్ఞాపకం,
+                                memmap[MICROCHIP_PFSOC_RSVD0].పునాది,
                                 rsvd0_mem);
 
     /* E51 DTIM */
-    memory_region_init_ram(e51_dtim_mem, NULL, "microchip.pfsoc.e51_dtim_mem",
-                           memmap[MICROCHIP_PFSOC_E51_DTIM].size, &error_fatal);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_E51_DTIM].base,
+    జ్ఞాపకం_region_init_ram(e51_dtim_mem, ఖాళీ, "microchip.pfsoc.e51_dtim_mem",
+                           memmap[MICROCHIP_PFSOC_E51_DTIM].కొలత, &error_fatal);
+    జ్ఞాపకం_region_కూడు_subregion(system_జ్ఞాపకం,
+                                memmap[MICROCHIP_PFSOC_E51_DTIM].పునాది,
                                 e51_dtim_mem);
 
     /* Bus Error Units */
     create_unimplemented_device("microchip.pfsoc.buserr_unit0_mem",
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT0].base,
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT0].size);
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT0].పునాది,
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT0].కొలత);
     create_unimplemented_device("microchip.pfsoc.buserr_unit1_mem",
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT1].base,
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT1].size);
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT1].పునాది,
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT1].కొలత);
     create_unimplemented_device("microchip.pfsoc.buserr_unit2_mem",
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT2].base,
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT2].size);
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT2].పునాది,
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT2].కొలత);
     create_unimplemented_device("microchip.pfsoc.buserr_unit3_mem",
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT3].base,
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT3].size);
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT3].పునాది,
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT3].కొలత);
     create_unimplemented_device("microchip.pfsoc.buserr_unit4_mem",
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT4].base,
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT4].size);
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT4].పునాది,
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT4].కొలత);
 
     /* CLINT */
-    riscv_aclint_swi_create(system_memory,
-        memmap[MICROCHIP_PFSOC_CLINT].base,
+    riscv_aclint_swi_create(system_జ్ఞాపకం,
+        memmap[MICROCHIP_PFSOC_CLINT].పునాది,
         0, ms->smp.cpus, false);
-    riscv_aclint_mtimer_create(system_memory,
-        memmap[MICROCHIP_PFSOC_CLINT].base + RISCV_ACLINT_SWI_SIZE,
-        RISCV_ACLINT_DEFAULT_MTIMER_SIZE, 0, ms->smp.cpus,
+    riscv_aclint_mtimer_create(system_జ్ఞాపకం,
+        memmap[MICROCHIP_PFSOC_CLINT].పునాది + RISCV_ACLINT_SWI_కొలత,
+        RISCV_ACLINT_DEFAULT_MTIMER_కొలత, 0, ms->smp.cpus,
         RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
         iks->clint_timebase_freq, false);
 
     /* L2 cache controller */
     create_unimplemented_device("microchip.pfsoc.l2cc",
-        memmap[MICROCHIP_PFSOC_L2CC].base, memmap[MICROCHIP_PFSOC_L2CC].size);
+        memmap[MICROCHIP_PFSOC_L2CC].పునాది, memmap[MICROCHIP_PFSOC_L2CC].కొలత);
 
     /*
      * Add L2-LIM at reset size.
@@ -271,225 +271,225 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
      * leave it enabled all the time. This won't break anything, but will be
      * too generous to misbehaving guests.
      */
-    memory_region_init_ram(l2lim_mem, NULL, "microchip.pfsoc.l2lim",
-                           memmap[MICROCHIP_PFSOC_L2LIM].size, &error_fatal);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_L2LIM].base,
+    జ్ఞాపకం_region_init_ram(l2lim_mem, ఖాళీ, "microchip.pfsoc.l2lim",
+                           memmap[MICROCHIP_PFSOC_L2LIM].కొలత, &error_fatal);
+    జ్ఞాపకం_region_కూడు_subregion(system_జ్ఞాపకం,
+                                memmap[MICROCHIP_PFSOC_L2LIM].పునాది,
                                 l2lim_mem);
 
     /* create PLIC hart topology configuration string */
     plic_hart_config = riscv_plic_hart_config_string(ms->smp.cpus);
 
     /* PLIC */
-    s->plic = sifive_plic_create(system_memory,
-        memmap[MICROCHIP_PFSOC_PLIC].base,
+    s->plic = sifive_plic_create(system_జ్ఞాపకం,
+        memmap[MICROCHIP_PFSOC_PLIC].పునాది,
         plic_hart_config, ms->smp.cpus, 0,
-        MICROCHIP_PFSOC_PLIC_NUM_SOURCES,
-        MICROCHIP_PFSOC_PLIC_NUM_PRIORITIES,
-        MICROCHIP_PFSOC_PLIC_PRIORITY_BASE,
-        MICROCHIP_PFSOC_PLIC_PENDING_BASE,
-        MICROCHIP_PFSOC_PLIC_ENABLE_BASE,
+        MICROCHIP_PFSOC_PLIC_అంకె_SOURCES,
+        MICROCHIP_PFSOC_PLIC_అంకె_PRIORITIES,
+        MICROCHIP_PFSOC_PLIC_ప్రాధాన్యత_పునాది,
+        MICROCHIP_PFSOC_PLIC_PENDING_పునాది,
+        MICROCHIP_PFSOC_PLIC_ENABLE_పునాది,
         MICROCHIP_PFSOC_PLIC_ENABLE_STRIDE,
-        MICROCHIP_PFSOC_PLIC_CONTEXT_BASE,
+        MICROCHIP_PFSOC_PLIC_CONTEXT_పునాది,
         MICROCHIP_PFSOC_PLIC_CONTEXT_STRIDE,
-        memmap[MICROCHIP_PFSOC_PLIC].size);
+        memmap[MICROCHIP_PFSOC_PLIC].కొలత);
     g_free(plic_hart_config);
 
     /* DMA */
     sysbus_realize(SYS_BUS_DEVICE(&s->dma), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->dma), 0,
-                    memmap[MICROCHIP_PFSOC_DMA].base);
-    for (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
+                    memmap[MICROCHIP_PFSOC_DMA].పునాది);
+    కొరకు (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
         sysbus_connect_irq(SYS_BUS_DEVICE(&s->dma), i,
-                           qdev_get_gpio_in(DEVICE(s->plic),
+                           qdev_get_gpio_లోపల(DEVICE(s->plic),
                                             MICROCHIP_PFSOC_DMA_IRQ0 + i));
     }
 
     /* SYSREG */
     sysbus_realize(SYS_BUS_DEVICE(&s->sysreg), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->sysreg), 0,
-                    memmap[MICROCHIP_PFSOC_SYSREG].base);
+                    memmap[MICROCHIP_PFSOC_SYSREG].పునాది);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->sysreg), 0,
-                       qdev_get_gpio_in(DEVICE(s->plic),
+                       qdev_get_gpio_లోపల(DEVICE(s->plic),
                        MICROCHIP_PFSOC_MAILBOX_IRQ));
 
     /* AXISW */
     create_unimplemented_device("microchip.pfsoc.axisw",
-        memmap[MICROCHIP_PFSOC_AXISW].base,
-        memmap[MICROCHIP_PFSOC_AXISW].size);
+        memmap[MICROCHIP_PFSOC_AXISW].పునాది,
+        memmap[MICROCHIP_PFSOC_AXISW].కొలత);
 
     /* MPUCFG */
     create_unimplemented_device("microchip.pfsoc.mpucfg",
-        memmap[MICROCHIP_PFSOC_MPUCFG].base,
-        memmap[MICROCHIP_PFSOC_MPUCFG].size);
+        memmap[MICROCHIP_PFSOC_MPUCFG].పునాది,
+        memmap[MICROCHIP_PFSOC_MPUCFG].కొలత);
 
     /* FMETER */
     create_unimplemented_device("microchip.pfsoc.fmeter",
-        memmap[MICROCHIP_PFSOC_FMETER].base,
-        memmap[MICROCHIP_PFSOC_FMETER].size);
+        memmap[MICROCHIP_PFSOC_FMETER].పునాది,
+        memmap[MICROCHIP_PFSOC_FMETER].కొలత);
 
     /* DDR SGMII PHY */
     sysbus_realize(SYS_BUS_DEVICE(&s->ddr_sgmii_phy), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ddr_sgmii_phy), 0,
-                    memmap[MICROCHIP_PFSOC_DDR_SGMII_PHY].base);
+                    memmap[MICROCHIP_PFSOC_DDR_SGMII_PHY].పునాది);
 
     /* DDR CFG */
     sysbus_realize(SYS_BUS_DEVICE(&s->ddr_cfg), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ddr_cfg), 0,
-                    memmap[MICROCHIP_PFSOC_DDR_CFG].base);
+                    memmap[MICROCHIP_PFSOC_DDR_CFG].పునాది);
 
     /* SDHCI */
     sysbus_realize(SYS_BUS_DEVICE(&s->sdhci), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->sdhci), 0,
-                    memmap[MICROCHIP_PFSOC_EMMC_SD].base);
+                    memmap[MICROCHIP_PFSOC_EMMC_SD].పునాది);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->sdhci), 0,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_EMMC_SD_IRQ));
+        qdev_get_gpio_లోపల(DEVICE(s->plic), MICROCHIP_PFSOC_EMMC_SD_IRQ));
 
     /* MMUARTs */
-    s->serial0 = mchp_pfsoc_mmuart_create(system_memory,
-        memmap[MICROCHIP_PFSOC_MMUART0].base,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART0_IRQ),
+    s->serial0 = mchp_pfsoc_mmuart_create(system_జ్ఞాపకం,
+        memmap[MICROCHIP_PFSOC_MMUART0].పునాది,
+        qdev_get_gpio_లోపల(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART0_IRQ),
         serial_hd(0));
-    s->serial1 = mchp_pfsoc_mmuart_create(system_memory,
-        memmap[MICROCHIP_PFSOC_MMUART1].base,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART1_IRQ),
+    s->serial1 = mchp_pfsoc_mmuart_create(system_జ్ఞాపకం,
+        memmap[MICROCHIP_PFSOC_MMUART1].పునాది,
+        qdev_get_gpio_లోపల(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART1_IRQ),
         serial_hd(1));
-    s->serial2 = mchp_pfsoc_mmuart_create(system_memory,
-        memmap[MICROCHIP_PFSOC_MMUART2].base,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART2_IRQ),
+    s->serial2 = mchp_pfsoc_mmuart_create(system_జ్ఞాపకం,
+        memmap[MICROCHIP_PFSOC_MMUART2].పునాది,
+        qdev_get_gpio_లోపల(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART2_IRQ),
         serial_hd(2));
-    s->serial3 = mchp_pfsoc_mmuart_create(system_memory,
-        memmap[MICROCHIP_PFSOC_MMUART3].base,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART3_IRQ),
+    s->serial3 = mchp_pfsoc_mmuart_create(system_జ్ఞాపకం,
+        memmap[MICROCHIP_PFSOC_MMUART3].పునాది,
+        qdev_get_gpio_లోపల(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART3_IRQ),
         serial_hd(3));
-    s->serial4 = mchp_pfsoc_mmuart_create(system_memory,
-        memmap[MICROCHIP_PFSOC_MMUART4].base,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART4_IRQ),
+    s->serial4 = mchp_pfsoc_mmuart_create(system_జ్ఞాపకం,
+        memmap[MICROCHIP_PFSOC_MMUART4].పునాది,
+        qdev_get_gpio_లోపల(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART4_IRQ),
         serial_hd(4));
 
     /* Watchdogs */
     create_unimplemented_device("microchip.pfsoc.watchdog0",
-        memmap[MICROCHIP_PFSOC_WDOG0].base,
-        memmap[MICROCHIP_PFSOC_WDOG0].size);
+        memmap[MICROCHIP_PFSOC_WDOG0].పునాది,
+        memmap[MICROCHIP_PFSOC_WDOG0].కొలత);
     create_unimplemented_device("microchip.pfsoc.watchdog1",
-        memmap[MICROCHIP_PFSOC_WDOG1].base,
-        memmap[MICROCHIP_PFSOC_WDOG1].size);
+        memmap[MICROCHIP_PFSOC_WDOG1].పునాది,
+        memmap[MICROCHIP_PFSOC_WDOG1].కొలత);
     create_unimplemented_device("microchip.pfsoc.watchdog2",
-        memmap[MICROCHIP_PFSOC_WDOG2].base,
-        memmap[MICROCHIP_PFSOC_WDOG2].size);
+        memmap[MICROCHIP_PFSOC_WDOG2].పునాది,
+        memmap[MICROCHIP_PFSOC_WDOG2].కొలత);
     create_unimplemented_device("microchip.pfsoc.watchdog3",
-        memmap[MICROCHIP_PFSOC_WDOG3].base,
-        memmap[MICROCHIP_PFSOC_WDOG3].size);
+        memmap[MICROCHIP_PFSOC_WDOG3].పునాది,
+        memmap[MICROCHIP_PFSOC_WDOG3].కొలత);
     create_unimplemented_device("microchip.pfsoc.watchdog4",
-        memmap[MICROCHIP_PFSOC_WDOG4].base,
-        memmap[MICROCHIP_PFSOC_WDOG4].size);
+        memmap[MICROCHIP_PFSOC_WDOG4].పునాది,
+        memmap[MICROCHIP_PFSOC_WDOG4].కొలత);
 
     /* SPI */
     create_unimplemented_device("microchip.pfsoc.spi0",
-        memmap[MICROCHIP_PFSOC_SPI0].base,
-        memmap[MICROCHIP_PFSOC_SPI0].size);
+        memmap[MICROCHIP_PFSOC_SPI0].పునాది,
+        memmap[MICROCHIP_PFSOC_SPI0].కొలత);
     create_unimplemented_device("microchip.pfsoc.spi1",
-        memmap[MICROCHIP_PFSOC_SPI1].base,
-        memmap[MICROCHIP_PFSOC_SPI1].size);
+        memmap[MICROCHIP_PFSOC_SPI1].పునాది,
+        memmap[MICROCHIP_PFSOC_SPI1].కొలత);
 
     /* I2C */
     create_unimplemented_device("microchip.pfsoc.i2c0",
-        memmap[MICROCHIP_PFSOC_I2C0].base,
-        memmap[MICROCHIP_PFSOC_I2C0].size);
+        memmap[MICROCHIP_PFSOC_I2C0].పునాది,
+        memmap[MICROCHIP_PFSOC_I2C0].కొలత);
     create_unimplemented_device("microchip.pfsoc.i2c1",
-        memmap[MICROCHIP_PFSOC_I2C1].base,
-        memmap[MICROCHIP_PFSOC_I2C1].size);
+        memmap[MICROCHIP_PFSOC_I2C1].పునాది,
+        memmap[MICROCHIP_PFSOC_I2C1].కొలత);
 
     /* CAN */
     create_unimplemented_device("microchip.pfsoc.can0",
-        memmap[MICROCHIP_PFSOC_CAN0].base,
-        memmap[MICROCHIP_PFSOC_CAN0].size);
+        memmap[MICROCHIP_PFSOC_CAN0].పునాది,
+        memmap[MICROCHIP_PFSOC_CAN0].కొలత);
     create_unimplemented_device("microchip.pfsoc.can1",
-        memmap[MICROCHIP_PFSOC_CAN1].base,
-        memmap[MICROCHIP_PFSOC_CAN1].size);
+        memmap[MICROCHIP_PFSOC_CAN1].పునాది,
+        memmap[MICROCHIP_PFSOC_CAN1].కొలత);
 
     /* USB */
     create_unimplemented_device("microchip.pfsoc.usb",
-        memmap[MICROCHIP_PFSOC_USB].base,
-        memmap[MICROCHIP_PFSOC_USB].size);
+        memmap[MICROCHIP_PFSOC_USB].పునాది,
+        memmap[MICROCHIP_PFSOC_USB].కొలత);
 
     /* GEMs */
-    qemu_configure_nic_device(DEVICE(&s->gem0), true, NULL);
-    qemu_configure_nic_device(DEVICE(&s->gem1), true, NULL);
+    qemu_configure_nic_device(DEVICE(&s->gem0), true, ఖాళీ);
+    qemu_configure_nic_device(DEVICE(&s->gem1), true, ఖాళీ);
 
-    object_property_set_int(OBJECT(&s->gem0), "revision", GEM_REVISION, errp);
-    object_property_set_int(OBJECT(&s->gem0), "phy-addr", 8, errp);
-    object_property_set_bool(OBJECT(&s->gem0), "phy-connected", false, errp);
-    object_property_set_bool(OBJECT(&s->gem0), "pcs-enabled", true, errp);
+    object_property_సమితి_int(OBJECT(&s->gem0), "revision", GEM_REVISION, errp);
+    object_property_సమితి_int(OBJECT(&s->gem0), "phy-addr", 8, errp);
+    object_property_సమితి_bool(OBJECT(&s->gem0), "phy-connected", false, errp);
+    object_property_సమితి_bool(OBJECT(&s->gem0), "pcs-enabled", true, errp);
 
     sysbus_realize(SYS_BUS_DEVICE(&s->gem0), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->gem0), 0,
-                    memmap[MICROCHIP_PFSOC_GEM0].base);
+                    memmap[MICROCHIP_PFSOC_GEM0].పునాది);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->gem0), 0,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_GEM0_IRQ));
+        qdev_get_gpio_లోపల(DEVICE(s->plic), MICROCHIP_PFSOC_GEM0_IRQ));
 
-    object_property_set_int(OBJECT(&s->gem1), "revision", GEM_REVISION, errp);
-    object_property_set_int(OBJECT(&s->gem1), "phy-addr", 9, errp);
-    object_property_set_link(OBJECT(&s->gem1), "phy-consumer",
+    object_property_సమితి_int(OBJECT(&s->gem1), "revision", GEM_REVISION, errp);
+    object_property_సమితి_int(OBJECT(&s->gem1), "phy-addr", 9, errp);
+    object_property_సమితి_link(OBJECT(&s->gem1), "phy-consumer",
                              OBJECT(&s->gem0), errp);
-    object_property_set_bool(OBJECT(&s->gem1), "pcs-enabled", true, errp);
+    object_property_సమితి_bool(OBJECT(&s->gem1), "pcs-enabled", true, errp);
     sysbus_realize(SYS_BUS_DEVICE(&s->gem1), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->gem1), 0,
-                    memmap[MICROCHIP_PFSOC_GEM1].base);
+                    memmap[MICROCHIP_PFSOC_GEM1].పునాది);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->gem1), 0,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_GEM1_IRQ));
+        qdev_get_gpio_లోపల(DEVICE(s->plic), MICROCHIP_PFSOC_GEM1_IRQ));
 
     /* GPIOs */
     create_unimplemented_device("microchip.pfsoc.gpio0",
-        memmap[MICROCHIP_PFSOC_GPIO0].base,
-        memmap[MICROCHIP_PFSOC_GPIO0].size);
+        memmap[MICROCHIP_PFSOC_GPIO0].పునాది,
+        memmap[MICROCHIP_PFSOC_GPIO0].కొలత);
     create_unimplemented_device("microchip.pfsoc.gpio1",
-        memmap[MICROCHIP_PFSOC_GPIO1].base,
-        memmap[MICROCHIP_PFSOC_GPIO1].size);
+        memmap[MICROCHIP_PFSOC_GPIO1].పునాది,
+        memmap[MICROCHIP_PFSOC_GPIO1].కొలత);
     create_unimplemented_device("microchip.pfsoc.gpio2",
-        memmap[MICROCHIP_PFSOC_GPIO2].base,
-        memmap[MICROCHIP_PFSOC_GPIO2].size);
+        memmap[MICROCHIP_PFSOC_GPIO2].పునాది,
+        memmap[MICROCHIP_PFSOC_GPIO2].కొలత);
 
     /* eNVM */
-    memory_region_init_rom(envm_data, OBJECT(dev), "microchip.pfsoc.envm.data",
-                           memmap[MICROCHIP_PFSOC_ENVM_DATA].size,
+    జ్ఞాపకం_region_init_rom(envm_దత్తాంశం, OBJECT(dev), "microchip.pfsoc.envm.data",
+                           memmap[MICROCHIP_PFSOC_ENVM_దత్తాంశం].కొలత,
                            &error_fatal);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_ENVM_DATA].base,
-                                envm_data);
+    జ్ఞాపకం_region_కూడు_subregion(system_జ్ఞాపకం,
+                                memmap[MICROCHIP_PFSOC_ENVM_దత్తాంశం].పునాది,
+                                envm_దత్తాంశం);
 
     /* IOSCB */
     sysbus_realize(SYS_BUS_DEVICE(&s->ioscb), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ioscb), 0,
-                    memmap[MICROCHIP_PFSOC_IOSCB].base);
+                    memmap[MICROCHIP_PFSOC_IOSCB].పునాది);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->ioscb), 0,
-                       qdev_get_gpio_in(DEVICE(s->plic),
+                       qdev_get_gpio_లోపల(DEVICE(s->plic),
                        MICROCHIP_PFSOC_MAILBOX_IRQ));
 
     /* FPGA Fabric */
     create_unimplemented_device("microchip.pfsoc.fabricfic3",
-        memmap[MICROCHIP_PFSOC_FABRIC_FIC3].base,
-        memmap[MICROCHIP_PFSOC_FABRIC_FIC3].size);
+        memmap[MICROCHIP_PFSOC_FABRIC_FIC3].పునాది,
+        memmap[MICROCHIP_PFSOC_FABRIC_FIC3].కొలత);
     /* FPGA Fabric */
     create_unimplemented_device("microchip.pfsoc.fabricfic0",
-        memmap[MICROCHIP_PFSOC_FABRIC_FIC0].base,
-        memmap[MICROCHIP_PFSOC_FABRIC_FIC0].size);
+        memmap[MICROCHIP_PFSOC_FABRIC_FIC0].పునాది,
+        memmap[MICROCHIP_PFSOC_FABRIC_FIC0].కొలత);
     /* FPGA Fabric */
     create_unimplemented_device("microchip.pfsoc.fabricfic1",
-        memmap[MICROCHIP_PFSOC_FABRIC_FIC1].base,
-        memmap[MICROCHIP_PFSOC_FABRIC_FIC1].size);
+        memmap[MICROCHIP_PFSOC_FABRIC_FIC1].పునాది,
+        memmap[MICROCHIP_PFSOC_FABRIC_FIC1].కొలత);
 
     /* QSPI Flash */
-    memory_region_init_rom(qspi_xip_mem, OBJECT(dev),
+    జ్ఞాపకం_region_init_rom(qspi_xip_mem, OBJECT(dev),
                            "microchip.pfsoc.qspi_xip",
-                           memmap[MICROCHIP_PFSOC_QSPI_XIP].size,
+                           memmap[MICROCHIP_PFSOC_QSPI_XIP].కొలత,
                            &error_fatal);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_QSPI_XIP].base,
+    జ్ఞాపకం_region_కూడు_subregion(system_జ్ఞాపకం,
+                                memmap[MICROCHIP_PFSOC_QSPI_XIP].పునాది,
                                 qspi_xip_mem);
 }
 
-static void microchip_pfsoc_soc_class_init(ObjectClass *oc, const void *data)
+స్థిర శూన్య microchip_pfsoc_soc_class_init(ObjectClass *oc, స్థిరరాశి శూన్య *దత్తాంశం)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
@@ -498,92 +498,92 @@ static void microchip_pfsoc_soc_class_init(ObjectClass *oc, const void *data)
     dc->user_creatable = false;
 }
 
-static const TypeInfo microchip_pfsoc_soc_type_info = {
+స్థిర స్థిరరాశి TypeInfo microchip_pfsoc_soc_type_info = {
     .name = TYPE_MICROCHIP_PFSOC,
-    .parent = TYPE_DEVICE,
-    .instance_size = sizeof(MicrochipPFSoCState),
+    .మాతృ = TYPE_DEVICE,
+    .instance_కొలత = పరిమాణం(MicrochipPFSoCState),
     .instance_init = microchip_pfsoc_soc_instance_init,
     .class_init = microchip_pfsoc_soc_class_init,
 };
 
-static void microchip_pfsoc_soc_register_types(void)
+స్థిర శూన్య microchip_pfsoc_soc_రిజిస్టరు_types(శూన్య)
 {
-    type_register_static(&microchip_pfsoc_soc_type_info);
+    type_రిజిస్టరు_static(&microchip_pfsoc_soc_type_info);
 }
 
-type_init(microchip_pfsoc_soc_register_types)
+type_init(microchip_pfsoc_soc_రిజిస్టరు_types)
 
-static void microchip_icicle_kit_machine_init(MachineState *machine)
+స్థిర శూన్య microchip_icicle_kit_machine_init(MachineState *machine)
 {
     MachineClass *mc = MACHINE_GET_CLASS(machine);
-    const MemMapEntry *memmap = microchip_pfsoc_memmap;
+    స్థిరరాశి Mem_Map_నమోదు *memmap = microchip_pfsoc_memmap;
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(machine);
-    MemoryRegion *system_memory = get_system_memory();
-    MemoryRegion *mem_low = g_new(MemoryRegion, 1);
-    MemoryRegion *mem_low_alias = g_new(MemoryRegion, 1);
-    MemoryRegion *mem_high = g_new(MemoryRegion, 1);
-    MemoryRegion *mem_high_alias = g_new(MemoryRegion, 1);
-    uint64_t mem_low_size, mem_high_size;
-    hwaddr firmware_load_addr;
-    const char *firmware_name;
-    hwaddr firmware_end_addr;
-    vaddr kernel_start_addr;
-    uint64_t kernel_entry;
-    uint64_t fdt_load_addr;
+    జ్ఞాపకం_Region *system_జ్ఞాపకం = get_system_జ్ఞాపకం();
+    జ్ఞాపకం_Region *mem_దిగువ = g_new(జ్ఞాపకం_Region, 1);
+    జ్ఞాపకం_Region *mem_దిగువ_alias = g_new(జ్ఞాపకం_Region, 1);
+    జ్ఞాపకం_Region *mem_ఎగువ = g_new(జ్ఞాపకం_Region, 1);
+    జ్ఞాపకం_Region *mem_ఎగువ_alias = g_new(జ్ఞాపకం_Region, 1);
+    uint64_t mem_దిగువ_కొలత, mem_ఎగువ_కొలత;
+    hwaddr firmware_ఎక్కించు_addr;
+    స్థిరరాశి అక్షరం *firmware_name;
+    hwaddr firmware_చివర_addr;
+    vaddr kernel_ప్రారంభం_addr;
+    uint64_t kernel_నమోదు;
+    uint64_t fdt_ఎక్కించు_addr;
     DriveInfo *dinfo = drive_get(IF_SD, 0, 0);
     RISCVBootInfo boot_info;
 
     /* Sanity check on RAM size */
-    if (machine->ram_size < mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    ఒకవేళ (machine->ram_కొలత < mc->default_ram_కొలత) {
+        అక్షరం *sz = కొలత_గమ్యం_str(mc->default_ram_కొలత);
         error_report("Invalid RAM size, should be bigger than %s", sz);
         g_free(sz);
-        exit(EXIT_FAILURE);
+        నిష్క్రమించు(EXIT_FAILURE);
     }
 
     /* Initialize SoC */
-    object_initialize_child(OBJECT(machine), "soc", &s->soc,
+    object_initialize_బిడ్డ(OBJECT(machine), "soc", &s->soc,
                             TYPE_MICROCHIP_PFSOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&s->soc), ఖాళీ, &error_fatal);
 
     /* Split RAM into low and high regions using aliases to machine->ram */
-    mem_low_size = memmap[MICROCHIP_PFSOC_DRAM_LO].size;
-    mem_high_size = machine->ram_size - mem_low_size;
-    memory_region_init_alias(mem_low, NULL,
+    mem_దిగువ_కొలత = memmap[MICROCHIP_PFSOC_DRAM_LO].కొలత;
+    mem_ఎగువ_కొలత = machine->ram_కొలత - mem_దిగువ_కొలత;
+    జ్ఞాపకం_region_init_alias(mem_దిగువ, ఖాళీ,
                              "microchip.icicle.kit.ram_low", machine->ram,
-                             0, mem_low_size);
-    memory_region_init_alias(mem_high, NULL,
+                             0, mem_దిగువ_కొలత);
+    జ్ఞాపకం_region_init_alias(mem_ఎగువ, ఖాళీ,
                              "microchip.icicle.kit.ram_high", machine->ram,
-                             mem_low_size, mem_high_size);
+                             mem_దిగువ_కొలత, mem_ఎగువ_కొలత);
 
     /* Register RAM */
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_DRAM_LO].base,
-                                mem_low);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_DRAM_HI].base,
-                                mem_high);
+    జ్ఞాపకం_region_కూడు_subregion(system_జ్ఞాపకం,
+                                memmap[MICROCHIP_PFSOC_DRAM_LO].పునాది,
+                                mem_దిగువ);
+    జ్ఞాపకం_region_కూడు_subregion(system_జ్ఞాపకం,
+                                memmap[MICROCHIP_PFSOC_DRAM_HI].పునాది,
+                                mem_ఎగువ);
 
     /* Create aliases for the low and high RAM regions */
-    memory_region_init_alias(mem_low_alias, NULL,
+    జ్ఞాపకం_region_init_alias(mem_దిగువ_alias, ఖాళీ,
                              "microchip.icicle.kit.ram_low.alias",
-                             mem_low, 0, mem_low_size);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_DRAM_LO_ALIAS].base,
-                                mem_low_alias);
-    memory_region_init_alias(mem_high_alias, NULL,
+                             mem_దిగువ, 0, mem_దిగువ_కొలత);
+    జ్ఞాపకం_region_కూడు_subregion(system_జ్ఞాపకం,
+                                memmap[MICROCHIP_PFSOC_DRAM_LO_ALIAS].పునాది,
+                                mem_దిగువ_alias);
+    జ్ఞాపకం_region_init_alias(mem_ఎగువ_alias, ఖాళీ,
                              "microchip.icicle.kit.ram_high.alias",
-                             mem_high, 0, mem_high_size);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_DRAM_HI_ALIAS].base,
-                                mem_high_alias);
+                             mem_ఎగువ, 0, mem_ఎగువ_కొలత);
+    జ్ఞాపకం_region_కూడు_subregion(system_జ్ఞాపకం,
+                                memmap[MICROCHIP_PFSOC_DRAM_HI_ALIAS].పునాది,
+                                mem_ఎగువ_alias);
 
     /* Attach an SD card */
-    if (dinfo) {
+    ఒకవేళ (dinfo) {
         CadenceSDHCIState *sdhci = &(s->soc.sdhci);
         DeviceState *card = qdev_new(TYPE_SD_CARD);
 
-        qdev_prop_set_drive_err(card, "drive", blk_by_legacy_dinfo(dinfo),
+        qdev_prop_సమితి_drive_err(card, "drive", blk_by_legacy_dinfo(dinfo),
                                 &error_fatal);
         qdev_realize_and_unref(card, sdhci->bus, &error_fatal);
     }
@@ -599,137 +599,137 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
      * NULL, default |          Y | RISCV64_BIOS_BIN
      * other         | don't care | other
      */
-    if (machine->firmware && !strcmp(machine->firmware, "none")) {
-        if (!machine->kernel_filename) {
+    ఒకవేళ (machine->firmware && !strcmp(machine->firmware, "none")) {
+        ఒకవేళ (!machine->kernel_filename) {
             error_report("for -bios none, a kernel is required");
-            exit(1);
+            నిష్క్రమించు(1);
         }
 
-        firmware_name = NULL;
-        firmware_load_addr = RESET_VECTOR;
-    } else if (!machine->firmware || !strcmp(machine->firmware, "default")) {
-        if (machine->kernel_filename) {
+        firmware_name = ఖాళీ;
+        firmware_ఎక్కించు_addr = RESET_సదిశ;
+    } లేకపోతే ఒకవేళ (!machine->firmware || !strcmp(machine->firmware, "default")) {
+        ఒకవేళ (machine->kernel_filename) {
             firmware_name = RISCV64_BIOS_BIN;
-            firmware_load_addr = memmap[MICROCHIP_PFSOC_DRAM_LO].base;
-        } else {
+            firmware_ఎక్కించు_addr = memmap[MICROCHIP_PFSOC_DRAM_LO].పునాది;
+        } లేకపోతే {
             firmware_name = BIOS_FILENAME;
-            firmware_load_addr = RESET_VECTOR;
+            firmware_ఎక్కించు_addr = RESET_సదిశ;
         }
-    } else {
+    } లేకపోతే {
         firmware_name = machine->firmware;
-        firmware_load_addr = RESET_VECTOR;
+        firmware_ఎక్కించు_addr = RESET_సదిశ;
     }
 
     riscv_boot_info_init_discontig_mem(&boot_info, &s->soc.u_cpus,
-                                       memmap[MICROCHIP_PFSOC_DRAM_LO].base,
-                                       mem_low_size);
+                                       memmap[MICROCHIP_PFSOC_DRAM_LO].పునాది,
+                                       mem_దిగువ_కొలత);
 
     /* Load the firmware if necessary */
-    firmware_end_addr = firmware_load_addr;
-    if (firmware_name) {
-        char *filename = riscv_find_firmware(firmware_name, NULL);
-        if (filename) {
-            firmware_end_addr = riscv_load_firmware(machine, &boot_info,
+    firmware_చివర_addr = firmware_ఎక్కించు_addr;
+    ఒకవేళ (firmware_name) {
+        అక్షరం *filename = riscv_కనుగొను_firmware(firmware_name, ఖాళీ);
+        ఒకవేళ (filename) {
+            firmware_చివర_addr = riscv_ఎక్కించు_firmware(machine, &boot_info,
                                                     filename,
-                                                    &firmware_load_addr, NULL);
+                                                    &firmware_ఎక్కించు_addr, ఖాళీ);
             g_free(filename);
         }
     }
 
-    if (machine->kernel_filename) {
-        kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
-                                                         firmware_end_addr);
+    ఒకవేళ (machine->kernel_filename) {
+        kernel_ప్రారంభం_addr = riscv_calc_kernel_ప్రారంభం_addr(&boot_info,
+                                                         firmware_చివర_addr);
 
-        riscv_load_kernel(machine, &boot_info, kernel_start_addr,
-                          true, NULL);
-        kernel_entry = boot_info.image_low_addr;
+        riscv_ఎక్కించు_kernel(machine, &boot_info, kernel_ప్రారంభం_addr,
+                          true, ఖాళీ);
+        kernel_నమోదు = boot_info.image_దిగువ_addr;
 
-        if (machine->dtb) {
-            int fdt_size;
-            machine->fdt = load_device_tree(machine->dtb, &fdt_size);
-            if (!machine->fdt) {
+        ఒకవేళ (machine->dtb) {
+            పూర్ణాంకం fdt_కొలత;
+            machine->fdt = ఎక్కించు_device_వృక్షం(machine->dtb, &fdt_కొలత);
+            ఒకవేళ (!machine->fdt) {
                 error_report("load_device_tree() failed");
-                exit(1);
+                నిష్క్రమించు(1);
             }
 
             /* Compute the FDT load address in DRAM */
-            hwaddr kernel_ram_base = memmap[MICROCHIP_PFSOC_DRAM_LO].base;
-            hwaddr kernel_ram_size = memmap[MICROCHIP_PFSOC_DRAM_LO].size;
+            hwaddr kernel_ram_పునాది = memmap[MICROCHIP_PFSOC_DRAM_LO].పునాది;
+            hwaddr kernel_ram_కొలత = memmap[MICROCHIP_PFSOC_DRAM_LO].కొలత;
 
-            if (kernel_entry - kernel_ram_base >= kernel_ram_size) {
-                kernel_ram_base = memmap[MICROCHIP_PFSOC_DRAM_HI].base;
-                kernel_ram_size = mem_high_size;
+            ఒకవేళ (kernel_నమోదు - kernel_ram_పునాది >= kernel_ram_కొలత) {
+                kernel_ram_పునాది = memmap[MICROCHIP_PFSOC_DRAM_HI].పునాది;
+                kernel_ram_కొలత = mem_ఎగువ_కొలత;
             }
 
-            fdt_load_addr = riscv_compute_fdt_addr(kernel_ram_base, kernel_ram_size,
+            fdt_ఎక్కించు_addr = riscv_compute_fdt_addr(kernel_ram_పునాది, kernel_ram_కొలత,
                                                    machine, &boot_info);
-            riscv_load_fdt(fdt_load_addr, machine->fdt);
-        } else {
+            riscv_ఎక్కించు_fdt(fdt_ఎక్కించు_addr, machine->fdt);
+        } లేకపోతే {
             warn_report_once("The QEMU microchip-icicle-kit machine does not "
                              "generate a device tree, so no device tree is "
                              "being provided to the guest.");
-            fdt_load_addr = 0;
+            fdt_ఎక్కించు_addr = 0;
         }
 
-        hwaddr start_addr;
-        if (firmware_name) {
-            start_addr = firmware_load_addr;
-        } else {
-            start_addr = kernel_entry;
+        hwaddr ప్రారంభం_addr;
+        ఒకవేళ (firmware_name) {
+            ప్రారంభం_addr = firmware_ఎక్కించు_addr;
+        } లేకపోతే {
+            ప్రారంభం_addr = kernel_నమోదు;
         }
 
         /* Load the reset vector */
-        riscv_setup_rom_reset_vec(machine, &s->soc.u_cpus, start_addr,
-                                  memmap[MICROCHIP_PFSOC_ENVM_DATA].base,
-                                  memmap[MICROCHIP_PFSOC_ENVM_DATA].size,
-                                  kernel_entry, fdt_load_addr);
+        riscv_అమరిక_rom_reset_vec(machine, &s->soc.u_cpus, ప్రారంభం_addr,
+                                  memmap[MICROCHIP_PFSOC_ENVM_దత్తాంశం].పునాది,
+                                  memmap[MICROCHIP_PFSOC_ENVM_దత్తాంశం].కొలత,
+                                  kernel_నమోదు, fdt_ఎక్కించు_addr);
     }
 }
 
-static void microchip_icicle_kit_set_clint_timebase_freq(Object *obj,
+స్థిర శూన్య microchip_icicle_kit_సమితి_clint_timebase_freq(Object *obj,
                                                          Visitor *v,
-                                                         const char *name,
-                                                         void *opaque,
+                                                         స్థిరరాశి అక్షరం *name,
+                                                         శూన్య *opaque,
                                                          Error **errp)
 {
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(obj);
-    uint32_t value;
+    uint32_t విలువ;
 
-    if (!visit_type_uint32(v, name, &value, errp)) {
-        return;
+    ఒకవేళ (!సందర్శించు_type_uint32(v, name, &విలువ, errp)) {
+        తిరిగి;
     }
 
-    s->clint_timebase_freq = value;
+    s->clint_timebase_freq = విలువ;
 }
 
-static void microchip_icicle_kit_get_clint_timebase_freq(Object *obj,
+స్థిర శూన్య microchip_icicle_kit_get_clint_timebase_freq(Object *obj,
                                                          Visitor *v,
-                                                         const char *name,
-                                                         void *opaque,
+                                                         స్థిరరాశి అక్షరం *name,
+                                                         శూన్య *opaque,
                                                          Error **errp)
 {
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(obj);
-    uint32_t value = s->clint_timebase_freq;
+    uint32_t విలువ = s->clint_timebase_freq;
 
-    visit_type_uint32(v, name, &value, errp);
+    సందర్శించు_type_uint32(v, name, &విలువ, errp);
 }
 
-static void microchip_icicle_kit_machine_instance_init(Object *obj)
+స్థిర శూన్య microchip_icicle_kit_machine_instance_init(Object *obj)
 {
     MicrochipIcicleKitState *m = MICROCHIP_ICICLE_KIT_MACHINE(obj);
     m->clint_timebase_freq = 1000000;
 }
 
-static void microchip_icicle_kit_machine_class_init(ObjectClass *oc,
-                                                    const void *data)
+స్థిర శూన్య microchip_icicle_kit_machine_class_init(ObjectClass *oc,
+                                                    స్థిరరాశి శూన్య *దత్తాంశం)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
     mc->desc = "Microchip PolarFire SoC Icicle Kit";
     mc->init = microchip_icicle_kit_machine_init;
-    mc->max_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_COUNT +
-                   MICROCHIP_PFSOC_COMPUTE_CPU_COUNT;
-    mc->min_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_COUNT + 1;
+    mc->max_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_లెక్క +
+                   MICROCHIP_PFSOC_COMPUTE_CPU_లెక్క;
+    mc->min_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_లెక్క + 1;
     mc->default_cpus = mc->min_cpus;
     mc->default_ram_id = "microchip.icicle.kit.ram";
     mc->auto_create_sdcard = true;
@@ -741,27 +741,27 @@ static void microchip_icicle_kit_machine_class_init(ObjectClass *oc,
      *
      * See memory_tests() in mss_ddr.c in the HSS source code.
      */
-    mc->default_ram_size = 1537 * MiB;
+    mc->default_ram_కొలత = 1537 * MiB;
 
-    object_class_property_add(oc, "clint-timebase-frequency", "uint32_t",
+    object_class_property_కూడు(oc, "clint-timebase-frequency", "uint32_t",
                               microchip_icicle_kit_get_clint_timebase_freq,
-                              microchip_icicle_kit_set_clint_timebase_freq,
-                              NULL, NULL);
-    object_class_property_set_description(oc, "clint-timebase-frequency",
+                              microchip_icicle_kit_సమితి_clint_timebase_freq,
+                              ఖాళీ, ఖాళీ);
+    object_class_property_సమితి_description(oc, "clint-timebase-frequency",
                                   "Set CLINT timebase frequency in Hz.");
 }
 
-static const TypeInfo microchip_icicle_kit_machine_typeinfo = {
+స్థిర స్థిరరాశి TypeInfo microchip_icicle_kit_machine_typeinfo = {
     .name       = MACHINE_TYPE_NAME("microchip-icicle-kit"),
-    .parent     = TYPE_MACHINE,
+    .మాతృ     = TYPE_MACHINE,
     .class_init = microchip_icicle_kit_machine_class_init,
     .instance_init = microchip_icicle_kit_machine_instance_init,
-    .instance_size = sizeof(MicrochipIcicleKitState),
+    .instance_కొలత = పరిమాణం(MicrochipIcicleKitState),
 };
 
-static void microchip_icicle_kit_machine_init_register_types(void)
+స్థిర శూన్య microchip_icicle_kit_machine_init_రిజిస్టరు_types(శూన్య)
 {
-    type_register_static(&microchip_icicle_kit_machine_typeinfo);
+    type_రిజిస్టరు_static(&microchip_icicle_kit_machine_typeinfo);
 }
 
-type_init(microchip_icicle_kit_machine_init_register_types)
+type_init(microchip_icicle_kit_machine_init_రిజిస్టరు_types)

@@ -16,55 +16,55 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qom/object.h"
-#include "exec/target_page.h"
-#include "hw/pci/pci_bus.h"
-#include "hw/pci/pci_device.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/riscv/riscv_hart.h"
-#include "migration/vmstate.h"
-#include "qapi/error.h"
-#include "qemu/timer.h"
-#include "qemu/target-info.h"
-#include "qemu/bitops.h"
+#అన్తర్భావ "qemu/osdep.h"
+#అన్తర్భావ "qom/object.h"
+#అన్తర్భావ "exec/target_page.h"
+#అన్తర్భావ "hw/pci/pci_bus.h"
+#అన్తర్భావ "hw/pci/pci_device.h"
+#అన్తర్భావ "hw/core/qdev-properties.h"
+#అన్తర్భావ "hw/riscv/riscv_hart.h"
+#అన్తర్భావ "migration/vmstate.h"
+#అన్తర్భావ "qapi/error.h"
+#అన్తర్భావ "qemu/timer.h"
+#అన్తర్భావ "qemu/target-info.h"
+#అన్తర్భావ "qemu/bitops.h"
 
-#include "cpu_bits.h"
-#include "riscv-iommu.h"
-#include "riscv-iommu-bits.h"
-#include "riscv-iommu-hpm.h"
-#include "trace.h"
+#అన్తర్భావ "cpu_bits.h"
+#అన్తర్భావ "riscv-iommu.h"
+#అన్తర్భావ "riscv-iommu-bits.h"
+#అన్తర్భావ "riscv-iommu-hpm.h"
+#అన్తర్భావ "trace.h"
 
-#define LIMIT_CACHE_CTX               (1U << 7)
-#define LIMIT_CACHE_IOT               (1U << 20)
+#నిర్వచించు హద్దు_CACHE_CTX               (1U << 7)
+#నిర్వచించు హద్దు_CACHE_IOT               (1U << 20)
 
 /* Physical page number coversions */
-#define PPN_PHYS(ppn)                 ((ppn) << TARGET_PAGE_BITS)
-#define PPN_DOWN(phy)                 ((phy) >> TARGET_PAGE_BITS)
+#నిర్వచించు PPN_PHYS(ppn)                 ((ppn) << లక్ష్యం_పుట_బిట్లు)
+#నిర్వచించు PPN_కిందికి(phy)                 ((phy) >> లక్ష్యం_పుట_బిట్లు)
 
-typedef struct RISCVIOMMUEntry RISCVIOMMUEntry;
+రకనిర్వచనం నిర్మాణం RISCVIOMMUEntry RISCVIOMMUEntry;
 
 /* Device assigned I/O address space */
-struct RISCVIOMMUSpace {
+నిర్మాణం RISCVIOMMUSpace {
     IOMMUMemoryRegion iova_mr;  /* IOVA memory region for attached device */
-    AddressSpace iova_as;       /* IOVA address space for attached device */
+    చిరునామా_Space iova_as;       /* IOVA address space for attached device */
     RISCVIOMMUState *iommu;     /* Managing IOMMU device state */
     PCIBus *bus;                /* PCI bus of the requester */
     uint8_t devfn;              /* Requester identifier, AKA device_id */
     bool notifier;              /* IOMMU unmap notifier enabled */
-    QLIST_ENTRY(RISCVIOMMUSpace) list;
+    QLIST_నమోదు(RISCVIOMMUSpace) list;
 };
 
-typedef enum RISCVIOMMUTransTag {
-    RISCV_IOMMU_TRANS_TAG_BY,  /* Bypass */
-    RISCV_IOMMU_TRANS_TAG_SS,  /* Single Stage */
-    RISCV_IOMMU_TRANS_TAG_VG,  /* G-stage only */
-    RISCV_IOMMU_TRANS_TAG_VN,  /* Nested translation */
-} RISCVIOMMUTransTag;
+రకనిర్వచనం గణన RISCVIOMMUTrans_ట్యాగ్ {
+    RISCV_IOMMU_TRANS_ట్యాగ్_BY,  /* Bypass */
+    RISCV_IOMMU_TRANS_ట్యాగ్_SS,  /* Single Stage */
+    RISCV_IOMMU_TRANS_ట్యాగ్_VG,  /* G-stage only */
+    RISCV_IOMMU_TRANS_ట్యాగ్_VN,  /* Nested translation */
+} RISCVIOMMUTrans_ట్యాగ్;
 
 /* Address translation cache entry */
-struct RISCVIOMMUEntry {
-    RISCVIOMMUTransTag tag;     /* Translation Tag */
+నిర్మాణం RISCVIOMMUEntry {
+    RISCVIOMMUTrans_ట్యాగ్ ట్యాగ్;     /* Translation Tag */
     uint64_t iova:44;           /* IOVA Page Number */
     uint64_t pscid:20;          /* Process Soft-Context identifier */
     uint64_t phys:44;           /* Physical Page Number */
@@ -73,118 +73,118 @@ struct RISCVIOMMUEntry {
 };
 
 /* IOMMU index for transactions without process_id specified. */
-#define RISCV_IOMMU_NOPROCID 0
+#నిర్వచించు RISCV_IOMMU_NOPROCID 0
 
-static uint32_t riscv_iommu_space_devid(RISCVIOMMUSpace *as)
+స్థిర uint32_t riscv_iommu_space_devid(RISCVIOMMUSpace *as)
 {
-    uint32_t devid = PCI_BUILD_BDF(pci_bus_num(as->bus), as->devfn);
+    uint32_t devid = PCI_BUILD_BDF(pci_bus_అంకె(as->bus), as->devfn);
 
     /* FIXME: PCIe bus remapping for attached endpoints. */
     devid |= as->iommu->bus << 8;
-    return devid;
+    తిరిగి devid;
 }
 
-static uint8_t riscv_iommu_get_icvec_vector(uint32_t icvec, uint32_t vec_type)
+స్థిర uint8_t riscv_iommu_get_icvec_సదిశ(uint32_t icvec, uint32_t vec_type)
 {
-    switch (vec_type) {
-    case RISCV_IOMMU_INTR_CQ:
-        return icvec & RISCV_IOMMU_ICVEC_CIV;
-    case RISCV_IOMMU_INTR_FQ:
-        return (icvec & RISCV_IOMMU_ICVEC_FIV) >> 4;
-    case RISCV_IOMMU_INTR_PM:
-        return (icvec & RISCV_IOMMU_ICVEC_PMIV) >> 8;
-    case RISCV_IOMMU_INTR_PQ:
-        return (icvec & RISCV_IOMMU_ICVEC_PIV) >> 12;
-    default:
+    ఎంపిక (vec_type) {
+    స్థితి RISCV_IOMMU_INTR_CQ:
+        తిరిగి icvec & RISCV_IOMMU_ICVEC_CIV;
+    స్థితి RISCV_IOMMU_INTR_FQ:
+        తిరిగి (icvec & RISCV_IOMMU_ICVEC_FIV) >> 4;
+    స్థితి RISCV_IOMMU_INTR_PM:
+        తిరిగి (icvec & RISCV_IOMMU_ICVEC_PMIV) >> 8;
+    స్థితి RISCV_IOMMU_INTR_PQ:
+        తిరిగి (icvec & RISCV_IOMMU_ICVEC_PIV) >> 12;
+    అప్రమేయ:
         g_assert_not_reached();
     }
 }
 
-void riscv_iommu_notify(RISCVIOMMUState *s, int vec_type)
+శూన్య riscv_iommu_notify(RISCVIOMMUState *s, పూర్ణాంకం vec_type)
 {
-    uint32_t ipsr, icvec, vector;
+    uint32_t ipsr, icvec, సదిశ;
 
-    if (!s->notify) {
-        return;
+    ఒకవేళ (!s->notify) {
+        తిరిగి;
     }
 
     icvec = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_ICVEC);
     ipsr = riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_IPSR, (1 << vec_type), 0);
 
-    if (!(ipsr & (1 << vec_type))) {
-        vector = riscv_iommu_get_icvec_vector(icvec, vec_type);
-        s->notify(s, vector);
-        trace_riscv_iommu_notify_int_vector(vec_type, vector);
+    ఒకవేళ (!(ipsr & (1 << vec_type))) {
+        సదిశ = riscv_iommu_get_icvec_సదిశ(icvec, vec_type);
+        s->notify(s, సదిశ);
+        trace_riscv_iommu_notify_int_సదిశ(vec_type, సదిశ);
     }
 }
 
-void riscv_iommu_fault(RISCVIOMMUState *s, struct riscv_iommu_fq_record *ev)
+శూన్య riscv_iommu_fault(RISCVIOMMUState *s, నిర్మాణం riscv_iommu_fq_రికార్డు *ev)
 {
     uint32_t ctrl = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_FQCSR);
-    uint32_t head = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_FQH) & s->fq_mask;
-    uint32_t tail = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_FQT) & s->fq_mask;
-    uint32_t next = (tail + 1) & s->fq_mask;
-    uint32_t devid = get_field(ev->hdr, RISCV_IOMMU_FQ_HDR_DID);
+    uint32_t తల = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_FQH) & s->fq_ముసుగు;
+    uint32_t తోక = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_FQT) & s->fq_ముసుగు;
+    uint32_t తదుపరి = (తోక + 1) & s->fq_ముసుగు;
+    uint32_t devid = get_క్షేత్రం(ev->hdr, RISCV_IOMMU_FQ_HDR_DID);
 
-    trace_riscv_iommu_flt(s->parent_obj.id, PCI_BUS_NUM(devid), PCI_SLOT(devid),
+    trace_riscv_iommu_flt(s->మాతృ_obj.id, PCI_BUS_అంకె(devid), PCI_స్థానం(devid),
                           PCI_FUNC(devid), ev->hdr, ev->iotval);
 
-    if (!(ctrl & RISCV_IOMMU_FQCSR_FQON) ||
+    ఒకవేళ (!(ctrl & RISCV_IOMMU_FQCSR_FQON) ||
         !!(ctrl & (RISCV_IOMMU_FQCSR_FQOF | RISCV_IOMMU_FQCSR_FQMF))) {
-        return;
+        తిరిగి;
     }
 
-    if (head == next) {
+    ఒకవేళ (తల == తదుపరి) {
         riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_FQCSR,
                               RISCV_IOMMU_FQCSR_FQOF, 0);
-    } else {
-        dma_addr_t addr = s->fq_addr + tail * sizeof(*ev);
-        if (dma_memory_write(s->target_as, addr, ev, sizeof(*ev),
+    } లేకపోతే {
+        dma_addr_t addr = s->fq_addr + తోక * పరిమాణం(*ev);
+        ఒకవేళ (dma_జ్ఞాపకం_write(s->లక్ష్యం_as, addr, ev, పరిమాణం(*ev),
                              MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
             riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_FQCSR,
                                   RISCV_IOMMU_FQCSR_FQMF, 0);
-        } else {
-            riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_FQT, next);
+        } లేకపోతే {
+            riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_FQT, తదుపరి);
         }
     }
 
-    if (ctrl & RISCV_IOMMU_FQCSR_FIE) {
+    ఒకవేళ (ctrl & RISCV_IOMMU_FQCSR_FIE) {
         riscv_iommu_notify(s, RISCV_IOMMU_INTR_FQ);
     }
 }
 
-static void riscv_iommu_pri(RISCVIOMMUState *s,
-    struct riscv_iommu_pq_record *pr)
+స్థిర శూన్య riscv_iommu_pri(RISCVIOMMUState *s,
+    నిర్మాణం riscv_iommu_pq_రికార్డు *pr)
 {
     uint32_t ctrl = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_PQCSR);
-    uint32_t head = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_PQH) & s->pq_mask;
-    uint32_t tail = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_PQT) & s->pq_mask;
-    uint32_t next = (tail + 1) & s->pq_mask;
-    uint32_t devid = get_field(pr->hdr, RISCV_IOMMU_PREQ_HDR_DID);
+    uint32_t తల = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_PQH) & s->pq_ముసుగు;
+    uint32_t తోక = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_PQT) & s->pq_ముసుగు;
+    uint32_t తదుపరి = (తోక + 1) & s->pq_ముసుగు;
+    uint32_t devid = get_క్షేత్రం(pr->hdr, RISCV_IOMMU_PREQ_HDR_DID);
 
-    trace_riscv_iommu_pri(s->parent_obj.id, PCI_BUS_NUM(devid), PCI_SLOT(devid),
+    trace_riscv_iommu_pri(s->మాతృ_obj.id, PCI_BUS_అంకె(devid), PCI_స్థానం(devid),
                           PCI_FUNC(devid), pr->payload);
 
-    if (!(ctrl & RISCV_IOMMU_PQCSR_PQON) ||
+    ఒకవేళ (!(ctrl & RISCV_IOMMU_PQCSR_PQON) ||
         !!(ctrl & (RISCV_IOMMU_PQCSR_PQOF | RISCV_IOMMU_PQCSR_PQMF))) {
-        return;
+        తిరిగి;
     }
 
-    if (head == next) {
+    ఒకవేళ (తల == తదుపరి) {
         riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_PQCSR,
                               RISCV_IOMMU_PQCSR_PQOF, 0);
-    } else {
-        dma_addr_t addr = s->pq_addr + tail * sizeof(*pr);
-        if (dma_memory_write(s->target_as, addr, pr, sizeof(*pr),
+    } లేకపోతే {
+        dma_addr_t addr = s->pq_addr + తోక * పరిమాణం(*pr);
+        ఒకవేళ (dma_జ్ఞాపకం_write(s->లక్ష్యం_as, addr, pr, పరిమాణం(*pr),
                              MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
             riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_PQCSR,
                                   RISCV_IOMMU_PQCSR_PQMF, 0);
-        } else {
-            riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_PQT, next);
+        } లేకపోతే {
+            riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_PQT, తదుపరి);
         }
     }
 
-    if (ctrl & RISCV_IOMMU_PQCSR_PIE) {
+    ఒకవేళ (ctrl & RISCV_IOMMU_PQCSR_PIE) {
         riscv_iommu_notify(s, RISCV_IOMMU_INTR_PQ);
     }
 }
@@ -207,14 +207,14 @@ static void riscv_iommu_pri(RISCVIOMMUState *s,
  * "Process to translate addresses of MSIs", is similar to bit manip
  * function PEXT (Parallel bits extract) from x86.
  */
-static uint64_t riscv_iommu_pext_u64(uint64_t val, uint64_t ext)
+స్థిర uint64_t riscv_iommu_pext_u64(uint64_t val, uint64_t ext)
 {
     uint64_t ret = 0;
     uint64_t rot = 1;
 
-    while (ext) {
-        if (ext & 1) {
-            if (val & 1) {
+    అయితే (ext) {
+        ఒకవేళ (ext & 1) {
+            ఒకవేళ (val & 1) {
                 ret |= rot;
             }
             rot <<= 1;
@@ -223,46 +223,46 @@ static uint64_t riscv_iommu_pext_u64(uint64_t val, uint64_t ext)
         ext >>= 1;
     }
 
-    return ret;
+    తిరిగి ret;
 }
 
 /* Check if GPA matches MSI/MRIF pattern. */
-static bool riscv_iommu_msi_check(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
+స్థిర bool riscv_iommu_msi_check(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     dma_addr_t gpa)
 {
-    if (!s->enable_msi) {
-        return false;
+    ఒకవేళ (!s->enable_msi) {
+        తిరిగి false;
     }
 
-    if (get_field(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_MODE) !=
-        RISCV_IOMMU_DC_MSIPTP_MODE_FLAT) {
-        return false; /* Invalid MSI/MRIF mode */
+    ఒకవేళ (get_క్షేత్రం(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_బహుళకం) !=
+        RISCV_IOMMU_DC_MSIPTP_బహుళకం_FLAT) {
+        తిరిగి false; /* Invalid MSI/MRIF mode */
     }
 
-    if ((PPN_DOWN(gpa) ^ ctx->msi_addr_pattern) & ~ctx->msi_addr_mask) {
-        return false; /* GPA not in MSI range defined by AIA IMSIC rules. */
+    ఒకవేళ ((PPN_కిందికి(gpa) ^ ctx->msi_addr_నమూనా) & ~ctx->msi_addr_ముసుగు) {
+        తిరిగి false; /* GPA not in MSI range defined by AIA IMSIC rules. */
     }
 
-    return true;
+    తిరిగి true;
 }
 
 /* Returns the NAPOT page mask, or 0 for reserved encodings. */
-static hwaddr riscv_iommu_napot_page_mask(hwaddr ppn, hwaddr addr, hwaddr *out)
+స్థిర hwaddr riscv_iommu_napot_పుట_ముసుగు(hwaddr ppn, hwaddr addr, hwaddr *బహిర్గతం)
 {
-    int napot_bits = ctz64(ppn) + 1;
-    hwaddr napot_mask, page_mask;
+    పూర్ణాంకం napot_బిట్లు = ctz64(ppn) + 1;
+    hwaddr napot_ముసుగు, పుట_ముసుగు;
 
     /* The spec only defines 64KB (napot_bits == 4) */
-    if (napot_bits != 4) {
-        return 0;
+    ఒకవేళ (napot_బిట్లు != 4) {
+        తిరిగి 0;
     }
 
-    napot_mask = (1ULL << napot_bits) - 1;
-    page_mask = PPN_PHYS(napot_mask) | (TARGET_PAGE_SIZE - 1);
+    napot_ముసుగు = (1ULL << napot_బిట్లు) - 1;
+    పుట_ముసుగు = PPN_PHYS(napot_ముసుగు) | (లక్ష్యం_పుట_కొలత - 1);
 
-    *out = PPN_PHYS(ppn & ~napot_mask) | (addr & page_mask);
+    *బహిర్గతం = PPN_PHYS(ppn & ~napot_ముసుగు) | (addr & పుట_ముసుగు);
 
-    return page_mask;
+    తిరిగి పుట_ముసుగు;
 }
 
 /*
@@ -278,25 +278,25 @@ static hwaddr riscv_iommu_napot_page_mask(hwaddr ppn, hwaddr addr, hwaddr *out)
  * @iotlb    : translation data: physical address and access mode.
  * @return   : success or fault cause code.
  */
-static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
+స్థిర పూర్ణాంకం riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     IOMMUTLBEntry *iotlb)
 {
     IOMMUAccessFlags trans_perm = IOMMU_NONE;
-    dma_addr_t addr, base;
+    dma_addr_t addr, పునాది;
     uint64_t satp, gatp, pte;
     bool en_s, en_g;
-    struct {
-        unsigned char step;
-        unsigned char levels;
-        unsigned char ptidxbits;
-        unsigned char ptesize;
+    నిర్మాణం {
+        గుర్తులేని అక్షరం అడుగు;
+        గుర్తులేని అక్షరం స్థాయిలు;
+        గుర్తులేని అక్షరం ptidxbits;
+        గుర్తులేని అక్షరం ptesize;
     } sc[2];
     /* Translation stage phase */
-    enum {
+    గణన {
         S_STAGE = 0,
         G_STAGE = 1,
     } pass;
-    MemTxResult ret;
+    Mem_Tx_ఫలితం ret;
     bool pv = !!ctx->process_id;
     /*
      * Keep the request permission separate from iotlb->perm.  G-stage
@@ -305,13 +305,13 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
      * original request.  A successful walk leaves iotlb->perm with the
      * effective leaf permission for the translation cache.
      */
-    const IOMMUAccessFlags req_perm = iotlb->perm;
+    స్థిరరాశి IOMMUAccessFlags req_perm = iotlb->perm;
 
-    satp = get_field(ctx->satp, RISCV_IOMMU_ATP_MODE_FIELD);
-    gatp = get_field(ctx->gatp, RISCV_IOMMU_ATP_MODE_FIELD);
+    satp = get_క్షేత్రం(ctx->satp, RISCV_IOMMU_ATP_బహుళకం_క్షేత్రం);
+    gatp = get_క్షేత్రం(ctx->gatp, RISCV_IOMMU_ATP_బహుళకం_క్షేత్రం);
 
-    en_s = satp != RISCV_IOMMU_DC_FSC_MODE_BARE;
-    en_g = gatp != RISCV_IOMMU_DC_IOHGATP_MODE_BARE;
+    en_s = satp != RISCV_IOMMU_DC_FSC_బహుళకం_BARE;
+    en_g = gatp != RISCV_IOMMU_DC_IOHGATP_బహుళకం_BARE;
 
     /*
      * Early check for MSI address match when IOVA == GPA.
@@ -324,131 +324,131 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
      * means we can't do an early MSI check unless we have
      * strictly !en_s.
      */
-    if (!en_s && (req_perm & IOMMU_WO) &&
+    ఒకవేళ (!en_s && (req_perm & IOMMU_WO) &&
         riscv_iommu_msi_check(s, ctx, iotlb->iova)) {
-        iotlb->target_as = &s->trap_as;
+        iotlb->లక్ష్యం_as = &s->trap_as;
         iotlb->translated_addr = iotlb->iova;
-        iotlb->addr_mask = ~TARGET_PAGE_MASK;
-        return 0;
+        iotlb->addr_ముసుగు = ~లక్ష్యం_పుట_ముసుగు;
+        తిరిగి 0;
     }
 
     /* Exit early for pass-through mode. */
-    if (!(en_s || en_g)) {
+    ఒకవేళ (!(en_s || en_g)) {
         iotlb->translated_addr = iotlb->iova;
-        iotlb->addr_mask = ~TARGET_PAGE_MASK;
+        iotlb->addr_ముసుగు = ~లక్ష్యం_పుట_ముసుగు;
         /* Allow R/W in pass-through mode */
         iotlb->perm = IOMMU_RW;
-        return 0;
+        తిరిగి 0;
     }
 
     /* S/G translation parameters. */
-    for (pass = 0; pass < 2; pass++) {
-        uint32_t sv_mode;
+    కొరకు (pass = 0; pass < 2; pass++) {
+        uint32_t sv_బహుళకం;
 
-        sc[pass].step = 0;
-        if (pass ? (s->fctl & RISCV_IOMMU_FCTL_GXL) :
+        sc[pass].అడుగు = 0;
+        ఒకవేళ (pass ? (s->fctl & RISCV_IOMMU_FCTL_GXL) :
             (ctx->tc & RISCV_IOMMU_DC_TC_SXL)) {
             /* 32bit mode for GXL/SXL == 1 */
-            switch (pass ? gatp : satp) {
-            case RISCV_IOMMU_DC_IOHGATP_MODE_BARE:
-                sc[pass].levels    = 0;
+            ఎంపిక (pass ? gatp : satp) {
+            స్థితి RISCV_IOMMU_DC_IOHGATP_బహుళకం_BARE:
+                sc[pass].స్థాయిలు    = 0;
                 sc[pass].ptidxbits = 0;
                 sc[pass].ptesize   = 0;
-                break;
-            case RISCV_IOMMU_DC_IOHGATP_MODE_SV32X4:
-                sv_mode = pass ? RISCV_IOMMU_CAP_SV32X4 : RISCV_IOMMU_CAP_SV32;
-                if (!(s->cap & sv_mode)) {
-                    return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                ఆపు;
+            స్థితి RISCV_IOMMU_DC_IOHGATP_బహుళకం_SV32_X4:
+                sv_బహుళకం = pass ? RISCV_IOMMU_CAP_SV32X4 : RISCV_IOMMU_CAP_SV32;
+                ఒకవేళ (!(s->cap & sv_బహుళకం)) {
+                    తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
                 }
-                sc[pass].levels    = 2;
+                sc[pass].స్థాయిలు    = 2;
                 sc[pass].ptidxbits = 10;
                 sc[pass].ptesize   = 4;
-                break;
-            default:
-                return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                ఆపు;
+            అప్రమేయ:
+                తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
             }
-        } else {
+        } లేకపోతే {
             /* 64bit mode for GXL/SXL == 0 */
-            switch (pass ? gatp : satp) {
-            case RISCV_IOMMU_DC_IOHGATP_MODE_BARE:
-                sc[pass].levels    = 0;
+            ఎంపిక (pass ? gatp : satp) {
+            స్థితి RISCV_IOMMU_DC_IOHGATP_బహుళకం_BARE:
+                sc[pass].స్థాయిలు    = 0;
                 sc[pass].ptidxbits = 0;
                 sc[pass].ptesize   = 0;
-                break;
-            case RISCV_IOMMU_DC_IOHGATP_MODE_SV39X4:
-                sv_mode = pass ? RISCV_IOMMU_CAP_SV39X4 : RISCV_IOMMU_CAP_SV39;
-                if (!(s->cap & sv_mode)) {
-                    return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                ఆపు;
+            స్థితి RISCV_IOMMU_DC_IOHGATP_బహుళకం_SV39_X4:
+                sv_బహుళకం = pass ? RISCV_IOMMU_CAP_SV39X4 : RISCV_IOMMU_CAP_SV39;
+                ఒకవేళ (!(s->cap & sv_బహుళకం)) {
+                    తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
                 }
-                sc[pass].levels    = 3;
+                sc[pass].స్థాయిలు    = 3;
                 sc[pass].ptidxbits = 9;
                 sc[pass].ptesize   = 8;
-                break;
-            case RISCV_IOMMU_DC_IOHGATP_MODE_SV48X4:
-                sv_mode = pass ? RISCV_IOMMU_CAP_SV48X4 : RISCV_IOMMU_CAP_SV48;
-                if (!(s->cap & sv_mode)) {
-                    return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                ఆపు;
+            స్థితి RISCV_IOMMU_DC_IOHGATP_బహుళకం_SV48_X4:
+                sv_బహుళకం = pass ? RISCV_IOMMU_CAP_SV48X4 : RISCV_IOMMU_CAP_SV48;
+                ఒకవేళ (!(s->cap & sv_బహుళకం)) {
+                    తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
                 }
-                sc[pass].levels    = 4;
+                sc[pass].స్థాయిలు    = 4;
                 sc[pass].ptidxbits = 9;
                 sc[pass].ptesize   = 8;
-                break;
-            case RISCV_IOMMU_DC_IOHGATP_MODE_SV57X4:
-                sv_mode = pass ? RISCV_IOMMU_CAP_SV57X4 : RISCV_IOMMU_CAP_SV57;
-                if (!(s->cap & sv_mode)) {
-                    return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                ఆపు;
+            స్థితి RISCV_IOMMU_DC_IOHGATP_బహుళకం_SV57_X4:
+                sv_బహుళకం = pass ? RISCV_IOMMU_CAP_SV57X4 : RISCV_IOMMU_CAP_SV57;
+                ఒకవేళ (!(s->cap & sv_బహుళకం)) {
+                    తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
                 }
-                sc[pass].levels    = 5;
+                sc[pass].స్థాయిలు    = 5;
                 sc[pass].ptidxbits = 9;
                 sc[pass].ptesize   = 8;
-                break;
-            default:
-                return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+                ఆపు;
+            అప్రమేయ:
+                తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
             }
         }
     };
 
     /* S/G stages translation tables root pointers */
-    gatp = PPN_PHYS(get_field(ctx->gatp, RISCV_IOMMU_ATP_PPN_FIELD));
-    satp = PPN_PHYS(get_field(ctx->satp, RISCV_IOMMU_ATP_PPN_FIELD));
+    gatp = PPN_PHYS(get_క్షేత్రం(ctx->gatp, RISCV_IOMMU_ATP_PPN_క్షేత్రం));
+    satp = PPN_PHYS(get_క్షేత్రం(ctx->satp, RISCV_IOMMU_ATP_PPN_క్షేత్రం));
     addr = (en_s && en_g) ? satp : iotlb->iova;
-    base = en_g ? gatp : satp;
+    పునాది = en_g ? gatp : satp;
     pass = en_g ? G_STAGE : S_STAGE;
 
-    do {
-        const unsigned widened = (pass && !sc[pass].step) ? 2 : 0;
-        const unsigned va_bits = widened + sc[pass].ptidxbits;
-        const unsigned va_skip = TARGET_PAGE_BITS + sc[pass].ptidxbits *
-                                 (sc[pass].levels - 1 - sc[pass].step);
-        const unsigned idx = (addr >> va_skip) & ((1 << va_bits) - 1);
-        const dma_addr_t pte_addr = base + idx * sc[pass].ptesize;
-        const bool ade =
+    చేయి {
+        స్థిరరాశి గుర్తులేని widened = (pass && !sc[pass].అడుగు) ? 2 : 0;
+        స్థిరరాశి గుర్తులేని va_బిట్లు = widened + sc[pass].ptidxbits;
+        స్థిరరాశి గుర్తులేని va_skip = లక్ష్యం_పుట_బిట్లు + sc[pass].ptidxbits *
+                                 (sc[pass].స్థాయిలు - 1 - sc[pass].అడుగు);
+        స్థిరరాశి గుర్తులేని idx = (addr >> va_skip) & ((1 << va_బిట్లు) - 1);
+        స్థిరరాశి dma_addr_t pte_addr = పునాది + idx * sc[pass].ptesize;
+        స్థిరరాశి bool ade =
             ctx->tc & (pass ? RISCV_IOMMU_DC_TC_GADE : RISCV_IOMMU_DC_TC_SADE);
 
-        if (ade && !(s->cap & RISCV_IOMMU_CAP_AMO_HWAD)) {
+        ఒకవేళ (ade && !(s->cap & RISCV_IOMMU_CAP_AMO_HWAD)) {
             /* GADE/SADE are reserved bits if AMO_HWAD is cleared.  */
-            return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+            తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
         }
 
         /* Address range check before first level lookup */
-        if (!sc[pass].step) {
-            const uint64_t va_len = va_skip + va_bits;
-            const uint64_t va_mask = (1ULL << va_len) - 1;
+        ఒకవేళ (!sc[pass].అడుగు) {
+            స్థిరరాశి uint64_t va_len = va_skip + va_బిట్లు;
+            స్థిరరాశి uint64_t va_ముసుగు = (1ULL << va_len) - 1;
 
-            if (pass == S_STAGE && va_len > 32) {
-                uint64_t mask, masked_msbs;
+            ఒకవేళ (pass == S_STAGE && va_len > 32) {
+                uint64_t ముసుగు, masked_msbs;
 
-                mask = MAKE_64BIT_MASK(0, target_long_bits() - va_len + 1);
-                masked_msbs = (addr >> (va_len - 1)) & mask;
+                ముసుగు = MAKE_64_బిట్టు_ముసుగు(0, లక్ష్యం_long_బిట్లు() - va_len + 1);
+                masked_msbs = (addr >> (va_len - 1)) & ముసుగు;
 
-                if (masked_msbs != 0 && masked_msbs != mask) {
-                    return (req_perm & IOMMU_WO) ?
+                ఒకవేళ (masked_msbs != 0 && masked_msbs != ముసుగు) {
+                    తిరిగి (req_perm & IOMMU_WO) ?
                                 RISCV_IOMMU_FQ_CAUSE_WR_FAULT_S :
                                 RISCV_IOMMU_FQ_CAUSE_RD_FAULT_S;
                 }
-            } else {
-                if ((addr & va_mask) != addr) {
-                    return (req_perm & IOMMU_WO) ?
+            } లేకపోతే {
+                ఒకవేళ ((addr & va_ముసుగు) != addr) {
+                    తిరిగి (req_perm & IOMMU_WO) ?
                                 RISCV_IOMMU_FQ_CAUSE_WR_FAULT_VS :
                                 RISCV_IOMMU_FQ_CAUSE_RD_FAULT_VS;
                 }
@@ -456,58 +456,58 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
         }
 
 
-        if (pass == S_STAGE) {
+        ఒకవేళ (pass == S_STAGE) {
             riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_S_VS_WALKS);
-        } else {
+        } లేకపోతే {
             riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_G_WALKS);
         }
 
         /* Read page table entry */
-        if (sc[pass].ptesize == 4) {
+        ఒకవేళ (sc[pass].ptesize == 4) {
             uint32_t pte32 = 0;
-            ret = ldl_le_dma(s->target_as, pte_addr, &pte32,
+            ret = ldl_le_dma(s->లక్ష్యం_as, pte_addr, &pte32,
                              MEMTXATTRS_UNSPECIFIED);
             pte = pte32;
-        } else {
-            ret = ldq_le_dma(s->target_as, pte_addr, &pte,
+        } లేకపోతే {
+            ret = ldq_le_dma(s->లక్ష్యం_as, pte_addr, &pte,
                              MEMTXATTRS_UNSPECIFIED);
         }
-        if (ret != MEMTX_OK) {
-            return (req_perm & IOMMU_WO) ? RISCV_IOMMU_FQ_CAUSE_WR_FAULT
+        ఒకవేళ (ret != MEMTX_OK) {
+            తిరిగి (req_perm & IOMMU_WO) ? RISCV_IOMMU_FQ_CAUSE_WR_FAULT
                                          : RISCV_IOMMU_FQ_CAUSE_RD_FAULT;
         }
 
-        sc[pass].step++;
-        hwaddr ppn = pte >> PTE_PPN_SHIFT;
+        sc[pass].అడుగు++;
+        hwaddr ppn = pte >> PTE_PPN_జరుపు;
 
-        if (!(pte & PTE_V)) {
-            break;                /* Invalid PTE */
-        } else if (pte & PTE_RESERVED(false)) {
-            break;                /* Reserved PTE bits set */
-        } else if (!(pte & (PTE_R | PTE_W | PTE_X))) {
-            base = PPN_PHYS(ppn); /* Inner PTE, continue walking */
-        } else if ((pte & (PTE_R | PTE_W | PTE_X)) == PTE_W) {
-            break;                /* Reserved leaf PTE flags: PTE_W */
-        } else if ((pte & (PTE_R | PTE_W | PTE_X)) == (PTE_W | PTE_X)) {
-            break;                /* Reserved leaf PTE flags: PTE_W + PTE_X */
-        } else if (ppn & ((1ULL << (va_skip - TARGET_PAGE_BITS)) - 1)) {
-            break;                /* Misaligned PPN */
-        } else if (!(pte & PTE_U) && !pv) {
+        ఒకవేళ (!(pte & PTE_V)) {
+            ఆపు;                /* Invalid PTE */
+        } లేకపోతే ఒకవేళ (pte & PTE_RESERVED(false)) {
+            ఆపు;                /* Reserved PTE bits set */
+        } లేకపోతే ఒకవేళ (!(pte & (PTE_R | PTE_W | PTE_X))) {
+            పునాది = PPN_PHYS(ppn); /* Inner PTE, continue walking */
+        } లేకపోతే ఒకవేళ ((pte & (PTE_R | PTE_W | PTE_X)) == PTE_W) {
+            ఆపు;                /* Reserved leaf PTE flags: PTE_W */
+        } లేకపోతే ఒకవేళ ((pte & (PTE_R | PTE_W | PTE_X)) == (PTE_W | PTE_X)) {
+            ఆపు;                /* Reserved leaf PTE flags: PTE_W + PTE_X */
+        } లేకపోతే ఒకవేళ (ppn & ((1ULL << (va_skip - లక్ష్యం_పుట_బిట్లు)) - 1)) {
+            ఆపు;                /* Misaligned PPN */
+        } లేకపోతే ఒకవేళ (!(pte & PTE_U) && !pv) {
             /*
              * All accesses are assumed to be User mode unless
              * process_id is valid (pv).  In case we have a
              * non-user mode leaf PTE and !pv we need to fault.
              */
-            break;
-        } else if ((req_perm & IOMMU_RO) && !(pte & PTE_R)) {
-            break;                /* Read access check failed */
-        } else if ((req_perm & IOMMU_WO) && !(pte & PTE_W)) {
-            break;                /* Write access check failed */
-        } else if (!ade && !(pte & PTE_A)) {
-            break;                /* Access bit not set */
-        } else if ((req_perm & IOMMU_WO) && !ade && !(pte & PTE_D)) {
-            break;                /* Dirty bit not set */
-        } else if (pass == G_STAGE && !(pte & PTE_U)) {
+            ఆపు;
+        } లేకపోతే ఒకవేళ ((req_perm & IOMMU_RO) && !(pte & PTE_R)) {
+            ఆపు;                /* Read access check failed */
+        } లేకపోతే ఒకవేళ ((req_perm & IOMMU_WO) && !(pte & PTE_W)) {
+            ఆపు;                /* Write access check failed */
+        } లేకపోతే ఒకవేళ (!ade && !(pte & PTE_A)) {
+            ఆపు;                /* Access bit not set */
+        } లేకపోతే ఒకవేళ ((req_perm & IOMMU_WO) && !ade && !(pte & PTE_D)) {
+            ఆపు;                /* Dirty bit not set */
+        } లేకపోతే ఒకవేళ (pass == G_STAGE && !(pte & PTE_U)) {
             /*
              * riscv-iommu spec 1.0: "When checking the U bit in a
              * second-stage PTE, the transaction is treated as
@@ -516,76 +516,76 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
              * I.e. we need to fault if this is a non-user PTE since
              * we are always in user mode at this point.
              */
-            break;
-        } else {
+            ఆపు;
+        } లేకపోతే {
             /* Leaf PTE, translation completed. */
-            sc[pass].step = sc[pass].levels;
+            sc[pass].అడుగు = sc[pass].స్థాయిలు;
 
-            if (pte & PTE_N) {
-                hwaddr mask = riscv_iommu_napot_page_mask(ppn, addr, &base);
+            ఒకవేళ (pte & PTE_N) {
+                hwaddr ముసుగు = riscv_iommu_napot_పుట_ముసుగు(ppn, addr, &పునాది);
 
-                if (!mask) {
-                    break;
+                ఒకవేళ (!ముసుగు) {
+                    ఆపు;
                 }
-                iotlb->addr_mask &= mask;
-            } else {
-                base = PPN_PHYS(ppn) | (addr & ((1ULL << va_skip) - 1));
+                iotlb->addr_ముసుగు &= ముసుగు;
+            } లేకపోతే {
+                పునాది = PPN_PHYS(ppn) | (addr & ((1ULL << va_skip) - 1));
                 /* Update address mask based on smallest translation granularity */
-                iotlb->addr_mask &= (1ULL << va_skip) - 1;
+                iotlb->addr_ముసుగు &= (1ULL << va_skip) - 1;
             }
 
             /* Continue with S-Stage translation? */
-            if (pass && sc[0].step != sc[0].levels) {
+            ఒకవేళ (pass && sc[0].అడుగు != sc[0].స్థాయిలు) {
                 pass = S_STAGE;
                 addr = iotlb->iova;
-                continue;
+                కొనసాగు;
             }
 
             /* Cache the effective permission, not this request's subset. */
-            IOMMUAccessFlags leaf_perm = (pte & PTE_W) ?
+            IOMMUAccessFlags ఆకు_perm = (pte & PTE_W) ?
                                          ((pte & PTE_R) ? IOMMU_RW : IOMMU_WO) :
                                          IOMMU_RO;
 
             trans_perm = trans_perm == IOMMU_NONE ?
-                         leaf_perm : trans_perm & leaf_perm;
+                         ఆకు_perm : trans_perm & ఆకు_perm;
 
             /* Translation phase completed (GPA or SPA) */
-            iotlb->translated_addr = base;
+            iotlb->translated_addr = పునాది;
 
             /* Check MSI GPA address match */
-            if (pass == S_STAGE && (req_perm & IOMMU_WO) &&
-                riscv_iommu_msi_check(s, ctx, base)) {
+            ఒకవేళ (pass == S_STAGE && (req_perm & IOMMU_WO) &&
+                riscv_iommu_msi_check(s, ctx, పునాది)) {
                 /* Trap MSI writes and return GPA address. */
-                iotlb->target_as = &s->trap_as;
-                iotlb->addr_mask = ~TARGET_PAGE_MASK;
-                return 0;
+                iotlb->లక్ష్యం_as = &s->trap_as;
+                iotlb->addr_ముసుగు = ~లక్ష్యం_పుట_ముసుగు;
+                తిరిగి 0;
             }
 
             /* Continue with G-Stage translation? */
-            if (!pass && en_g) {
+            ఒకవేళ (!pass && en_g) {
                 pass = G_STAGE;
-                addr = base;
-                base = gatp;
-                sc[pass].step = 0;
-                continue;
+                addr = పునాది;
+                పునాది = gatp;
+                sc[pass].అడుగు = 0;
+                కొనసాగు;
             }
 
             iotlb->perm = trans_perm;
-            return 0;
+            తిరిగి 0;
         }
 
-        if (sc[pass].step == sc[pass].levels) {
-            break; /* Can't find leaf PTE */
+        ఒకవేళ (sc[pass].అడుగు == sc[pass].స్థాయిలు) {
+            ఆపు; /* Can't find leaf PTE */
         }
 
         /* Continue with G-Stage translation? */
-        if (!pass && en_g) {
+        ఒకవేళ (!pass && en_g) {
             pass = G_STAGE;
-            addr = base;
-            base = gatp;
-            sc[pass].step = 0;
+            addr = పునాది;
+            పునాది = gatp;
+            sc[pass].అడుగు = 0;
         }
-    } while (1);
+    } అయితే (1);
 
     /*
      * riscv_iommu_translate() will receive a fault and then call
@@ -595,44 +595,44 @@ static int riscv_iommu_spa_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
      */
     iotlb->translated_addr = addr;
 
-    return (req_perm & IOMMU_WO) ?
+    తిరిగి (req_perm & IOMMU_WO) ?
                 (pass ? RISCV_IOMMU_FQ_CAUSE_WR_FAULT_VS :
                         RISCV_IOMMU_FQ_CAUSE_WR_FAULT_S) :
                 (pass ? RISCV_IOMMU_FQ_CAUSE_RD_FAULT_VS :
                         RISCV_IOMMU_FQ_CAUSE_RD_FAULT_S);
 }
 
-static void riscv_iommu_report_fault(RISCVIOMMUState *s,
+స్థిర శూన్య riscv_iommu_report_fault(RISCVIOMMUState *s,
                                      RISCVIOMMUContext *ctx,
                                      uint32_t fault_type, uint32_t cause,
                                      bool pv,
                                      uint64_t iotval, uint64_t iotval2)
 {
-    struct riscv_iommu_fq_record ev = { 0 };
+    నిర్మాణం riscv_iommu_fq_రికార్డు ev = { 0 };
 
-    if (ctx->tc & RISCV_IOMMU_DC_TC_DTF) {
-        switch (cause) {
-        case RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED:
-        case RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT:
-        case RISCV_IOMMU_FQ_CAUSE_DDT_INVALID:
-        case RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED:
-        case RISCV_IOMMU_FQ_CAUSE_DDT_CORRUPTED:
-        case RISCV_IOMMU_FQ_CAUSE_INTERNAL_DP_ERROR:
-        case RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT:
-            break;
-        default:
+    ఒకవేళ (ctx->tc & RISCV_IOMMU_DC_TC_DTF) {
+        ఎంపిక (cause) {
+        స్థితి RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED:
+        స్థితి RISCV_IOMMU_FQ_CAUSE_DDT_ఎక్కించు_FAULT:
+        స్థితి RISCV_IOMMU_FQ_CAUSE_DDT_INVALID:
+        స్థితి RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED:
+        స్థితి RISCV_IOMMU_FQ_CAUSE_DDT_CORRUPTED:
+        స్థితి RISCV_IOMMU_FQ_CAUSE_అంతర్గత_DP_ERROR:
+        స్థితి RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT:
+            ఆపు;
+        అప్రమేయ:
             /* DTF prevents reporting a fault for this given cause */
-            return;
+            తిరిగి;
         }
     }
 
-    ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_CAUSE, cause);
-    ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_TTYPE, fault_type);
-    ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_DID, ctx->devid);
-    ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_PV, pv);
+    ev.hdr = సమితి_క్షేత్రం(ev.hdr, RISCV_IOMMU_FQ_HDR_CAUSE, cause);
+    ev.hdr = సమితి_క్షేత్రం(ev.hdr, RISCV_IOMMU_FQ_HDR_TTYPE, fault_type);
+    ev.hdr = సమితి_క్షేత్రం(ev.hdr, RISCV_IOMMU_FQ_HDR_DID, ctx->devid);
+    ev.hdr = సమితి_క్షేత్రం(ev.hdr, RISCV_IOMMU_FQ_HDR_PV, pv);
 
-    if (pv) {
-        ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_PID, ctx->process_id);
+    ఒకవేళ (pv) {
+        ev.hdr = సమితి_క్షేత్రం(ev.hdr, RISCV_IOMMU_FQ_HDR_PID, ctx->process_id);
     }
 
     ev.iotval = iotval;
@@ -642,48 +642,48 @@ static void riscv_iommu_report_fault(RISCVIOMMUState *s,
 }
 
 /* Redirect MSI write for given GPA. */
-static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
-    RISCVIOMMUContext *ctx, uint64_t gpa, uint64_t data,
-    unsigned size, MemTxAttrs attrs)
+స్థిర Mem_Tx_ఫలితం riscv_iommu_msi_write(RISCVIOMMUState *s,
+    RISCVIOMMUContext *ctx, uint64_t gpa, uint64_t దత్తాంశం,
+    గుర్తులేని కొలత, MemTxAttrs attrs)
 {
-    MemTxResult res;
+    Mem_Tx_ఫలితం res;
     dma_addr_t addr;
     uint64_t intn;
-    size_t offset;
+    కొలత_t స్థానభ్రంశం;
     uint32_t n190;
     uint64_t pte[2];
-    int fault_type = RISCV_IOMMU_FQ_TTYPE_UADDR_WR;
-    int cause;
+    పూర్ణాంకం fault_type = RISCV_IOMMU_FQ_TTYPE_UADDR_WR;
+    పూర్ణాంకం cause;
 
     /* Interrupt File Number */
-    intn = riscv_iommu_pext_u64(PPN_DOWN(gpa), ctx->msi_addr_mask);
-    offset = intn * sizeof(pte);
+    intn = riscv_iommu_pext_u64(PPN_కిందికి(gpa), ctx->msi_addr_ముసుగు);
+    స్థానభ్రంశం = intn * పరిమాణం(pte);
 
     /* fetch MSI PTE */
-    addr = PPN_PHYS(get_field(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_PPN));
-    if (addr & offset) {
+    addr = PPN_PHYS(get_క్షేత్రం(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_PPN));
+    ఒకవేళ (addr & స్థానభ్రంశం) {
         /* Interrupt file number out of range */
         res = MEMTX_ACCESS_ERROR;
-        cause = RISCV_IOMMU_FQ_CAUSE_MSI_LOAD_FAULT;
-        goto err;
+        cause = RISCV_IOMMU_FQ_CAUSE_MSI_ఎక్కించు_FAULT;
+        వెళ్ళు err;
     }
 
-    addr |= offset;
-    res = dma_memory_read(s->target_as, addr, &pte, sizeof(pte),
+    addr |= స్థానభ్రంశం;
+    res = dma_జ్ఞాపకం_read(s->లక్ష్యం_as, addr, &pte, పరిమాణం(pte),
             MEMTXATTRS_UNSPECIFIED);
-    if (res != MEMTX_OK) {
-        if (res == MEMTX_DECODE_ERROR) {
+    ఒకవేళ (res != MEMTX_OK) {
+        ఒకవేళ (res == MEMTX_DECODE_ERROR) {
             cause = RISCV_IOMMU_FQ_CAUSE_MSI_PT_CORRUPTED;
-        } else {
-            cause = RISCV_IOMMU_FQ_CAUSE_MSI_LOAD_FAULT;
+        } లేకపోతే {
+            cause = RISCV_IOMMU_FQ_CAUSE_MSI_ఎక్కించు_FAULT;
         }
-        goto err;
+        వెళ్ళు err;
     }
 
-    le64_to_cpus(&pte[0]);
-    le64_to_cpus(&pte[1]);
+    le64_గమ్యం_cpus(&pte[0]);
+    le64_గమ్యం_cpus(&pte[1]);
 
-    if (!(pte[0] & RISCV_IOMMU_MSI_PTE_V) || (pte[0] & RISCV_IOMMU_MSI_PTE_C)) {
+    ఒకవేళ (!(pte[0] & RISCV_IOMMU_MSI_PTE_V) || (pte[0] & RISCV_IOMMU_MSI_PTE_C)) {
         /*
          * The spec mentions that: "If msipte.C == 1, then further
          * processing to interpret the PTE is implementation
@@ -692,11 +692,11 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
          */
         res = MEMTX_ACCESS_ERROR;
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_INVALID;
-        goto err;
+        వెళ్ళు err;
     }
 
-    switch (get_field(pte[0], RISCV_IOMMU_MSI_PTE_M)) {
-    case RISCV_IOMMU_MSI_PTE_M_BASIC:
+    ఎంపిక (get_క్షేత్రం(pte[0], RISCV_IOMMU_MSI_PTE_M)) {
+    స్థితి RISCV_IOMMU_MSI_PTE_M_BASIC:
         /*
          * riscv-iommu spec MSI PTE basic translate mode:
          * "When an MSI PTE has fields V = 1, C = 0, and M = 3
@@ -712,33 +712,33 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
          *
          * In other words, bits 62:54 and 9:3 of pte[0] are reserved.
          */
-        if (pte[0] & (GENMASK_ULL(62, 54) | GENMASK_ULL(9, 3))) {
+        ఒకవేళ (pte[0] & (GENMASK_ULL(62, 54) | GENMASK_ULL(9, 3))) {
             res = MEMTX_DECODE_ERROR;
             cause = RISCV_IOMMU_FQ_CAUSE_MSI_MISCONFIGURED;
-            goto err;
+            వెళ్ళు err;
         }
 
         /* MSI Pass-through mode */
-        addr = PPN_PHYS(get_field(pte[0], RISCV_IOMMU_MSI_PTE_PPN));
+        addr = PPN_PHYS(get_క్షేత్రం(pte[0], RISCV_IOMMU_MSI_PTE_PPN));
 
-        trace_riscv_iommu_msi(s->parent_obj.id, PCI_BUS_NUM(ctx->devid),
-                              PCI_SLOT(ctx->devid), PCI_FUNC(ctx->devid),
+        trace_riscv_iommu_msi(s->మాతృ_obj.id, PCI_BUS_అంకె(ctx->devid),
+                              PCI_స్థానం(ctx->devid), PCI_FUNC(ctx->devid),
                               gpa, addr);
 
-        res = dma_memory_write(s->target_as, addr, &data, size, attrs);
-        if (res != MEMTX_OK) {
+        res = dma_జ్ఞాపకం_write(s->లక్ష్యం_as, addr, &దత్తాంశం, కొలత, attrs);
+        ఒకవేళ (res != MEMTX_OK) {
             cause = RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT;
-            goto err;
+            వెళ్ళు err;
         }
 
-        return MEMTX_OK;
-    case RISCV_IOMMU_MSI_PTE_M_MRIF:
+        తిరిగి MEMTX_OK;
+    స్థితి RISCV_IOMMU_MSI_PTE_M_MRIF:
         /* MRIF mode, continue. */
-        break;
-    default:
+        ఆపు;
+    అప్రమేయ:
         res = MEMTX_ACCESS_ERROR;
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_MISCONFIGURED;
-        goto err;
+        వెళ్ళు err;
     }
 
     /*
@@ -746,16 +746,16 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
      * for an IMSIC interrupt file (2047) or destination address is not 32-bit
      * aligned. See IOMMU Specification, Chapter 2.3. MSI page tables.
      */
-    if ((data > 2047) || (gpa & 3)) {
+    ఒకవేళ ((దత్తాంశం > 2047) || (gpa & 3)) {
         res = MEMTX_ACCESS_ERROR;
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_MISCONFIGURED;
-        goto err;
+        వెళ్ళు err;
     }
 
     /* MSI MRIF mode, non atomic pending bit update */
 
     /* MRIF pending bit address */
-    addr = get_field(pte[0], RISCV_IOMMU_MSI_PTE_MRIF_ADDR) << 9;
+    addr = get_క్షేత్రం(pte[0], RISCV_IOMMU_MSI_PTE_MRIF_ADDR) << 9;
     /*
      * AIA spec section "Format of a memory-resident interrupt file":
      * address offset 0x000 contains interrupt-pending bits for
@@ -775,59 +775,59 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
      *
      * and so on.
      */
-    addr = addr | ((data & 0x7c0) >> 2);
+    addr = addr | ((దత్తాంశం & 0x7c0) >> 2);
 
-    trace_riscv_iommu_msi(s->parent_obj.id, PCI_BUS_NUM(ctx->devid),
-                          PCI_SLOT(ctx->devid), PCI_FUNC(ctx->devid),
+    trace_riscv_iommu_msi(s->మాతృ_obj.id, PCI_BUS_అంకె(ctx->devid),
+                          PCI_స్థానం(ctx->devid), PCI_FUNC(ctx->devid),
                           gpa, addr);
 
     /* MRIF pending bit mask */
-    data = 1ULL << (data & 0x03f);
-    res = dma_memory_read(s->target_as, addr, &intn, sizeof(intn), attrs);
-    if (res != MEMTX_OK) {
-        cause = RISCV_IOMMU_FQ_CAUSE_MSI_LOAD_FAULT;
-        goto err;
+    దత్తాంశం = 1ULL << (దత్తాంశం & 0x03f);
+    res = dma_జ్ఞాపకం_read(s->లక్ష్యం_as, addr, &intn, పరిమాణం(intn), attrs);
+    ఒకవేళ (res != MEMTX_OK) {
+        cause = RISCV_IOMMU_FQ_CAUSE_MSI_ఎక్కించు_FAULT;
+        వెళ్ళు err;
     }
 
-    intn = intn | data;
-    res = dma_memory_write(s->target_as, addr, &intn, sizeof(intn), attrs);
-    if (res != MEMTX_OK) {
+    intn = intn | దత్తాంశం;
+    res = dma_జ్ఞాపకం_write(s->లక్ష్యం_as, addr, &intn, పరిమాణం(intn), attrs);
+    ఒకవేళ (res != MEMTX_OK) {
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT;
-        goto err;
+        వెళ్ళు err;
     }
 
     /* Get MRIF enable bits */
-    addr = addr + sizeof(intn);
-    res = dma_memory_read(s->target_as, addr, &intn, sizeof(intn), attrs);
-    if (res != MEMTX_OK) {
-        cause = RISCV_IOMMU_FQ_CAUSE_MSI_LOAD_FAULT;
-        goto err;
+    addr = addr + పరిమాణం(intn);
+    res = dma_జ్ఞాపకం_read(s->లక్ష్యం_as, addr, &intn, పరిమాణం(intn), attrs);
+    ఒకవేళ (res != MEMTX_OK) {
+        cause = RISCV_IOMMU_FQ_CAUSE_MSI_ఎక్కించు_FAULT;
+        వెళ్ళు err;
     }
 
-    if (!(intn & data)) {
+    ఒకవేళ (!(intn & దత్తాంశం)) {
         /* notification disabled, MRIF update completed. */
-        return MEMTX_OK;
+        తిరిగి MEMTX_OK;
     }
 
     /* Send notification message */
-    addr = PPN_PHYS(get_field(pte[1], RISCV_IOMMU_MSI_MRIF_NPPN));
-    n190 = get_field(pte[1], RISCV_IOMMU_MSI_MRIF_NID) |
-          (get_field(pte[1], RISCV_IOMMU_MSI_MRIF_NID_MSB) << 10);
+    addr = PPN_PHYS(get_క్షేత్రం(pte[1], RISCV_IOMMU_MSI_MRIF_NPPN));
+    n190 = get_క్షేత్రం(pte[1], RISCV_IOMMU_MSI_MRIF_NID) |
+          (get_క్షేత్రం(pte[1], RISCV_IOMMU_MSI_MRIF_NID_MSB) << 10);
 
-    res = dma_memory_write(s->target_as, addr, &n190, sizeof(n190), attrs);
-    if (res != MEMTX_OK) {
+    res = dma_జ్ఞాపకం_write(s->లక్ష్యం_as, addr, &n190, పరిమాణం(n190), attrs);
+    ఒకవేళ (res != MEMTX_OK) {
         cause = RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT;
-        goto err;
+        వెళ్ళు err;
     }
 
-    trace_riscv_iommu_mrif_notification(s->parent_obj.id, n190, addr);
+    trace_riscv_iommu_mrif_notification(s->మాతృ_obj.id, n190, addr);
 
-    return MEMTX_OK;
+    తిరిగి MEMTX_OK;
 
 err:
     riscv_iommu_report_fault(s, ctx, fault_type, cause,
                              !!ctx->process_id, 0, 0);
-    return res;
+    తిరిగి res;
 }
 
 /*
@@ -835,56 +835,56 @@ err:
  * riscv-iommu spec section "Device-context configuration
  * checks".
  */
-static bool riscv_iommu_validate_device_ctx(RISCVIOMMUState *s,
+స్థిర bool riscv_iommu_validate_device_ctx(RISCVIOMMUState *s,
                                             RISCVIOMMUContext *ctx)
 {
-    uint32_t fsc_mode, msi_mode;
+    uint32_t fsc_బహుళకం, msi_బహుళకం;
     uint64_t gatp;
 
-    if (ctx->tc & RISCV_IOMMU_DC_TC_RESERVED) {
-        return false;
+    ఒకవేళ (ctx->tc & RISCV_IOMMU_DC_TC_RESERVED) {
+        తిరిగి false;
     }
 
-    if (!(s->cap & RISCV_IOMMU_CAP_ATS) &&
+    ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_ATS) &&
         (ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS ||
          ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI ||
          ctx->tc & RISCV_IOMMU_DC_TC_PRPR)) {
-        return false;
+        తిరిగి false;
     }
 
-    if (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS) &&
+    ఒకవేళ (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS) &&
         (ctx->tc & RISCV_IOMMU_DC_TC_T2GPA ||
          ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI)) {
-        return false;
+        తిరిగి false;
     }
 
-    if (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI) &&
+    ఒకవేళ (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI) &&
         ctx->tc & RISCV_IOMMU_DC_TC_PRPR) {
-        return false;
+        తిరిగి false;
     }
 
-    if (!(s->cap & RISCV_IOMMU_CAP_T2GPA) &&
+    ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_T2GPA) &&
         ctx->tc & RISCV_IOMMU_DC_TC_T2GPA) {
-        return false;
+        తిరిగి false;
     }
 
-    if (s->cap & RISCV_IOMMU_CAP_MSI_FLAT) {
-        msi_mode = get_field(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_MODE);
+    ఒకవేళ (s->cap & RISCV_IOMMU_CAP_MSI_FLAT) {
+        msi_బహుళకం = get_క్షేత్రం(ctx->msiptp, RISCV_IOMMU_DC_MSIPTP_బహుళకం);
 
-        if (msi_mode != RISCV_IOMMU_DC_MSIPTP_MODE_OFF &&
-            msi_mode != RISCV_IOMMU_DC_MSIPTP_MODE_FLAT) {
-            return false;
+        ఒకవేళ (msi_బహుళకం != RISCV_IOMMU_DC_MSIPTP_బహుళకం_OFF &&
+            msi_బహుళకం != RISCV_IOMMU_DC_MSIPTP_బహుళకం_FLAT) {
+            తిరిగి false;
         }
     }
 
-    gatp = get_field(ctx->gatp, RISCV_IOMMU_ATP_MODE_FIELD);
-    if (ctx->tc & RISCV_IOMMU_DC_TC_T2GPA &&
-        gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
-        return false;
+    gatp = get_క్షేత్రం(ctx->gatp, RISCV_IOMMU_ATP_బహుళకం_క్షేత్రం);
+    ఒకవేళ (ctx->tc & RISCV_IOMMU_DC_TC_T2GPA &&
+        gatp == RISCV_IOMMU_DC_IOHGATP_బహుళకం_BARE) {
+        తిరిగి false;
     }
 
-    if (gatp != RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
-        uint64_t iohgatp_ppn = get_field(ctx->gatp,
+    ఒకవేళ (gatp != RISCV_IOMMU_DC_IOHGATP_బహుళకం_BARE) {
+        uint64_t iohgatp_ppn = get_క్షేత్రం(ctx->gatp,
                                          RISCV_IOMMU_DC_IOHGATP_PPN);
 
         /*
@@ -893,59 +893,59 @@ static bool riscv_iommu_validate_device_ctx(RISCVIOMMUState *s,
          * Bare and the root page table (address) determined by
          * DC.iohgatp.PPN is not aligned to a 16-KiB boundary."
          */
-        if (PPN_PHYS(iohgatp_ppn) & ((1ULL << 14) - 1)) {
-            return false;
+        ఒకవేళ (PPN_PHYS(iohgatp_ppn) & ((1ULL << 14) - 1)) {
+            తిరిగి false;
         }
     }
 
-    fsc_mode = get_field(ctx->satp, RISCV_IOMMU_DC_FSC_MODE);
+    fsc_బహుళకం = get_క్షేత్రం(ctx->satp, RISCV_IOMMU_DC_FSC_బహుళకం);
 
-    if (ctx->tc & RISCV_IOMMU_DC_TC_PDTV) {
-        switch (fsc_mode) {
-        case RISCV_IOMMU_DC_FSC_PDTP_MODE_PD8:
-            if (!(s->cap & RISCV_IOMMU_CAP_PD8)) {
-                return false;
+    ఒకవేళ (ctx->tc & RISCV_IOMMU_DC_TC_PDTV) {
+        ఎంపిక (fsc_బహుళకం) {
+        స్థితి RISCV_IOMMU_DC_FSC_PDTP_బహుళకం_PD8:
+            ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_PD8)) {
+                తిరిగి false;
             }
-            break;
-        case RISCV_IOMMU_DC_FSC_PDTP_MODE_PD17:
-            if (!(s->cap & RISCV_IOMMU_CAP_PD17)) {
-                return false;
+            ఆపు;
+        స్థితి RISCV_IOMMU_DC_FSC_PDTP_బహుళకం_PD17:
+            ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_PD17)) {
+                తిరిగి false;
             }
-            break;
-        case RISCV_IOMMU_DC_FSC_PDTP_MODE_PD20:
-            if (!(s->cap & RISCV_IOMMU_CAP_PD20)) {
-                return false;
+            ఆపు;
+        స్థితి RISCV_IOMMU_DC_FSC_PDTP_బహుళకం_PD20:
+            ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_PD20)) {
+                తిరిగి false;
             }
-            break;
+            ఆపు;
         }
-    } else {
+    } లేకపోతే {
         /* DC.tc.PDTV is 0 */
-        if (ctx->tc & RISCV_IOMMU_DC_TC_DPE) {
-            return false;
+        ఒకవేళ (ctx->tc & RISCV_IOMMU_DC_TC_DPE) {
+            తిరిగి false;
         }
 
-        if (ctx->tc & RISCV_IOMMU_DC_TC_SXL) {
-            if (fsc_mode == RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV32 &&
+        ఒకవేళ (ctx->tc & RISCV_IOMMU_DC_TC_SXL) {
+            ఒకవేళ (fsc_బహుళకం == RISCV_IOMMU_DC_FSC_IOSATP_బహుళకం_SV32 &&
                 !(s->cap & RISCV_IOMMU_CAP_SV32)) {
-                return false;
+                తిరిగి false;
             }
-        } else {
-            switch (fsc_mode) {
-            case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39:
-                if (!(s->cap & RISCV_IOMMU_CAP_SV39)) {
-                    return false;
+        } లేకపోతే {
+            ఎంపిక (fsc_బహుళకం) {
+            స్థితి RISCV_IOMMU_DC_FSC_IOSATP_బహుళకం_SV39:
+                ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_SV39)) {
+                    తిరిగి false;
                 }
-                break;
-            case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV48:
-                if (!(s->cap & RISCV_IOMMU_CAP_SV48)) {
-                    return false;
+                ఆపు;
+            స్థితి RISCV_IOMMU_DC_FSC_IOSATP_బహుళకం_SV48:
+                ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_SV48)) {
+                    తిరిగి false;
                 }
-            break;
-            case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
-                if (!(s->cap & RISCV_IOMMU_CAP_SV57)) {
-                    return false;
+            ఆపు;
+            స్థితి RISCV_IOMMU_DC_FSC_IOSATP_బహుళకం_SV57:
+                ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_SV57)) {
+                    తిరిగి false;
                 }
-                break;
+                ఆపు;
             }
         }
     }
@@ -955,68 +955,68 @@ static bool riscv_iommu_validate_device_ctx(RISCVIOMMUState *s,
      * always zero (little-endian accesses). Thus TC_SBE must
      * always be LE, i.e. zero.
      */
-    if (ctx->tc & RISCV_IOMMU_DC_TC_SBE) {
-        return false;
+    ఒకవేళ (ctx->tc & RISCV_IOMMU_DC_TC_SBE) {
+        తిరిగి false;
     }
 
-    return true;
+    తిరిగి true;
 }
 
 /*
  * Validate process context (PC) according to section
  * "Process-context configuration checks".
  */
-static bool riscv_iommu_validate_process_ctx(RISCVIOMMUState *s,
+స్థిర bool riscv_iommu_validate_process_ctx(RISCVIOMMUState *s,
                                              RISCVIOMMUContext *ctx)
 {
-    uint32_t mode;
+    uint32_t బహుళకం;
 
-    if (get_field(ctx->ta, RISCV_IOMMU_PC_TA_RESERVED)) {
-        return false;
+    ఒకవేళ (get_క్షేత్రం(ctx->ta, RISCV_IOMMU_PC_TA_RESERVED)) {
+        తిరిగి false;
     }
 
-    if (get_field(ctx->satp, RISCV_IOMMU_PC_FSC_RESERVED)) {
-        return false;
+    ఒకవేళ (get_క్షేత్రం(ctx->satp, RISCV_IOMMU_PC_FSC_RESERVED)) {
+        తిరిగి false;
     }
 
-    mode = get_field(ctx->satp, RISCV_IOMMU_DC_FSC_MODE);
-    switch (mode) {
-    case RISCV_IOMMU_DC_FSC_MODE_BARE:
+    బహుళకం = get_క్షేత్రం(ctx->satp, RISCV_IOMMU_DC_FSC_బహుళకం);
+    ఎంపిక (బహుళకం) {
+    స్థితి RISCV_IOMMU_DC_FSC_బహుళకం_BARE:
     /* sv39 and sv32 modes have the same value (8) */
-    case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39:
-    case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV48:
-    case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
-        break;
-    default:
-        return false;
+    స్థితి RISCV_IOMMU_DC_FSC_IOSATP_బహుళకం_SV39:
+    స్థితి RISCV_IOMMU_DC_FSC_IOSATP_బహుళకం_SV48:
+    స్థితి RISCV_IOMMU_DC_FSC_IOSATP_బహుళకం_SV57:
+        ఆపు;
+    అప్రమేయ:
+        తిరిగి false;
     }
 
-    if (ctx->tc & RISCV_IOMMU_DC_TC_SXL) {
-        if (mode == RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV32 &&
+    ఒకవేళ (ctx->tc & RISCV_IOMMU_DC_TC_SXL) {
+        ఒకవేళ (బహుళకం == RISCV_IOMMU_DC_FSC_IOSATP_బహుళకం_SV32 &&
             !(s->cap & RISCV_IOMMU_CAP_SV32)) {
-                return false;
+                తిరిగి false;
         }
-    } else {
-        switch (mode) {
-        case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV39:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV39)) {
-                return false;
+    } లేకపోతే {
+        ఎంపిక (బహుళకం) {
+        స్థితి RISCV_IOMMU_DC_FSC_IOSATP_బహుళకం_SV39:
+            ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_SV39)) {
+                తిరిగి false;
             }
-            break;
-        case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV48:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV48)) {
-                return false;
+            ఆపు;
+        స్థితి RISCV_IOMMU_DC_FSC_IOSATP_బహుళకం_SV48:
+            ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_SV48)) {
+                తిరిగి false;
             }
-            break;
-        case RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV57)) {
-                return false;
+            ఆపు;
+        స్థితి RISCV_IOMMU_DC_FSC_IOSATP_బహుళకం_SV57:
+            ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_SV57)) {
+                తిరిగి false;
             }
-            break;
+            ఆపు;
         }
     }
 
-    return true;
+    తిరిగి true;
 }
 
 /**
@@ -1029,139 +1029,139 @@ static bool riscv_iommu_validate_process_ctx(RISCVIOMMUState *s,
  * @len: length of the data transferred
  * @attrs: memory transaction attributes
  */
-static MemTxResult pdt_memory_read(RISCVIOMMUState *s,
+స్థిర Mem_Tx_ఫలితం pdt_జ్ఞాపకం_read(RISCVIOMMUState *s,
                                    RISCVIOMMUContext *ctx,
                                    dma_addr_t addr,
-                                   void *buf, dma_addr_t len,
+                                   శూన్య *buf, dma_addr_t len,
                                    MemTxAttrs attrs)
 {
-    uint64_t gatp_mode, pte;
-    struct {
-        unsigned char step;
-        unsigned char levels;
-        unsigned char ptidxbits;
-        unsigned char ptesize;
+    uint64_t gatp_బహుళకం, pte;
+    నిర్మాణం {
+        గుర్తులేని అక్షరం అడుగు;
+        గుర్తులేని అక్షరం స్థాయిలు;
+        గుర్తులేని అక్షరం ptidxbits;
+        గుర్తులేని అక్షరం ptesize;
     } sc;
-    MemTxResult ret;
-    dma_addr_t base = addr;
+    Mem_Tx_ఫలితం ret;
+    dma_addr_t పునాది = addr;
 
     /* G stages translation mode */
-    gatp_mode = get_field(ctx->gatp, RISCV_IOMMU_ATP_MODE_FIELD);
-    if (gatp_mode == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) {
-        goto out;
+    gatp_బహుళకం = get_క్షేత్రం(ctx->gatp, RISCV_IOMMU_ATP_బహుళకం_క్షేత్రం);
+    ఒకవేళ (gatp_బహుళకం == RISCV_IOMMU_DC_IOHGATP_బహుళకం_BARE) {
+        వెళ్ళు బహిర్గతం;
     }
 
     /* G stages translation tables root pointer */
-    base = PPN_PHYS(get_field(ctx->gatp, RISCV_IOMMU_ATP_PPN_FIELD));
+    పునాది = PPN_PHYS(get_క్షేత్రం(ctx->gatp, RISCV_IOMMU_ATP_PPN_క్షేత్రం));
 
     /* Start at step 0 */
-    sc.step = 0;
+    sc.అడుగు = 0;
 
-    if (s->fctl & RISCV_IOMMU_FCTL_GXL) {
+    ఒకవేళ (s->fctl & RISCV_IOMMU_FCTL_GXL) {
         /* 32bit mode for GXL == 1 */
-        switch (gatp_mode) {
-        case RISCV_IOMMU_DC_IOHGATP_MODE_SV32X4:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV32X4)) {
-                return MEMTX_ACCESS_ERROR;
+        ఎంపిక (gatp_బహుళకం) {
+        స్థితి RISCV_IOMMU_DC_IOHGATP_బహుళకం_SV32_X4:
+            ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_SV32X4)) {
+                తిరిగి MEMTX_ACCESS_ERROR;
             }
-            sc.levels    = 2;
+            sc.స్థాయిలు    = 2;
             sc.ptidxbits = 10;
             sc.ptesize   = 4;
-            break;
-        default:
-            return MEMTX_ACCESS_ERROR;
+            ఆపు;
+        అప్రమేయ:
+            తిరిగి MEMTX_ACCESS_ERROR;
         }
-    } else {
+    } లేకపోతే {
         /* 64bit mode for GXL == 0 */
-        switch (gatp_mode) {
-        case RISCV_IOMMU_DC_IOHGATP_MODE_SV39X4:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV39X4)) {
-                return MEMTX_ACCESS_ERROR;
+        ఎంపిక (gatp_బహుళకం) {
+        స్థితి RISCV_IOMMU_DC_IOHGATP_బహుళకం_SV39_X4:
+            ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_SV39X4)) {
+                తిరిగి MEMTX_ACCESS_ERROR;
             }
-            sc.levels    = 3;
+            sc.స్థాయిలు    = 3;
             sc.ptidxbits = 9;
             sc.ptesize   = 8;
-            break;
-        case RISCV_IOMMU_DC_IOHGATP_MODE_SV48X4:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV48X4)) {
-                return MEMTX_ACCESS_ERROR;
+            ఆపు;
+        స్థితి RISCV_IOMMU_DC_IOHGATP_బహుళకం_SV48_X4:
+            ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_SV48X4)) {
+                తిరిగి MEMTX_ACCESS_ERROR;
             }
-            sc.levels    = 4;
+            sc.స్థాయిలు    = 4;
             sc.ptidxbits = 9;
             sc.ptesize   = 8;
-            break;
-        case RISCV_IOMMU_DC_IOHGATP_MODE_SV57X4:
-            if (!(s->cap & RISCV_IOMMU_CAP_SV57X4)) {
-                return MEMTX_ACCESS_ERROR;
+            ఆపు;
+        స్థితి RISCV_IOMMU_DC_IOHGATP_బహుళకం_SV57_X4:
+            ఒకవేళ (!(s->cap & RISCV_IOMMU_CAP_SV57X4)) {
+                తిరిగి MEMTX_ACCESS_ERROR;
             }
-            sc.levels    = 5;
+            sc.స్థాయిలు    = 5;
             sc.ptidxbits = 9;
             sc.ptesize   = 8;
-            break;
-        default:
-            return MEMTX_ACCESS_ERROR;
+            ఆపు;
+        అప్రమేయ:
+            తిరిగి MEMTX_ACCESS_ERROR;
         }
     }
 
-    do {
-        const unsigned va_bits = (sc.step ? 0 : 2) + sc.ptidxbits;
-        const unsigned va_skip = TARGET_PAGE_BITS + sc.ptidxbits *
-                                 (sc.levels - 1 - sc.step);
-        const unsigned idx = (addr >> va_skip) & ((1 << va_bits) - 1);
-        const dma_addr_t pte_addr = base + idx * sc.ptesize;
+    చేయి {
+        స్థిరరాశి గుర్తులేని va_బిట్లు = (sc.అడుగు ? 0 : 2) + sc.ptidxbits;
+        స్థిరరాశి గుర్తులేని va_skip = లక్ష్యం_పుట_బిట్లు + sc.ptidxbits *
+                                 (sc.స్థాయిలు - 1 - sc.అడుగు);
+        స్థిరరాశి గుర్తులేని idx = (addr >> va_skip) & ((1 << va_బిట్లు) - 1);
+        స్థిరరాశి dma_addr_t pte_addr = పునాది + idx * sc.ptesize;
 
         /* Address range check before first level lookup */
-        if (!sc.step) {
-            const uint64_t va_mask = (1ULL << (va_skip + va_bits)) - 1;
-            if ((addr & va_mask) != addr) {
-                return MEMTX_ACCESS_ERROR;
+        ఒకవేళ (!sc.అడుగు) {
+            స్థిరరాశి uint64_t va_ముసుగు = (1ULL << (va_skip + va_బిట్లు)) - 1;
+            ఒకవేళ ((addr & va_ముసుగు) != addr) {
+                తిరిగి MEMTX_ACCESS_ERROR;
             }
         }
 
         /* Read page table entry */
-        if (sc.ptesize == 4) {
+        ఒకవేళ (sc.ptesize == 4) {
             uint32_t pte32 = 0;
-            ret = ldl_le_dma(s->target_as, pte_addr, &pte32, attrs);
+            ret = ldl_le_dma(s->లక్ష్యం_as, pte_addr, &pte32, attrs);
             pte = pte32;
-        } else {
-            ret = ldq_le_dma(s->target_as, pte_addr, &pte, attrs);
+        } లేకపోతే {
+            ret = ldq_le_dma(s->లక్ష్యం_as, pte_addr, &pte, attrs);
         }
-        if (ret != MEMTX_OK) {
-            return ret;
+        ఒకవేళ (ret != MEMTX_OK) {
+            తిరిగి ret;
         }
 
-        sc.step++;
-        hwaddr ppn = pte >> PTE_PPN_SHIFT;
+        sc.అడుగు++;
+        hwaddr ppn = pte >> PTE_PPN_జరుపు;
 
-        if (!(pte & PTE_V)) {
-            return MEMTX_ACCESS_ERROR; /* Invalid PTE */
-        } else if (!(pte & (PTE_R | PTE_W | PTE_X))) {
-            base = PPN_PHYS(ppn); /* Inner PTE, continue walking */
-        } else if ((pte & (PTE_R | PTE_W | PTE_X)) == PTE_W) {
-            return MEMTX_ACCESS_ERROR; /* Reserved leaf PTE flags: PTE_W */
-        } else if ((pte & (PTE_R | PTE_W | PTE_X)) == (PTE_W | PTE_X)) {
-            return MEMTX_ACCESS_ERROR; /* Reserved leaf PTE flags: PTE_W + PTE_X */
-        } else if (ppn & ((1ULL << (va_skip - TARGET_PAGE_BITS)) - 1)) {
-            return MEMTX_ACCESS_ERROR; /* Misaligned PPN */
-        } else {
+        ఒకవేళ (!(pte & PTE_V)) {
+            తిరిగి MEMTX_ACCESS_ERROR; /* Invalid PTE */
+        } లేకపోతే ఒకవేళ (!(pte & (PTE_R | PTE_W | PTE_X))) {
+            పునాది = PPN_PHYS(ppn); /* Inner PTE, continue walking */
+        } లేకపోతే ఒకవేళ ((pte & (PTE_R | PTE_W | PTE_X)) == PTE_W) {
+            తిరిగి MEMTX_ACCESS_ERROR; /* Reserved leaf PTE flags: PTE_W */
+        } లేకపోతే ఒకవేళ ((pte & (PTE_R | PTE_W | PTE_X)) == (PTE_W | PTE_X)) {
+            తిరిగి MEMTX_ACCESS_ERROR; /* Reserved leaf PTE flags: PTE_W + PTE_X */
+        } లేకపోతే ఒకవేళ (ppn & ((1ULL << (va_skip - లక్ష్యం_పుట_బిట్లు)) - 1)) {
+            తిరిగి MEMTX_ACCESS_ERROR; /* Misaligned PPN */
+        } లేకపోతే {
             /* Leaf PTE, translation completed. */
-            if (pte & PTE_N) {
-                if (!riscv_iommu_napot_page_mask(ppn, addr, &base)) {
-                    return MEMTX_ACCESS_ERROR;
+            ఒకవేళ (pte & PTE_N) {
+                ఒకవేళ (!riscv_iommu_napot_పుట_ముసుగు(ppn, addr, &పునాది)) {
+                    తిరిగి MEMTX_ACCESS_ERROR;
                 }
-            } else {
-                base = PPN_PHYS(ppn) | (addr & ((1ULL << va_skip) - 1));
+            } లేకపోతే {
+                పునాది = PPN_PHYS(ppn) | (addr & ((1ULL << va_skip) - 1));
             }
-            break;
+            ఆపు;
         }
 
-        if (sc.step == sc.levels) {
-            return MEMTX_ACCESS_ERROR; /* Can't find leaf PTE */
+        ఒకవేళ (sc.అడుగు == sc.స్థాయిలు) {
+            తిరిగి MEMTX_ACCESS_ERROR; /* Can't find leaf PTE */
         }
-    } while (1);
+    } అయితే (1);
 
-out:
-    return dma_memory_read(s->target_as, base, buf, len, attrs);
+బహిర్గతం:
+    తిరిగి dma_జ్ఞాపకం_read(s->లక్ష్యం_as, పునాది, buf, len, attrs);
 }
 
 /*
@@ -1171,52 +1171,52 @@ out:
  * @ctx       : Device Translation Context with devid and process_id set.
  * @return    : success or fault code.
  */
-static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
+స్థిర పూర్ణాంకం riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
 {
-    const uint64_t ddtp = s->ddtp;
-    unsigned mode = get_field(ddtp, RISCV_IOMMU_DDTP_MODE);
-    dma_addr_t addr = PPN_PHYS(get_field(ddtp, RISCV_IOMMU_DDTP_PPN));
-    struct riscv_iommu_dc dc;
+    స్థిరరాశి uint64_t ddtp = s->ddtp;
+    గుర్తులేని బహుళకం = get_క్షేత్రం(ddtp, RISCV_IOMMU_DDTP_బహుళకం);
+    dma_addr_t addr = PPN_PHYS(get_క్షేత్రం(ddtp, RISCV_IOMMU_DDTP_PPN));
+    నిర్మాణం riscv_iommu_dc dc;
     /* Device Context format: 0: extended (64 bytes) | 1: base (32 bytes) */
-    const int dc_fmt = !s->enable_msi;
-    const size_t dc_len = sizeof(dc) >> dc_fmt;
-    int depth;
+    స్థిరరాశి పూర్ణాంకం dc_fmt = !s->enable_msi;
+    స్థిరరాశి కొలత_t dc_len = పరిమాణం(dc) >> dc_fmt;
+    పూర్ణాంకం లోతు;
     uint64_t de;
 
-    switch (mode) {
-    case RISCV_IOMMU_DDTP_MODE_OFF:
-        return RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED;
+    ఎంపిక (బహుళకం) {
+    స్థితి RISCV_IOMMU_DDTP_బహుళకం_OFF:
+        తిరిగి RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED;
 
-    case RISCV_IOMMU_DDTP_MODE_BARE:
+    స్థితి RISCV_IOMMU_DDTP_బహుళకం_BARE:
         /* mock up pass-through translation context */
-        ctx->gatp = set_field(0, RISCV_IOMMU_ATP_MODE_FIELD,
-            RISCV_IOMMU_DC_IOHGATP_MODE_BARE);
-        ctx->satp = set_field(0, RISCV_IOMMU_ATP_MODE_FIELD,
-            RISCV_IOMMU_DC_FSC_MODE_BARE);
+        ctx->gatp = సమితి_క్షేత్రం(0, RISCV_IOMMU_ATP_బహుళకం_క్షేత్రం,
+            RISCV_IOMMU_DC_IOHGATP_బహుళకం_BARE);
+        ctx->satp = సమితి_క్షేత్రం(0, RISCV_IOMMU_ATP_బహుళకం_క్షేత్రం,
+            RISCV_IOMMU_DC_FSC_బహుళకం_BARE);
 
         ctx->tc = RISCV_IOMMU_DC_TC_V;
-        if (s->enable_ats) {
+        ఒకవేళ (s->enable_ats) {
             ctx->tc |= RISCV_IOMMU_DC_TC_EN_ATS;
         }
 
         ctx->ta = 0;
         ctx->msiptp = 0;
-        return 0;
+        తిరిగి 0;
 
-    case RISCV_IOMMU_DDTP_MODE_1LVL:
-        depth = 0;
-        break;
+    స్థితి RISCV_IOMMU_DDTP_బహుళకం_1_LVL:
+        లోతు = 0;
+        ఆపు;
 
-    case RISCV_IOMMU_DDTP_MODE_2LVL:
-        depth = 1;
-        break;
+    స్థితి RISCV_IOMMU_DDTP_బహుళకం_2_LVL:
+        లోతు = 1;
+        ఆపు;
 
-    case RISCV_IOMMU_DDTP_MODE_3LVL:
-        depth = 2;
-        break;
+    స్థితి RISCV_IOMMU_DDTP_బహుళకం_3_LVL:
+        లోతు = 2;
+        ఆపు;
 
-    default:
-        return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+    అప్రమేయ:
+        తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
     }
 
     /*
@@ -1227,12 +1227,12 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
      * - if base device-context format is used:
      *   1LVL: 7, 2LVL: 16, 3LVL: 24
      */
-    if (ctx->devid >= (1 << (depth * 9 + 6 + (dc_fmt && depth != 2)))) {
-        return RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
+    ఒకవేళ (ctx->devid >= (1 << (లోతు * 9 + 6 + (dc_fmt && లోతు != 2)))) {
+        తిరిగి RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
     }
 
     /* Device directory tree walk */
-    for (; depth-- > 0; ) {
+    కొరకు (; లోతు-- > 0; ) {
         riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_DD_WALK);
         /*
          * Select device id index bits based on device directory tree level
@@ -1243,222 +1243,222 @@ static int riscv_iommu_ctx_fetch(RISCVIOMMUState *s, RISCVIOMMUContext *ctx)
          * - if base device-context format is used:
          *   device index: [23:16][15:7][6:0]
          */
-        const int split = depth * 9 + 6 + dc_fmt;
-        addr |= ((ctx->devid >> split) << 3) & ~TARGET_PAGE_MASK;
-        if (dma_memory_read(s->target_as, addr, &de, sizeof(de),
+        స్థిరరాశి పూర్ణాంకం విభజించు = లోతు * 9 + 6 + dc_fmt;
+        addr |= ((ctx->devid >> విభజించు) << 3) & ~లక్ష్యం_పుట_ముసుగు;
+        ఒకవేళ (dma_జ్ఞాపకం_read(s->లక్ష్యం_as, addr, &de, పరిమాణం(de),
                             MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
-            return RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT;
+            తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_ఎక్కించు_FAULT;
         }
-        le64_to_cpus(&de);
-        if (!(de & RISCV_IOMMU_DDTE_VALID)) {
+        le64_గమ్యం_cpus(&de);
+        ఒకవేళ (!(de & RISCV_IOMMU_DDTE_VALID)) {
             /* invalid directory entry */
-            return RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
+            తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
         }
-        if (de & ~(RISCV_IOMMU_DDTE_PPN | RISCV_IOMMU_DDTE_VALID)) {
+        ఒకవేళ (de & ~(RISCV_IOMMU_DDTE_PPN | RISCV_IOMMU_DDTE_VALID)) {
             /* reserved bits set */
-            return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+            తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
         }
-        addr = PPN_PHYS(get_field(de, RISCV_IOMMU_DDTE_PPN));
+        addr = PPN_PHYS(get_క్షేత్రం(de, RISCV_IOMMU_DDTE_PPN));
     }
 
     riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_DD_WALK);
 
     /* index into device context entry page */
-    addr |= (ctx->devid * dc_len) & ~TARGET_PAGE_MASK;
+    addr |= (ctx->devid * dc_len) & ~లక్ష్యం_పుట_ముసుగు;
 
-    memset(&dc, 0, sizeof(dc));
-    if (dma_memory_read(s->target_as, addr, &dc, dc_len,
+    memset(&dc, 0, పరిమాణం(dc));
+    ఒకవేళ (dma_జ్ఞాపకం_read(s->లక్ష్యం_as, addr, &dc, dc_len,
                         MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
-        return RISCV_IOMMU_FQ_CAUSE_DDT_LOAD_FAULT;
+        తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_ఎక్కించు_FAULT;
     }
 
     /* Set translation context. */
-    ctx->tc = le64_to_cpu(dc.tc);
-    ctx->gatp = le64_to_cpu(dc.iohgatp);
-    ctx->satp = le64_to_cpu(dc.fsc);
-    ctx->ta = le64_to_cpu(dc.ta);
-    ctx->msiptp = le64_to_cpu(dc.msiptp);
-    ctx->msi_addr_mask = le64_to_cpu(dc.msi_addr_mask);
-    ctx->msi_addr_pattern = le64_to_cpu(dc.msi_addr_pattern);
+    ctx->tc = le64_గమ్యం_cpu(dc.tc);
+    ctx->gatp = le64_గమ్యం_cpu(dc.iohgatp);
+    ctx->satp = le64_గమ్యం_cpu(dc.fsc);
+    ctx->ta = le64_గమ్యం_cpu(dc.ta);
+    ctx->msiptp = le64_గమ్యం_cpu(dc.msiptp);
+    ctx->msi_addr_ముసుగు = le64_గమ్యం_cpu(dc.msi_addr_ముసుగు);
+    ctx->msi_addr_నమూనా = le64_గమ్యం_cpu(dc.msi_addr_నమూనా);
 
-    if (!(ctx->tc & RISCV_IOMMU_DC_TC_V)) {
-        return RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
+    ఒకవేళ (!(ctx->tc & RISCV_IOMMU_DC_TC_V)) {
+        తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
     }
 
-    if (!riscv_iommu_validate_device_ctx(s, ctx)) {
-        return RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
+    ఒకవేళ (!riscv_iommu_validate_device_ctx(s, ctx)) {
+        తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_MISCONFIGURED;
     }
 
     /* FSC field checks */
-    mode = get_field(ctx->satp, RISCV_IOMMU_DC_FSC_MODE);
-    addr = PPN_PHYS(get_field(ctx->satp, RISCV_IOMMU_DC_FSC_PPN));
+    బహుళకం = get_క్షేత్రం(ctx->satp, RISCV_IOMMU_DC_FSC_బహుళకం);
+    addr = PPN_PHYS(get_క్షేత్రం(ctx->satp, RISCV_IOMMU_DC_FSC_PPN));
 
-    if (!(ctx->tc & RISCV_IOMMU_DC_TC_PDTV)) {
-        if (ctx->process_id != RISCV_IOMMU_NOPROCID) {
+    ఒకవేళ (!(ctx->tc & RISCV_IOMMU_DC_TC_PDTV)) {
+        ఒకవేళ (ctx->process_id != RISCV_IOMMU_NOPROCID) {
             /* PID is disabled */
-            return RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
+            తిరిగి RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
         }
-        if (mode > RISCV_IOMMU_DC_FSC_IOSATP_MODE_SV57) {
+        ఒకవేళ (బహుళకం > RISCV_IOMMU_DC_FSC_IOSATP_బహుళకం_SV57) {
             /* Invalid translation mode */
-            return RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
+            తిరిగి RISCV_IOMMU_FQ_CAUSE_DDT_INVALID;
         }
-        return 0;
+        తిరిగి 0;
     }
 
-    if (ctx->process_id == RISCV_IOMMU_NOPROCID) {
-        if (!(ctx->tc & RISCV_IOMMU_DC_TC_DPE)) {
+    ఒకవేళ (ctx->process_id == RISCV_IOMMU_NOPROCID) {
+        ఒకవేళ (!(ctx->tc & RISCV_IOMMU_DC_TC_DPE)) {
             /* No default process_id enabled, set BARE mode */
             ctx->satp = 0ULL;
-            return 0;
-        } else {
+            తిరిగి 0;
+        } లేకపోతే {
             /* Use default process_id #0 */
             ctx->process_id = 0;
         }
     }
 
-    if (mode == RISCV_IOMMU_DC_FSC_MODE_BARE) {
+    ఒకవేళ (బహుళకం == RISCV_IOMMU_DC_FSC_బహుళకం_BARE) {
         /* No S-Stage translation, done. */
-        return 0;
+        తిరిగి 0;
     }
 
     /* FSC.TC.PDTV enabled */
-    if (mode > RISCV_IOMMU_DC_FSC_PDTP_MODE_PD20) {
+    ఒకవేళ (బహుళకం > RISCV_IOMMU_DC_FSC_PDTP_బహుళకం_PD20) {
         /* Invalid PDTP.MODE */
-        return RISCV_IOMMU_FQ_CAUSE_PDT_MISCONFIGURED;
+        తిరిగి RISCV_IOMMU_FQ_CAUSE_PDT_MISCONFIGURED;
     }
 
-    for (depth = mode - RISCV_IOMMU_DC_FSC_PDTP_MODE_PD8; depth-- > 0; ) {
+    కొరకు (లోతు = బహుళకం - RISCV_IOMMU_DC_FSC_PDTP_బహుళకం_PD8; లోతు-- > 0; ) {
         riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_PD_WALK);
 
         /*
          * Select process id index bits based on process directory tree
          * level. See IOMMU Specification, 2.2. Process-Directory-Table.
          */
-        const int split = depth * 9 + 8;
-        addr |= ((ctx->process_id >> split) << 3) & ~TARGET_PAGE_MASK;
-        if (pdt_memory_read(s, ctx, addr, &de, sizeof(de),
+        స్థిరరాశి పూర్ణాంకం విభజించు = లోతు * 9 + 8;
+        addr |= ((ctx->process_id >> విభజించు) << 3) & ~లక్ష్యం_పుట_ముసుగు;
+        ఒకవేళ (pdt_జ్ఞాపకం_read(s, ctx, addr, &de, పరిమాణం(de),
                             MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
-            return RISCV_IOMMU_FQ_CAUSE_PDT_LOAD_FAULT;
+            తిరిగి RISCV_IOMMU_FQ_CAUSE_PDT_ఎక్కించు_FAULT;
         }
-        le64_to_cpus(&de);
-        if (!(de & RISCV_IOMMU_PDTE_VALID)) {
-            return RISCV_IOMMU_FQ_CAUSE_PDT_INVALID;
+        le64_గమ్యం_cpus(&de);
+        ఒకవేళ (!(de & RISCV_IOMMU_PDTE_VALID)) {
+            తిరిగి RISCV_IOMMU_FQ_CAUSE_PDT_INVALID;
         }
-        addr = PPN_PHYS(get_field(de, RISCV_IOMMU_PDTE_PPN));
+        addr = PPN_PHYS(get_క్షేత్రం(de, RISCV_IOMMU_PDTE_PPN));
     }
 
     riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_PD_WALK);
 
     /* Leaf entry in PDT */
-    addr |= (ctx->process_id << 4) & ~TARGET_PAGE_MASK;
-    if (pdt_memory_read(s, ctx, addr, &dc.ta, sizeof(uint64_t) * 2,
+    addr |= (ctx->process_id << 4) & ~లక్ష్యం_పుట_ముసుగు;
+    ఒకవేళ (pdt_జ్ఞాపకం_read(s, ctx, addr, &dc.ta, పరిమాణం(uint64_t) * 2,
                         MEMTXATTRS_UNSPECIFIED) != MEMTX_OK) {
-        return RISCV_IOMMU_FQ_CAUSE_PDT_LOAD_FAULT;
+        తిరిగి RISCV_IOMMU_FQ_CAUSE_PDT_ఎక్కించు_FAULT;
     }
 
     /* Use FSC and TA from process directory entry. */
-    ctx->ta = le64_to_cpu(dc.ta);
-    ctx->satp = le64_to_cpu(dc.fsc);
+    ctx->ta = le64_గమ్యం_cpu(dc.ta);
+    ctx->satp = le64_గమ్యం_cpu(dc.fsc);
 
-    if (!(ctx->ta & RISCV_IOMMU_PC_TA_V)) {
-        return RISCV_IOMMU_FQ_CAUSE_PDT_INVALID;
+    ఒకవేళ (!(ctx->ta & RISCV_IOMMU_PC_TA_V)) {
+        తిరిగి RISCV_IOMMU_FQ_CAUSE_PDT_INVALID;
     }
 
-    if (!riscv_iommu_validate_process_ctx(s, ctx)) {
-        return RISCV_IOMMU_FQ_CAUSE_PDT_MISCONFIGURED;
+    ఒకవేళ (!riscv_iommu_validate_process_ctx(s, ctx)) {
+        తిరిగి RISCV_IOMMU_FQ_CAUSE_PDT_MISCONFIGURED;
     }
 
-    return 0;
+    తిరిగి 0;
 }
 
 /* Translation Context cache support */
-static gboolean riscv_iommu_ctx_equal(gconstpointer v1, gconstpointer v2)
+స్థిర gboolean riscv_iommu_ctx_equal(gconstpointer v1, gconstpointer v2)
 {
     RISCVIOMMUContext *c1 = (RISCVIOMMUContext *) v1;
     RISCVIOMMUContext *c2 = (RISCVIOMMUContext *) v2;
-    return c1->devid == c2->devid &&
+    తిరిగి c1->devid == c2->devid &&
            c1->process_id == c2->process_id;
 }
 
-static guint riscv_iommu_ctx_hash(gconstpointer v)
+స్థిర guint riscv_iommu_ctx_hash(gconstpointer v)
 {
     RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) v;
     /*
      * Generate simple hash of (process_id, devid)
      * assuming 24-bit wide devid.
      */
-    return (guint)(ctx->devid) + ((guint)(ctx->process_id) << 24);
+    తిరిగి (guint)(ctx->devid) + ((guint)(ctx->process_id) << 24);
 }
 
-static void riscv_iommu_ctx_inval_devid_procid(gpointer key, gpointer value,
-                                               gpointer data)
+స్థిర శూన్య riscv_iommu_ctx_inval_devid_procid(gpointer కీలకం, gpointer విలువ,
+                                               gpointer దత్తాంశం)
 {
-    RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) value;
-    RISCVIOMMUContext *arg = (RISCVIOMMUContext *) data;
-    if (ctx->tc & RISCV_IOMMU_DC_TC_V &&
+    RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) విలువ;
+    RISCVIOMMUContext *arg = (RISCVIOMMUContext *) దత్తాంశం;
+    ఒకవేళ (ctx->tc & RISCV_IOMMU_DC_TC_V &&
         ctx->devid == arg->devid &&
         ctx->process_id == arg->process_id) {
         ctx->tc &= ~RISCV_IOMMU_DC_TC_V;
     }
 }
 
-static void riscv_iommu_ctx_inval_devid(gpointer key, gpointer value,
-                                        gpointer data)
+స్థిర శూన్య riscv_iommu_ctx_inval_devid(gpointer కీలకం, gpointer విలువ,
+                                        gpointer దత్తాంశం)
 {
-    RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) value;
-    RISCVIOMMUContext *arg = (RISCVIOMMUContext *) data;
-    if (ctx->tc & RISCV_IOMMU_DC_TC_V &&
+    RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) విలువ;
+    RISCVIOMMUContext *arg = (RISCVIOMMUContext *) దత్తాంశం;
+    ఒకవేళ (ctx->tc & RISCV_IOMMU_DC_TC_V &&
         ctx->devid == arg->devid) {
         ctx->tc &= ~RISCV_IOMMU_DC_TC_V;
     }
 }
 
-static void riscv_iommu_ctx_inval_all(gpointer key, gpointer value,
-                                      gpointer data)
+స్థిర శూన్య riscv_iommu_ctx_inval_all(gpointer కీలకం, gpointer విలువ,
+                                      gpointer దత్తాంశం)
 {
-    RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) value;
-    if (ctx->tc & RISCV_IOMMU_DC_TC_V) {
+    RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) విలువ;
+    ఒకవేళ (ctx->tc & RISCV_IOMMU_DC_TC_V) {
         ctx->tc &= ~RISCV_IOMMU_DC_TC_V;
     }
 }
 
-static void riscv_iommu_ctx_inval(RISCVIOMMUState *s, GHFunc func,
+స్థిర శూన్య riscv_iommu_ctx_inval(RISCVIOMMUState *s, GHFunc func,
                                   uint32_t devid, uint32_t process_id)
 {
-    GHashTable *ctx_cache;
-    RISCVIOMMUContext key = {
+    GHash_పట్టిక *ctx_cache;
+    RISCVIOMMUContext కీలకం = {
         .devid = devid,
         .process_id = process_id,
     };
-    ctx_cache = g_hash_table_ref(s->ctx_cache);
-    g_hash_table_foreach(ctx_cache, func, &key);
-    g_hash_table_unref(ctx_cache);
+    ctx_cache = g_hash_పట్టిక_ref(s->ctx_cache);
+    g_hash_పట్టిక_foreach(ctx_cache, func, &కీలకం);
+    g_hash_పట్టిక_unref(ctx_cache);
 }
 
 /* Find or allocate translation context for a given {device_id, process_id} */
-static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
-                                          unsigned devid, unsigned process_id,
+స్థిర RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
+                                          గుర్తులేని devid, గుర్తులేని process_id,
                                           IOMMUAccessFlags perm, uint64_t iova,
-                                          void **ref)
+                                          శూన్య **ref)
 {
-    GHashTable *ctx_cache;
+    GHash_పట్టిక *ctx_cache;
     RISCVIOMMUContext *ctx;
-    RISCVIOMMUContext key = {
+    RISCVIOMMUContext కీలకం = {
         .devid = devid,
         .process_id = process_id,
     };
-    unsigned mode = get_field(s->ddtp, RISCV_IOMMU_DDTP_MODE);
+    గుర్తులేని బహుళకం = get_క్షేత్రం(s->ddtp, RISCV_IOMMU_DDTP_బహుళకం);
     uint32_t fault_type;
 
-    ctx_cache = g_hash_table_ref(s->ctx_cache);
+    ctx_cache = g_hash_పట్టిక_ref(s->ctx_cache);
 
-    if (mode != RISCV_IOMMU_DDTP_MODE_OFF &&
-        mode != RISCV_IOMMU_DDTP_MODE_BARE) {
-        ctx = g_hash_table_lookup(ctx_cache, &key);
+    ఒకవేళ (బహుళకం != RISCV_IOMMU_DDTP_బహుళకం_OFF &&
+        బహుళకం != RISCV_IOMMU_DDTP_బహుళకం_BARE) {
+        ctx = g_hash_పట్టిక_lookup(ctx_cache, &కీలకం);
 
-        if (ctx && (ctx->tc & RISCV_IOMMU_DC_TC_V)) {
+        ఒకవేళ (ctx && (ctx->tc & RISCV_IOMMU_DC_TC_V)) {
             *ref = ctx_cache;
-            return ctx;
+            తిరిగి ctx;
         }
     }
 
@@ -1466,30 +1466,30 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
     ctx->devid = devid;
     ctx->process_id = process_id;
 
-    int fault = riscv_iommu_ctx_fetch(s, ctx);
-    if (!fault) {
-        if (mode != RISCV_IOMMU_DDTP_MODE_BARE) {
-            if (g_hash_table_size(ctx_cache) >= LIMIT_CACHE_CTX) {
-                g_hash_table_unref(ctx_cache);
-                ctx_cache = g_hash_table_new_full(riscv_iommu_ctx_hash,
+    పూర్ణాంకం fault = riscv_iommu_ctx_fetch(s, ctx);
+    ఒకవేళ (!fault) {
+        ఒకవేళ (బహుళకం != RISCV_IOMMU_DDTP_బహుళకం_BARE) {
+            ఒకవేళ (g_hash_పట్టిక_కొలత(ctx_cache) >= హద్దు_CACHE_CTX) {
+                g_hash_పట్టిక_unref(ctx_cache);
+                ctx_cache = g_hash_పట్టిక_new_నిండిన(riscv_iommu_ctx_hash,
                                                   riscv_iommu_ctx_equal,
-                                                  g_free, NULL);
-                g_hash_table_ref(ctx_cache);
-                g_hash_table_unref(qatomic_xchg(&s->ctx_cache, ctx_cache));
+                                                  g_free, ఖాళీ);
+                g_hash_పట్టిక_ref(ctx_cache);
+                g_hash_పట్టిక_unref(qatomic_xchg(&s->ctx_cache, ctx_cache));
             }
 
-            g_hash_table_add(ctx_cache, ctx);
+            g_hash_పట్టిక_కూడు(ctx_cache, ctx);
             *ref = ctx_cache;
-        } else {
-            g_hash_table_unref(ctx_cache);
+        } లేకపోతే {
+            g_hash_పట్టిక_unref(ctx_cache);
             /* Remember ctx so it can be freed */
             *ref = ctx;
         }
-        return ctx;
+        తిరిగి ctx;
     }
 
-    g_hash_table_unref(ctx_cache);
-    *ref = NULL;
+    g_hash_పట్టిక_unref(ctx_cache);
+    *ref = ఖాళీ;
 
     /*
      * TODO: (1) do we need to distinguish other fault types
@@ -1498,9 +1498,9 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
      * least one other place (end of riscv_iommu_translate())
      * that does something similar.
      */
-    if (perm & IOMMU_RO) {
+    ఒకవేళ (perm & IOMMU_RO) {
         fault_type = RISCV_IOMMU_FQ_TTYPE_UADDR_RD;
-    } else {
+    } లేకపోతే {
         fault_type = RISCV_IOMMU_FQ_TTYPE_UADDR_WR;
     }
 
@@ -1508,120 +1508,120 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
                              !!process_id, iova, 0);
 
     g_free(ctx);
-    return NULL;
+    తిరిగి ఖాళీ;
 }
 
-static void riscv_iommu_ctx_put(RISCVIOMMUState *s, void *ref)
+స్థిర శూన్య riscv_iommu_ctx_put(RISCVIOMMUState *s, శూన్య *ref)
 {
-    unsigned mode = get_field(s->ddtp, RISCV_IOMMU_DDTP_MODE);
+    గుర్తులేని బహుళకం = get_క్షేత్రం(s->ddtp, RISCV_IOMMU_DDTP_బహుళకం);
 
-    if (!ref) {
-        return;
+    ఒకవేళ (!ref) {
+        తిరిగి;
     }
 
     /* ref is pointing to ctx in Bare mode. Bare mode ctx is not cached */
-    if (mode == RISCV_IOMMU_DDTP_MODE_BARE) {
+    ఒకవేళ (బహుళకం == RISCV_IOMMU_DDTP_బహుళకం_BARE) {
         g_free(ref);
-    } else {
-        g_hash_table_unref((GHashTable *)ref);
+    } లేకపోతే {
+        g_hash_పట్టిక_unref((GHash_పట్టిక *)ref);
     }
 }
 
 /* Find or allocate address space for a given device */
-static AddressSpace *riscv_iommu_space(RISCVIOMMUState *s, PCIBus *bus,
-                                            int devfn)
+స్థిర చిరునామా_Space *riscv_iommu_space(RISCVIOMMUState *s, PCIBus *bus,
+                                            పూర్ణాంకం devfn)
 {
     RISCVIOMMUSpace *as;
 
     QLIST_FOREACH(as, &s->spaces, list) {
-        if (as->bus == bus && as->devfn == devfn) {
-            break;
+        ఒకవేళ (as->bus == bus && as->devfn == devfn) {
+            ఆపు;
         }
     }
 
-    if (as == NULL) {
-        char name[64];
+    ఒకవేళ (as == ఖాళీ) {
+        అక్షరం name[64];
         as = g_new0(RISCVIOMMUSpace, 1);
 
         as->iommu = s;
         as->bus = bus;
         as->devfn = devfn;
 
-        snprintf(name, sizeof(name), "riscv-iommu-%04x:%02x.%d-iova",
-            pci_bus_num(bus), PCI_SLOT(devfn), PCI_FUNC(devfn));
+        snprintf(name, పరిమాణం(name), "riscv-iommu-%04x:%02x.%d-iova",
+            pci_bus_అంకె(bus), PCI_స్థానం(devfn), PCI_FUNC(devfn));
 
         /* IOVA address space, untranslated addresses */
-        memory_region_init_iommu(&as->iova_mr, sizeof(as->iova_mr),
-            TYPE_RISCV_IOMMU_MEMORY_REGION,
+        జ్ఞాపకం_region_init_iommu(&as->iova_mr, పరిమాణం(as->iova_mr),
+            TYPE_RISCV_IOMMU_జ్ఞాపకం_REGION,
             OBJECT(s), "riscv_iommu", UINT64_MAX);
-        address_space_init(&as->iova_as, MEMORY_REGION(&as->iova_mr), name);
+        చిరునామా_space_init(&as->iova_as, జ్ఞాపకం_REGION(&as->iova_mr), name);
 
-        QLIST_INSERT_HEAD(&s->spaces, as, list);
+        QLIST_చొప్పించు_తల(&s->spaces, as, list);
 
-        trace_riscv_iommu_new(s->parent_obj.id, pci_bus_num(bus),
-                PCI_SLOT(devfn), PCI_FUNC(devfn));
+        trace_riscv_iommu_new(s->మాతృ_obj.id, pci_bus_అంకె(bus),
+                PCI_స్థానం(devfn), PCI_FUNC(devfn));
     }
-    return &as->iova_as;
+    తిరిగి &as->iova_as;
 }
 
 /* Translation Object cache support */
-static gboolean riscv_iommu_iot_equal(gconstpointer v1, gconstpointer v2)
+స్థిర gboolean riscv_iommu_iot_equal(gconstpointer v1, gconstpointer v2)
 {
     RISCVIOMMUEntry *t1 = (RISCVIOMMUEntry *) v1;
     RISCVIOMMUEntry *t2 = (RISCVIOMMUEntry *) v2;
-    return t1->gscid == t2->gscid && t1->pscid == t2->pscid &&
-           t1->iova == t2->iova && t1->tag == t2->tag;
+    తిరిగి t1->gscid == t2->gscid && t1->pscid == t2->pscid &&
+           t1->iova == t2->iova && t1->ట్యాగ్ == t2->ట్యాగ్;
 }
 
-static guint riscv_iommu_iot_hash(gconstpointer v)
+స్థిర guint riscv_iommu_iot_hash(gconstpointer v)
 {
     RISCVIOMMUEntry *t = (RISCVIOMMUEntry *) v;
-    return (guint)t->iova;
+    తిరిగి (guint)t->iova;
 }
 
 /* GV: 0 AV: 0 PSCV: 0 GVMA: 0 */
 /* GV: 0 AV: 0 GVMA: 1 */
-static
-void riscv_iommu_iot_inval_all(gpointer key, gpointer value, gpointer data)
+స్థిర
+శూన్య riscv_iommu_iot_inval_all(gpointer కీలకం, gpointer విలువ, gpointer దత్తాంశం)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
-    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag) {
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) విలువ;
+    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) దత్తాంశం;
+    ఒకవేళ (iot->ట్యాగ్ == arg->ట్యాగ్) {
         iot->perm = IOMMU_NONE;
     }
 }
 
 /* GV: 0 AV: 0 PSCV: 1 GVMA: 0 */
-static
-void riscv_iommu_iot_inval_pscid(gpointer key, gpointer value, gpointer data)
+స్థిర
+శూన్య riscv_iommu_iot_inval_pscid(gpointer కీలకం, gpointer విలువ, gpointer దత్తాంశం)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
-    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) విలువ;
+    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) దత్తాంశం;
+    ఒకవేళ (iot->ట్యాగ్ == arg->ట్యాగ్ &&
         iot->pscid == arg->pscid) {
         iot->perm = IOMMU_NONE;
     }
 }
 
 /* GV: 0 AV: 1 PSCV: 0 GVMA: 0 */
-static
-void riscv_iommu_iot_inval_iova(gpointer key, gpointer value, gpointer data)
+స్థిర
+శూన్య riscv_iommu_iot_inval_iova(gpointer కీలకం, gpointer విలువ, gpointer దత్తాంశం)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
-    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) విలువ;
+    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) దత్తాంశం;
+    ఒకవేళ (iot->ట్యాగ్ == arg->ట్యాగ్ &&
         iot->iova == arg->iova) {
         iot->perm = IOMMU_NONE;
     }
 }
 
 /* GV: 0 AV: 1 PSCV: 1 GVMA: 0 */
-static void riscv_iommu_iot_inval_pscid_iova(gpointer key, gpointer value,
-                                             gpointer data)
+స్థిర శూన్య riscv_iommu_iot_inval_pscid_iova(gpointer కీలకం, gpointer విలువ,
+                                             gpointer దత్తాంశం)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
-    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) విలువ;
+    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) దత్తాంశం;
+    ఒకవేళ (iot->ట్యాగ్ == arg->ట్యాగ్ &&
         iot->pscid == arg->pscid &&
         iot->iova == arg->iova) {
         iot->perm = IOMMU_NONE;
@@ -1630,24 +1630,24 @@ static void riscv_iommu_iot_inval_pscid_iova(gpointer key, gpointer value,
 
 /* GV: 1 AV: 0 PSCV: 0 GVMA: 0 */
 /* GV: 1 AV: 0 GVMA: 1 */
-static
-void riscv_iommu_iot_inval_gscid(gpointer key, gpointer value, gpointer data)
+స్థిర
+శూన్య riscv_iommu_iot_inval_gscid(gpointer కీలకం, gpointer విలువ, gpointer దత్తాంశం)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
-    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) విలువ;
+    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) దత్తాంశం;
+    ఒకవేళ (iot->ట్యాగ్ == arg->ట్యాగ్ &&
         iot->gscid == arg->gscid) {
         iot->perm = IOMMU_NONE;
     }
 }
 
 /* GV: 1 AV: 0 PSCV: 1 GVMA: 0 */
-static void riscv_iommu_iot_inval_gscid_pscid(gpointer key, gpointer value,
-                                              gpointer data)
+స్థిర శూన్య riscv_iommu_iot_inval_gscid_pscid(gpointer కీలకం, gpointer విలువ,
+                                              gpointer దత్తాంశం)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
-    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) విలువ;
+    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) దత్తాంశం;
+    ఒకవేళ (iot->ట్యాగ్ == arg->ట్యాగ్ &&
         iot->gscid == arg->gscid &&
         iot->pscid == arg->pscid) {
         iot->perm = IOMMU_NONE;
@@ -1656,12 +1656,12 @@ static void riscv_iommu_iot_inval_gscid_pscid(gpointer key, gpointer value,
 
 /* GV: 1 AV: 1 PSCV: 0 GVMA: 0 */
 /* GV: 1 AV: 1 GVMA: 1 */
-static void riscv_iommu_iot_inval_gscid_iova(gpointer key, gpointer value,
-                                             gpointer data)
+స్థిర శూన్య riscv_iommu_iot_inval_gscid_iova(gpointer కీలకం, gpointer విలువ,
+                                             gpointer దత్తాంశం)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
-    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) విలువ;
+    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) దత్తాంశం;
+    ఒకవేళ (iot->ట్యాగ్ == arg->ట్యాగ్ &&
         iot->gscid == arg->gscid &&
         iot->iova == arg->iova) {
         iot->perm = IOMMU_NONE;
@@ -1669,12 +1669,12 @@ static void riscv_iommu_iot_inval_gscid_iova(gpointer key, gpointer value,
 }
 
 /* GV: 1 AV: 1 PSCV: 1 GVMA: 0 */
-static void riscv_iommu_iot_inval_gscid_pscid_iova(gpointer key, gpointer value,
-                                                   gpointer data)
+స్థిర శూన్య riscv_iommu_iot_inval_gscid_pscid_iova(gpointer కీలకం, gpointer విలువ,
+                                                   gpointer దత్తాంశం)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
-    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
-    if (iot->tag == arg->tag &&
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) విలువ;
+    RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) దత్తాంశం;
+    ఒకవేళ (iot->ట్యాగ్ == arg->ట్యాగ్ &&
         iot->gscid == arg->gscid &&
         iot->pscid == arg->pscid &&
         iot->iova == arg->iova) {
@@ -1683,112 +1683,112 @@ static void riscv_iommu_iot_inval_gscid_pscid_iova(gpointer key, gpointer value,
 }
 
 /* caller should keep ref-count for iot_cache object */
-static RISCVIOMMUEntry *riscv_iommu_iot_lookup(RISCVIOMMUContext *ctx,
-    GHashTable *iot_cache, hwaddr iova, RISCVIOMMUTransTag transtag)
+స్థిర RISCVIOMMUEntry *riscv_iommu_iot_lookup(RISCVIOMMUContext *ctx,
+    GHash_పట్టిక *iot_cache, hwaddr iova, RISCVIOMMUTrans_ట్యాగ్ transtag)
 {
-    RISCVIOMMUEntry key = {
-        .tag   = transtag,
-        .gscid = get_field(ctx->gatp, RISCV_IOMMU_DC_IOHGATP_GSCID),
-        .pscid = get_field(ctx->ta, RISCV_IOMMU_DC_TA_PSCID),
-        .iova  = PPN_DOWN(iova),
+    RISCVIOMMUEntry కీలకం = {
+        .ట్యాగ్   = transtag,
+        .gscid = get_క్షేత్రం(ctx->gatp, RISCV_IOMMU_DC_IOHGATP_GSCID),
+        .pscid = get_క్షేత్రం(ctx->ta, RISCV_IOMMU_DC_TA_PSCID),
+        .iova  = PPN_కిందికి(iova),
     };
-    return g_hash_table_lookup(iot_cache, &key);
+    తిరిగి g_hash_పట్టిక_lookup(iot_cache, &కీలకం);
 }
 
 /* caller should keep ref-count for iot_cache object */
-static void riscv_iommu_iot_update(RISCVIOMMUState *s,
-    GHashTable *iot_cache, RISCVIOMMUEntry *iot)
+స్థిర శూన్య riscv_iommu_iot_update(RISCVIOMMUState *s,
+    GHash_పట్టిక *iot_cache, RISCVIOMMUEntry *iot)
 {
-    if (!s->iot_limit) {
-        return;
+    ఒకవేళ (!s->iot_హద్దు) {
+        తిరిగి;
     }
 
-    if (g_hash_table_size(s->iot_cache) >= s->iot_limit) {
-        iot_cache = g_hash_table_new_full(riscv_iommu_iot_hash,
+    ఒకవేళ (g_hash_పట్టిక_కొలత(s->iot_cache) >= s->iot_హద్దు) {
+        iot_cache = g_hash_పట్టిక_new_నిండిన(riscv_iommu_iot_hash,
                                           riscv_iommu_iot_equal,
-                                          g_free, NULL);
-        g_hash_table_unref(qatomic_xchg(&s->iot_cache, iot_cache));
+                                          g_free, ఖాళీ);
+        g_hash_పట్టిక_unref(qatomic_xchg(&s->iot_cache, iot_cache));
     }
-    g_hash_table_add(iot_cache, iot);
+    g_hash_పట్టిక_కూడు(iot_cache, iot);
 }
 
-static void riscv_iommu_iot_inval(RISCVIOMMUState *s, GHFunc func,
-    uint32_t gscid, uint32_t pscid, hwaddr iova, RISCVIOMMUTransTag transtag)
+స్థిర శూన్య riscv_iommu_iot_inval(RISCVIOMMUState *s, GHFunc func,
+    uint32_t gscid, uint32_t pscid, hwaddr iova, RISCVIOMMUTrans_ట్యాగ్ transtag)
 {
-    GHashTable *iot_cache;
-    RISCVIOMMUEntry key = {
-        .tag = transtag,
+    GHash_పట్టిక *iot_cache;
+    RISCVIOMMUEntry కీలకం = {
+        .ట్యాగ్ = transtag,
         .gscid = gscid,
         .pscid = pscid,
-        .iova  = PPN_DOWN(iova),
+        .iova  = PPN_కిందికి(iova),
     };
 
-    iot_cache = g_hash_table_ref(s->iot_cache);
-    g_hash_table_foreach(iot_cache, func, &key);
-    g_hash_table_unref(iot_cache);
+    iot_cache = g_hash_పట్టిక_ref(s->iot_cache);
+    g_hash_పట్టిక_foreach(iot_cache, func, &కీలకం);
+    g_hash_పట్టిక_unref(iot_cache);
 }
 
-static RISCVIOMMUTransTag riscv_iommu_get_transtag(RISCVIOMMUContext *ctx)
+స్థిర RISCVIOMMUTrans_ట్యాగ్ riscv_iommu_get_transtag(RISCVIOMMUContext *ctx)
 {
-    uint64_t satp = get_field(ctx->satp, RISCV_IOMMU_ATP_MODE_FIELD);
-    uint64_t gatp = get_field(ctx->gatp, RISCV_IOMMU_ATP_MODE_FIELD);
+    uint64_t satp = get_క్షేత్రం(ctx->satp, RISCV_IOMMU_ATP_బహుళకం_క్షేత్రం);
+    uint64_t gatp = get_క్షేత్రం(ctx->gatp, RISCV_IOMMU_ATP_బహుళకం_క్షేత్రం);
 
-    if (satp == RISCV_IOMMU_DC_FSC_MODE_BARE) {
-        return (gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) ?
-            RISCV_IOMMU_TRANS_TAG_BY : RISCV_IOMMU_TRANS_TAG_VG;
-    } else {
-        return (gatp == RISCV_IOMMU_DC_IOHGATP_MODE_BARE) ?
-            RISCV_IOMMU_TRANS_TAG_SS : RISCV_IOMMU_TRANS_TAG_VN;
+    ఒకవేళ (satp == RISCV_IOMMU_DC_FSC_బహుళకం_BARE) {
+        తిరిగి (gatp == RISCV_IOMMU_DC_IOHGATP_బహుళకం_BARE) ?
+            RISCV_IOMMU_TRANS_ట్యాగ్_BY : RISCV_IOMMU_TRANS_ట్యాగ్_VG;
+    } లేకపోతే {
+        తిరిగి (gatp == RISCV_IOMMU_DC_IOHGATP_బహుళకం_BARE) ?
+            RISCV_IOMMU_TRANS_ట్యాగ్_SS : RISCV_IOMMU_TRANS_ట్యాగ్_VN;
     }
 }
 
-static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
+స్థిర పూర్ణాంకం riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     IOMMUTLBEntry *iotlb, bool enable_cache)
 {
-    RISCVIOMMUTransTag transtag = riscv_iommu_get_transtag(ctx);
+    RISCVIOMMUTrans_ట్యాగ్ transtag = riscv_iommu_get_transtag(ctx);
     RISCVIOMMUEntry *iot;
     IOMMUAccessFlags perm;
     bool enable_pid;
     bool enable_pri;
-    GHashTable *iot_cache;
-    int fault;
+    GHash_పట్టిక *iot_cache;
+    పూర్ణాంకం fault;
 
     riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_URQ);
 
-    iot_cache = g_hash_table_ref(s->iot_cache);
+    iot_cache = g_hash_పట్టిక_ref(s->iot_cache);
     enable_pri = (iotlb->perm == IOMMU_NONE) &&
                  (ctx->tc & RISCV_IOMMU_DC_TC_EN_PRI);
     enable_pid = (ctx->tc & RISCV_IOMMU_DC_TC_PDTV);
 
     /* Check for ATS request. */
-    if (iotlb->perm == IOMMU_NONE) {
+    ఒకవేళ (iotlb->perm == IOMMU_NONE) {
         riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_ATS_RQ);
         /* Check if ATS is disabled. */
-        if (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS)) {
+        ఒకవేళ (!(ctx->tc & RISCV_IOMMU_DC_TC_EN_ATS)) {
             enable_pri = false;
             fault = RISCV_IOMMU_FQ_CAUSE_TTYPE_BLOCKED;
-            goto done;
+            వెళ్ళు పూర్తి;
         }
     }
 
     iot = riscv_iommu_iot_lookup(ctx, iot_cache, iotlb->iova, transtag);
     perm = iot ? iot->perm : IOMMU_NONE;
-    if (perm != IOMMU_NONE) {
+    ఒకవేళ (perm != IOMMU_NONE) {
         iotlb->translated_addr = PPN_PHYS(iot->phys);
-        iotlb->addr_mask = ~TARGET_PAGE_MASK;
+        iotlb->addr_ముసుగు = ~లక్ష్యం_పుట_ముసుగు;
         iotlb->perm = perm;
         fault = 0;
-        goto done;
+        వెళ్ళు పూర్తి;
     }
 
-    riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_TLB_MISS);
+    riscv_iommu_hpm_incr_ctr(s, ctx, RISCV_IOMMU_HPMEVENT_TLB_తప్పిపోవు);
 
     /* Translate using device directory / page table information. */
     fault = riscv_iommu_spa_fetch(s, ctx, iotlb);
 
-    if (!fault && iotlb->target_as == &s->trap_as) {
+    ఒకవేళ (!fault && iotlb->లక్ష్యం_as == &s->trap_as) {
         /* Do not cache trapped MSI translations */
-        goto done;
+        వెళ్ళు పూర్తి;
     }
 
     /*
@@ -1797,138 +1797,138 @@ static int riscv_iommu_translate(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
      * translation cache evictions for other devices sharing the
      * IOMMU hardware model.
      */
-    if (!fault && iotlb->translated_addr != iotlb->iova && enable_cache) {
+    ఒకవేళ (!fault && iotlb->translated_addr != iotlb->iova && enable_cache) {
         iot = g_new0(RISCVIOMMUEntry, 1);
-        iot->iova = PPN_DOWN(iotlb->iova);
-        iot->phys = PPN_DOWN(iotlb->translated_addr);
-        iot->gscid = get_field(ctx->gatp, RISCV_IOMMU_DC_IOHGATP_GSCID);
-        iot->pscid = get_field(ctx->ta, RISCV_IOMMU_DC_TA_PSCID);
+        iot->iova = PPN_కిందికి(iotlb->iova);
+        iot->phys = PPN_కిందికి(iotlb->translated_addr);
+        iot->gscid = get_క్షేత్రం(ctx->gatp, RISCV_IOMMU_DC_IOHGATP_GSCID);
+        iot->pscid = get_క్షేత్రం(ctx->ta, RISCV_IOMMU_DC_TA_PSCID);
         iot->perm = iotlb->perm;
-        iot->tag = transtag;
+        iot->ట్యాగ్ = transtag;
         riscv_iommu_iot_update(s, iot_cache, iot);
     }
 
-done:
-    g_hash_table_unref(iot_cache);
+పూర్తి:
+    g_hash_పట్టిక_unref(iot_cache);
 
-    if (enable_pri && fault) {
-        struct riscv_iommu_pq_record pr = {0};
-        if (enable_pid) {
-            pr.hdr = set_field(RISCV_IOMMU_PREQ_HDR_PV,
+    ఒకవేళ (enable_pri && fault) {
+        నిర్మాణం riscv_iommu_pq_రికార్డు pr = {0};
+        ఒకవేళ (enable_pid) {
+            pr.hdr = సమితి_క్షేత్రం(RISCV_IOMMU_PREQ_HDR_PV,
                                RISCV_IOMMU_PREQ_HDR_PID, ctx->process_id);
         }
-        pr.hdr = set_field(pr.hdr, RISCV_IOMMU_PREQ_HDR_DID, ctx->devid);
-        pr.payload = (iotlb->iova & TARGET_PAGE_MASK) |
+        pr.hdr = సమితి_క్షేత్రం(pr.hdr, RISCV_IOMMU_PREQ_HDR_DID, ctx->devid);
+        pr.payload = (iotlb->iova & లక్ష్యం_పుట_ముసుగు) |
                      RISCV_IOMMU_PREQ_PAYLOAD_M;
         riscv_iommu_pri(s, &pr);
-        return fault;
+        తిరిగి fault;
     }
 
-    if (fault) {
-        unsigned ttype = RISCV_IOMMU_FQ_TTYPE_PCIE_ATS_REQ;
+    ఒకవేళ (fault) {
+        గుర్తులేని ttype = RISCV_IOMMU_FQ_TTYPE_PCIE_ATS_REQ;
 
-        if ((iotlb->perm & IOMMU_RW) == IOMMU_RW
+        ఒకవేళ ((iotlb->perm & IOMMU_RW) == IOMMU_RW
             || iotlb->perm & IOMMU_WO) {
             ttype = RISCV_IOMMU_FQ_TTYPE_UADDR_WR;
-        } else if (iotlb->perm & IOMMU_RO) {
+        } లేకపోతే ఒకవేళ (iotlb->perm & IOMMU_RO) {
             ttype = RISCV_IOMMU_FQ_TTYPE_UADDR_RD;
         }
 
         riscv_iommu_report_fault(s, ctx, ttype, fault, enable_pid,
                                  iotlb->iova, iotlb->translated_addr);
-        return fault;
+        తిరిగి fault;
     }
 
-    return 0;
+    తిరిగి 0;
 }
 
 /* IOMMU Command Interface */
-static MemTxResult riscv_iommu_iofence(RISCVIOMMUState *s, bool notify,
-    uint64_t addr, uint32_t data)
+స్థిర Mem_Tx_ఫలితం riscv_iommu_iofence(RISCVIOMMUState *s, bool notify,
+    uint64_t addr, uint32_t దత్తాంశం)
 {
     /*
      * ATS processing in this implementation of the IOMMU is synchronous,
      * no need to wait for completions here.
      */
-    if (!notify) {
-        return MEMTX_OK;
+    ఒకవేళ (!notify) {
+        తిరిగి MEMTX_OK;
     }
 
-    return dma_memory_write(s->target_as, addr, &data, sizeof(data),
+    తిరిగి dma_జ్ఞాపకం_write(s->లక్ష్యం_as, addr, &దత్తాంశం, పరిమాణం(దత్తాంశం),
         MEMTXATTRS_UNSPECIFIED);
 }
 
-static void riscv_iommu_ats(RISCVIOMMUState *s,
-    struct riscv_iommu_command *cmd, IOMMUNotifierFlag flag,
+స్థిర శూన్య riscv_iommu_ats(RISCVIOMMUState *s,
+    నిర్మాణం riscv_iommu_command *cmd, IOMMUNotifierFlag flag,
     IOMMUAccessFlags perm,
-    void (*trace_fn)(const char *id))
+    శూన్య (*trace_fn)(స్థిరరాశి అక్షరం *id))
 {
     RISCVIOMMUSpace *as;
     IOMMUNotifier *n;
     IOMMUTLBEvent event;
     uint32_t pid;
     uint32_t devid;
-    const bool pv = cmd->dword0 & RISCV_IOMMU_CMD_ATS_PV;
+    స్థిరరాశి bool pv = cmd->dword0 & RISCV_IOMMU_CMD_ATS_PV;
 
-    if (cmd->dword0 & RISCV_IOMMU_CMD_ATS_DSV) {
+    ఒకవేళ (cmd->dword0 & RISCV_IOMMU_CMD_ATS_DSV) {
         /* Use device segment and requester id */
-        devid = get_field(cmd->dword0,
+        devid = get_క్షేత్రం(cmd->dword0,
             RISCV_IOMMU_CMD_ATS_DSEG | RISCV_IOMMU_CMD_ATS_RID);
-    } else {
-        devid = get_field(cmd->dword0, RISCV_IOMMU_CMD_ATS_RID);
+    } లేకపోతే {
+        devid = get_క్షేత్రం(cmd->dword0, RISCV_IOMMU_CMD_ATS_RID);
     }
 
-    pid = get_field(cmd->dword0, RISCV_IOMMU_CMD_ATS_PID);
+    pid = get_క్షేత్రం(cmd->dword0, RISCV_IOMMU_CMD_ATS_PID);
 
     QLIST_FOREACH(as, &s->spaces, list) {
-        if (riscv_iommu_space_devid(as) == devid) {
-            break;
+        ఒకవేళ (riscv_iommu_space_devid(as) == devid) {
+            ఆపు;
         }
     }
 
-    if (!as || !as->notifier) {
-        return;
+    ఒకవేళ (!as || !as->notifier) {
+        తిరిగి;
     }
 
     event.type = flag;
-    event.entry.perm = perm;
-    event.entry.target_as = s->target_as;
+    event.నమోదు_2.perm = perm;
+    event.నమోదు_2.లక్ష్యం_as = s->లక్ష్యం_as;
 
     IOMMU_NOTIFIER_FOREACH(n, &as->iova_mr) {
-        if (!pv || n->iommu_idx == pid) {
-            event.entry.iova = n->start;
-            event.entry.addr_mask = n->end - n->start;
-            trace_fn(as->iova_mr.parent_obj.name);
-            memory_region_notify_iommu_one(n, &event);
+        ఒకవేళ (!pv || n->iommu_idx == pid) {
+            event.నమోదు_2.iova = n->ప్రారంభం;
+            event.నమోదు_2.addr_ముసుగు = n->చివర - n->ప్రారంభం;
+            trace_fn(as->iova_mr.మాతృ_obj.name);
+            జ్ఞాపకం_region_notify_iommu_one(n, &event);
         }
     }
 }
 
-static void riscv_iommu_ats_inval(RISCVIOMMUState *s,
-    struct riscv_iommu_command *cmd)
+స్థిర శూన్య riscv_iommu_ats_inval(RISCVIOMMUState *s,
+    నిర్మాణం riscv_iommu_command *cmd)
 {
-    return riscv_iommu_ats(s, cmd, IOMMU_NOTIFIER_DEVIOTLB_UNMAP, IOMMU_NONE,
+    తిరిగి riscv_iommu_ats(s, cmd, IOMMU_NOTIFIER_DEVIOTLB_UNMAP, IOMMU_NONE,
                            trace_riscv_iommu_ats_inval);
 }
 
-static void riscv_iommu_ats_prgr(RISCVIOMMUState *s,
-    struct riscv_iommu_command *cmd)
+స్థిర శూన్య riscv_iommu_ats_prgr(RISCVIOMMUState *s,
+    నిర్మాణం riscv_iommu_command *cmd)
 {
-    unsigned resp_code = get_field(cmd->dword1,
-                                   RISCV_IOMMU_CMD_ATS_PRGR_RESP_CODE);
+    గుర్తులేని resp_సంకేతం = get_క్షేత్రం(cmd->dword1,
+                                   RISCV_IOMMU_CMD_ATS_PRGR_RESP_సంకేతం);
 
     /* Using the access flag to carry response code information */
-    IOMMUAccessFlags perm = resp_code ? IOMMU_NONE : IOMMU_RW;
-    return riscv_iommu_ats(s, cmd, IOMMU_NOTIFIER_MAP, perm,
+    IOMMUAccessFlags perm = resp_సంకేతం ? IOMMU_NONE : IOMMU_RW;
+    తిరిగి riscv_iommu_ats(s, cmd, IOMMU_NOTIFIER_MAP, perm,
                            trace_riscv_iommu_ats_prgr);
 }
 
-static void riscv_iommu_process_ddtp(RISCVIOMMUState *s)
+స్థిర శూన్య riscv_iommu_process_ddtp(RISCVIOMMUState *s)
 {
     uint64_t old_ddtp = s->ddtp;
     uint64_t new_ddtp = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_DDTP);
-    unsigned new_mode = get_field(new_ddtp, RISCV_IOMMU_DDTP_MODE);
-    unsigned old_mode = get_field(old_ddtp, RISCV_IOMMU_DDTP_MODE);
+    గుర్తులేని new_బహుళకం = get_క్షేత్రం(new_ddtp, RISCV_IOMMU_DDTP_బహుళకం);
+    గుర్తులేని old_బహుళకం = get_క్షేత్రం(old_ddtp, RISCV_IOMMU_DDTP_బహుళకం);
     bool ok = false;
 
     /*
@@ -1936,22 +1936,22 @@ static void riscv_iommu_process_ddtp(RISCVIOMMUState *s)
      * {OFF, BARE}        -> {OFF, BARE, 1LVL, 2LVL, 3LVL}
      * {1LVL, 2LVL, 3LVL} -> {OFF, BARE}
      */
-    if (new_mode == old_mode ||
-        new_mode == RISCV_IOMMU_DDTP_MODE_OFF ||
-        new_mode == RISCV_IOMMU_DDTP_MODE_BARE) {
+    ఒకవేళ (new_బహుళకం == old_బహుళకం ||
+        new_బహుళకం == RISCV_IOMMU_DDTP_బహుళకం_OFF ||
+        new_బహుళకం == RISCV_IOMMU_DDTP_బహుళకం_BARE) {
         ok = true;
-    } else if (new_mode == RISCV_IOMMU_DDTP_MODE_1LVL ||
-               new_mode == RISCV_IOMMU_DDTP_MODE_2LVL ||
-               new_mode == RISCV_IOMMU_DDTP_MODE_3LVL) {
-        ok = old_mode == RISCV_IOMMU_DDTP_MODE_OFF ||
-             old_mode == RISCV_IOMMU_DDTP_MODE_BARE;
+    } లేకపోతే ఒకవేళ (new_బహుళకం == RISCV_IOMMU_DDTP_బహుళకం_1_LVL ||
+               new_బహుళకం == RISCV_IOMMU_DDTP_బహుళకం_2_LVL ||
+               new_బహుళకం == RISCV_IOMMU_DDTP_బహుళకం_3_LVL) {
+        ok = old_బహుళకం == RISCV_IOMMU_DDTP_బహుళకం_OFF ||
+             old_బహుళకం == RISCV_IOMMU_DDTP_బహుళకం_BARE;
     }
 
-    if (ok) {
+    ఒకవేళ (ok) {
         /* clear reserved and busy bits, report back sanitized version */
-        new_ddtp = set_field(new_ddtp & RISCV_IOMMU_DDTP_PPN,
-                             RISCV_IOMMU_DDTP_MODE, new_mode);
-    } else {
+        new_ddtp = సమితి_క్షేత్రం(new_ddtp & RISCV_IOMMU_DDTP_PPN,
+                             RISCV_IOMMU_DDTP_బహుళకం, new_బహుళకం);
+    } లేకపోతే {
         new_ddtp = old_ddtp;
     }
     s->ddtp = new_ddtp;
@@ -1960,329 +1960,329 @@ static void riscv_iommu_process_ddtp(RISCVIOMMUState *s)
 }
 
 /* Command function and opcode field. */
-#define RISCV_IOMMU_CMD(func, op) (((func) << 7) | (op))
+#నిర్వచించు RISCV_IOMMU_CMD(func, op) (((func) << 7) | (op))
 
-static void riscv_iommu_process_cq_tail(RISCVIOMMUState *s)
+స్థిర శూన్య riscv_iommu_process_cq_తోక(RISCVIOMMUState *s)
 {
-    struct riscv_iommu_command cmd;
-    MemTxResult res;
+    నిర్మాణం riscv_iommu_command cmd;
+    Mem_Tx_ఫలితం res;
     dma_addr_t addr;
-    uint32_t tail, head, ctrl;
+    uint32_t తోక, తల, ctrl;
     uint64_t cmd_opcode;
     GHFunc func;
 
     ctrl = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQCSR);
-    tail = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQT) & s->cq_mask;
-    head = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQH) & s->cq_mask;
+    తోక = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQT) & s->cq_ముసుగు;
+    తల = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQH) & s->cq_ముసుగు;
 
     /* Check for pending error or queue processing disabled */
-    if (!(ctrl & RISCV_IOMMU_CQCSR_CQON) ||
+    ఒకవేళ (!(ctrl & RISCV_IOMMU_CQCSR_CQON) ||
         !!(ctrl & (RISCV_IOMMU_CQCSR_CMD_ILL | RISCV_IOMMU_CQCSR_CQMF))) {
-        return;
+        తిరిగి;
     }
 
-    while (tail != head) {
-        addr = s->cq_addr  + head * sizeof(cmd);
-        res = dma_memory_read(s->target_as, addr, &cmd, sizeof(cmd),
+    అయితే (తోక != తల) {
+        addr = s->cq_addr  + తల * పరిమాణం(cmd);
+        res = dma_జ్ఞాపకం_read(s->లక్ష్యం_as, addr, &cmd, పరిమాణం(cmd),
                               MEMTXATTRS_UNSPECIFIED);
 
-        if (res != MEMTX_OK) {
+        ఒకవేళ (res != MEMTX_OK) {
             riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_CQCSR,
                                   RISCV_IOMMU_CQCSR_CQMF, 0);
-            goto fault;
+            వెళ్ళు fault;
         }
 
-        trace_riscv_iommu_cmd(s->parent_obj.id, cmd.dword0, cmd.dword1);
+        trace_riscv_iommu_cmd(s->మాతృ_obj.id, cmd.dword0, cmd.dword1);
 
-        cmd_opcode = get_field(cmd.dword0,
+        cmd_opcode = get_క్షేత్రం(cmd.dword0,
                                RISCV_IOMMU_CMD_OPCODE | RISCV_IOMMU_CMD_FUNC);
 
-        switch (cmd_opcode) {
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOFENCE_FUNC_C,
+        ఎంపిక (cmd_opcode) {
+        స్థితి RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOFENCE_FUNC_C,
                              RISCV_IOMMU_CMD_IOFENCE_OPCODE):
-            if (cmd.dword0 & RISCV_IOMMU_CMD_IOFENCE_RESERVED) {
-                goto cmd_ill;
+            ఒకవేళ (cmd.dword0 & RISCV_IOMMU_CMD_IOFENCE_RESERVED) {
+                వెళ్ళు cmd_ill;
             }
 
             res = riscv_iommu_iofence(s,
                 cmd.dword0 & RISCV_IOMMU_CMD_IOFENCE_AV, cmd.dword1 << 2,
-                get_field(cmd.dword0, RISCV_IOMMU_CMD_IOFENCE_DATA));
+                get_క్షేత్రం(cmd.dword0, RISCV_IOMMU_CMD_IOFENCE_దత్తాంశం));
 
-            if (res != MEMTX_OK) {
+            ఒకవేళ (res != MEMTX_OK) {
                 riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_CQCSR,
                                       RISCV_IOMMU_CQCSR_CQMF, 0);
-                goto fault;
+                వెళ్ళు fault;
             }
-            break;
+            ఆపు;
 
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOTINVAL_FUNC_GVMA,
+        స్థితి RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOTINVAL_FUNC_GVMA,
                              RISCV_IOMMU_CMD_IOTINVAL_OPCODE):
         {
             bool gv = !!(cmd.dword0 & RISCV_IOMMU_CMD_IOTINVAL_GV);
             bool av = !!(cmd.dword0 & RISCV_IOMMU_CMD_IOTINVAL_AV);
             bool pscv = !!(cmd.dword0 & RISCV_IOMMU_CMD_IOTINVAL_PSCV);
-            uint32_t gscid = get_field(cmd.dword0,
+            uint32_t gscid = get_క్షేత్రం(cmd.dword0,
                                        RISCV_IOMMU_CMD_IOTINVAL_GSCID);
-            uint32_t pscid = get_field(cmd.dword0,
+            uint32_t pscid = get_క్షేత్రం(cmd.dword0,
                                        RISCV_IOMMU_CMD_IOTINVAL_PSCID);
-            hwaddr iova = (cmd.dword1 << 2) & TARGET_PAGE_MASK;
+            hwaddr iova = (cmd.dword1 << 2) & లక్ష్యం_పుట_ముసుగు;
 
-            if (pscv) {
+            ఒకవేళ (pscv) {
                 /* illegal command arguments IOTINVAL.GVMA & PSCV == 1 */
-                goto cmd_ill;
+                వెళ్ళు cmd_ill;
             }
 
             func = riscv_iommu_iot_inval_all;
 
-            if (gv) {
+            ఒకవేళ (gv) {
                 func = (av) ? riscv_iommu_iot_inval_gscid_iova :
                               riscv_iommu_iot_inval_gscid;
             }
 
             riscv_iommu_iot_inval(
-                s, func, gscid, pscid, iova, RISCV_IOMMU_TRANS_TAG_VG);
+                s, func, gscid, pscid, iova, RISCV_IOMMU_TRANS_ట్యాగ్_VG);
 
             riscv_iommu_iot_inval(
-                s, func, gscid, pscid, iova, RISCV_IOMMU_TRANS_TAG_VN);
-            break;
+                s, func, gscid, pscid, iova, RISCV_IOMMU_TRANS_ట్యాగ్_VN);
+            ఆపు;
         }
 
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOTINVAL_FUNC_VMA,
+        స్థితి RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IOTINVAL_FUNC_VMA,
                              RISCV_IOMMU_CMD_IOTINVAL_OPCODE):
         {
             bool gv = !!(cmd.dword0 & RISCV_IOMMU_CMD_IOTINVAL_GV);
             bool av = !!(cmd.dword0 & RISCV_IOMMU_CMD_IOTINVAL_AV);
             bool pscv = !!(cmd.dword0 & RISCV_IOMMU_CMD_IOTINVAL_PSCV);
-            uint32_t gscid = get_field(cmd.dword0,
+            uint32_t gscid = get_క్షేత్రం(cmd.dword0,
                                        RISCV_IOMMU_CMD_IOTINVAL_GSCID);
-            uint32_t pscid = get_field(cmd.dword0,
+            uint32_t pscid = get_క్షేత్రం(cmd.dword0,
                                        RISCV_IOMMU_CMD_IOTINVAL_PSCID);
-            hwaddr iova = (cmd.dword1 << 2) & TARGET_PAGE_MASK;
-            RISCVIOMMUTransTag transtag;
+            hwaddr iova = (cmd.dword1 << 2) & లక్ష్యం_పుట_ముసుగు;
+            RISCVIOMMUTrans_ట్యాగ్ transtag;
 
-            if (gv) {
-                transtag = RISCV_IOMMU_TRANS_TAG_VN;
-                if (pscv) {
+            ఒకవేళ (gv) {
+                transtag = RISCV_IOMMU_TRANS_ట్యాగ్_VN;
+                ఒకవేళ (pscv) {
                     func = (av) ? riscv_iommu_iot_inval_gscid_pscid_iova :
                                   riscv_iommu_iot_inval_gscid_pscid;
-                } else {
+                } లేకపోతే {
                     func = (av) ? riscv_iommu_iot_inval_gscid_iova :
                                   riscv_iommu_iot_inval_gscid;
                 }
-            } else {
-                transtag = RISCV_IOMMU_TRANS_TAG_SS;
-                if (pscv) {
+            } లేకపోతే {
+                transtag = RISCV_IOMMU_TRANS_ట్యాగ్_SS;
+                ఒకవేళ (pscv) {
                     func = (av) ? riscv_iommu_iot_inval_pscid_iova :
                                   riscv_iommu_iot_inval_pscid;
-                } else {
+                } లేకపోతే {
                     func = (av) ? riscv_iommu_iot_inval_iova :
                                   riscv_iommu_iot_inval_all;
                 }
             }
 
             riscv_iommu_iot_inval(s, func, gscid, pscid, iova, transtag);
-            break;
+            ఆపు;
         }
 
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IODIR_FUNC_INVAL_DDT,
+        స్థితి RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IODIR_FUNC_INVAL_DDT,
                              RISCV_IOMMU_CMD_IODIR_OPCODE):
-            if (!(cmd.dword0 & RISCV_IOMMU_CMD_IODIR_DV)) {
+            ఒకవేళ (!(cmd.dword0 & RISCV_IOMMU_CMD_IODIR_DV)) {
                 /* invalidate all device context cache mappings */
                 func = riscv_iommu_ctx_inval_all;
-            } else {
+            } లేకపోతే {
                 /* invalidate all device context matching DID */
                 func = riscv_iommu_ctx_inval_devid;
             }
             riscv_iommu_ctx_inval(s, func,
-                get_field(cmd.dword0, RISCV_IOMMU_CMD_IODIR_DID), 0);
-            break;
+                get_క్షేత్రం(cmd.dword0, RISCV_IOMMU_CMD_IODIR_DID), 0);
+            ఆపు;
 
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IODIR_FUNC_INVAL_PDT,
+        స్థితి RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_IODIR_FUNC_INVAL_PDT,
                              RISCV_IOMMU_CMD_IODIR_OPCODE):
-            if (!(cmd.dword0 & RISCV_IOMMU_CMD_IODIR_DV)) {
+            ఒకవేళ (!(cmd.dword0 & RISCV_IOMMU_CMD_IODIR_DV)) {
                 /* illegal command arguments IODIR_PDT & DV == 0 */
-                goto cmd_ill;
-            } else {
+                వెళ్ళు cmd_ill;
+            } లేకపోతే {
                 func = riscv_iommu_ctx_inval_devid_procid;
             }
             riscv_iommu_ctx_inval(s, func,
-                get_field(cmd.dword0, RISCV_IOMMU_CMD_IODIR_DID),
-                get_field(cmd.dword0, RISCV_IOMMU_CMD_IODIR_PID));
-            break;
+                get_క్షేత్రం(cmd.dword0, RISCV_IOMMU_CMD_IODIR_DID),
+                get_క్షేత్రం(cmd.dword0, RISCV_IOMMU_CMD_IODIR_PID));
+            ఆపు;
 
         /* ATS commands */
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_ATS_FUNC_INVAL,
+        స్థితి RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_ATS_FUNC_INVAL,
                              RISCV_IOMMU_CMD_ATS_OPCODE):
-            if (!s->enable_ats) {
-                goto cmd_ill;
+            ఒకవేళ (!s->enable_ats) {
+                వెళ్ళు cmd_ill;
             }
 
             riscv_iommu_ats_inval(s, &cmd);
-            break;
+            ఆపు;
 
-        case RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_ATS_FUNC_PRGR,
+        స్థితి RISCV_IOMMU_CMD(RISCV_IOMMU_CMD_ATS_FUNC_PRGR,
                              RISCV_IOMMU_CMD_ATS_OPCODE):
-            if (!s->enable_ats) {
-                goto cmd_ill;
+            ఒకవేళ (!s->enable_ats) {
+                వెళ్ళు cmd_ill;
             }
 
             riscv_iommu_ats_prgr(s, &cmd);
-            break;
+            ఆపు;
 
-        default:
+        అప్రమేయ:
         cmd_ill:
             /* Invalid instruction, do not advance instruction index. */
             riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_CQCSR,
                 RISCV_IOMMU_CQCSR_CMD_ILL, 0);
-            goto fault;
+            వెళ్ళు fault;
         }
 
         /* Advance and update head pointer after command completes. */
-        head = (head + 1) & s->cq_mask;
-        riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_CQH, head);
+        తల = (తల + 1) & s->cq_ముసుగు;
+        riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_CQH, తల);
     }
-    return;
+    తిరిగి;
 
 fault:
-    if (ctrl & RISCV_IOMMU_CQCSR_CIE) {
+    ఒకవేళ (ctrl & RISCV_IOMMU_CQCSR_CIE) {
         riscv_iommu_notify(s, RISCV_IOMMU_INTR_CQ);
     }
 }
 
-static void riscv_iommu_process_cq_control(RISCVIOMMUState *s)
+స్థిర శూన్య riscv_iommu_process_cq_control(RISCVIOMMUState *s)
 {
-    uint64_t base;
-    uint32_t ctrl_set = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQCSR);
+    uint64_t పునాది;
+    uint32_t ctrl_సమితి = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQCSR);
     uint32_t ctrl_clr;
-    bool enable = !!(ctrl_set & RISCV_IOMMU_CQCSR_CQEN);
-    bool active = !!(ctrl_set & RISCV_IOMMU_CQCSR_CQON);
+    bool enable = !!(ctrl_సమితి & RISCV_IOMMU_CQCSR_CQEN);
+    bool చురుకైన = !!(ctrl_సమితి & RISCV_IOMMU_CQCSR_CQON);
 
-    if (enable && !active) {
-        base = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_CQB);
-        s->cq_mask = (2ULL << get_field(base, RISCV_IOMMU_CQB_LOG2SZ)) - 1;
-        s->cq_addr = PPN_PHYS(get_field(base, RISCV_IOMMU_CQB_PPN));
-        stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_CQT], ~s->cq_mask);
+    ఒకవేళ (enable && !చురుకైన) {
+        పునాది = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_CQB);
+        s->cq_ముసుగు = (2ULL << get_క్షేత్రం(పునాది, RISCV_IOMMU_CQB_LOG2SZ)) - 1;
+        s->cq_addr = PPN_PHYS(get_క్షేత్రం(పునాది, RISCV_IOMMU_CQB_PPN));
+        stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_CQT], ~s->cq_ముసుగు);
         stl_le_p(&s->regs[RISCV_IOMMU_REG_CQH], 0);
         stl_le_p(&s->regs[RISCV_IOMMU_REG_CQT], 0);
-        ctrl_set = RISCV_IOMMU_CQCSR_CQON;
+        ctrl_సమితి = RISCV_IOMMU_CQCSR_CQON;
         ctrl_clr = RISCV_IOMMU_CQCSR_BUSY | RISCV_IOMMU_CQCSR_CQMF |
-                   RISCV_IOMMU_CQCSR_CMD_ILL | RISCV_IOMMU_CQCSR_CMD_TO |
+                   RISCV_IOMMU_CQCSR_CMD_ILL | RISCV_IOMMU_CQCSR_CMD_గమ్యం |
                    RISCV_IOMMU_CQCSR_FENCE_W_IP;
-    } else if (!enable && active) {
+    } లేకపోతే ఒకవేళ (!enable && చురుకైన) {
         stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_CQT], ~0);
-        ctrl_set = 0;
+        ctrl_సమితి = 0;
         ctrl_clr = RISCV_IOMMU_CQCSR_BUSY | RISCV_IOMMU_CQCSR_CQON;
-    } else {
-        ctrl_set = 0;
+    } లేకపోతే {
+        ctrl_సమితి = 0;
         ctrl_clr = RISCV_IOMMU_CQCSR_BUSY;
     }
 
-    riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_CQCSR, ctrl_set, ctrl_clr);
+    riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_CQCSR, ctrl_సమితి, ctrl_clr);
 
     /*
      * After clearing error bits (CMD_ILL, CQMF), if queue is still active,
      * re-process pending command.
      */
-    ctrl_set = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQCSR);
-    if ((ctrl_set & RISCV_IOMMU_CQCSR_CQON) &&
-        !(ctrl_set & (RISCV_IOMMU_CQCSR_CMD_ILL | RISCV_IOMMU_CQCSR_CQMF))) {
-        riscv_iommu_process_cq_tail(s);
+    ctrl_సమితి = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQCSR);
+    ఒకవేళ ((ctrl_సమితి & RISCV_IOMMU_CQCSR_CQON) &&
+        !(ctrl_సమితి & (RISCV_IOMMU_CQCSR_CMD_ILL | RISCV_IOMMU_CQCSR_CQMF))) {
+        riscv_iommu_process_cq_తోక(s);
     }
 }
 
-static void riscv_iommu_process_fq_control(RISCVIOMMUState *s)
+స్థిర శూన్య riscv_iommu_process_fq_control(RISCVIOMMUState *s)
 {
-    uint64_t base;
-    uint32_t ctrl_set = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_FQCSR);
+    uint64_t పునాది;
+    uint32_t ctrl_సమితి = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_FQCSR);
     uint32_t ctrl_clr;
-    bool enable = !!(ctrl_set & RISCV_IOMMU_FQCSR_FQEN);
-    bool active = !!(ctrl_set & RISCV_IOMMU_FQCSR_FQON);
+    bool enable = !!(ctrl_సమితి & RISCV_IOMMU_FQCSR_FQEN);
+    bool చురుకైన = !!(ctrl_సమితి & RISCV_IOMMU_FQCSR_FQON);
 
-    if (enable && !active) {
-        base = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_FQB);
-        s->fq_mask = (2ULL << get_field(base, RISCV_IOMMU_FQB_LOG2SZ)) - 1;
-        s->fq_addr = PPN_PHYS(get_field(base, RISCV_IOMMU_FQB_PPN));
-        stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_FQH], ~s->fq_mask);
+    ఒకవేళ (enable && !చురుకైన) {
+        పునాది = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_FQB);
+        s->fq_ముసుగు = (2ULL << get_క్షేత్రం(పునాది, RISCV_IOMMU_FQB_LOG2SZ)) - 1;
+        s->fq_addr = PPN_PHYS(get_క్షేత్రం(పునాది, RISCV_IOMMU_FQB_PPN));
+        stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_FQH], ~s->fq_ముసుగు);
         stl_le_p(&s->regs[RISCV_IOMMU_REG_FQH], 0);
         stl_le_p(&s->regs[RISCV_IOMMU_REG_FQT], 0);
-        ctrl_set = RISCV_IOMMU_FQCSR_FQON;
+        ctrl_సమితి = RISCV_IOMMU_FQCSR_FQON;
         ctrl_clr = RISCV_IOMMU_FQCSR_BUSY | RISCV_IOMMU_FQCSR_FQMF |
             RISCV_IOMMU_FQCSR_FQOF;
-    } else if (!enable && active) {
+    } లేకపోతే ఒకవేళ (!enable && చురుకైన) {
         stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_FQH], ~0);
-        ctrl_set = 0;
+        ctrl_సమితి = 0;
         ctrl_clr = RISCV_IOMMU_FQCSR_BUSY | RISCV_IOMMU_FQCSR_FQON;
-    } else {
-        ctrl_set = 0;
+    } లేకపోతే {
+        ctrl_సమితి = 0;
         ctrl_clr = RISCV_IOMMU_FQCSR_BUSY;
     }
 
-    riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_FQCSR, ctrl_set, ctrl_clr);
+    riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_FQCSR, ctrl_సమితి, ctrl_clr);
 }
 
-static void riscv_iommu_process_pq_control(RISCVIOMMUState *s)
+స్థిర శూన్య riscv_iommu_process_pq_control(RISCVIOMMUState *s)
 {
-    uint64_t base;
-    uint32_t ctrl_set = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_PQCSR);
+    uint64_t పునాది;
+    uint32_t ctrl_సమితి = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_PQCSR);
     uint32_t ctrl_clr;
-    bool enable = !!(ctrl_set & RISCV_IOMMU_PQCSR_PQEN);
-    bool active = !!(ctrl_set & RISCV_IOMMU_PQCSR_PQON);
+    bool enable = !!(ctrl_సమితి & RISCV_IOMMU_PQCSR_PQEN);
+    bool చురుకైన = !!(ctrl_సమితి & RISCV_IOMMU_PQCSR_PQON);
 
-    if (enable && !active) {
-        base = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_PQB);
-        s->pq_mask = (2ULL << get_field(base, RISCV_IOMMU_PQB_LOG2SZ)) - 1;
-        s->pq_addr = PPN_PHYS(get_field(base, RISCV_IOMMU_PQB_PPN));
-        stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_PQH], ~s->pq_mask);
+    ఒకవేళ (enable && !చురుకైన) {
+        పునాది = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_PQB);
+        s->pq_ముసుగు = (2ULL << get_క్షేత్రం(పునాది, RISCV_IOMMU_PQB_LOG2SZ)) - 1;
+        s->pq_addr = PPN_PHYS(get_క్షేత్రం(పునాది, RISCV_IOMMU_PQB_PPN));
+        stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_PQH], ~s->pq_ముసుగు);
         stl_le_p(&s->regs[RISCV_IOMMU_REG_PQH], 0);
         stl_le_p(&s->regs[RISCV_IOMMU_REG_PQT], 0);
-        ctrl_set = RISCV_IOMMU_PQCSR_PQON;
+        ctrl_సమితి = RISCV_IOMMU_PQCSR_PQON;
         ctrl_clr = RISCV_IOMMU_PQCSR_BUSY | RISCV_IOMMU_PQCSR_PQMF |
             RISCV_IOMMU_PQCSR_PQOF;
-    } else if (!enable && active) {
+    } లేకపోతే ఒకవేళ (!enable && చురుకైన) {
         stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_PQH], ~0);
-        ctrl_set = 0;
+        ctrl_సమితి = 0;
         ctrl_clr = RISCV_IOMMU_PQCSR_BUSY | RISCV_IOMMU_PQCSR_PQON;
-    } else {
-        ctrl_set = 0;
+    } లేకపోతే {
+        ctrl_సమితి = 0;
         ctrl_clr = RISCV_IOMMU_PQCSR_BUSY;
     }
 
-    riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_PQCSR, ctrl_set, ctrl_clr);
+    riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_PQCSR, ctrl_సమితి, ctrl_clr);
 }
 
-static void riscv_iommu_process_dbg(RISCVIOMMUState *s)
+స్థిర శూన్య riscv_iommu_process_dbg(RISCVIOMMUState *s)
 {
     uint64_t iova = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_TR_REQ_IOVA);
     uint64_t ctrl = riscv_iommu_reg_get64(s, RISCV_IOMMU_REG_TR_REQ_CTL);
-    unsigned devid = get_field(ctrl, RISCV_IOMMU_TR_REQ_CTL_DID);
-    unsigned pid = get_field(ctrl, RISCV_IOMMU_TR_REQ_CTL_PID);
+    గుర్తులేని devid = get_క్షేత్రం(ctrl, RISCV_IOMMU_TR_REQ_CTL_DID);
+    గుర్తులేని pid = get_క్షేత్రం(ctrl, RISCV_IOMMU_TR_REQ_CTL_PID);
     IOMMUAccessFlags perm = ctrl & RISCV_IOMMU_TR_REQ_CTL_NW
                             ? IOMMU_RO : IOMMU_RW;
     RISCVIOMMUContext *ctx;
-    void *ref;
+    శూన్య *ref;
 
-    if (!(ctrl & RISCV_IOMMU_TR_REQ_CTL_GO_BUSY)) {
-        return;
+    ఒకవేళ (!(ctrl & RISCV_IOMMU_TR_REQ_CTL_GO_BUSY)) {
+        తిరిగి;
     }
 
     ctx = riscv_iommu_ctx(s, devid, pid, perm, iova, &ref);
-    if (ctx == NULL) {
+    ఒకవేళ (ctx == ఖాళీ) {
         riscv_iommu_reg_set64(s, RISCV_IOMMU_REG_TR_RESPONSE,
                                  RISCV_IOMMU_TR_RESPONSE_FAULT |
                                  (RISCV_IOMMU_FQ_CAUSE_DMA_DISABLED << 10));
-    } else {
+    } లేకపోతే {
         IOMMUTLBEntry iotlb = {
             .iova = iova,
             .perm = perm,
-            .addr_mask = ~0,
-            .target_as = NULL,
+            .addr_ముసుగు = ~0,
+            .లక్ష్యం_as = ఖాళీ,
         };
-        int fault = riscv_iommu_translate(s, ctx, &iotlb, false);
-        if (fault) {
+        పూర్ణాంకం fault = riscv_iommu_translate(s, ctx, &iotlb, false);
+        ఒకవేళ (fault) {
             iova = RISCV_IOMMU_TR_RESPONSE_FAULT | (((uint64_t) fault) << 10);
-        } else {
-            iova = iotlb.translated_addr & ~iotlb.addr_mask;
-            iova = set_field(0, RISCV_IOMMU_TR_RESPONSE_PPN, PPN_DOWN(iova));
+        } లేకపోతే {
+            iova = iotlb.translated_addr & ~iotlb.addr_ముసుగు;
+            iova = సమితి_క్షేత్రం(0, RISCV_IOMMU_TR_RESPONSE_PPN, PPN_కిందికి(iova));
         }
         riscv_iommu_reg_set64(s, RISCV_IOMMU_REG_TR_RESPONSE, iova);
     }
@@ -2292,104 +2292,104 @@ static void riscv_iommu_process_dbg(RISCVIOMMUState *s)
     riscv_iommu_ctx_put(s, ref);
 }
 
-typedef void riscv_iommu_process_fn(RISCVIOMMUState *s);
+రకనిర్వచనం శూన్య riscv_iommu_process_fn(RISCVIOMMUState *s);
 
-static void riscv_iommu_update_icvec(RISCVIOMMUState *s, uint64_t data)
+స్థిర శూన్య riscv_iommu_update_icvec(RISCVIOMMUState *s, uint64_t దత్తాంశం)
 {
     uint64_t icvec = 0;
 
-    icvec |= MIN(data & RISCV_IOMMU_ICVEC_CIV,
+    icvec |= MIN(దత్తాంశం & RISCV_IOMMU_ICVEC_CIV,
                  s->icvec_avail_vectors & RISCV_IOMMU_ICVEC_CIV);
 
-    icvec |= MIN(data & RISCV_IOMMU_ICVEC_FIV,
+    icvec |= MIN(దత్తాంశం & RISCV_IOMMU_ICVEC_FIV,
                  s->icvec_avail_vectors & RISCV_IOMMU_ICVEC_FIV);
 
-    icvec |= MIN(data & RISCV_IOMMU_ICVEC_PMIV,
+    icvec |= MIN(దత్తాంశం & RISCV_IOMMU_ICVEC_PMIV,
                  s->icvec_avail_vectors & RISCV_IOMMU_ICVEC_PMIV);
 
-    icvec |= MIN(data & RISCV_IOMMU_ICVEC_PIV,
+    icvec |= MIN(దత్తాంశం & RISCV_IOMMU_ICVEC_PIV,
                  s->icvec_avail_vectors & RISCV_IOMMU_ICVEC_PIV);
 
-    trace_riscv_iommu_icvec_write(data, icvec);
+    trace_riscv_iommu_icvec_write(దత్తాంశం, icvec);
 
     riscv_iommu_reg_set64(s, RISCV_IOMMU_REG_ICVEC, icvec);
 }
 
-static void riscv_iommu_update_ipsr(RISCVIOMMUState *s, uint64_t data)
+స్థిర శూన్య riscv_iommu_update_ipsr(RISCVIOMMUState *s, uint64_t దత్తాంశం)
 {
     uint32_t cqcsr, fqcsr, pqcsr;
-    uint32_t ipsr_set = 0;
+    uint32_t ipsr_సమితి = 0;
     uint32_t ipsr_clr = 0;
 
-    if (data & RISCV_IOMMU_IPSR_CIP) {
+    ఒకవేళ (దత్తాంశం & RISCV_IOMMU_IPSR_CIP) {
         cqcsr = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_CQCSR);
 
-        if (cqcsr & RISCV_IOMMU_CQCSR_CIE &&
+        ఒకవేళ (cqcsr & RISCV_IOMMU_CQCSR_CIE &&
             (cqcsr & RISCV_IOMMU_CQCSR_FENCE_W_IP ||
              cqcsr & RISCV_IOMMU_CQCSR_CMD_ILL ||
-             cqcsr & RISCV_IOMMU_CQCSR_CMD_TO ||
+             cqcsr & RISCV_IOMMU_CQCSR_CMD_గమ్యం ||
              cqcsr & RISCV_IOMMU_CQCSR_CQMF)) {
-            ipsr_set |= RISCV_IOMMU_IPSR_CIP;
-        } else {
+            ipsr_సమితి |= RISCV_IOMMU_IPSR_CIP;
+        } లేకపోతే {
             ipsr_clr |= RISCV_IOMMU_IPSR_CIP;
         }
-    } else {
+    } లేకపోతే {
         ipsr_clr |= RISCV_IOMMU_IPSR_CIP;
     }
 
-    if (data & RISCV_IOMMU_IPSR_FIP) {
+    ఒకవేళ (దత్తాంశం & RISCV_IOMMU_IPSR_FIP) {
         fqcsr = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_FQCSR);
 
-        if (fqcsr & RISCV_IOMMU_FQCSR_FIE &&
+        ఒకవేళ (fqcsr & RISCV_IOMMU_FQCSR_FIE &&
             (fqcsr & RISCV_IOMMU_FQCSR_FQOF ||
              fqcsr & RISCV_IOMMU_FQCSR_FQMF)) {
-            ipsr_set |= RISCV_IOMMU_IPSR_FIP;
-        } else {
+            ipsr_సమితి |= RISCV_IOMMU_IPSR_FIP;
+        } లేకపోతే {
             ipsr_clr |= RISCV_IOMMU_IPSR_FIP;
         }
-    } else {
+    } లేకపోతే {
         ipsr_clr |= RISCV_IOMMU_IPSR_FIP;
     }
 
-    if (!(data & RISCV_IOMMU_IPSR_PMIP)) {
+    ఒకవేళ (!(దత్తాంశం & RISCV_IOMMU_IPSR_PMIP)) {
         ipsr_clr |= RISCV_IOMMU_IPSR_PMIP;
     }
 
-    if (data & RISCV_IOMMU_IPSR_PIP) {
+    ఒకవేళ (దత్తాంశం & RISCV_IOMMU_IPSR_PIP) {
         pqcsr = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_PQCSR);
 
-        if (pqcsr & RISCV_IOMMU_PQCSR_PIE &&
+        ఒకవేళ (pqcsr & RISCV_IOMMU_PQCSR_PIE &&
             (pqcsr & RISCV_IOMMU_PQCSR_PQOF ||
              pqcsr & RISCV_IOMMU_PQCSR_PQMF)) {
-            ipsr_set |= RISCV_IOMMU_IPSR_PIP;
-        } else {
+            ipsr_సమితి |= RISCV_IOMMU_IPSR_PIP;
+        } లేకపోతే {
             ipsr_clr |= RISCV_IOMMU_IPSR_PIP;
         }
-    } else {
+    } లేకపోతే {
         ipsr_clr |= RISCV_IOMMU_IPSR_PIP;
     }
 
-    riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_IPSR, ipsr_set, ipsr_clr);
+    riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_IPSR, ipsr_సమితి, ipsr_clr);
 }
 
-static void riscv_iommu_process_hpm_writes(RISCVIOMMUState *s,
+స్థిర శూన్య riscv_iommu_process_hpm_writes(RISCVIOMMUState *s,
                                            uint32_t regb,
                                            bool prev_cy_inh)
 {
-    switch (regb) {
-    case RISCV_IOMMU_REG_IOCOUNTINH:
+    ఎంపిక (regb) {
+    స్థితి RISCV_IOMMU_REG_IOCOUNTINH:
         riscv_iommu_process_iocntinh_cy(s, prev_cy_inh);
-        break;
+        ఆపు;
 
-    case RISCV_IOMMU_REG_IOHPMCYCLES:
-    case RISCV_IOMMU_REG_IOHPMCYCLES + 4:
+    స్థితి RISCV_IOMMU_REG_IOHPMCYCLES:
+    స్థితి RISCV_IOMMU_REG_IOHPMCYCLES + 4:
         riscv_iommu_process_hpmcycle_write(s);
-        break;
+        ఆపు;
 
-    case RISCV_IOMMU_REG_IOHPMEVT_BASE ...
-        RISCV_IOMMU_REG_IOHPMEVT(RISCV_IOMMU_IOCOUNT_NUM) + 4:
+    స్థితి RISCV_IOMMU_REG_IOHPMEVT_పునాది ...
+        RISCV_IOMMU_REG_IOHPMEVT(RISCV_IOMMU_IOCOUNT_అంకె) + 4:
         riscv_iommu_process_hpmevt_write(s, regb & ~7);
-        break;
+        ఆపు;
     }
 }
 
@@ -2400,106 +2400,106 @@ static void riscv_iommu_process_hpm_writes(RISCVIOMMUState *s,
  *
  * The result is written in little-endian.
  */
-static void riscv_iommu_write_reg_val(RISCVIOMMUState *s,
-                                      void *dest, hwaddr reg_addr,
-                                      int size, uint64_t data)
+స్థిర శూన్య riscv_iommu_write_reg_val(RISCVIOMMUState *s,
+                                      శూన్య *dest, hwaddr reg_addr,
+                                      పూర్ణాంకం కొలత, uint64_t దత్తాంశం)
 {
-    uint64_t ro = ldn_le_p(&s->regs_ro[reg_addr], size);
-    uint64_t wc = ldn_le_p(&s->regs_wc[reg_addr], size);
-    uint64_t curr_val = ldn_le_p(&s->regs[reg_addr], size);
+    uint64_t ro = ldn_le_p(&s->regs_ro[reg_addr], కొలత);
+    uint64_t wc = ldn_le_p(&s->regs_wc[reg_addr], కొలత);
+    uint64_t curr_val = ldn_le_p(&s->regs[reg_addr], కొలత);
 
-    stn_le_p(dest, size, ((curr_val & ro) | (data & ~ro)) & ~(data & wc));
+    stn_le_p(dest, కొలత, ((curr_val & ro) | (దత్తాంశం & ~ro)) & ~(దత్తాంశం & wc));
 }
 
-static MemTxResult riscv_iommu_mmio_write(void *opaque, hwaddr addr,
-                                          uint64_t data, unsigned size,
+స్థిర Mem_Tx_ఫలితం riscv_iommu_mmio_write(శూన్య *opaque, hwaddr addr,
+                                          uint64_t దత్తాంశం, గుర్తులేని కొలత,
                                           MemTxAttrs attrs)
 {
-    riscv_iommu_process_fn *process_fn = NULL;
+    riscv_iommu_process_fn *process_fn = ఖాళీ;
     RISCVIOMMUState *s = opaque;
     uint32_t regb = addr & ~3;
     uint32_t busy = 0;
     uint64_t val = 0;
     bool cy_inh = false;
 
-    if ((addr & (size - 1)) != 0) {
+    ఒకవేళ ((addr & (కొలత - 1)) != 0) {
         /* Unsupported MMIO alignment or access size */
-        return MEMTX_ERROR;
+        తిరిగి MEMTX_ERROR;
     }
 
-    if (addr + size > RISCV_IOMMU_REG_MSI_CONFIG) {
+    ఒకవేళ (addr + కొలత > RISCV_IOMMU_REG_MSI_CONFIG) {
         /* Unsupported MMIO access location. */
-        return MEMTX_ACCESS_ERROR;
+        తిరిగి MEMTX_ACCESS_ERROR;
     }
 
     /* Track actionable MMIO write. */
-    switch (regb) {
-    case RISCV_IOMMU_REG_DDTP:
-    case RISCV_IOMMU_REG_DDTP + 4:
+    ఎంపిక (regb) {
+    స్థితి RISCV_IOMMU_REG_DDTP:
+    స్థితి RISCV_IOMMU_REG_DDTP + 4:
         process_fn = riscv_iommu_process_ddtp;
         regb = RISCV_IOMMU_REG_DDTP;
         busy = RISCV_IOMMU_DDTP_BUSY;
-        break;
+        ఆపు;
 
-    case RISCV_IOMMU_REG_CQT:
-        process_fn = riscv_iommu_process_cq_tail;
-        break;
+    స్థితి RISCV_IOMMU_REG_CQT:
+        process_fn = riscv_iommu_process_cq_తోక;
+        ఆపు;
 
-    case RISCV_IOMMU_REG_CQCSR:
+    స్థితి RISCV_IOMMU_REG_CQCSR:
         process_fn = riscv_iommu_process_cq_control;
         busy = RISCV_IOMMU_CQCSR_BUSY;
-        break;
+        ఆపు;
 
-    case RISCV_IOMMU_REG_FQCSR:
+    స్థితి RISCV_IOMMU_REG_FQCSR:
         process_fn = riscv_iommu_process_fq_control;
         busy = RISCV_IOMMU_FQCSR_BUSY;
-        break;
+        ఆపు;
 
-    case RISCV_IOMMU_REG_PQCSR:
+    స్థితి RISCV_IOMMU_REG_PQCSR:
         process_fn = riscv_iommu_process_pq_control;
         busy = RISCV_IOMMU_PQCSR_BUSY;
-        break;
+        ఆపు;
 
-    case RISCV_IOMMU_REG_ICVEC:
-    case RISCV_IOMMU_REG_IPSR:
+    స్థితి RISCV_IOMMU_REG_ICVEC:
+    స్థితి RISCV_IOMMU_REG_IPSR:
         /*
          * ICVEC and IPSR have special read/write procedures. We'll
          * call their respective helpers and exit.
          */
-        riscv_iommu_write_reg_val(s, &val, addr, size, data);
+        riscv_iommu_write_reg_val(s, &val, addr, కొలత, దత్తాంశం);
 
         /*
          * 'val' is stored as LE. Switch to host endianess
          * before using it.
          */
-        val = le64_to_cpu(val);
+        val = le64_గమ్యం_cpu(val);
 
-        if (regb == RISCV_IOMMU_REG_ICVEC) {
+        ఒకవేళ (regb == RISCV_IOMMU_REG_ICVEC) {
             riscv_iommu_update_icvec(s, val);
-        } else {
+        } లేకపోతే {
             riscv_iommu_update_ipsr(s, val);
         }
 
-        return MEMTX_OK;
+        తిరిగి MEMTX_OK;
 
-    case RISCV_IOMMU_REG_TR_REQ_CTL:
+    స్థితి RISCV_IOMMU_REG_TR_REQ_CTL:
         process_fn = riscv_iommu_process_dbg;
         regb = RISCV_IOMMU_REG_TR_REQ_CTL;
         busy = RISCV_IOMMU_TR_REQ_CTL_GO_BUSY;
-        break;
+        ఆపు;
 
-    case RISCV_IOMMU_REG_IOCOUNTINH:
-        if (addr != RISCV_IOMMU_REG_IOCOUNTINH) {
-            break;
+    స్థితి RISCV_IOMMU_REG_IOCOUNTINH:
+        ఒకవేళ (addr != RISCV_IOMMU_REG_IOCOUNTINH) {
+            ఆపు;
         }
         /* Store previous value of CY bit. */
         cy_inh = !!(riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_IOCOUNTINH) &
             RISCV_IOMMU_IOCOUNTINH_CY);
-        break;
+        ఆపు;
 
 
-    default:
-        break;
+    అప్రమేయ:
+        ఆపు;
     }
 
     /*
@@ -2508,48 +2508,48 @@ static MemTxResult riscv_iommu_mmio_write(void *opaque, hwaddr addr,
      * is set IOMMU behavior of additional writes to the register
      * is UNSPECIFIED.
      */
-    riscv_iommu_write_reg_val(s, &s->regs[addr], addr, size, data);
+    riscv_iommu_write_reg_val(s, &s->regs[addr], addr, కొలత, దత్తాంశం);
 
     /* Busy flag update, MSB 4-byte register. */
-    if (busy) {
+    ఒకవేళ (busy) {
         uint32_t rw = ldl_le_p(&s->regs[regb]);
         stl_le_p(&s->regs[regb], rw | busy);
     }
 
     /* Process HPM writes and update any internal state if needed. */
-    if (regb >= RISCV_IOMMU_REG_IOCOUNTOVF &&
-        regb <= (RISCV_IOMMU_REG_IOHPMEVT(RISCV_IOMMU_IOCOUNT_NUM) + 4)) {
+    ఒకవేళ (regb >= RISCV_IOMMU_REG_IOCOUNTOVF &&
+        regb <= (RISCV_IOMMU_REG_IOHPMEVT(RISCV_IOMMU_IOCOUNT_అంకె) + 4)) {
         riscv_iommu_process_hpm_writes(s, regb, cy_inh);
     }
 
-    if (process_fn) {
+    ఒకవేళ (process_fn) {
         process_fn(s);
     }
 
-    return MEMTX_OK;
+    తిరిగి MEMTX_OK;
 }
 
-static MemTxResult riscv_iommu_mmio_read(void *opaque, hwaddr addr,
-    uint64_t *data, unsigned size, MemTxAttrs attrs)
+స్థిర Mem_Tx_ఫలితం riscv_iommu_mmio_read(శూన్య *opaque, hwaddr addr,
+    uint64_t *దత్తాంశం, గుర్తులేని కొలత, MemTxAttrs attrs)
 {
     RISCVIOMMUState *s = opaque;
     uint64_t val = -1;
     uint8_t *ptr;
 
-    if ((addr & (size - 1)) != 0) {
+    ఒకవేళ ((addr & (కొలత - 1)) != 0) {
         /* Unsupported MMIO alignment. */
-        return MEMTX_ERROR;
+        తిరిగి MEMTX_ERROR;
     }
 
-    if (addr + size > RISCV_IOMMU_REG_MSI_CONFIG) {
-        return MEMTX_ACCESS_ERROR;
+    ఒకవేళ (addr + కొలత > RISCV_IOMMU_REG_MSI_CONFIG) {
+        తిరిగి MEMTX_ACCESS_ERROR;
     }
 
     /* Compute cycle register value. */
-    if ((addr & ~7) == RISCV_IOMMU_REG_IOHPMCYCLES) {
+    ఒకవేళ ((addr & ~7) == RISCV_IOMMU_REG_IOHPMCYCLES) {
         val = riscv_iommu_hpmcycle_read(s);
         ptr = (uint8_t *)&val + (addr & 7);
-    } else if ((addr & ~3) == RISCV_IOMMU_REG_IOCOUNTOVF) {
+    } లేకపోతే ఒకవేళ ((addr & ~3) == RISCV_IOMMU_REG_IOCOUNTOVF) {
         /*
          * Software can read RISCV_IOMMU_REG_IOCOUNTOVF before timer
          * callback completes. In which case CY_OF bit in
@@ -2563,29 +2563,29 @@ static MemTxResult riscv_iommu_mmio_read(void *opaque, hwaddr addr,
                    ? RISCV_IOMMU_IOCOUNTOVF_CY
                    : 0;
         ptr = (uint8_t *)&val + (addr & 3);
-    } else {
+    } లేకపోతే {
         ptr = &s->regs[addr];
     }
 
-    val = ldn_le_p(ptr, size);
+    val = ldn_le_p(ptr, కొలత);
 
-    *data = val;
+    *దత్తాంశం = val;
 
-    return MEMTX_OK;
+    తిరిగి MEMTX_OK;
 }
 
-static const MemoryRegionOps riscv_iommu_mmio_ops = {
+స్థిర స్థిరరాశి జ్ఞాపకం_Region_Ops riscv_iommu_mmio_ops = {
     .read_with_attrs = riscv_iommu_mmio_read,
     .write_with_attrs = riscv_iommu_mmio_write,
     .endianness = DEVICE_LITTLE_ENDIAN,
     .impl = {
-        .min_access_size = 4,
-        .max_access_size = 8,
+        .min_access_కొలత = 4,
+        .max_access_కొలత = 8,
         .unaligned = false,
     },
     .valid = {
-        .min_access_size = 4,
-        .max_access_size = 8,
+        .min_access_కొలత = 4,
+        .max_access_కొలత = 8,
     }
 };
 
@@ -2596,58 +2596,58 @@ static const MemoryRegionOps riscv_iommu_mmio_ops = {
  * Note: Device emulation code generating an MSI is expected to provide a valid
  * memory transaction attributes with requested_id set.
  */
-static MemTxResult riscv_iommu_trap_write(void *opaque, hwaddr addr,
-    uint64_t data, unsigned size, MemTxAttrs attrs)
+స్థిర Mem_Tx_ఫలితం riscv_iommu_trap_write(శూన్య *opaque, hwaddr addr,
+    uint64_t దత్తాంశం, గుర్తులేని కొలత, MemTxAttrs attrs)
 {
     RISCVIOMMUState* s = (RISCVIOMMUState *)opaque;
     RISCVIOMMUContext *ctx;
-    MemTxResult res;
-    void *ref;
+    Mem_Tx_ఫలితం res;
+    శూన్య *ref;
     uint32_t devid = attrs.requester_id;
 
-    if (attrs.unspecified) {
-        return MEMTX_ACCESS_ERROR;
+    ఒకవేళ (attrs.unspecified) {
+        తిరిగి MEMTX_ACCESS_ERROR;
     }
 
     /* FIXME: PCIe bus remapping for attached endpoints. */
     devid |= s->bus << 8;
 
     ctx = riscv_iommu_ctx(s, devid, 0, IOMMU_RW, addr, &ref);
-    if (ctx == NULL) {
+    ఒకవేళ (ctx == ఖాళీ) {
         res = MEMTX_ACCESS_ERROR;
-    } else {
-        res = riscv_iommu_msi_write(s, ctx, addr, data, size, attrs);
+    } లేకపోతే {
+        res = riscv_iommu_msi_write(s, ctx, addr, దత్తాంశం, కొలత, attrs);
     }
     riscv_iommu_ctx_put(s, ref);
-    return res;
+    తిరిగి res;
 }
 
-static MemTxResult riscv_iommu_trap_read(void *opaque, hwaddr addr,
-    uint64_t *data, unsigned size, MemTxAttrs attrs)
+స్థిర Mem_Tx_ఫలితం riscv_iommu_trap_read(శూన్య *opaque, hwaddr addr,
+    uint64_t *దత్తాంశం, గుర్తులేని కొలత, MemTxAttrs attrs)
 {
-    return MEMTX_ACCESS_ERROR;
+    తిరిగి MEMTX_ACCESS_ERROR;
 }
 
-static const MemoryRegionOps riscv_iommu_trap_ops = {
+స్థిర స్థిరరాశి జ్ఞాపకం_Region_Ops riscv_iommu_trap_ops = {
     .read_with_attrs = riscv_iommu_trap_read,
     .write_with_attrs = riscv_iommu_trap_write,
     .endianness = DEVICE_LITTLE_ENDIAN,
     .impl = {
-        .min_access_size = 4,
-        .max_access_size = 8,
+        .min_access_కొలత = 4,
+        .max_access_కొలత = 8,
     },
     .valid = {
-        .min_access_size = 4,
-        .max_access_size = 8,
+        .min_access_కొలత = 4,
+        .max_access_కొలత = 8,
     }
 };
 
-void riscv_iommu_set_cap_igs(RISCVIOMMUState *s, riscv_iommu_igs_mode mode)
+శూన్య riscv_iommu_సమితి_cap_igs(RISCVIOMMUState *s, riscv_iommu_igs_బహుళకం బహుళకం)
 {
-    s->cap = set_field(s->cap, RISCV_IOMMU_CAP_IGS, mode);
+    s->cap = సమితి_క్షేత్రం(s->cap, RISCV_IOMMU_CAP_IGS, బహుళకం);
 }
 
-static void riscv_iommu_instance_init(Object *obj)
+స్థిర శూన్య riscv_iommu_instance_init(Object *obj)
 {
     RISCVIOMMUState *s = RISCV_IOMMU(obj);
 
@@ -2655,32 +2655,32 @@ static void riscv_iommu_instance_init(Object *obj)
     s->cap = RISCV_IOMMU_CAP_DBG;
 
     /* TODO: method to report supported PID bits */
-    s->pid_bits = 8; /* restricted to size of MemTxAttrs.pid */
+    s->pid_బిట్లు = 8; /* restricted to size of MemTxAttrs.pid */
     s->cap |= RISCV_IOMMU_CAP_PD8;
 
     /* register storage */
-    s->regs = g_new0(uint8_t, RISCV_IOMMU_REG_SIZE);
-    s->regs_ro = g_new0(uint8_t, RISCV_IOMMU_REG_SIZE);
-    s->regs_wc = g_new0(uint8_t, RISCV_IOMMU_REG_SIZE);
+    s->regs = g_new0(uint8_t, RISCV_IOMMU_REG_కొలత);
+    s->regs_ro = g_new0(uint8_t, RISCV_IOMMU_REG_కొలత);
+    s->regs_wc = g_new0(uint8_t, RISCV_IOMMU_REG_కొలత);
 
      /* Mark all registers read-only */
-    memset(s->regs_ro, 0xff, RISCV_IOMMU_REG_SIZE);
+    memset(s->regs_ro, 0xff, RISCV_IOMMU_REG_కొలత);
 
     /* Device translation context cache */
-    s->ctx_cache = g_hash_table_new_full(riscv_iommu_ctx_hash,
+    s->ctx_cache = g_hash_పట్టిక_new_నిండిన(riscv_iommu_ctx_hash,
                                          riscv_iommu_ctx_equal,
-                                         g_free, NULL);
+                                         g_free, ఖాళీ);
 
-    s->iot_cache = g_hash_table_new_full(riscv_iommu_iot_hash,
+    s->iot_cache = g_hash_పట్టిక_new_నిండిన(riscv_iommu_iot_hash,
                                          riscv_iommu_iot_equal,
-                                         g_free, NULL);
+                                         g_free, ఖాళీ);
 
-    s->iommus.le_next = NULL;
-    s->iommus.le_prev = NULL;
+    s->iommus.le_తదుపరి = ఖాళీ;
+    s->iommus.le_prev = ఖాళీ;
     QLIST_INIT(&s->spaces);
 }
 
-static void riscv_iommu_instance_finalize(Object *obj)
+స్థిర శూన్య riscv_iommu_instance_finalize(Object *obj)
 {
     RISCVIOMMUState *s = RISCV_IOMMU(obj);
 
@@ -2688,54 +2688,54 @@ static void riscv_iommu_instance_finalize(Object *obj)
     g_free(s->regs_ro);
     g_free(s->regs_wc);
 
-    g_hash_table_unref(s->ctx_cache);
-    g_hash_table_unref(s->iot_cache);
+    g_hash_పట్టిక_unref(s->ctx_cache);
+    g_hash_పట్టిక_unref(s->iot_cache);
 }
 
-static void riscv_iommu_realize(DeviceState *dev, Error **errp)
+స్థిర శూన్య riscv_iommu_realize(DeviceState *dev, Error **errp)
 {
     RISCVIOMMUState *s = RISCV_IOMMU(dev);
 
     /* Report QEMU target physical address space limits. */
-    s->cap = set_field(s->cap, RISCV_IOMMU_CAP_PAS, s->pas_bits);
+    s->cap = సమితి_క్షేత్రం(s->cap, RISCV_IOMMU_CAP_PAS, s->pas_బిట్లు);
 
-    s->cap |= s->version & RISCV_IOMMU_CAP_VERSION;
-    if (s->enable_msi) {
+    s->cap |= s->సంస్కరణ & RISCV_IOMMU_CAP_సంస్కరణ;
+    ఒకవేళ (s->enable_msi) {
         s->cap |= RISCV_IOMMU_CAP_MSI_FLAT | RISCV_IOMMU_CAP_MSI_MRIF;
     }
-    if (s->enable_ats) {
+    ఒకవేళ (s->enable_ats) {
         s->cap |= RISCV_IOMMU_CAP_ATS;
     }
-    if (s->enable_s_stage) {
+    ఒకవేళ (s->enable_s_stage) {
         s->cap |= RISCV_IOMMU_CAP_SV32 | RISCV_IOMMU_CAP_SV39 |
                   RISCV_IOMMU_CAP_SV48 | RISCV_IOMMU_CAP_SV57;
     }
-    if (s->enable_g_stage) {
+    ఒకవేళ (s->enable_g_stage) {
         s->cap |= RISCV_IOMMU_CAP_SV32X4 | RISCV_IOMMU_CAP_SV39X4 |
                   RISCV_IOMMU_CAP_SV48X4 | RISCV_IOMMU_CAP_SV57X4 |
                   RISCV_IOMMU_CAP_SVRSW60T59B;
     }
 
-    if (s->hpm_cntrs > 0) {
+    ఒకవేళ (s->hpm_cntrs > 0) {
         /* Clip number of HPM counters to maximum supported (31). */
-        if (s->hpm_cntrs > RISCV_IOMMU_IOCOUNT_NUM) {
-            s->hpm_cntrs = RISCV_IOMMU_IOCOUNT_NUM;
+        ఒకవేళ (s->hpm_cntrs > RISCV_IOMMU_IOCOUNT_అంకె) {
+            s->hpm_cntrs = RISCV_IOMMU_IOCOUNT_అంకె;
         }
         /* Enable hardware performance monitor interface */
         s->cap |= RISCV_IOMMU_CAP_HPM;
     }
 
     /* Out-of-reset translation mode: OFF (DMA disabled) BARE (passthrough) */
-    s->ddtp = set_field(0, RISCV_IOMMU_DDTP_MODE, s->enable_off ?
-                        RISCV_IOMMU_DDTP_MODE_OFF : RISCV_IOMMU_DDTP_MODE_BARE);
+    s->ddtp = సమితి_క్షేత్రం(0, RISCV_IOMMU_DDTP_బహుళకం, s->enable_off ?
+                        RISCV_IOMMU_DDTP_బహుళకం_OFF : RISCV_IOMMU_DDTP_బహుళకం_BARE);
 
     /*
      * Register complete MMIO space, including MSI/PBA registers.
      * Note, PCIDevice implementation will add overlapping MR for MSI/PBA,
      * managed directly by the PCIDevice implementation.
      */
-    memory_region_init_io(&s->regs_mr, OBJECT(dev), &riscv_iommu_mmio_ops, s,
-        "riscv-iommu-regs", RISCV_IOMMU_REG_SIZE);
+    జ్ఞాపకం_region_init_io(&s->regs_mr, OBJECT(dev), &riscv_iommu_mmio_ops, s,
+        "riscv-iommu-regs", RISCV_IOMMU_REG_కొలత);
 
     /* Set power-on register state */
     stq_le_p(&s->regs[RISCV_IOMMU_REG_CAP], s->cap);
@@ -2745,7 +2745,7 @@ static void riscv_iommu_realize(DeviceState *dev, Error **errp)
              ~(RISCV_IOMMU_FCTL_GXL | RISCV_IOMMU_FCTL_WSI));
 
     stq_le_p(&s->regs_ro[RISCV_IOMMU_REG_DDTP],
-        ~(RISCV_IOMMU_DDTP_PPN | RISCV_IOMMU_DDTP_MODE));
+        ~(RISCV_IOMMU_DDTP_PPN | RISCV_IOMMU_DDTP_బహుళకం));
     stq_le_p(&s->regs_ro[RISCV_IOMMU_REG_CQB],
         ~(RISCV_IOMMU_CQB_LOG2SZ | RISCV_IOMMU_CQB_PPN));
     stq_le_p(&s->regs_ro[RISCV_IOMMU_REG_FQB],
@@ -2753,7 +2753,7 @@ static void riscv_iommu_realize(DeviceState *dev, Error **errp)
     stq_le_p(&s->regs_ro[RISCV_IOMMU_REG_PQB],
         ~(RISCV_IOMMU_PQB_LOG2SZ | RISCV_IOMMU_PQB_PPN));
     stl_le_p(&s->regs_wc[RISCV_IOMMU_REG_CQCSR], RISCV_IOMMU_CQCSR_CQMF |
-        RISCV_IOMMU_CQCSR_CMD_TO | RISCV_IOMMU_CQCSR_CMD_ILL);
+        RISCV_IOMMU_CQCSR_CMD_గమ్యం | RISCV_IOMMU_CQCSR_CMD_ILL);
     stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_CQCSR], RISCV_IOMMU_CQCSR_CQON |
         RISCV_IOMMU_CQCSR_BUSY);
     stl_le_p(&s->regs_wc[RISCV_IOMMU_REG_FQCSR], RISCV_IOMMU_FQCSR_FQMF |
@@ -2768,68 +2768,68 @@ static void riscv_iommu_realize(DeviceState *dev, Error **errp)
     stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_ICVEC], 0);
     stq_le_p(&s->regs[RISCV_IOMMU_REG_DDTP], s->ddtp);
     /* If debug registers enabled. */
-    if (s->cap & RISCV_IOMMU_CAP_DBG) {
+    ఒకవేళ (s->cap & RISCV_IOMMU_CAP_DBG) {
         stq_le_p(&s->regs_ro[RISCV_IOMMU_REG_TR_REQ_IOVA], 0);
         stq_le_p(&s->regs_ro[RISCV_IOMMU_REG_TR_REQ_CTL],
             RISCV_IOMMU_TR_REQ_CTL_GO_BUSY);
     }
 
     /* If HPM registers are enabled. */
-    if (s->cap & RISCV_IOMMU_CAP_HPM) {
+    ఒకవేళ (s->cap & RISCV_IOMMU_CAP_HPM) {
         /* +1 for cycle counter bit. */
         stl_le_p(&s->regs_ro[RISCV_IOMMU_REG_IOCOUNTINH],
                  ~((2 << s->hpm_cntrs) - 1));
         stq_le_p(&s->regs_ro[RISCV_IOMMU_REG_IOHPMCYCLES], 0);
-        memset(&s->regs_ro[RISCV_IOMMU_REG_IOHPMCTR_BASE],
+        memset(&s->regs_ro[RISCV_IOMMU_REG_IOHPMCTR_పునాది],
                0x00, s->hpm_cntrs * 8);
-        memset(&s->regs_ro[RISCV_IOMMU_REG_IOHPMEVT_BASE],
+        memset(&s->regs_ro[RISCV_IOMMU_REG_IOHPMEVT_పునాది],
                0x00, s->hpm_cntrs * 8);
     }
 
     /* Memory region for downstream access, if specified. */
-    if (s->target_mr) {
-        s->target_as = g_new0(AddressSpace, 1);
-        address_space_init(s->target_as, s->target_mr,
+    ఒకవేళ (s->లక్ష్యం_mr) {
+        s->లక్ష్యం_as = g_new0(చిరునామా_Space, 1);
+        చిరునామా_space_init(s->లక్ష్యం_as, s->లక్ష్యం_mr,
             "riscv-iommu-downstream");
-    } else {
+    } లేకపోతే {
         /* Fallback to global system memory. */
-        s->target_as = &address_space_memory;
+        s->లక్ష్యం_as = &చిరునామా_space_జ్ఞాపకం;
     }
 
     /* Memory region for untranslated MRIF/MSI writes */
-    memory_region_init_io(&s->trap_mr, OBJECT(dev), &riscv_iommu_trap_ops, s,
+    జ్ఞాపకం_region_init_io(&s->trap_mr, OBJECT(dev), &riscv_iommu_trap_ops, s,
             "riscv-iommu-trap", ~0ULL);
-    address_space_init(&s->trap_as, &s->trap_mr, "riscv-iommu-trap-as");
+    చిరునామా_space_init(&s->trap_as, &s->trap_mr, "riscv-iommu-trap-as");
 
-    if (s->cap & RISCV_IOMMU_CAP_HPM) {
+    ఒకవేళ (s->cap & RISCV_IOMMU_CAP_HPM) {
         s->hpm_timer =
             timer_new_ns(QEMU_CLOCK_VIRTUAL, riscv_iommu_hpm_timer_cb, s);
-        s->hpm_event_ctr_map = g_hash_table_new(g_direct_hash, g_direct_equal);
+        s->hpm_event_ctr_map = g_hash_పట్టిక_new(g_ప్రత్యక్ష_hash, g_ప్రత్యక్ష_equal);
     }
 }
 
-static void riscv_iommu_unrealize(DeviceState *dev)
+స్థిర శూన్య riscv_iommu_unrealize(DeviceState *dev)
 {
     RISCVIOMMUState *s = RISCV_IOMMU(dev);
 
-    if (s->cap & RISCV_IOMMU_CAP_HPM) {
-        g_hash_table_unref(s->hpm_event_ctr_map);
+    ఒకవేళ (s->cap & RISCV_IOMMU_CAP_HPM) {
+        g_hash_పట్టిక_unref(s->hpm_event_ctr_map);
         timer_free(s->hpm_timer);
     }
 }
 
-void riscv_iommu_reset(RISCVIOMMUState *s)
+శూన్య riscv_iommu_reset(RISCVIOMMUState *s)
 {
     uint32_t reg_clr;
-    int ddtp_mode;
+    పూర్ణాంకం ddtp_బహుళకం;
 
     /*
      * Clear DDTP while setting DDTP_mode back to user
      * initial setting.
      */
-    ddtp_mode = s->enable_off ?
-                RISCV_IOMMU_DDTP_MODE_OFF : RISCV_IOMMU_DDTP_MODE_BARE;
-    s->ddtp = set_field(0, RISCV_IOMMU_DDTP_MODE, ddtp_mode);
+    ddtp_బహుళకం = s->enable_off ?
+                RISCV_IOMMU_DDTP_బహుళకం_OFF : RISCV_IOMMU_DDTP_బహుళకం_BARE;
+    s->ddtp = సమితి_క్షేత్రం(0, RISCV_IOMMU_DDTP_బహుళకం, ddtp_బహుళకం);
     riscv_iommu_reg_set64(s, RISCV_IOMMU_REG_DDTP, s->ddtp);
 
     reg_clr = RISCV_IOMMU_CQCSR_CQEN | RISCV_IOMMU_CQCSR_CIE |
@@ -2849,29 +2849,29 @@ void riscv_iommu_reset(RISCVIOMMUState *s)
 
     riscv_iommu_reg_set32(s, RISCV_IOMMU_REG_IPSR, 0);
 
-    g_hash_table_remove_all(s->ctx_cache);
-    g_hash_table_remove_all(s->iot_cache);
+    g_hash_పట్టిక_remove_all(s->ctx_cache);
+    g_hash_పట్టిక_remove_all(s->iot_cache);
 }
 
-static const Property riscv_iommu_properties[] = {
-    DEFINE_PROP_UINT32("version", RISCVIOMMUState, version,
+స్థిర స్థిరరాశి Property riscv_iommu_properties[] = {
+    DEFINE_PROP_UINT32("version", RISCVIOMMUState, సంస్కరణ,
         RISCV_IOMMU_SPEC_DOT_VER),
-    DEFINE_PROP_UINT32("pas-bits", RISCVIOMMUState, pas_bits, 0),
+    DEFINE_PROP_UINT32("pas-bits", RISCVIOMMUState, pas_బిట్లు, 0),
     DEFINE_PROP_UINT32("bus", RISCVIOMMUState, bus, 0x0),
-    DEFINE_PROP_UINT32("ioatc-limit", RISCVIOMMUState, iot_limit,
-        LIMIT_CACHE_IOT),
+    DEFINE_PROP_UINT32("ioatc-limit", RISCVIOMMUState, iot_హద్దు,
+        హద్దు_CACHE_IOT),
     DEFINE_PROP_BOOL("intremap", RISCVIOMMUState, enable_msi, TRUE),
     DEFINE_PROP_BOOL("ats", RISCVIOMMUState, enable_ats, TRUE),
     DEFINE_PROP_BOOL("off", RISCVIOMMUState, enable_off, TRUE),
     DEFINE_PROP_BOOL("s-stage", RISCVIOMMUState, enable_s_stage, TRUE),
     DEFINE_PROP_BOOL("g-stage", RISCVIOMMUState, enable_g_stage, TRUE),
-    DEFINE_PROP_LINK("downstream-mr", RISCVIOMMUState, target_mr,
-        TYPE_MEMORY_REGION, MemoryRegion *),
+    DEFINE_PROP_LINK("downstream-mr", RISCVIOMMUState, లక్ష్యం_mr,
+        TYPE_జ్ఞాపకం_REGION, జ్ఞాపకం_Region *),
     DEFINE_PROP_UINT8("hpm-counters", RISCVIOMMUState, hpm_cntrs,
-                      RISCV_IOMMU_IOCOUNT_NUM),
+                      RISCV_IOMMU_IOCOUNT_అంకె),
 };
 
-static void riscv_iommu_class_init(ObjectClass *klass, const void *data)
+స్థిర శూన్య riscv_iommu_class_init(ObjectClass *klass, స్థిరరాశి శూన్య *దత్తాంశం)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
 
@@ -2879,19 +2879,19 @@ static void riscv_iommu_class_init(ObjectClass *klass, const void *data)
     dc->user_creatable = false;
     dc->realize = riscv_iommu_realize;
     dc->unrealize = riscv_iommu_unrealize;
-    device_class_set_props(dc, riscv_iommu_properties);
+    device_class_సమితి_props(dc, riscv_iommu_properties);
 }
 
-static const TypeInfo riscv_iommu_info = {
+స్థిర స్థిరరాశి TypeInfo riscv_iommu_info = {
     .name = TYPE_RISCV_IOMMU,
-    .parent = TYPE_DEVICE,
-    .instance_size = sizeof(RISCVIOMMUState),
+    .మాతృ = TYPE_DEVICE,
+    .instance_కొలత = పరిమాణం(RISCVIOMMUState),
     .instance_init = riscv_iommu_instance_init,
     .instance_finalize = riscv_iommu_instance_finalize,
     .class_init = riscv_iommu_class_init,
 };
 
-static const char *IOMMU_FLAG_STR[] = {
+స్థిర స్థిరరాశి అక్షరం *IOMMU_FLAG_STR[] = {
     "NA",
     "RO",
     "WR",
@@ -2899,141 +2899,141 @@ static const char *IOMMU_FLAG_STR[] = {
 };
 
 /* RISC-V IOMMU Memory Region - Address Translation Space */
-static IOMMUTLBEntry riscv_iommu_memory_region_translate(
+స్థిర IOMMUTLBEntry riscv_iommu_జ్ఞాపకం_region_translate(
     IOMMUMemoryRegion *iommu_mr, hwaddr addr,
-    IOMMUAccessFlags flag, int iommu_idx)
+    IOMMUAccessFlags flag, పూర్ణాంకం iommu_idx)
 {
-    RISCVIOMMUSpace *as = container_of(iommu_mr, RISCVIOMMUSpace, iova_mr);
+    RISCVIOMMUSpace *as = container_యొక్క(iommu_mr, RISCVIOMMUSpace, iova_mr);
     RISCVIOMMUContext *ctx;
-    void *ref;
+    శూన్య *ref;
     IOMMUTLBEntry iotlb = {
         .iova = addr,
-        .target_as = as->iommu->target_as,
-        .addr_mask = ~0ULL,
+        .లక్ష్యం_as = as->iommu->లక్ష్యం_as,
+        .addr_ముసుగు = ~0ULL,
         .perm = flag,
     };
     uint32_t devid = riscv_iommu_space_devid(as);
 
     ctx = riscv_iommu_ctx(as->iommu, devid, iommu_idx, flag, addr, &ref);
-    if (ctx == NULL) {
+    ఒకవేళ (ctx == ఖాళీ) {
         /* Translation disabled or invalid. */
-        iotlb.addr_mask = 0;
+        iotlb.addr_ముసుగు = 0;
         iotlb.perm = IOMMU_NONE;
-    } else if (riscv_iommu_translate(as->iommu, ctx, &iotlb, true)) {
+    } లేకపోతే ఒకవేళ (riscv_iommu_translate(as->iommu, ctx, &iotlb, true)) {
         /* Translation disabled or fault reported. */
-        iotlb.addr_mask = 0;
+        iotlb.addr_ముసుగు = 0;
         iotlb.perm = IOMMU_NONE;
     }
 
     /* Trace all dma translations with original access flags. */
-    trace_riscv_iommu_dma(as->iommu->parent_obj.id, PCI_BUS_NUM(devid),
-                          PCI_SLOT(devid), PCI_FUNC(devid), iommu_idx,
+    trace_riscv_iommu_dma(as->iommu->మాతృ_obj.id, PCI_BUS_అంకె(devid),
+                          PCI_స్థానం(devid), PCI_FUNC(devid), iommu_idx,
                           IOMMU_FLAG_STR[flag & IOMMU_RW], iotlb.iova,
                           iotlb.translated_addr);
 
     riscv_iommu_ctx_put(as->iommu, ref);
 
-    return iotlb;
+    తిరిగి iotlb;
 }
 
-static int riscv_iommu_memory_region_notify(
+స్థిర పూర్ణాంకం riscv_iommu_జ్ఞాపకం_region_notify(
     IOMMUMemoryRegion *iommu_mr, IOMMUNotifierFlag old,
     IOMMUNotifierFlag new, Error **errp)
 {
-    RISCVIOMMUSpace *as = container_of(iommu_mr, RISCVIOMMUSpace, iova_mr);
+    RISCVIOMMUSpace *as = container_యొక్క(iommu_mr, RISCVIOMMUSpace, iova_mr);
 
-    if (old == IOMMU_NOTIFIER_NONE) {
+    ఒకవేళ (old == IOMMU_NOTIFIER_NONE) {
         as->notifier = true;
-        trace_riscv_iommu_notifier_add(iommu_mr->parent_obj.name);
-    } else if (new == IOMMU_NOTIFIER_NONE) {
+        trace_riscv_iommu_notifier_కూడు(iommu_mr->మాతృ_obj.name);
+    } లేకపోతే ఒకవేళ (new == IOMMU_NOTIFIER_NONE) {
         as->notifier = false;
-        trace_riscv_iommu_notifier_del(iommu_mr->parent_obj.name);
+        trace_riscv_iommu_notifier_del(iommu_mr->మాతృ_obj.name);
     }
 
-    return 0;
+    తిరిగి 0;
 }
 
-static inline bool pci_is_iommu(PCIDevice *pdev)
+స్థిర అంతఃవరుస bool pci_is_iommu(PCIDevice *pdev)
 {
-    return pci_get_word(pdev->config + PCI_CLASS_DEVICE) == 0x0806;
+    తిరిగి pci_get_మాట(pdev->config + PCI_CLASS_DEVICE) == 0x0806;
 }
 
-static AddressSpace *riscv_iommu_find_as(PCIBus *bus, void *opaque, int devfn)
+స్థిర చిరునామా_Space *riscv_iommu_కనుగొను_as(PCIBus *bus, శూన్య *opaque, పూర్ణాంకం devfn)
 {
     RISCVIOMMUState *s = (RISCVIOMMUState *) opaque;
-    PCIDevice *pdev = pci_find_device(bus, pci_bus_num(bus), devfn);
-    AddressSpace *as = NULL;
+    PCIDevice *pdev = pci_కనుగొను_device(bus, pci_bus_అంకె(bus), devfn);
+    చిరునామా_Space *as = ఖాళీ;
 
-    if (pdev && pci_is_iommu(pdev)) {
-        return s->target_as;
+    ఒకవేళ (pdev && pci_is_iommu(pdev)) {
+        తిరిగి s->లక్ష్యం_as;
     }
 
     /* Find first registered IOMMU device */
-    while (s->iommus.le_prev) {
+    అయితే (s->iommus.le_prev) {
         s = *(s->iommus.le_prev);
     }
 
     /* Find first matching IOMMU */
-    while (s != NULL && as == NULL) {
+    అయితే (s != ఖాళీ && as == ఖాళీ) {
         as = riscv_iommu_space(s, bus, devfn);
-        s = s->iommus.le_next;
+        s = s->iommus.le_తదుపరి;
     }
 
-    return as ? as : &address_space_memory;
+    తిరిగి as ? as : &చిరునామా_space_జ్ఞాపకం;
 }
 
-static const PCIIOMMUOps riscv_iommu_ops = {
-    .get_address_space = riscv_iommu_find_as,
+స్థిర స్థిరరాశి PCIIOMMUOps riscv_iommu_ops = {
+    .get_చిరునామా_space = riscv_iommu_కనుగొను_as,
 };
 
-void riscv_iommu_pci_setup_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
+శూన్య riscv_iommu_pci_అమరిక_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
         Error **errp)
 {
-    if (bus->iommu_ops &&
-        bus->iommu_ops->get_address_space == riscv_iommu_find_as) {
+    ఒకవేళ (bus->iommu_ops &&
+        bus->iommu_ops->get_చిరునామా_space == riscv_iommu_కనుగొను_as) {
         /* Allow multiple IOMMUs on the same PCIe bus, link known devices */
-        RISCVIOMMUState *last = (RISCVIOMMUState *)bus->iommu_opaque;
-        QLIST_INSERT_AFTER(last, iommu, iommus);
-    } else if (!bus->iommu_ops && !bus->iommu_opaque) {
-        pci_setup_iommu(bus, &riscv_iommu_ops, iommu);
-    } else {
+        RISCVIOMMUState *చివరి = (RISCVIOMMUState *)bus->iommu_opaque;
+        QLIST_చొప్పించు_AFTER(చివరి, iommu, iommus);
+    } లేకపోతే ఒకవేళ (!bus->iommu_ops && !bus->iommu_opaque) {
+        pci_అమరిక_iommu(bus, &riscv_iommu_ops, iommu);
+    } లేకపోతే {
         error_setg(errp, "can't register secondary IOMMU for PCI bus #%d",
-            pci_bus_num(bus));
+            pci_bus_అంకె(bus));
     }
 }
 
-static int riscv_iommu_memory_region_index(IOMMUMemoryRegion *iommu_mr,
+స్థిర పూర్ణాంకం riscv_iommu_జ్ఞాపకం_region_సూచీ(IOMMUMemoryRegion *iommu_mr,
     MemTxAttrs attrs)
 {
-    return attrs.unspecified ? RISCV_IOMMU_NOPROCID : (int)attrs.pid;
+    తిరిగి attrs.unspecified ? RISCV_IOMMU_NOPROCID : (పూర్ణాంకం)attrs.pid;
 }
 
-static int riscv_iommu_memory_region_index_len(IOMMUMemoryRegion *iommu_mr)
+స్థిర పూర్ణాంకం riscv_iommu_జ్ఞాపకం_region_సూచీ_len(IOMMUMemoryRegion *iommu_mr)
 {
-    RISCVIOMMUSpace *as = container_of(iommu_mr, RISCVIOMMUSpace, iova_mr);
-    return 1 << as->iommu->pid_bits;
+    RISCVIOMMUSpace *as = container_యొక్క(iommu_mr, RISCVIOMMUSpace, iova_mr);
+    తిరిగి 1 << as->iommu->pid_బిట్లు;
 }
 
-static void riscv_iommu_memory_region_init(ObjectClass *klass, const void *data)
+స్థిర శూన్య riscv_iommu_జ్ఞాపకం_region_init(ObjectClass *klass, స్థిరరాశి శూన్య *దత్తాంశం)
 {
-    IOMMUMemoryRegionClass *imrc = IOMMU_MEMORY_REGION_CLASS(klass);
+    IOMMUMemoryRegionClass *imrc = IOMMU_జ్ఞాపకం_REGION_CLASS(klass);
 
-    imrc->translate = riscv_iommu_memory_region_translate;
-    imrc->notify_flag_changed = riscv_iommu_memory_region_notify;
-    imrc->attrs_to_index = riscv_iommu_memory_region_index;
-    imrc->num_indexes = riscv_iommu_memory_region_index_len;
+    imrc->translate = riscv_iommu_జ్ఞాపకం_region_translate;
+    imrc->notify_flag_మారింది = riscv_iommu_జ్ఞాపకం_region_notify;
+    imrc->attrs_గమ్యం_సూచీ = riscv_iommu_జ్ఞాపకం_region_సూచీ;
+    imrc->అంకె_indexes = riscv_iommu_జ్ఞాపకం_region_సూచీ_len;
 }
 
-static const TypeInfo riscv_iommu_memory_region_info = {
-    .parent = TYPE_IOMMU_MEMORY_REGION,
-    .name = TYPE_RISCV_IOMMU_MEMORY_REGION,
-    .class_init = riscv_iommu_memory_region_init,
+స్థిర స్థిరరాశి TypeInfo riscv_iommu_జ్ఞాపకం_region_info = {
+    .మాతృ = TYPE_IOMMU_జ్ఞాపకం_REGION,
+    .name = TYPE_RISCV_IOMMU_జ్ఞాపకం_REGION,
+    .class_init = riscv_iommu_జ్ఞాపకం_region_init,
 };
 
-static void riscv_iommu_register_mr_types(void)
+స్థిర శూన్య riscv_iommu_రిజిస్టరు_mr_types(శూన్య)
 {
-    type_register_static(&riscv_iommu_memory_region_info);
-    type_register_static(&riscv_iommu_info);
+    type_రిజిస్టరు_static(&riscv_iommu_జ్ఞాపకం_region_info);
+    type_రిజిస్టరు_static(&riscv_iommu_info);
 }
 
-type_init(riscv_iommu_register_mr_types);
+type_init(riscv_iommu_రిజిస్టరు_mr_types);

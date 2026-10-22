@@ -16,25 +16,25 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HW_RISCV_IOMMU_STATE_H
-#define HW_RISCV_IOMMU_STATE_H
+#నిర్వచితం_కాకపోతే HW_RISCV_IOMMU_STATE_H
+#నిర్వచించు HW_RISCV_IOMMU_STATE_H
 
-#include "qom/object.h"
-#include "hw/core/qdev-properties.h"
-#include "system/dma.h"
-#include "hw/riscv/iommu.h"
-#include "hw/riscv/riscv-iommu-bits.h"
+#అన్తర్భావ "qom/object.h"
+#అన్తర్భావ "hw/core/qdev-properties.h"
+#అన్తర్భావ "system/dma.h"
+#అన్తర్భావ "hw/riscv/iommu.h"
+#అన్తర్భావ "hw/riscv/riscv-iommu-bits.h"
 
-typedef enum riscv_iommu_igs_modes riscv_iommu_igs_mode;
+రకనిర్వచనం గణన riscv_iommu_igs_modes riscv_iommu_igs_బహుళకం;
 
-struct RISCVIOMMUState {
+నిర్మాణం RISCVIOMMUState {
     /*< private >*/
-    DeviceState parent_obj;
+    DeviceState మాతృ_obj;
 
     /*< public >*/
-    uint32_t version;     /* Reported interface version number */
-    uint32_t pid_bits;    /* process identifier width */
-    uint32_t pas_bits;    /* physical address bits */
+    uint32_t సంస్కరణ;     /* Reported interface version number */
+    uint32_t pid_బిట్లు;    /* process identifier width */
+    uint32_t pas_బిట్లు;    /* physical address bits */
     uint32_t bus;         /* PCI bus mapping for non-root endpoints */
 
     uint64_t cap;         /* IOMMU supported capabilities */
@@ -54,28 +54,28 @@ struct RISCVIOMMUState {
     dma_addr_t fq_addr;   /* Fault/event queue base physical address */
     dma_addr_t pq_addr;   /* Page request queue base physical address */
 
-    uint32_t cq_mask;     /* Command queue index bit mask */
-    uint32_t fq_mask;     /* Fault/event queue index bit mask */
-    uint32_t pq_mask;     /* Page request queue index bit mask */
+    uint32_t cq_ముసుగు;     /* Command queue index bit mask */
+    uint32_t fq_ముసుగు;     /* Fault/event queue index bit mask */
+    uint32_t pq_ముసుగు;     /* Page request queue index bit mask */
 
     /* interrupt notifier */
-    void (*notify)(RISCVIOMMUState *iommu, unsigned vector);
+    శూన్య (*notify)(RISCVIOMMUState *iommu, గుర్తులేని సదిశ);
 
     /* IOMMU target address space */
-    AddressSpace *target_as;
-    MemoryRegion *target_mr;
+    చిరునామా_Space *లక్ష్యం_as;
+    జ్ఞాపకం_Region *లక్ష్యం_mr;
 
     /* MSI / MRIF access trap */
-    AddressSpace trap_as;
-    MemoryRegion trap_mr;
+    చిరునామా_Space trap_as;
+    జ్ఞాపకం_Region trap_mr;
 
-    GHashTable *ctx_cache;          /* Device translation Context Cache */
+    GHash_పట్టిక *ctx_cache;          /* Device translation Context Cache */
 
-    GHashTable *iot_cache;          /* IO Translated Address Cache */
-    unsigned iot_limit;             /* IO Translation Cache size limit */
+    GHash_పట్టిక *iot_cache;          /* IO Translated Address Cache */
+    గుర్తులేని iot_హద్దు;             /* IO Translation Cache size limit */
 
     /* MMIO Hardware Interface */
-    MemoryRegion regs_mr;
+    జ్ఞాపకం_Region regs_mr;
     uint8_t *regs;  /* current register state */
     uint8_t *regs_wc;  /* write-1-to-clear mask */
     /*
@@ -84,83 +84,83 @@ struct RISCVIOMMUState {
      */
     uint8_t *regs_ro;
 
-    QLIST_ENTRY(RISCVIOMMUState) iommus;
-    QLIST_HEAD(, RISCVIOMMUSpace) spaces;
+    QLIST_నమోదు(RISCVIOMMUState) iommus;
+    QLIST_తల(, RISCVIOMMUSpace) spaces;
 
     /* HPM cycle counter */
     QEMUTimer *hpm_timer;
     uint64_t hpmcycle_val;      /* Current value of cycle register */
     uint64_t hpmcycle_prev;     /* Saved value of QEMU_CLOCK_VIRTUAL clock */
-    uint64_t irq_overflow_left; /* Value beyond INT64_MAX after overflow */
+    uint64_t irq_అధికప్రవాహం_ఎడమ; /* Value beyond INT64_MAX after overflow */
 
     /* HPM event counters */
-    GHashTable *hpm_event_ctr_map; /* Mapping of events to counters */
+    GHash_పట్టిక *hpm_event_ctr_map; /* Mapping of events to counters */
     uint8_t hpm_cntrs;
 };
 
-void riscv_iommu_pci_setup_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
+శూన్య riscv_iommu_pci_అమరిక_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
          Error **errp);
-void riscv_iommu_set_cap_igs(RISCVIOMMUState *s, riscv_iommu_igs_mode mode);
-void riscv_iommu_reset(RISCVIOMMUState *s);
-void riscv_iommu_notify(RISCVIOMMUState *s, int vec_type);
-void riscv_iommu_fault(RISCVIOMMUState *s, struct riscv_iommu_fq_record *ev);
+శూన్య riscv_iommu_సమితి_cap_igs(RISCVIOMMUState *s, riscv_iommu_igs_బహుళకం బహుళకం);
+శూన్య riscv_iommu_reset(RISCVIOMMUState *s);
+శూన్య riscv_iommu_notify(RISCVIOMMUState *s, పూర్ణాంకం vec_type);
+శూన్య riscv_iommu_fault(RISCVIOMMUState *s, నిర్మాణం riscv_iommu_fq_రికార్డు *ev);
 DeviceState *riscv_create_iommu_sys(DeviceState *mmio_irqchip,
-                                    hwaddr addr, int base_irq,
-                                    bool is_32_bit);
+                                    hwaddr addr, పూర్ణాంకం పునాది_irq,
+                                    bool is_32_బిట్టు);
 
-typedef struct RISCVIOMMUContext RISCVIOMMUContext;
+రకనిర్వచనం నిర్మాణం RISCVIOMMUContext RISCVIOMMUContext;
 /* Device translation context state. */
-struct RISCVIOMMUContext {
+నిర్మాణం RISCVIOMMUContext {
     uint64_t devid:24;          /* Requester Id, AKA device_id */
     uint64_t process_id:20;     /* Process ID. PASID for PCIe */
     uint64_t tc;                /* Translation Control */
     uint64_t ta;                /* Translation Attributes */
     uint64_t satp;              /* S-Stage address translation and protection */
     uint64_t gatp;              /* G-Stage address translation and protection */
-    uint64_t msi_addr_mask;     /* MSI filtering - address mask */
-    uint64_t msi_addr_pattern;  /* MSI filtering - address pattern */
+    uint64_t msi_addr_ముసుగు;     /* MSI filtering - address mask */
+    uint64_t msi_addr_నమూనా;  /* MSI filtering - address pattern */
     uint64_t msiptp;            /* MSI redirection page table pointer */
 };
 
 /* private helpers */
 
 /* Register helper functions */
-static inline uint32_t riscv_iommu_reg_mod32(RISCVIOMMUState *s,
-    unsigned idx, uint32_t set, uint32_t clr)
+స్థిర అంతఃవరుస uint32_t riscv_iommu_reg_mod32(RISCVIOMMUState *s,
+    గుర్తులేని idx, uint32_t సమితి, uint32_t clr)
 {
     uint32_t val = ldl_le_p(s->regs + idx);
-    stl_le_p(s->regs + idx, (val & ~clr) | set);
-    return val;
+    stl_le_p(s->regs + idx, (val & ~clr) | సమితి);
+    తిరిగి val;
 }
 
-static inline void riscv_iommu_reg_set32(RISCVIOMMUState *s, unsigned idx,
-                                         uint32_t set)
+స్థిర అంతఃవరుస శూన్య riscv_iommu_reg_set32(RISCVIOMMUState *s, గుర్తులేని idx,
+                                         uint32_t సమితి)
 {
-    stl_le_p(s->regs + idx, set);
+    stl_le_p(s->regs + idx, సమితి);
 }
 
-static inline uint32_t riscv_iommu_reg_get32(RISCVIOMMUState *s, unsigned idx)
+స్థిర అంతఃవరుస uint32_t riscv_iommu_reg_get32(RISCVIOMMUState *s, గుర్తులేని idx)
 {
-    return ldl_le_p(s->regs + idx);
+    తిరిగి ldl_le_p(s->regs + idx);
 }
 
-static inline uint64_t riscv_iommu_reg_mod64(RISCVIOMMUState *s, unsigned idx,
-                                             uint64_t set, uint64_t clr)
+స్థిర అంతఃవరుస uint64_t riscv_iommu_reg_mod64(RISCVIOMMUState *s, గుర్తులేని idx,
+                                             uint64_t సమితి, uint64_t clr)
 {
     uint64_t val = ldq_le_p(s->regs + idx);
-    stq_le_p(s->regs + idx, (val & ~clr) | set);
-    return val;
+    stq_le_p(s->regs + idx, (val & ~clr) | సమితి);
+    తిరిగి val;
 }
 
-static inline void riscv_iommu_reg_set64(RISCVIOMMUState *s, unsigned idx,
-                                         uint64_t set)
+స్థిర అంతఃవరుస శూన్య riscv_iommu_reg_set64(RISCVIOMMUState *s, గుర్తులేని idx,
+                                         uint64_t సమితి)
 {
-    stq_le_p(s->regs + idx, set);
+    stq_le_p(s->regs + idx, సమితి);
 }
 
-static inline uint64_t riscv_iommu_reg_get64(RISCVIOMMUState *s,
-                                             unsigned idx)
+స్థిర అంతఃవరుస uint64_t riscv_iommu_reg_get64(RISCVIOMMUState *s,
+                                             గుర్తులేని idx)
 {
-    return ldq_le_p(s->regs + idx);
+    తిరిగి ldq_le_p(s->regs + idx);
 }
-#endif
+#అయితే_ముగింపు

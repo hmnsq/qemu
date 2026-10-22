@@ -22,173 +22,173 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/error-report.h"
-#include "qapi/error.h"
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/core/sysbus.h"
-#include "target/riscv/cpu.h"
-#include "hw/riscv/riscv_hart.h"
-#include "hw/riscv/spike.h"
-#include "hw/riscv/boot.h"
-#include "hw/riscv/fdt-common.h"
-#include "hw/riscv/numa.h"
-#include "hw/char/riscv_htif.h"
-#include "hw/intc/riscv_aclint.h"
-#include "chardev/char.h"
-#include "system/device_tree.h"
-#include "system/system.h"
+#అన్తర్భావ "qemu/osdep.h"
+#అన్తర్భావ "qemu/error-report.h"
+#అన్తర్భావ "qapi/error.h"
+#అన్తర్భావ "hw/core/boards.h"
+#అన్తర్భావ "hw/core/loader.h"
+#అన్తర్భావ "hw/core/sysbus.h"
+#అన్తర్భావ "target/riscv/cpu.h"
+#అన్తర్భావ "hw/riscv/riscv_hart.h"
+#అన్తర్భావ "hw/riscv/spike.h"
+#అన్తర్భావ "hw/riscv/boot.h"
+#అన్తర్భావ "hw/riscv/fdt-common.h"
+#అన్తర్భావ "hw/riscv/numa.h"
+#అన్తర్భావ "hw/char/riscv_htif.h"
+#అన్తర్భావ "hw/intc/riscv_aclint.h"
+#అన్తర్భావ "chardev/char.h"
+#అన్తర్భావ "system/device_tree.h"
+#అన్తర్భావ "system/system.h"
 
-#include <libfdt.h>
+#అన్తర్భావ <libfdt.h>
 
-static const MemMapEntry spike_memmap[] = {
+స్థిర స్థిరరాశి Mem_Map_నమోదు spike_memmap[] = {
     [SPIKE_MROM] =     {     0x1000,     0xf000 },
     [SPIKE_HTIF] =     {  0x1000000,     0x1000 },
     [SPIKE_CLINT] =    {  0x2000000,    0x10000 },
     [SPIKE_DRAM] =     { 0x80000000,        0x0 },
 };
 
-static void create_fdt(SpikeState *s, const MemMapEntry *memmap,
-                       bool is_32_bit, bool htif_custom_base)
+స్థిర శూన్య create_fdt(SpikeState *s, స్థిరరాశి Mem_Map_నమోదు *memmap,
+                       bool is_32_బిట్టు, bool htif_custom_పునాది)
 {
-    void *fdt;
-    int fdt_size;
-    unsigned long clint_addr;
-    int socket;
+    శూన్య *fdt;
+    పూర్ణాంకం fdt_కొలత;
+    గుర్తులేని దీర్ఘ clint_addr;
+    పూర్ణాంకం socket;
     MachineState *ms = MACHINE(s);
     uint32_t phandle = 1;
     bool numa_enabled = riscv_numa_enabled(ms);
 
-    fdt = ms->fdt = riscv_create_board_device_tree(
+    fdt = ms->fdt = riscv_create_board_device_వృక్షం(
         "ucbbar,spike-bare,qemu",
         "ucbbar,spike-bare-dev",
-        &fdt_size);
+        &fdt_కొలత);
 
-    qemu_fdt_add_subnode(fdt, "/htif");
+    qemu_fdt_కూడు_subnode(fdt, "/htif");
     qemu_fdt_setprop_string(fdt, "/htif", "compatible", "ucb,htif0");
-    if (htif_custom_base) {
+    ఒకవేళ (htif_custom_పునాది) {
         qemu_fdt_setprop_cells(fdt, "/htif", "reg",
-            0x0, memmap[SPIKE_HTIF].base, 0x0, memmap[SPIKE_HTIF].size);
+            0x0, memmap[SPIKE_HTIF].పునాది, 0x0, memmap[SPIKE_HTIF].కొలత);
     }
 
     riscv_fdt_create_cpu_socket_subnode(fdt,
                                         RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ);
 
-    for (socket = (riscv_socket_count(ms) - 1); socket >= 0; socket--) {
+    కొరకు (socket = (riscv_socket_లెక్క(ms) - 1); socket >= 0; socket--) {
         g_autofree uint32_t *intc_phandles = g_new0(uint32_t,
-                                                    s->soc[socket].num_harts);
-        hwaddr memaddr = memmap[SPIKE_DRAM].base +
-                         riscv_socket_mem_offset(ms, socket);
-        uint64_t memsize =  riscv_socket_mem_size(ms, socket);
+                                                    s->soc[socket].అంకె_harts);
+        hwaddr memaddr = memmap[SPIKE_DRAM].పునాది +
+                         riscv_socket_mem_స్థానభ్రంశం(ms, socket);
+        uint64_t memsize =  riscv_socket_mem_కొలత(ms, socket);
 
         riscv_create_fdt_socket_cpus(fdt, (&s->soc[socket])->harts, socket,
-                                     s->soc[socket].num_harts,
-                                     s->soc[socket].hartid_base,
+                                     s->soc[socket].అంకె_harts,
+                                     s->soc[socket].hartid_పునాది,
                                      &phandle, intc_phandles, numa_enabled,
-                                     is_32_bit);
+                                     is_32_బిట్టు);
 
-        riscv_create_fdt_socket_memory(fdt, memaddr, memsize, socket,
+        riscv_create_fdt_socket_జ్ఞాపకం(fdt, memaddr, memsize, socket,
                                        riscv_numa_enabled(ms));
 
-        clint_addr = memmap[SPIKE_CLINT].base +
-            (memmap[SPIKE_CLINT].size * socket);
+        clint_addr = memmap[SPIKE_CLINT].పునాది +
+            (memmap[SPIKE_CLINT].కొలత * socket);
         riscv_create_fdt_socket_clint(fdt, clint_addr,
-                                      memmap[SPIKE_CLINT].size, socket,
-                                      intc_phandles, s->soc[socket].num_harts,
+                                      memmap[SPIKE_CLINT].కొలత, socket,
+                                      intc_phandles, s->soc[socket].అంకె_harts,
                                       numa_enabled);
     }
 
-    riscv_socket_fdt_write_distance_matrix(ms);
+    riscv_socket_fdt_write_దూరం_మాతృక(ms);
 
-    qemu_fdt_add_subnode(fdt, "/chosen");
+    qemu_fdt_కూడు_subnode(fdt, "/chosen");
     qemu_fdt_setprop_string(fdt, "/chosen", "stdout-path", "/htif");
 }
 
-static bool spike_test_elf_image(char *filename)
+స్థిర bool spike_test_elf_image(అక్షరం *filename)
 {
-    return load_elf_hdr(filename, NULL, NULL, NULL);
+    తిరిగి ఎక్కించు_elf_hdr(filename, ఖాళీ, ఖాళీ, ఖాళీ);
 }
 
-static void spike_board_init(MachineState *machine)
+స్థిర శూన్య spike_board_init(MachineState *machine)
 {
-    const MemMapEntry *memmap = spike_memmap;
+    స్థిరరాశి Mem_Map_నమోదు *memmap = spike_memmap;
     SpikeState *s = SPIKE_MACHINE(machine);
-    MemoryRegion *system_memory = get_system_memory();
-    MemoryRegion *mask_rom = g_new(MemoryRegion, 1);
-    hwaddr firmware_end_addr = memmap[SPIKE_DRAM].base;
-    hwaddr firmware_load_addr = memmap[SPIKE_DRAM].base;
-    vaddr kernel_start_addr;
-    char *firmware_name;
-    uint64_t fdt_load_addr;
-    uint64_t kernel_entry;
-    char *soc_name;
-    int i, base_hartid, hart_count;
-    bool htif_custom_base = false;
+    జ్ఞాపకం_Region *system_జ్ఞాపకం = get_system_జ్ఞాపకం();
+    జ్ఞాపకం_Region *ముసుగు_rom = g_new(జ్ఞాపకం_Region, 1);
+    hwaddr firmware_చివర_addr = memmap[SPIKE_DRAM].పునాది;
+    hwaddr firmware_ఎక్కించు_addr = memmap[SPIKE_DRAM].పునాది;
+    vaddr kernel_ప్రారంభం_addr;
+    అక్షరం *firmware_name;
+    uint64_t fdt_ఎక్కించు_addr;
+    uint64_t kernel_నమోదు;
+    అక్షరం *soc_name;
+    పూర్ణాంకం i, పునాది_hartid, hart_లెక్క;
+    bool htif_custom_పునాది = false;
     RISCVBootInfo boot_info;
 
     /* Check socket count limit */
-    if (SPIKE_SOCKETS_MAX < riscv_socket_count(machine)) {
+    ఒకవేళ (SPIKE_SOCKETS_MAX < riscv_socket_లెక్క(machine)) {
         error_report("number of sockets/nodes should be less than %d",
             SPIKE_SOCKETS_MAX);
-        exit(1);
+        నిష్క్రమించు(1);
     }
 
     /* Initialize sockets */
-    for (i = 0; i < riscv_socket_count(machine); i++) {
-        if (!riscv_socket_check_hartids(machine, i)) {
+    కొరకు (i = 0; i < riscv_socket_లెక్క(machine); i++) {
+        ఒకవేళ (!riscv_socket_check_hartids(machine, i)) {
             error_report("discontinuous hartids in socket%d", i);
-            exit(1);
+            నిష్క్రమించు(1);
         }
 
-        base_hartid = riscv_socket_first_hartid(machine, i);
-        if (base_hartid < 0) {
+        పునాది_hartid = riscv_socket_మొదటి_hartid(machine, i);
+        ఒకవేళ (పునాది_hartid < 0) {
             error_report("can't find hartid base for socket%d", i);
-            exit(1);
+            నిష్క్రమించు(1);
         }
 
-        hart_count = riscv_socket_hart_count(machine, i);
-        if (hart_count < 0) {
+        hart_లెక్క = riscv_socket_hart_లెక్క(machine, i);
+        ఒకవేళ (hart_లెక్క < 0) {
             error_report("can't find hart count for socket%d", i);
-            exit(1);
+            నిష్క్రమించు(1);
         }
 
         soc_name = g_strdup_printf("soc%d", i);
-        object_initialize_child(OBJECT(machine), soc_name, &s->soc[i],
+        object_initialize_బిడ్డ(OBJECT(machine), soc_name, &s->soc[i],
                                 TYPE_RISCV_HART_ARRAY);
         g_free(soc_name);
-        object_property_set_str(OBJECT(&s->soc[i]), "cpu-type",
+        object_property_సమితి_str(OBJECT(&s->soc[i]), "cpu-type",
                                 machine->cpu_type, &error_abort);
-        object_property_set_int(OBJECT(&s->soc[i]), "hartid-base",
-                                base_hartid, &error_abort);
-        object_property_set_int(OBJECT(&s->soc[i]), "num-harts",
-                                hart_count, &error_abort);
+        object_property_సమితి_int(OBJECT(&s->soc[i]), "hartid-base",
+                                పునాది_hartid, &error_abort);
+        object_property_సమితి_int(OBJECT(&s->soc[i]), "num-harts",
+                                hart_లెక్క, &error_abort);
         sysbus_realize(SYS_BUS_DEVICE(&s->soc[i]), &error_fatal);
 
         /* Core Local Interruptor (timer and IPI) for each socket */
-        riscv_aclint_swi_create(system_memory,
-            memmap[SPIKE_CLINT].base + i * memmap[SPIKE_CLINT].size,
-            base_hartid, hart_count, false);
-        riscv_aclint_mtimer_create(system_memory,
-            memmap[SPIKE_CLINT].base + i * memmap[SPIKE_CLINT].size +
-                RISCV_ACLINT_SWI_SIZE,
-            RISCV_ACLINT_DEFAULT_MTIMER_SIZE, base_hartid, hart_count,
+        riscv_aclint_swi_create(system_జ్ఞాపకం,
+            memmap[SPIKE_CLINT].పునాది + i * memmap[SPIKE_CLINT].కొలత,
+            పునాది_hartid, hart_లెక్క, false);
+        riscv_aclint_mtimer_create(system_జ్ఞాపకం,
+            memmap[SPIKE_CLINT].పునాది + i * memmap[SPIKE_CLINT].కొలత +
+                RISCV_ACLINT_SWI_కొలత,
+            RISCV_ACLINT_DEFAULT_MTIMER_కొలత, పునాది_hartid, hart_లెక్క,
             RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
             RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, false);
     }
 
     /* register system main memory (actual RAM) */
-    memory_region_add_subregion(system_memory, memmap[SPIKE_DRAM].base,
+    జ్ఞాపకం_region_కూడు_subregion(system_జ్ఞాపకం, memmap[SPIKE_DRAM].పునాది,
         machine->ram);
 
     /* boot rom */
-    memory_region_init_rom(mask_rom, NULL, "riscv.spike.mrom",
-                           memmap[SPIKE_MROM].size, &error_fatal);
-    memory_region_add_subregion(system_memory, memmap[SPIKE_MROM].base,
-                                mask_rom);
+    జ్ఞాపకం_region_init_rom(ముసుగు_rom, ఖాళీ, "riscv.spike.mrom",
+                           memmap[SPIKE_MROM].కొలత, &error_fatal);
+    జ్ఞాపకం_region_కూడు_subregion(system_జ్ఞాపకం, memmap[SPIKE_MROM].పునాది,
+                                ముసుగు_rom);
 
     /* Find firmware */
-    firmware_name = riscv_find_firmware(machine->firmware,
+    firmware_name = riscv_కనుగొను_firmware(machine->firmware,
                         riscv_default_firmware_name(&s->soc[0]));
 
     /*
@@ -197,73 +197,73 @@ static void spike_board_init(MachineState *machine)
      * the HTIF console, otherwise we fall back to use the custom base
      * passed from device tree for the HTIF console.
      */
-    if (!firmware_name && !machine->kernel_filename) {
-        htif_custom_base = true;
-    } else {
-        if (firmware_name) {
-            htif_custom_base = !spike_test_elf_image(firmware_name);
+    ఒకవేళ (!firmware_name && !machine->kernel_filename) {
+        htif_custom_పునాది = true;
+    } లేకపోతే {
+        ఒకవేళ (firmware_name) {
+            htif_custom_పునాది = !spike_test_elf_image(firmware_name);
         }
-        if (!htif_custom_base && machine->kernel_filename) {
-            htif_custom_base = !spike_test_elf_image(machine->kernel_filename);
+        ఒకవేళ (!htif_custom_పునాది && machine->kernel_filename) {
+            htif_custom_పునాది = !spike_test_elf_image(machine->kernel_filename);
         }
     }
 
     riscv_boot_info_init(&boot_info, &s->soc[0]);
 
     /* Load firmware */
-    if (firmware_name) {
-        firmware_end_addr = riscv_load_firmware(machine, &boot_info,
+    ఒకవేళ (firmware_name) {
+        firmware_చివర_addr = riscv_ఎక్కించు_firmware(machine, &boot_info,
                                                 firmware_name,
-                                                &firmware_load_addr,
-                                                htif_symbol_callback);
+                                                &firmware_ఎక్కించు_addr,
+                                                htif_చిహ్నం_callback);
         g_free(firmware_name);
     }
 
     /* Create device tree */
-    create_fdt(s, memmap, riscv_is_32bit(&s->soc[0]), htif_custom_base);
+    create_fdt(s, memmap, riscv_is_32bit(&s->soc[0]), htif_custom_పునాది);
 
     /* Load kernel */
-    if (machine->kernel_filename) {
-        kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
-                                                         firmware_end_addr);
+    ఒకవేళ (machine->kernel_filename) {
+        kernel_ప్రారంభం_addr = riscv_calc_kernel_ప్రారంభం_addr(&boot_info,
+                                                         firmware_చివర_addr);
 
-        riscv_load_kernel(machine, &boot_info, kernel_start_addr,
-                          true, htif_symbol_callback);
-        kernel_entry = boot_info.image_low_addr;
-    } else {
+        riscv_ఎక్కించు_kernel(machine, &boot_info, kernel_ప్రారంభం_addr,
+                          true, htif_చిహ్నం_callback);
+        kernel_నమోదు = boot_info.image_దిగువ_addr;
+    } లేకపోతే {
        /*
         * If dynamic firmware is used, it doesn't know where is the next mode
         * if kernel argument is not set.
         */
-        kernel_entry = 0;
+        kernel_నమోదు = 0;
     }
 
-    fdt_load_addr = riscv_compute_fdt_addr(memmap[SPIKE_DRAM].base,
-                                           memmap[SPIKE_DRAM].size,
+    fdt_ఎక్కించు_addr = riscv_compute_fdt_addr(memmap[SPIKE_DRAM].పునాది,
+                                           memmap[SPIKE_DRAM].కొలత,
                                            machine, &boot_info);
-    riscv_load_fdt(fdt_load_addr, machine->fdt);
+    riscv_ఎక్కించు_fdt(fdt_ఎక్కించు_addr, machine->fdt);
 
     /* load the reset vector */
-    riscv_setup_rom_reset_vec(machine, &s->soc[0], firmware_load_addr,
-                              memmap[SPIKE_MROM].base,
-                              memmap[SPIKE_MROM].size, kernel_entry,
-                              fdt_load_addr);
+    riscv_అమరిక_rom_reset_vec(machine, &s->soc[0], firmware_ఎక్కించు_addr,
+                              memmap[SPIKE_MROM].పునాది,
+                              memmap[SPIKE_MROM].కొలత, kernel_నమోదు,
+                              fdt_ఎక్కించు_addr);
 
     /* initialize HTIF using symbols found in load_kernel */
-    htif_mm_init(system_memory, serial_hd(0), memmap[SPIKE_HTIF].base,
-                 htif_custom_base);
+    htif_mm_init(system_జ్ఞాపకం, serial_hd(0), memmap[SPIKE_HTIF].పునాది,
+                 htif_custom_పునాది);
 }
 
-static void spike_set_signature(Object *obj, const char *val, Error **errp)
+స్థిర శూన్య spike_సమితి_signature(Object *obj, స్థిరరాశి అక్షరం *val, Error **errp)
 {
     sig_file = g_strdup(val);
 }
 
-static void spike_machine_instance_init(Object *obj)
+స్థిర శూన్య spike_machine_instance_init(Object *obj)
 {
 }
 
-static void spike_machine_class_init(ObjectClass *oc, const void *data)
+స్థిర శూన్య spike_machine_class_init(ObjectClass *oc, స్థిరరాశి శూన్య *దత్తాంశం)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -272,34 +272,34 @@ static void spike_machine_class_init(ObjectClass *oc, const void *data)
     mc->max_cpus = SPIKE_CPUS_MAX;
     mc->default_cpu_type = TYPE_RISCV_CPU_MAX;
     mc->possible_cpu_arch_ids = riscv_numa_possible_cpu_arch_ids;
-    mc->cpu_index_to_instance_props = riscv_numa_cpu_index_to_props;
-    mc->get_default_cpu_node_id = riscv_numa_get_default_cpu_node_id;
+    mc->cpu_సూచీ_గమ్యం_instance_props = riscv_numa_cpu_సూచీ_గమ్యం_props;
+    mc->get_default_cpu_కణుపు_id = riscv_numa_get_default_cpu_కణుపు_id;
     mc->numa_mem_supported = true;
     /* platform instead of architectural choice */
     mc->cpu_cluster_has_numa_boundary = true;
     mc->default_ram_id = "riscv.spike.ram";
-    object_class_property_add_str(oc, "signature", NULL, spike_set_signature);
-    object_class_property_set_description(oc, "signature",
+    object_class_property_కూడు_str(oc, "signature", ఖాళీ, spike_సమితి_signature);
+    object_class_property_సమితి_description(oc, "signature",
                                           "File to write ACT test signature");
-    object_class_static_property_add_uint8_ptr(oc, "signature-granularity",
-                                               &line_size,
+    object_class_static_property_కూడు_uint8_ptr(oc, "signature-granularity",
+                                               &పంక్తి_కొలత,
                                                OBJ_PROP_FLAG_WRITE);
-    object_class_property_set_description(oc, "signature-granularity",
+    object_class_property_సమితి_description(oc, "signature-granularity",
                                           "Size of each line in ACT signature "
                                           "file");
 }
 
-static const TypeInfo spike_machine_typeinfo = {
+స్థిర స్థిరరాశి TypeInfo spike_machine_typeinfo = {
     .name       = MACHINE_TYPE_NAME("spike"),
-    .parent     = TYPE_MACHINE,
+    .మాతృ     = TYPE_MACHINE,
     .class_init = spike_machine_class_init,
     .instance_init = spike_machine_instance_init,
-    .instance_size = sizeof(SpikeState),
+    .instance_కొలత = పరిమాణం(SpikeState),
 };
 
-static void spike_machine_init_register_types(void)
+స్థిర శూన్య spike_machine_init_రిజిస్టరు_types(శూన్య)
 {
-    type_register_static(&spike_machine_typeinfo);
+    type_రిజిస్టరు_static(&spike_machine_typeinfo);
 }
 
-type_init(spike_machine_init_register_types)
+type_init(spike_machine_init_రిజిస్టరు_types)

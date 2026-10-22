@@ -9,18 +9,18 @@
  *
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "qemu/module.h"
-#include "hw/riscv/cps.h"
-#include "hw/core/qdev-properties.h"
-#include "system/reset.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/riscv_aplic.h"
-#include "hw/intc/riscv_imsic.h"
-#include "hw/pci/msi.h"
+#అన్తర్భావ "qemu/osdep.h"
+#అన్తర్భావ "qapi/error.h"
+#అన్తర్భావ "qemu/module.h"
+#అన్తర్భావ "hw/riscv/cps.h"
+#అన్తర్భావ "hw/core/qdev-properties.h"
+#అన్తర్భావ "system/reset.h"
+#అన్తర్భావ "hw/intc/riscv_aclint.h"
+#అన్తర్భావ "hw/intc/riscv_aplic.h"
+#అన్తర్భావ "hw/intc/riscv_imsic.h"
+#అన్తర్భావ "hw/pci/msi.h"
 
-static void riscv_cps_init(Object *obj)
+స్థిర శూన్య riscv_cps_init(Object *obj)
 {
     SysBusDevice *sbd = SYS_BUS_DEVICE(obj);
     RISCVCPSState *s = RISCV_CPS(obj);
@@ -29,138 +29,138 @@ static void riscv_cps_init(Object *obj)
      * Cover entire address space as there do not seem to be any
      * constraints for the base address of CPC .
      */
-    memory_region_init(&s->container, obj, "mips-cps-container", UINT64_MAX);
+    జ్ఞాపకం_region_init(&s->container, obj, "mips-cps-container", UINT64_MAX);
     sysbus_init_mmio(sbd, &s->container);
 }
 
-static void main_cpu_reset(void *opaque)
+స్థిర శూన్య main_cpu_reset(శూన్య *opaque)
 {
     CPUState *cs = opaque;
 
     cpu_reset(cs);
 }
 
-static void riscv_cps_realize(DeviceState *dev, Error **errp)
+స్థిర శూన్య riscv_cps_realize(DeviceState *dev, Error **errp)
 {
     RISCVCPSState *s = RISCV_CPS(dev);
     RISCVCPU *cpu;
-    int i;
+    పూర్ణాంకం i;
 
     /* Validate num_vp */
-    if (s->num_vp == 0) {
+    ఒకవేళ (s->అంకె_vp == 0) {
         error_setg(errp, "num-vp must be at least 1");
-        return;
+        తిరిగి;
     }
-    if (s->num_vp > MAX_HARTS) {
+    ఒకవేళ (s->అంకె_vp > MAX_HARTS) {
         error_setg(errp, "num-vp cannot exceed %d", MAX_HARTS);
-        return;
+        తిరిగి;
     }
 
     /* Allocate CPU array */
-    s->cpus = g_new0(CPUState *, s->num_vp);
+    s->cpus = g_new0(CPUState *, s->అంకె_vp);
 
     /* Set up cpu_index and mhartid for avaiable CPUs. */
-    int harts_in_cluster = s->num_hart * s->num_core;
-    int num_of_clusters = s->num_vp / harts_in_cluster;
-    for (i = 0; i < s->num_vp; i++) {
+    పూర్ణాంకం harts_లోపల_cluster = s->అంకె_hart * s->అంకె_core;
+    పూర్ణాంకం అంకె_యొక్క_clusters = s->అంకె_vp / harts_లోపల_cluster;
+    కొరకు (i = 0; i < s->అంకె_vp; i++) {
         cpu = RISCV_CPU(object_new(s->cpu_type));
 
         /* All VPs are halted on reset. Leave powering up to CPC. */
-        object_property_set_bool(OBJECT(cpu), "start-powered-off", true,
+        object_property_సమితి_bool(OBJECT(cpu), "start-powered-off", true,
                                  &error_abort);
 
-        if (!qdev_realize_and_unref(DEVICE(cpu), NULL, errp)) {
-            return;
+        ఒకవేళ (!qdev_realize_and_unref(DEVICE(cpu), ఖాళీ, errp)) {
+            తిరిగి;
         }
 
         /* Store CPU in array */
         s->cpus[i] = CPU(cpu);
 
         /* Set up mhartid */
-        int cluster_id = i / harts_in_cluster;
-        int hart_id = (i % harts_in_cluster) % s->num_hart;
-        int core_id = (i % harts_in_cluster) / s->num_hart;
-        int mhartid = (cluster_id << MHARTID_CLUSTER_SHIFT) +
-                      (core_id << MHARTID_CORE_SHIFT) +
-                      (hart_id << MHARTID_HART_SHIFT);
+        పూర్ణాంకం cluster_id = i / harts_లోపల_cluster;
+        పూర్ణాంకం hart_id = (i % harts_లోపల_cluster) % s->అంకె_hart;
+        పూర్ణాంకం core_id = (i % harts_లోపల_cluster) / s->అంకె_hart;
+        పూర్ణాంకం mhartid = (cluster_id << MHARTID_CLUSTER_జరుపు) +
+                      (core_id << MHARTID_CORE_జరుపు) +
+                      (hart_id << MHARTID_HART_జరుపు);
         cpu->env.mhartid = mhartid;
-        qemu_register_reset(main_cpu_reset, s->cpus[i]);
+        qemu_రిజిస్టరు_reset(main_cpu_reset, s->cpus[i]);
     }
 
     /* Cluster Power Controller */
-    object_initialize_child(OBJECT(dev), "cpc", &s->cpc, TYPE_RISCV_CPC);
-    object_property_set_uint(OBJECT(&s->cpc), "cluster-id", 0,
+    object_initialize_బిడ్డ(OBJECT(dev), "cpc", &s->cpc, TYPE_RISCV_CPC);
+    object_property_సమితి_uint(OBJECT(&s->cpc), "cluster-id", 0,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->cpc), "num-vp", s->num_vp,
+    object_property_సమితి_uint(OBJECT(&s->cpc), "num-vp", s->అంకె_vp,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->cpc), "num-hart", s->num_hart,
+    object_property_సమితి_uint(OBJECT(&s->cpc), "num-hart", s->అంకె_hart,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->cpc), "num-core", s->num_core,
+    object_property_సమితి_uint(OBJECT(&s->cpc), "num-core", s->అంకె_core,
                             &error_abort);
 
     /* Pass CPUs to CPC using link properties */
-    for (i = 0; i < s->num_vp; i++) {
-        char *propname = g_strdup_printf("cpu[%d]", i);
-        object_property_set_link(OBJECT(&s->cpc), propname,
+    కొరకు (i = 0; i < s->అంకె_vp; i++) {
+        అక్షరం *propname = g_strdup_printf("cpu[%d]", i);
+        object_property_సమితి_link(OBJECT(&s->cpc), propname,
                                 OBJECT(s->cpus[i]), &error_abort);
         g_free(propname);
     }
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpc), errp)) {
-        return;
+    ఒకవేళ (!sysbus_realize(SYS_BUS_DEVICE(&s->cpc), errp)) {
+        తిరిగి;
     }
 
-    memory_region_add_subregion(&s->container, 0,
+    జ్ఞాపకం_region_కూడు_subregion(&s->container, 0,
                             sysbus_mmio_get_region(SYS_BUS_DEVICE(&s->cpc), 0));
 
     /* Global Configuration Registers */
-    object_initialize_child(OBJECT(dev), "gcr", &s->gcr, TYPE_RISCV_GCR);
-    object_property_set_uint(OBJECT(&s->gcr), "cluster-id", 0,
+    object_initialize_బిడ్డ(OBJECT(dev), "gcr", &s->gcr, TYPE_RISCV_GCR);
+    object_property_సమితి_uint(OBJECT(&s->gcr), "cluster-id", 0,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->gcr), "num-vp", s->num_vp,
+    object_property_సమితి_uint(OBJECT(&s->gcr), "num-vp", s->అంకె_vp,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->gcr), "gcr-rev", 0xa00,
+    object_property_సమితి_int(OBJECT(&s->gcr), "gcr-rev", 0xa00,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->gcr), "gcr-base", s->gcr_base,
+    object_property_సమితి_int(OBJECT(&s->gcr), "gcr-base", s->gcr_పునాది,
                             &error_abort);
-    object_property_set_link(OBJECT(&s->gcr), "cpc", OBJECT(&s->cpc.mr),
+    object_property_సమితి_link(OBJECT(&s->gcr), "cpc", OBJECT(&s->cpc.mr),
                              &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gcr), errp)) {
-        return;
+    ఒకవేళ (!sysbus_realize(SYS_BUS_DEVICE(&s->gcr), errp)) {
+        తిరిగి;
     }
 
-    memory_region_add_subregion(&s->container, s->gcr_base,
+    జ్ఞాపకం_region_కూడు_subregion(&s->container, s->gcr_పునాది,
                             sysbus_mmio_get_region(SYS_BUS_DEVICE(&s->gcr), 0));
 
-    for (i = 0; i < num_of_clusters; i++) {
-        uint64_t cm_base = GLOBAL_CM_BASE + (CM_SIZE * i);
-        uint32_t hartid_base = i << MHARTID_CLUSTER_SHIFT;
+    కొరకు (i = 0; i < అంకె_యొక్క_clusters; i++) {
+        uint64_t cm_పునాది = GLOBAL_CM_పునాది + (CM_కొలత * i);
+        uint32_t hartid_పునాది = i << MHARTID_CLUSTER_జరుపు;
         s->aplic = riscv_aplic_create(&s->container,
-                                      cm_base + AIA_PLIC_M_OFFSET,
-                                      AIA_PLIC_M_SIZE,
-                                      hartid_base, /* hartid_base */
+                                      cm_పునాది + AIA_PLIC_M_స్థానభ్రంశం,
+                                      AIA_PLIC_M_కొలత,
+                                      hartid_పునాది, /* hartid_base */
                                       MAX_HARTS, /* num_harts */
-                                      APLIC_NUM_SOURCES,
-                                      APLIC_NUM_PRIO_BITS,
-                                      false, true, NULL);
+                                      APLIC_అంకె_SOURCES,
+                                      APLIC_అంకె_PRIO_బిట్లు,
+                                      false, true, ఖాళీ);
         riscv_aplic_create(&s->container,
-                           cm_base + AIA_PLIC_S_OFFSET,
-                           AIA_PLIC_S_SIZE,
-                           hartid_base, /* hartid_base */
+                           cm_పునాది + AIA_PLIC_S_స్థానభ్రంశం,
+                           AIA_PLIC_S_కొలత,
+                           hartid_పునాది, /* hartid_base */
                            MAX_HARTS, /* num_harts */
-                           APLIC_NUM_SOURCES,
-                           APLIC_NUM_PRIO_BITS,
+                           APLIC_అంకె_SOURCES,
+                           APLIC_అంకె_PRIO_బిట్లు,
                            false, false, s->aplic);
         /* PLIC changes msi_nonbroken to ture. We revert the change. */
         msi_nonbroken = false;
         riscv_aclint_swi_create(&s->container,
-                                cm_base + AIA_CLINT_OFFSET,
-                                hartid_base, MAX_HARTS, false);
+                                cm_పునాది + AIA_CLINT_స్థానభ్రంశం,
+                                hartid_పునాది, MAX_HARTS, false);
         riscv_aclint_mtimer_create(&s->container,
-                                   cm_base + AIA_CLINT_OFFSET +
-                                   RISCV_ACLINT_SWI_SIZE,
-                                   RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                                   hartid_base,
+                                   cm_పునాది + AIA_CLINT_స్థానభ్రంశం +
+                                   RISCV_ACLINT_SWI_కొలత,
+                                   RISCV_ACLINT_DEFAULT_MTIMER_కొలత,
+                                   hartid_పునాది,
                                    MAX_HARTS,
                                    RISCV_ACLINT_DEFAULT_MTIMECMP,
                                    RISCV_ACLINT_DEFAULT_MTIME,
@@ -168,33 +168,33 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
     }
 }
 
-static const Property riscv_cps_properties[] = {
-    DEFINE_PROP_UINT32("num-vp", RISCVCPSState, num_vp, 1),
-    DEFINE_PROP_UINT32("num-hart", RISCVCPSState, num_hart, 1),
-    DEFINE_PROP_UINT32("num-core", RISCVCPSState, num_core, 1),
-    DEFINE_PROP_UINT64("gcr-base", RISCVCPSState, gcr_base, GCR_BASE_ADDR),
+స్థిర స్థిరరాశి Property riscv_cps_properties[] = {
+    DEFINE_PROP_UINT32("num-vp", RISCVCPSState, అంకె_vp, 1),
+    DEFINE_PROP_UINT32("num-hart", RISCVCPSState, అంకె_hart, 1),
+    DEFINE_PROP_UINT32("num-core", RISCVCPSState, అంకె_core, 1),
+    DEFINE_PROP_UINT64("gcr-base", RISCVCPSState, gcr_పునాది, GCR_పునాది_ADDR),
     DEFINE_PROP_STRING("cpu-type", RISCVCPSState, cpu_type),
 };
 
-static void riscv_cps_class_init(ObjectClass *klass, const void *data)
+స్థిర శూన్య riscv_cps_class_init(ObjectClass *klass, స్థిరరాశి శూన్య *దత్తాంశం)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
 
     dc->realize = riscv_cps_realize;
-    device_class_set_props(dc, riscv_cps_properties);
+    device_class_సమితి_props(dc, riscv_cps_properties);
 }
 
-static const TypeInfo riscv_cps_info = {
+స్థిర స్థిరరాశి TypeInfo riscv_cps_info = {
     .name = TYPE_RISCV_CPS,
-    .parent = TYPE_SYS_BUS_DEVICE,
-    .instance_size = sizeof(RISCVCPSState),
+    .మాతృ = TYPE_SYS_BUS_DEVICE,
+    .instance_కొలత = పరిమాణం(RISCVCPSState),
     .instance_init = riscv_cps_init,
     .class_init = riscv_cps_class_init,
 };
 
-static void riscv_cps_register_types(void)
+స్థిర శూన్య riscv_cps_రిజిస్టరు_types(శూన్య)
 {
-    type_register_static(&riscv_cps_info);
+    type_రిజిస్టరు_static(&riscv_cps_info);
 }
 
-type_init(riscv_cps_register_types)
+type_init(riscv_cps_రిజిస్టరు_types)
