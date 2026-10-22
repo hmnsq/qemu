@@ -23,31 +23,31 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "hw/acpi/acpi-defs.h"
-#include "hw/acpi/acpi.h"
-#include "hw/acpi/aml-build.h"
-#include "hw/acpi/pci.h"
-#include "hw/acpi/utils.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/nvram/fw_cfg_acpi.h"
-#include "hw/pci-host/gpex.h"
-#include "hw/riscv/virt.h"
-#include "hw/riscv/numa.h"
-#include "hw/virtio/virtio-acpi.h"
-#include "kvm/kvm_riscv.h"
-#include "migration/vmstate.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "system/kvm.h"
-#include "system/reset.h"
+#अन्तर्भाव "qemu/osdep.h"
+#अन्तर्भाव "hw/acpi/acpi-defs.h"
+#अन्तर्भाव "hw/acpi/acpi.h"
+#अन्तर्भाव "hw/acpi/aml-build.h"
+#अन्तर्भाव "hw/acpi/pci.h"
+#अन्तर्भाव "hw/acpi/utils.h"
+#अन्तर्भाव "hw/intc/riscv_aclint.h"
+#अन्तर्भाव "hw/nvram/fw_cfg_acpi.h"
+#अन्तर्भाव "hw/pci-host/gpex.h"
+#अन्तर्भाव "hw/riscv/virt.h"
+#अन्तर्भाव "hw/riscv/numa.h"
+#अन्तर्भाव "hw/virtio/virtio-acpi.h"
+#अन्तर्भाव "kvm/kvm_riscv.h"
+#अन्तर्भाव "migration/vmstate.h"
+#अन्तर्भाव "qapi/error.h"
+#अन्तर्भाव "qemu/error-report.h"
+#अन्तर्भाव "system/kvm.h"
+#अन्तर्भाव "system/reset.h"
 
-#include "aia.h"
+#अन्तर्भाव "aia.h"
 
 #define ACPI_BUILD_TABLE_SIZE             0x20000
 #define ACPI_BUILD_INTC_ID(socket, index) ((socket << 24) | (index))
 
-typedef struct AcpiBuildState {
+प्रकारव्याख्या संरचना AcpiBuildState {
     /* Copy of table in RAM (for patching) */
     MemoryRegion *table_mr;
     MemoryRegion *rsdp_mr;
@@ -56,7 +56,7 @@ typedef struct AcpiBuildState {
     bool patched;
 } AcpiBuildState;
 
-static void acpi_align_size(GArray *blob, unsigned align)
+स्थिर शून्य acpi_align_size(GArray *blob, अचिन्हित align)
 {
     /*
      * Align size to multiple of given size. This reduces the chance
@@ -65,21 +65,21 @@ static void acpi_align_size(GArray *blob, unsigned align)
     g_array_set_size(blob, ROUND_UP(acpi_data_len(blob), align));
 }
 
-static void riscv_acpi_madt_add_rintc(uint32_t uid,
-                                      const CPUArchIdList *arch_ids,
+स्थिर शून्य riscv_acpi_madt_add_rintc(uint32_t uid,
+                                      स्थिरांक CPUArchIdList *arch_ids,
                                       GArray *entry,
                                       RISCVVirtState *s)
 {
-    uint8_t  guest_index_bits = imsic_num_bits(s->aia_guests + 1);
+    uint8_t  guest_index_bits = imsic_अंक_bits(s->aia_guests + 1);
     uint64_t hart_id = arch_ids->cpus[uid].arch_id;
     uint32_t imsic_size, local_cpu_id, socket_id;
     uint64_t imsic_socket_addr, imsic_addr;
     MachineState *ms = MACHINE(s);
 
-    socket_id = arch_ids->cpus[uid].props.node_id;
+    socket_id = arch_ids->cpus[uid].props.गाठ_id;
     local_cpu_id = (arch_ids->cpus[uid].arch_id -
                     riscv_socket_first_hartid(ms, socket_id)) %
-                    riscv_socket_hart_count(ms, socket_id);
+                    riscv_socket_hart_मोजणी(ms, socket_id);
     imsic_socket_addr = s->memmap[VIRT_IMSIC_S].base +
                         (socket_id * VIRT_IMSIC_GROUP_MAX_SIZE);
     imsic_size = IMSIC_HART_SIZE(guest_index_bits);
@@ -92,42 +92,42 @@ static void riscv_acpi_madt_add_rintc(uint32_t uid,
     build_append_int_noprefix(entry, hart_id, 8);    /* Hart ID  */
     build_append_int_noprefix(entry, uid, 4);        /* ACPI Processor UID */
     /* External Interrupt Controller ID */
-    if (s->aia_type == VIRT_AIA_TYPE_APLIC) {
+    जर (s->aia_type == VIRT_AIA_TYPE_APLIC) {
         build_append_int_noprefix(entry,
                                   ACPI_BUILD_INTC_ID(
-                                      arch_ids->cpus[uid].props.node_id,
+                                      arch_ids->cpus[uid].props.गाठ_id,
                                       local_cpu_id),
                                   4);
-    } else if (s->aia_type == VIRT_AIA_TYPE_NONE) {
+    } अन्यथा जर (s->aia_type == VIRT_AIA_TYPE_NONE) {
         build_append_int_noprefix(entry,
                                   ACPI_BUILD_INTC_ID(
-                                      arch_ids->cpus[uid].props.node_id,
+                                      arch_ids->cpus[uid].props.गाठ_id,
                                       kvm_enabled() ?
                                       local_cpu_id :
                                       2 * local_cpu_id + 1),
                                   4);
-    } else {
+    } अन्यथा {
         build_append_int_noprefix(entry, 0, 4);
     }
 
-    if (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
+    जर (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
         /* IMSIC Base address */
         build_append_int_noprefix(entry, imsic_addr, 8);
         /* IMSIC Size */
         build_append_int_noprefix(entry, imsic_size, 4);
-    } else {
+    } अन्यथा {
         build_append_int_noprefix(entry, 0, 8);
         build_append_int_noprefix(entry, 0, 4);
     }
 }
 
-static void acpi_dsdt_add_cpus(Aml *scope, RISCVVirtState *s)
+स्थिर शून्य acpi_dsdt_add_cpus(Aml *scope, RISCVVirtState *s)
 {
     MachineClass *mc = MACHINE_GET_CLASS(s);
     MachineState *ms = MACHINE(s);
-    const CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
+    स्थिरांक CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
 
-    for (int i = 0; i < arch_ids->len; i++) {
+    साठी (पूर्णांक i = 0; i < arch_ids->len; i++) {
             Aml *dev;
             GArray *madt_buf = g_array_new(0, 1, 1);
 
@@ -147,21 +147,21 @@ static void acpi_dsdt_add_cpus(Aml *scope, RISCVVirtState *s)
     }
 }
 
-static void acpi_dsdt_add_plic_aplic(Aml *scope, uint8_t socket_count,
-                                     uint16_t num_sources,
+स्थिर शून्य acpi_dsdt_add_plic_aplic(Aml *scope, uint8_t socket_मोजणी,
+                                     uint16_t अंक_sources,
                                      uint64_t mmio_base, uint64_t mmio_size,
-                                     const char *hid)
+                                     स्थिरांक अक्षर *hid)
 {
     uint64_t plic_aplic_addr;
     uint32_t gsi_base;
     uint8_t  socket;
 
     /* The RISC-V Advanced Interrupt Architecture, Chapter 1.2. Limits */
-    g_assert(num_sources <= 1023);
+    g_assert(अंक_sources <= 1023);
 
-    for (socket = 0; socket < socket_count; socket++) {
+    साठी (socket = 0; socket < socket_मोजणी; socket++) {
         plic_aplic_addr = mmio_base + mmio_size * socket;
-        gsi_base = num_sources * socket;
+        gsi_base = अंक_sources * socket;
         Aml *dev = aml_device("IC%.02X", socket);
         aml_append(dev, aml_name_decl("_HID", aml_string("%s", hid)));
         aml_append(dev, aml_name_decl("_UID", aml_int(socket)));
@@ -175,9 +175,9 @@ static void acpi_dsdt_add_plic_aplic(Aml *scope, uint8_t socket_count,
     }
 }
 
-static void
-acpi_dsdt_add_uart(Aml *scope, const MemMapEntry *uart_memmap,
-                    uint32_t uart_irq, int uartidx)
+स्थिर शून्य
+acpi_dsdt_add_uart(Aml *scope, स्थिरांक MemMapEntry *uart_memmap,
+                    uint32_t uart_irq, पूर्णांक uartidx)
 {
     Aml *dev = aml_device("COM%d", uartidx);
     aml_append(dev, aml_name_decl("_HID", aml_string("RSCV0003")));
@@ -187,7 +187,7 @@ acpi_dsdt_add_uart(Aml *scope, const MemMapEntry *uart_memmap,
     aml_append(crs, aml_memory32_fixed(uart_memmap->base,
                                          uart_memmap->size, AML_READ_WRITE));
     aml_append(crs,
-                aml_interrupt(AML_CONSUMER, AML_LEVEL, AML_ACTIVE_HIGH,
+                aml_interrupt(AML_CONSUMER, AML_LEVEL, AML_ACTIVE_वरचा,
                                AML_EXCLUSIVE, &uart_irq, 1));
     aml_append(dev, aml_name_decl("_CRS", crs));
 
@@ -213,7 +213,7 @@ acpi_dsdt_add_uart(Aml *scope, const MemMapEntry *uart_memmap,
  * ACPI ID for IOMMU is defined in the section 6.2 of RISC-V BRS spec.
  * https://github.com/riscv-non-isa/riscv-brs/releases/download/v0.8/riscv-brs-spec.pdf
  */
-static void acpi_dsdt_add_iommu_sys(Aml *scope, const MemMapEntry *iommu_memmap,
+स्थिर शून्य acpi_dsdt_add_iommu_sys(Aml *scope, स्थिरांक MemMapEntry *iommu_memmap,
                                     uint32_t iommu_irq)
 {
     uint32_t i;
@@ -225,8 +225,8 @@ static void acpi_dsdt_add_iommu_sys(Aml *scope, const MemMapEntry *iommu_memmap,
     Aml *crs = aml_resource_template();
     aml_append(crs, aml_memory32_fixed(iommu_memmap->base,
                                        iommu_memmap->size, AML_READ_WRITE));
-    for (i = iommu_irq; i < iommu_irq + 4; i++) {
-        aml_append(crs, aml_interrupt(AML_CONSUMER, AML_EDGE, AML_ACTIVE_LOW,
+    साठी (i = iommu_irq; i < iommu_irq + 4; i++) {
+        aml_append(crs, aml_interrupt(AML_CONSUMER, AML_EDGE, AML_ACTIVE_खालचा,
                                       AML_EXCLUSIVE, &i, 1));
     }
 
@@ -239,10 +239,10 @@ static void acpi_dsdt_add_iommu_sys(Aml *scope, const MemMapEntry *iommu_memmap,
  * Rev: 1.10
  */
 
-static void
+स्थिर शून्य
 spcr_setup(GArray *table_data, BIOSLinker *linker, RISCVVirtState *s)
 {
-    const char name[] = ".";
+    स्थिरांक अक्षर name[] = ".";
     AcpiSpcrData serial = {
         .interface_type = 0x12,       /* 16550 compatible */
         .base_addr.id = AML_AS_SYSTEM_MEMORY,
@@ -268,7 +268,7 @@ spcr_setup(GArray *table_data, BIOSLinker *linker, RISCVVirtState *s)
         .pci_segment = 0,
         .uart_clk_freq = 0,
         .precise_baudrate = 0,
-        .namespace_string_length = sizeof(name),
+        .namespace_string_length = आकार(name),
         .namespace_string_offset = 88,
     };
 
@@ -277,25 +277,25 @@ spcr_setup(GArray *table_data, BIOSLinker *linker, RISCVVirtState *s)
 }
 
 /* RHCT Node[N] starts at offset 56 */
-#define RHCT_NODE_ARRAY_OFFSET 56
+#define RHCT_गाठ_ARRAY_OFFSET 56
 
 /*
  * ACPI spec, Revision 6.6
  * 5.2.37 RISC-V Hart Capabilities Table (RHCT)
  */
-static void build_rhct(GArray *table_data,
+स्थिर शून्य build_rhct(GArray *table_data,
                        BIOSLinker *linker,
                        RISCVVirtState *s)
 {
     MachineClass *mc = MACHINE_GET_CLASS(s);
     MachineState *ms = MACHINE(s);
-    const CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
-    size_t len, aligned_len;
-    uint32_t isa_offset, num_rhct_nodes, cmo_offset = 0;
+    स्थिरांक CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
+    माप_प्रकार len, aligned_len;
+    uint32_t isa_offset, अंक_rhct_nodes, cmo_offset = 0;
     RISCVCPU *cpu = &s->soc[0].harts[0];
     uint32_t mmu_offset = 0;
     bool rv32 = riscv_cpu_is_32bit(cpu);
-    g_autofree char *isa = NULL;
+    g_autofree अक्षर *isa = रिक्त;
 
     AcpiTable table = { .sig = "RHCT", .rev = 1, .oem_id = s->oem_id,
                         .oem_table_id = s->oem_table_id };
@@ -312,42 +312,42 @@ static void build_rhct(GArray *table_data,
                               8);
 
     /* ISA + N hart info */
-    num_rhct_nodes = 1 + ms->smp.cpus;
-    if (cpu->cfg.ext_zicbom || cpu->cfg.ext_zicboz) {
-        num_rhct_nodes++;
+    अंक_rhct_nodes = 1 + ms->smp.cpus;
+    जर (cpu->cfg.ext_zicbom || cpu->cfg.ext_zicboz) {
+        अंक_rhct_nodes++;
     }
 
-    if (!rv32 && cpu->cfg.max_satp_mode >= VM_1_10_SV39) {
-        num_rhct_nodes++;
+    जर (!rv32 && cpu->cfg.max_satp_mode >= VM_1_10_SV39) {
+        अंक_rhct_nodes++;
     }
 
     /* Number of RHCT nodes*/
-    build_append_int_noprefix(table_data, num_rhct_nodes, 4);
+    build_append_int_noprefix(table_data, अंक_rhct_nodes, 4);
 
     /* Offset to the RHCT node array */
-    build_append_int_noprefix(table_data, RHCT_NODE_ARRAY_OFFSET, 4);
+    build_append_int_noprefix(table_data, RHCT_गाठ_ARRAY_OFFSET, 4);
 
     /* ISA String Node */
     isa_offset = table_data->len - table.table_offset;
     build_append_int_noprefix(table_data, 0, 2);   /* Type 0 */
 
     isa = riscv_isa_string(cpu);
-    len = 8 + strlen(isa) + 1;
+    len = 8 + म_माप(isa) + 1;
     aligned_len = (len % 2) ? (len + 1) : len;
 
     build_append_int_noprefix(table_data, aligned_len, 2);   /* Length */
     build_append_int_noprefix(table_data, 0x1, 2);           /* Revision */
 
     /* ISA string length including NUL */
-    build_append_int_noprefix(table_data, strlen(isa) + 1, 2);
-    g_array_append_vals(table_data, isa, strlen(isa) + 1);   /* ISA string */
+    build_append_int_noprefix(table_data, म_माप(isa) + 1, 2);
+    g_array_append_vals(table_data, isa, म_माप(isa) + 1);   /* ISA string */
 
-    if (aligned_len != len) {
+    जर (aligned_len != len) {
         build_append_int_noprefix(table_data, 0x0, 1);   /* Optional Padding */
     }
 
     /* CMO node */
-    if (cpu->cfg.ext_zicbom || cpu->cfg.ext_zicboz) {
+    जर (cpu->cfg.ext_zicbom || cpu->cfg.ext_zicboz) {
         cmo_offset = table_data->len - table.table_offset;
         build_append_int_noprefix(table_data, 1, 2);    /* Type */
         build_append_int_noprefix(table_data, 10, 2);   /* Length */
@@ -355,11 +355,11 @@ static void build_rhct(GArray *table_data,
         build_append_int_noprefix(table_data, 0, 1);    /* Reserved */
 
         /* CBOM block size */
-        if (cpu->cfg.cbom_blocksize) {
+        जर (cpu->cfg.cbom_blocksize) {
             build_append_int_noprefix(table_data,
                                       __builtin_ctz(cpu->cfg.cbom_blocksize),
                                       1);
-        } else {
+        } अन्यथा {
             build_append_int_noprefix(table_data, 0, 1);
         }
 
@@ -367,63 +367,63 @@ static void build_rhct(GArray *table_data,
         build_append_int_noprefix(table_data, 0, 1);
 
         /* CBOZ block size */
-        if (cpu->cfg.cboz_blocksize) {
+        जर (cpu->cfg.cboz_blocksize) {
             build_append_int_noprefix(table_data,
                                       __builtin_ctz(cpu->cfg.cboz_blocksize),
                                       1);
-        } else {
+        } अन्यथा {
             build_append_int_noprefix(table_data, 0, 1);
         }
     }
 
     /* MMU node structure */
-    if (!rv32 && cpu->cfg.max_satp_mode >= VM_1_10_SV39) {
+    जर (!rv32 && cpu->cfg.max_satp_mode >= VM_1_10_SV39) {
         mmu_offset = table_data->len - table.table_offset;
         build_append_int_noprefix(table_data, 2, 2);    /* Type */
         build_append_int_noprefix(table_data, 8, 2);    /* Length */
         build_append_int_noprefix(table_data, 0x1, 2);  /* Revision */
         build_append_int_noprefix(table_data, 0, 1);    /* Reserved */
         /* MMU Type */
-        if (cpu->cfg.max_satp_mode == VM_1_10_SV57) {
+        जर (cpu->cfg.max_satp_mode == VM_1_10_SV57) {
             build_append_int_noprefix(table_data, 2, 1);    /* Sv57 */
-        } else if (cpu->cfg.max_satp_mode == VM_1_10_SV48) {
+        } अन्यथा जर (cpu->cfg.max_satp_mode == VM_1_10_SV48) {
             build_append_int_noprefix(table_data, 1, 1);    /* Sv48 */
-        } else if (cpu->cfg.max_satp_mode == VM_1_10_SV39) {
+        } अन्यथा जर (cpu->cfg.max_satp_mode == VM_1_10_SV39) {
             build_append_int_noprefix(table_data, 0, 1);    /* Sv39 */
-        } else {
+        } अन्यथा {
             g_assert_not_reached();
         }
     }
 
     /* Hart Info Node */
-    for (int i = 0; i < arch_ids->len; i++) {
+    साठी (पूर्णांक i = 0; i < arch_ids->len; i++) {
         len = 16;
-        int num_offsets = 1;
+        पूर्णांक अंक_offsets = 1;
         build_append_int_noprefix(table_data, 0xFFFF, 2);  /* Type */
 
         /* Length */
-        if (cmo_offset) {
+        जर (cmo_offset) {
             len += 4;
-            num_offsets++;
+            अंक_offsets++;
         }
 
-        if (mmu_offset) {
+        जर (mmu_offset) {
             len += 4;
-            num_offsets++;
+            अंक_offsets++;
         }
 
         build_append_int_noprefix(table_data, len, 2);
         build_append_int_noprefix(table_data, 0x1, 2); /* Revision */
         /* Number of offsets */
-        build_append_int_noprefix(table_data, num_offsets, 2);
+        build_append_int_noprefix(table_data, अंक_offsets, 2);
         build_append_int_noprefix(table_data, i, 4);   /* ACPI Processor UID */
         /* Offsets */
         build_append_int_noprefix(table_data, isa_offset, 4);
-        if (cmo_offset) {
+        जर (cmo_offset) {
             build_append_int_noprefix(table_data, cmo_offset, 4);
         }
 
-        if (mmu_offset) {
+        जर (mmu_offset) {
             build_append_int_noprefix(table_data, mmu_offset, 4);
         }
     }
@@ -435,10 +435,10 @@ static void build_rhct(GArray *table_data,
  * ACPI spec, Revision 6.6
  * 5.2.9 Fixed ACPI Description Table (MADT)
  */
-static void build_fadt_rev6(GArray *table_data,
+स्थिर शून्य build_fadt_rev6(GArray *table_data,
                             BIOSLinker *linker,
                             RISCVVirtState *s,
-                            unsigned dsdt_tbl_offset)
+                            अचिन्हित dsdt_tbl_offset)
 {
     AcpiFadtData fadt = {
         .rev = 6,
@@ -451,14 +451,14 @@ static void build_fadt_rev6(GArray *table_data,
 }
 
 /* DSDT */
-static void build_dsdt(GArray *table_data,
+स्थिर शून्य build_dsdt(GArray *table_data,
                        BIOSLinker *linker,
                        RISCVVirtState *s)
 {
     Aml *scope, *dsdt;
     MachineState *ms = MACHINE(s);
-    uint8_t socket_count;
-    const MemMapEntry *memmap = s->memmap;
+    uint8_t socket_मोजणी;
+    स्थिरांक MemMapEntry *memmap = s->memmap;
     AcpiTable table = { .sig = "DSDT", .rev = 2, .oem_id = s->oem_id,
                         .oem_table_id = s->oem_table_id };
 
@@ -477,45 +477,45 @@ static void build_dsdt(GArray *table_data,
 
     fw_cfg_acpi_dsdt_add(scope, &memmap[VIRT_FW_CFG]);
 
-    socket_count = riscv_socket_count(ms);
+    socket_मोजणी = riscv_socket_मोजणी(ms);
 
-    if (s->aia_type == VIRT_AIA_TYPE_NONE) {
-        acpi_dsdt_add_plic_aplic(scope, socket_count, s->num_sources,
+    जर (s->aia_type == VIRT_AIA_TYPE_NONE) {
+        acpi_dsdt_add_plic_aplic(scope, socket_मोजणी, s->अंक_sources,
                                  memmap[VIRT_PLIC].base,
                                  memmap[VIRT_PLIC].size,
                                  "RSCV0001");
-    } else {
-        acpi_dsdt_add_plic_aplic(scope, socket_count, s->num_sources,
+    } अन्यथा {
+        acpi_dsdt_add_plic_aplic(scope, socket_मोजणी, s->अंक_sources,
                                  memmap[VIRT_APLIC_S].base,
                                  memmap[VIRT_APLIC_S].size, "RSCV0002");
     }
 
     acpi_dsdt_add_uart(scope, &memmap[VIRT_UART0], UART0_IRQ, 0);
-    if (s->uart1_present) {
+    जर (s->uart1_present) {
         acpi_dsdt_add_uart(scope, &memmap[VIRT_UART1], UART1_IRQ, 1);
     }
 
-    if (virt_is_iommu_sys_enabled(s)) {
+    जर (virt_is_iommu_sys_enabled(s)) {
         acpi_dsdt_add_iommu_sys(scope, &memmap[VIRT_IOMMU_SYS], IOMMU_SYS_IRQ);
     }
 
-    if (socket_count == 1) {
+    जर (socket_मोजणी == 1) {
         virtio_acpi_dsdt_add(scope, memmap[VIRT_VIRTIO].base,
                              memmap[VIRT_VIRTIO].size,
-                             VIRTIO_IRQ, 0, VIRTIO_COUNT);
+                             VIRTIO_IRQ, 0, VIRTIO_मोजणी);
         acpi_dsdt_add_gpex_host(scope, PCIE_IRQ);
-    } else if (socket_count == 2) {
+    } अन्यथा जर (socket_मोजणी == 2) {
         virtio_acpi_dsdt_add(scope, memmap[VIRT_VIRTIO].base,
                              memmap[VIRT_VIRTIO].size,
-                             VIRTIO_IRQ + s->num_sources, 0,
-                             VIRTIO_COUNT);
-        acpi_dsdt_add_gpex_host(scope, PCIE_IRQ + s->num_sources);
-    } else {
+                             VIRTIO_IRQ + s->अंक_sources, 0,
+                             VIRTIO_मोजणी);
+        acpi_dsdt_add_gpex_host(scope, PCIE_IRQ + s->अंक_sources);
+    } अन्यथा {
         virtio_acpi_dsdt_add(scope, memmap[VIRT_VIRTIO].base,
                              memmap[VIRT_VIRTIO].size,
-                             VIRTIO_IRQ + s->num_sources, 0,
-                             VIRTIO_COUNT);
-        acpi_dsdt_add_gpex_host(scope, PCIE_IRQ + s->num_sources * 2);
+                             VIRTIO_IRQ + s->अंक_sources, 0,
+                             VIRTIO_मोजणी);
+        acpi_dsdt_add_gpex_host(scope, PCIE_IRQ + s->अंक_sources * 2);
     }
 
     aml_append(dsdt, scope);
@@ -531,28 +531,28 @@ static void build_dsdt(GArray *table_data,
  * ACPI spec, Revision 6.6
  * 5.2.12 Multiple APIC Description Table (MADT)
  */
-static void build_madt(GArray *table_data,
+स्थिर शून्य build_madt(GArray *table_data,
                        BIOSLinker *linker,
                        RISCVVirtState *s)
 {
     MachineClass *mc = MACHINE_GET_CLASS(s);
     MachineState *ms = MACHINE(s);
-    const CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
-    uint8_t  group_index_bits = imsic_num_bits(riscv_socket_count(ms));
-    uint8_t  guest_index_bits = imsic_num_bits(s->aia_guests + 1);
+    स्थिरांक CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
+    uint8_t  group_index_bits = imsic_अंक_bits(riscv_socket_मोजणी(ms));
+    uint8_t  guest_index_bits = imsic_अंक_bits(s->aia_guests + 1);
     uint16_t imsic_max_hart_per_socket = 0;
     uint8_t  hart_index_bits;
     uint64_t aplic_addr;
     uint32_t gsi_base;
     uint8_t  socket;
 
-    for (socket = 0; socket < riscv_socket_count(ms); socket++) {
-        if (imsic_max_hart_per_socket < s->soc[socket].num_harts) {
-            imsic_max_hart_per_socket = s->soc[socket].num_harts;
+    साठी (socket = 0; socket < riscv_socket_मोजणी(ms); socket++) {
+        जर (imsic_max_hart_per_socket < s->soc[socket].अंक_harts) {
+            imsic_max_hart_per_socket = s->soc[socket].अंक_harts;
         }
     }
 
-    hart_index_bits = imsic_num_bits(imsic_max_hart_per_socket);
+    hart_index_bits = imsic_अंक_bits(imsic_max_hart_per_socket);
 
     AcpiTable table = { .sig = "APIC", .rev = 7, .oem_id = s->oem_id,
                         .oem_table_id = s->oem_table_id };
@@ -563,12 +563,12 @@ static void build_madt(GArray *table_data,
     build_append_int_noprefix(table_data, 0, 4);   /* MADT Flags */
 
     /* RISC-V Local INTC structures per HART */
-    for (int i = 0; i < arch_ids->len; i++) {
+    साठी (पूर्णांक i = 0; i < arch_ids->len; i++) {
         riscv_acpi_madt_add_rintc(i, arch_ids, table_data, s);
     }
 
     /* IMSIC */
-    if (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
+    जर (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
         /* IMSIC */
         build_append_int_noprefix(table_data, 0x19, 1);     /* Type */
         build_append_int_noprefix(table_data, 16, 1);       /* Length */
@@ -576,9 +576,9 @@ static void build_madt(GArray *table_data,
         build_append_int_noprefix(table_data, 0, 1);        /* Reserved */
         build_append_int_noprefix(table_data, 0, 4);        /* Flags */
         /* Number of supervisor mode Interrupt Identities */
-        build_append_int_noprefix(table_data, VIRT_IRQCHIP_NUM_MSIS, 2);
+        build_append_int_noprefix(table_data, VIRT_IRQCHIP_अंक_MSIS, 2);
         /* Number of guest mode Interrupt Identities */
-        build_append_int_noprefix(table_data, VIRT_IRQCHIP_NUM_MSIS, 2);
+        build_append_int_noprefix(table_data, VIRT_IRQCHIP_अंक_MSIS, 2);
         /* Guest Index Bits */
         build_append_int_noprefix(table_data, guest_index_bits, 1);
         /* Hart Index Bits */
@@ -589,12 +589,12 @@ static void build_madt(GArray *table_data,
         build_append_int_noprefix(table_data, IMSIC_MMIO_GROUP_MIN_SHIFT, 1);
     }
 
-    if (s->aia_type != VIRT_AIA_TYPE_NONE) {
+    जर (s->aia_type != VIRT_AIA_TYPE_NONE) {
         /* APLICs */
-        for (socket = 0; socket < riscv_socket_count(ms); socket++) {
+        साठी (socket = 0; socket < riscv_socket_मोजणी(ms); socket++) {
             aplic_addr = s->memmap[VIRT_APLIC_S].base +
                              s->memmap[VIRT_APLIC_S].size * socket;
-            gsi_base = s->num_sources * socket;
+            gsi_base = s->अंक_sources * socket;
             build_append_int_noprefix(table_data, 0x1A, 1);    /* Type */
             build_append_int_noprefix(table_data, 36, 1);      /* Length */
             build_append_int_noprefix(table_data, 1, 1);       /* Version */
@@ -602,15 +602,15 @@ static void build_madt(GArray *table_data,
             build_append_int_noprefix(table_data, 0, 4);       /* Flags */
             build_append_int_noprefix(table_data, 0, 8);       /* Hardware ID */
             /* Number of IDCs */
-            if (s->aia_type == VIRT_AIA_TYPE_APLIC) {
+            जर (s->aia_type == VIRT_AIA_TYPE_APLIC) {
                 build_append_int_noprefix(table_data,
-                                          s->soc[socket].num_harts,
+                                          s->soc[socket].अंक_harts,
                                           2);
-            } else {
+            } अन्यथा {
                 build_append_int_noprefix(table_data, 0, 2);
             }
             /* Total External Interrupt Sources Supported */
-            build_append_int_noprefix(table_data, VIRT_IRQCHIP_NUM_SOURCES, 2);
+            build_append_int_noprefix(table_data, VIRT_IRQCHIP_अंक_SOURCES, 2);
             /* Global System Interrupt Base */
             build_append_int_noprefix(table_data, gsi_base, 4);
             /* APLIC Address */
@@ -619,12 +619,12 @@ static void build_madt(GArray *table_data,
             build_append_int_noprefix(table_data,
                                       s->memmap[VIRT_APLIC_S].size, 4);
         }
-    } else {
+    } अन्यथा {
         /* PLICs */
-        for (socket = 0; socket < riscv_socket_count(ms); socket++) {
+        साठी (socket = 0; socket < riscv_socket_मोजणी(ms); socket++) {
             aplic_addr = s->memmap[VIRT_PLIC].base +
                          s->memmap[VIRT_PLIC].size * socket;
-            gsi_base = VIRT_IRQCHIP_NUM_SOURCES * socket;
+            gsi_base = VIRT_IRQCHIP_अंक_SOURCES * socket;
             build_append_int_noprefix(table_data, 0x1B, 1);   /* Type */
             build_append_int_noprefix(table_data, 36, 1);     /* Length */
             build_append_int_noprefix(table_data, 1, 1);      /* Version */
@@ -632,7 +632,7 @@ static void build_madt(GArray *table_data,
             build_append_int_noprefix(table_data, 0, 8);      /* Hardware ID */
             /* Total External Interrupt Sources Supported */
             build_append_int_noprefix(table_data,
-                                      VIRT_IRQCHIP_NUM_SOURCES - 1, 2);
+                                      VIRT_IRQCHIP_अंक_SOURCES - 1, 2);
             build_append_int_noprefix(table_data, 0, 2);     /* Max Priority */
             build_append_int_noprefix(table_data, 0, 4);     /* Flags */
             /* PLIC Size */
@@ -650,19 +650,19 @@ static void build_madt(GArray *table_data,
 #define ID_MAPPING_ENTRY_SIZE        20
 #define IOMMU_ENTRY_SIZE             40
 #define RISCV_INTERRUPT_WIRE_OFFSSET 40
-#define ROOT_COMPLEX_ENTRY_SIZE      20
-#define RIMT_NODE_OFFSET             48
+#define मूळ_COMPLEX_ENTRY_SIZE      20
+#define RIMT_गाठ_OFFSET             48
 
 /*
  * ID Mapping Structure
  */
-static void build_rimt_id_mapping(GArray *table_data, uint32_t source_id_base,
-                                  uint32_t num_ids, uint32_t dest_id_base)
+स्थिर शून्य build_rimt_id_mapping(GArray *table_data, uint32_t source_id_base,
+                                  uint32_t अंक_ids, uint32_t dest_id_base)
 {
     /* Source ID Base */
     build_append_int_noprefix(table_data, source_id_base, 4);
     /* Number of IDs */
-    build_append_int_noprefix(table_data, num_ids, 4);
+    build_append_int_noprefix(table_data, अंक_ids, 4);
     /* Destination Device ID Base */
     build_append_int_noprefix(table_data, source_id_base, 4);
     /* Destination IOMMU Offset */
@@ -671,86 +671,86 @@ static void build_rimt_id_mapping(GArray *table_data, uint32_t source_id_base,
     build_append_int_noprefix(table_data, 0, 4);
 }
 
-struct AcpiRimtIdMapping {
+संरचना AcpiRimtIdMapping {
     uint32_t source_id_base;
-    uint32_t num_ids;
+    uint32_t अंक_ids;
 };
-typedef struct AcpiRimtIdMapping AcpiRimtIdMapping;
+प्रकारव्याख्या संरचना AcpiRimtIdMapping AcpiRimtIdMapping;
 
 /* Build the rimt ID mapping to IOMMU for a given PCI host bridge */
-static int rimt_host_bridges(Object *obj, void *opaque)
+स्थिर पूर्णांक rimt_host_bridges(Object *obj, शून्य *opaque)
 {
     GArray *idmap_blob = opaque;
 
-    if (object_dynamic_cast(obj, TYPE_PCI_HOST_BRIDGE)) {
+    जर (object_dynamic_cast(obj, TYPE_PCI_HOST_BRIDGE)) {
         PCIBus *bus = PCI_HOST_BRIDGE(obj)->bus;
 
-        if (bus && !pci_bus_bypass_iommu(bus)) {
-            int min_bus, max_bus;
+        जर (bus && !pci_bus_bypass_iommu(bus)) {
+            पूर्णांक min_bus, max_bus;
 
             pci_bus_range(bus, &min_bus, &max_bus);
 
             AcpiRimtIdMapping idmap = {
                 .source_id_base = min_bus << 8,
-                .num_ids = (max_bus - min_bus + 1) << 8,
+                .अंक_ids = (max_bus - min_bus + 1) << 8,
             };
             g_array_append_val(idmap_blob, idmap);
         }
     }
 
-    return 0;
+    परत 0;
 }
 
-static int rimt_idmap_compare(gconstpointer a, gconstpointer b)
+स्थिर पूर्णांक rimt_idmap_compare(gconstpointer a, gconstpointer b)
 {
     AcpiRimtIdMapping *idmap_a = (AcpiRimtIdMapping *)a;
     AcpiRimtIdMapping *idmap_b = (AcpiRimtIdMapping *)b;
 
-    return idmap_a->source_id_base - idmap_b->source_id_base;
+    परत idmap_a->source_id_base - idmap_b->source_id_base;
 }
 
 /*
  * RISC-V IO Mapping Table (RIMT)
  * https://github.com/riscv-non-isa/riscv-acpi-rimt/releases/download/v0.99/rimt-spec.pdf
  */
-static void build_rimt(GArray *table_data, BIOSLinker *linker,
+स्थिर शून्य build_rimt(GArray *table_data, BIOSLinker *linker,
                        RISCVVirtState *s)
 {
-    int i, nb_nodes, rc_mapping_count;
-    size_t node_size, iommu_offset = 0;
+    पूर्णांक i, nb_nodes, rc_mapping_मोजणी;
+    माप_प्रकार गाठ_size, iommu_offset = 0;
     uint32_t id = 0;
     g_autoptr(GArray) iommu_idmaps = g_array_new(false, true,
-                                                 sizeof(AcpiRimtIdMapping));
+                                                 आकार(AcpiRimtIdMapping));
 
     AcpiTable table = { .sig = "RIMT", .rev = 1, .oem_id = s->oem_id,
                         .oem_table_id = s->oem_table_id };
 
     acpi_table_begin(&table, table_data);
 
-    object_child_foreach_recursive(object_get_root(),
+    object_child_foreach_recursive(object_get_मूळ(),
                                    rimt_host_bridges, iommu_idmaps);
 
     /* Sort the ID mapping  by Source ID Base*/
     g_array_sort(iommu_idmaps, rimt_idmap_compare);
 
     nb_nodes = 2; /* RC, IOMMU */
-    rc_mapping_count = iommu_idmaps->len;
+    rc_mapping_मोजणी = iommu_idmaps->len;
     /* Number of RIMT Nodes */
     build_append_int_noprefix(table_data, nb_nodes, 4);
 
     /* Offset to Array of RIMT Nodes */
-    build_append_int_noprefix(table_data, RIMT_NODE_OFFSET, 4);
+    build_append_int_noprefix(table_data, RIMT_गाठ_OFFSET, 4);
     build_append_int_noprefix(table_data, 0, 4); /* Reserved */
 
     iommu_offset = table_data->len - table.table_offset;
     /*  IOMMU Device Structure */
     build_append_int_noprefix(table_data, 0, 1);         /* Type - IOMMU*/
     build_append_int_noprefix(table_data, 1, 1);         /* Revision */
-    node_size =  IOMMU_ENTRY_SIZE;
-    build_append_int_noprefix(table_data, node_size, 2); /* Length */
+    गाठ_size =  IOMMU_ENTRY_SIZE;
+    build_append_int_noprefix(table_data, गाठ_size, 2); /* Length */
     build_append_int_noprefix(table_data, 0, 2);         /* Reserved */
     build_append_int_noprefix(table_data, id++, 2);      /* ID */
-    if (virt_is_iommu_sys_enabled(s)) {
+    जर (virt_is_iommu_sys_enabled(s)) {
         /* Hardware ID */
         build_append_int_noprefix(table_data, 'R', 1);
         build_append_int_noprefix(table_data, 'S', 1);
@@ -764,7 +764,7 @@ static void build_rimt(GArray *table_data, BIOSLinker *linker,
         build_append_int_noprefix(table_data,
                                   s->memmap[VIRT_IOMMU_SYS].base, 8);
         build_append_int_noprefix(table_data, 0, 4);   /* Flags */
-    } else {
+    } अन्यथा {
         /* Hardware ID */
         build_append_int_noprefix(table_data, '0', 1);
         build_append_int_noprefix(table_data, '0', 1);
@@ -782,9 +782,9 @@ static void build_rimt(GArray *table_data, BIOSLinker *linker,
     build_append_int_noprefix(table_data, 0, 4);       /* Proximity Domain */
     build_append_int_noprefix(table_data, 0, 2);       /* PCI Segment number */
     /* PCIe B/D/F */
-    if (virt_is_iommu_sys_enabled(s)) {
+    जर (virt_is_iommu_sys_enabled(s)) {
         build_append_int_noprefix(table_data, 0, 2);
-    } else {
+    } अन्यथा {
         build_append_int_noprefix(table_data, s->pci_iommu_bdf, 2);
     }
     /* Number of interrupt wires */
@@ -795,9 +795,9 @@ static void build_rimt(GArray *table_data, BIOSLinker *linker,
     /*  PCIe Root Complex Node */
     build_append_int_noprefix(table_data, 1, 1);           /* Type */
     build_append_int_noprefix(table_data, 1, 1);           /* Revision */
-    node_size =  ROOT_COMPLEX_ENTRY_SIZE +
-                 ID_MAPPING_ENTRY_SIZE * rc_mapping_count;
-    build_append_int_noprefix(table_data, node_size, 2);   /* Length */
+    गाठ_size =  मूळ_COMPLEX_ENTRY_SIZE +
+                 ID_MAPPING_ENTRY_SIZE * rc_mapping_मोजणी;
+    build_append_int_noprefix(table_data, गाठ_size, 2);   /* Length */
     build_append_int_noprefix(table_data, 0, 2);           /* Reserved */
     build_append_int_noprefix(table_data, id++, 2);        /* ID */
     build_append_int_noprefix(table_data, 0, 4);           /* Flags */
@@ -805,25 +805,25 @@ static void build_rimt(GArray *table_data, BIOSLinker *linker,
     /* PCI Segment number */
     build_append_int_noprefix(table_data, 0, 2);
     /* ID mapping array offset */
-    build_append_int_noprefix(table_data, ROOT_COMPLEX_ENTRY_SIZE, 2);
+    build_append_int_noprefix(table_data, मूळ_COMPLEX_ENTRY_SIZE, 2);
     /* Number of ID mappings */
-    build_append_int_noprefix(table_data, rc_mapping_count, 2);
+    build_append_int_noprefix(table_data, rc_mapping_मोजणी, 2);
 
     /* Output Reference */
     AcpiRimtIdMapping *range;
 
     /* ID mapping array */
-    for (i = 0; i < iommu_idmaps->len; i++) {
+    साठी (i = 0; i < iommu_idmaps->len; i++) {
         range = &g_array_index(iommu_idmaps, AcpiRimtIdMapping, i);
-        if (virt_is_iommu_sys_enabled(s)) {
+        जर (virt_is_iommu_sys_enabled(s)) {
             range->source_id_base = 0;
-            range->num_ids = 0x10000;
-        } else {
+            range->अंक_ids = 0x10000;
+        } अन्यथा {
             range->source_id_base = s->pci_iommu_bdf + 1;
-            range->num_ids = 0xffff - s->pci_iommu_bdf;
+            range->अंक_ids = 0xffff - s->pci_iommu_bdf;
         }
         build_rimt_id_mapping(table_data, range->source_id_base,
-                              range->num_ids, iommu_offset);
+                              range->अंक_ids, iommu_offset);
     }
 
     acpi_table_end(linker, &table);
@@ -833,14 +833,14 @@ static void build_rimt(GArray *table_data, BIOSLinker *linker,
  * ACPI spec, Revision 6.6
  * 5.2.16 System Resource Affinity Table (SRAT)
  */
-static void
+स्थिर शून्य
 build_srat(GArray *table_data, BIOSLinker *linker, RISCVVirtState *vms)
 {
-    int i;
+    पूर्णांक i;
     uint64_t mem_base;
     MachineClass *mc = MACHINE_GET_CLASS(vms);
     MachineState *ms = MACHINE(vms);
-    const CPUArchIdList *cpu_list = mc->possible_cpu_arch_ids(ms);
+    स्थिरांक CPUArchIdList *cpu_list = mc->possible_cpu_arch_ids(ms);
     AcpiTable table = { .sig = "SRAT", .rev = 3, .oem_id = vms->oem_id,
                         .oem_table_id = vms->oem_table_id };
 
@@ -848,8 +848,8 @@ build_srat(GArray *table_data, BIOSLinker *linker, RISCVVirtState *vms)
     build_append_int_noprefix(table_data, 1, 4); /* Reserved */
     build_append_int_noprefix(table_data, 0, 8); /* Reserved */
 
-    for (i = 0; i < cpu_list->len; ++i) {
-        uint32_t nodeid = cpu_list->cpus[i].props.node_id;
+    साठी (i = 0; i < cpu_list->len; ++i) {
+        uint32_t nodeid = cpu_list->cpus[i].props.गाठ_id;
         /*
          * 5.2.16.8 RINTC Affinity Structure
          */
@@ -864,27 +864,27 @@ build_srat(GArray *table_data, BIOSLinker *linker, RISCVVirtState *vms)
     }
 
     mem_base = vms->memmap[VIRT_DRAM].base;
-    for (i = 0; i < ms->numa_state->num_nodes; ++i) {
-        if (ms->numa_state->nodes[i].node_mem > 0) {
+    साठी (i = 0; i < ms->numa_state->अंक_nodes; ++i) {
+        जर (ms->numa_state->nodes[i].गाठ_mem > 0) {
             build_srat_memory(table_data, mem_base,
-                              ms->numa_state->nodes[i].node_mem, i,
+                              ms->numa_state->nodes[i].गाठ_mem, i,
                               MEM_AFFINITY_ENABLED);
-            mem_base += ms->numa_state->nodes[i].node_mem;
+            mem_base += ms->numa_state->nodes[i].गाठ_mem;
         }
     }
 
     acpi_table_end(linker, &table);
 }
 
-static void virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
+स्थिर शून्य virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
 {
     GArray *table_offsets;
-    unsigned dsdt, xsdt;
+    अचिन्हित dsdt, xsdt;
     GArray *tables_blob = tables->table_data;
     MachineState *ms = MACHINE(s);
 
     table_offsets = g_array_new(false, true,
-                                sizeof(uint32_t));
+                                आकार(uint32_t));
 
     bios_linker_loader_alloc(tables->linker,
                              ACPI_BUILD_TABLE_FILE, tables_blob,
@@ -904,14 +904,14 @@ static void virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
     acpi_add_table(table_offsets, tables_blob);
     build_rhct(tables_blob, tables->linker, s);
 
-    if (virt_is_iommu_sys_enabled(s) || s->pci_iommu_bdf) {
+    जर (virt_is_iommu_sys_enabled(s) || s->pci_iommu_bdf) {
         acpi_add_table(table_offsets, tables_blob);
         build_rimt(tables_blob, tables->linker, s);
     }
 
     acpi_add_table(table_offsets, tables_blob);
 
-    if (ms->acpi_spcr_enabled) {
+    जर (ms->acpi_spcr_enabled) {
         spcr_setup(tables_blob, tables->linker, s);
     }
 
@@ -925,10 +925,10 @@ static void virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
                    s->oem_table_id);
     }
 
-    if (ms->numa_state->num_nodes > 0) {
+    जर (ms->numa_state->अंक_nodes > 0) {
         acpi_add_table(table_offsets, tables_blob);
         build_srat(tables_blob, tables->linker, s);
-        if (ms->numa_state->have_numa_distance) {
+        जर (ms->numa_state->have_numa_distance) {
             acpi_add_table(table_offsets, tables_blob);
             build_slit(tables_blob, tables->linker, ms, s->oem_id,
                        s->oem_table_id);
@@ -946,7 +946,7 @@ static void virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
             .revision = 2,
             .oem_id = s->oem_id,
             .xsdt_tbl_offset = &xsdt,
-            .rsdt_tbl_offset = NULL,
+            .rsdt_tbl_offset = रिक्त,
         };
         build_rsdp(tables->rsdp, tables->linker, &rsdp_data);
     }
@@ -955,7 +955,7 @@ static void virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
      * The align size is 128, warn if 64k is not enough therefore
      * the align size could be resized.
      */
-    if (tables_blob->len > ACPI_BUILD_TABLE_SIZE / 2) {
+    जर (tables_blob->len > ACPI_BUILD_TABLE_SIZE / 2) {
         warn_report("ACPI table size %u exceeds %d bytes,"
                     " migration may not work",
                     tables_blob->len, ACPI_BUILD_TABLE_SIZE / 2);
@@ -968,7 +968,7 @@ static void virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
     g_array_free(table_offsets, true);
 }
 
-static void acpi_ram_update(MemoryRegion *mr, GArray *data)
+स्थिर शून्य acpi_ram_update(MemoryRegion *mr, GArray *data)
 {
     uint32_t size = acpi_data_len(data);
 
@@ -978,18 +978,18 @@ static void acpi_ram_update(MemoryRegion *mr, GArray *data)
      */
     memory_region_ram_resize(mr, size, &error_abort);
 
-    memcpy(memory_region_get_ram_ptr(mr), data->data, size);
+    स_नकल(memory_region_get_ram_ptr(mr), data->data, size);
     memory_region_set_dirty(mr, 0, size);
 }
 
-static void virt_acpi_build_update(void *build_opaque)
+स्थिर शून्य virt_acpi_build_update(शून्य *build_opaque)
 {
     AcpiBuildState *build_state = build_opaque;
     AcpiBuildTables tables;
 
     /* No state to update or already patched? Nothing to do. */
-    if (!build_state || build_state->patched) {
-        return;
+    जर (!build_state || build_state->patched) {
+        परत;
     }
 
     build_state->patched = true;
@@ -1005,28 +1005,28 @@ static void virt_acpi_build_update(void *build_opaque)
     acpi_build_tables_cleanup(&tables, true);
 }
 
-static void virt_acpi_build_reset(void *build_opaque)
+स्थिर शून्य virt_acpi_build_reset(शून्य *build_opaque)
 {
     AcpiBuildState *build_state = build_opaque;
     build_state->patched = false;
 }
 
-static const VMStateDescription vmstate_virt_acpi_build = {
+स्थिर स्थिरांक VMStateDescription vmstate_virt_acpi_build = {
     .name = "virt_acpi_build",
     .version_id = 1,
     .minimum_version_id = 1,
-    .fields = (const VMStateField[]) {
+    .fields = (स्थिरांक VMStateField[]) {
         VMSTATE_BOOL(patched, AcpiBuildState),
         VMSTATE_END_OF_LIST()
     },
 };
 
-void virt_acpi_setup(RISCVVirtState *s)
+शून्य virt_acpi_setup(RISCVVirtState *s)
 {
     AcpiBuildTables tables;
     AcpiBuildState *build_state;
 
-    build_state = g_malloc0(sizeof *build_state);
+    build_state = g_malloc0(आकार *build_state);
 
     acpi_build_tables_init(&tables);
     virt_acpi_build(s, &tables);
@@ -1035,7 +1035,7 @@ void virt_acpi_setup(RISCVVirtState *s)
     build_state->table_mr = acpi_add_rom_blob(virt_acpi_build_update,
                                               build_state, tables.table_data,
                                               ACPI_BUILD_TABLE_FILE);
-    assert(build_state->table_mr != NULL);
+    प्रतिज्ञा(build_state->table_mr != रिक्त);
 
     build_state->linker_mr = acpi_add_rom_blob(virt_acpi_build_update,
                                                build_state,
@@ -1048,7 +1048,7 @@ void virt_acpi_setup(RISCVVirtState *s)
 
     qemu_register_reset(virt_acpi_build_reset, build_state);
     virt_acpi_build_reset(build_state);
-    vmstate_register(NULL, 0, &vmstate_virt_acpi_build, build_state);
+    vmstate_register(रिक्त, 0, &vmstate_virt_acpi_build, build_state);
 
     /*
      * Clean up tables but don't free the memory: we track it
