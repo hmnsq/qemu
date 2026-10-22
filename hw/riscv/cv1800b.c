@@ -5,21 +5,21 @@
  * Copyright (c) 2026 Kuan-Wei Chiu <visitorckw@gmail.com>
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "hw/riscv/cv1800b.h"
-#include "hw/core/qdev-properties.h"
-#include "target/riscv/cpu-qom.h"
-#include "system/system.h"
-#include "hw/intc/riscv_aclint.h"
-#include "system/address-spaces.h"
-#include "hw/intc/sifive_plic.h"
-#include "target/riscv/cpu.h"
-#include "hw/riscv/boot.h"
-#include "hw/sd/sdhci.h"
-#include "hw/misc/unimp.h"
+#ضمن "qemu/osdep.h"
+#ضمن "qapi/error.h"
+#ضمن "hw/riscv/cv1800b.h"
+#ضمن "hw/core/qdev-properties.h"
+#ضمن "target/riscv/cpu-qom.h"
+#ضمن "system/system.h"
+#ضمن "hw/intc/riscv_aclint.h"
+#ضمن "system/address-spaces.h"
+#ضمن "hw/intc/sifive_plic.h"
+#ضمن "target/riscv/cpu.h"
+#ضمن "hw/riscv/boot.h"
+#ضمن "hw/sd/sdhci.h"
+#ضمن "hw/misc/unimp.h"
 
-const MemMapEntry cv1800b_memmap[] = {
+ثابت MemMapEntry cv1800b_memmap[] = {
     [CV1800B_DEV_TOP_MISC]     = { 0x03000000,      0x1000 },
     [CV1800B_DEV_PINMUX]       = { 0x03001000,      0x1000 },
     [CV1800B_DEV_CLK]          = { 0x03002000,      0x1000 },
@@ -36,7 +36,7 @@ const MemMapEntry cv1800b_memmap[] = {
     [CV1800B_DEV_DRAM]         = { 0x80000000,         0x0 },
 };
 
-static void cv1800b_soc_instance_init(Object *obj)
+ساكن فراغ cv1800b_soc_instance_init(Object *obj)
 {
     CV1800BSoCState *s = CV1800B_SOC(obj);
 
@@ -51,18 +51,18 @@ static void cv1800b_soc_instance_init(Object *obj)
     object_initialize_child(obj, "sdhci", &s->sdhci, TYPE_SYSBUS_SDHCI);
 }
 
-static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
+ساكن فراغ cv1800b_soc_realize(DeviceState *dev, Error **errp)
 {
     CV1800BSoCState *s = CV1800B_SOC(dev);
     MachineState *ms = MACHINE(qdev_get_machine());
     uint32_t num_harts = ms->smp.cpus;
     MemoryRegion *system_memory = get_system_memory();
-    char *plic_hart_config;
+    حرف *plic_hart_config;
 
     qdev_prop_set_uint32(DEVICE(&s->cpus), "num-harts", num_harts);
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
-        return;
+    𐡄𐡍 (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
+        أرجع;
     }
 
     memory_region_init_rom(&s->rom, OBJECT(dev), "cv1800b.rom",
@@ -102,8 +102,8 @@ static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
 
     qdev_prop_set_uint8(DEVICE(&s->uart), "regshift", 2);
     qdev_prop_set_chr(DEVICE(&s->uart), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
-        return;
+    𐡄𐡍 (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
+        أرجع;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->uart), 0, cv1800b_memmap[CV1800B_DEV_UART0].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->uart), 0,
@@ -111,15 +111,15 @@ static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
 
     qdev_prop_set_uint8(DEVICE(&s->sdhci), "sd-spec-version", 3);
     qdev_prop_set_uint64(DEVICE(&s->sdhci), "capareg", 0x056900b9);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->sdhci), errp)) {
-        return;
+    𐡄𐡍 (!sysbus_realize(SYS_BUS_DEVICE(&s->sdhci), errp)) {
+        أرجع;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->sdhci), 0, cv1800b_memmap[CV1800B_DEV_SD0].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->sdhci), 0,
                        qdev_get_gpio_in(DEVICE(s->plic), CV1800B_SD0_IRQ));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->clk), errp)) {
-        return;
+    𐡄𐡍 (!sysbus_realize(SYS_BUS_DEVICE(&s->clk), errp)) {
+        أرجع;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->clk), 0,
                     cv1800b_memmap[CV1800B_DEV_CLK].base);
@@ -153,7 +153,7 @@ static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
                                 cv1800b_memmap[CV1800B_DEV_RTC_IO].size);
 }
 
-static void cv1800b_soc_class_init(ObjectClass *oc, const void *data)
+ساكن فراغ cv1800b_soc_class_init(ObjectClass *oc, ثابت فراغ *data)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
@@ -161,15 +161,15 @@ static void cv1800b_soc_class_init(ObjectClass *oc, const void *data)
     dc->user_creatable = false;
 }
 
-static const TypeInfo cv1800b_soc_type_info = {
+ساكن ثابت TypeInfo cv1800b_soc_type_info = {
     .name = TYPE_CV1800B_SOC,
     .parent = TYPE_DEVICE,
-    .instance_size = sizeof(CV1800BSoCState),
+    .instance_size = حجم(CV1800BSoCState),
     .instance_init = cv1800b_soc_instance_init,
     .class_init = cv1800b_soc_class_init,
 };
 
-static void cv1800b_soc_register_types(void)
+ساكن فراغ cv1800b_soc_register_types(فراغ)
 {
     type_register_static(&cv1800b_soc_type_info);
 }
