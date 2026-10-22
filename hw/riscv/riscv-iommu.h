@@ -19,15 +19,15 @@
 #ifndef HW_RISCV_IOMMU_STATE_H
 #define HW_RISCV_IOMMU_STATE_H
 
-#include "qom/object.h"
-#include "hw/core/qdev-properties.h"
-#include "system/dma.h"
-#include "hw/riscv/iommu.h"
-#include "hw/riscv/riscv-iommu-bits.h"
+#ضمن "qom/object.h"
+#ضمن "hw/core/qdev-properties.h"
+#ضمن "system/dma.h"
+#ضمن "hw/riscv/iommu.h"
+#ضمن "hw/riscv/riscv-iommu-bits.h"
 
-typedef enum riscv_iommu_igs_modes riscv_iommu_igs_mode;
+تعريفنوع تعداد riscv_iommu_igs_modes riscv_iommu_igs_mode;
 
-struct RISCVIOMMUState {
+بنية RISCVIOMMUState {
     /*< private >*/
     DeviceState parent_obj;
 
@@ -59,7 +59,7 @@ struct RISCVIOMMUState {
     uint32_t pq_mask;     /* Page request queue index bit mask */
 
     /* interrupt notifier */
-    void (*notify)(RISCVIOMMUState *iommu, unsigned vector);
+    فراغ (*notify)(RISCVIOMMUState *iommu, unsigned vector);
 
     /* IOMMU target address space */
     AddressSpace *target_as;
@@ -91,26 +91,26 @@ struct RISCVIOMMUState {
     QEMUTimer *hpm_timer;
     uint64_t hpmcycle_val;      /* Current value of cycle register */
     uint64_t hpmcycle_prev;     /* Saved value of QEMU_CLOCK_VIRTUAL clock */
-    uint64_t irq_overflow_left; /* Value beyond INT64_MAX after overflow */
+    uint64_t irq_overflow_يسار; /* Value beyond INT64_MAX after overflow */
 
     /* HPM event counters */
     GHashTable *hpm_event_ctr_map; /* Mapping of events to counters */
     uint8_t hpm_cntrs;
 };
 
-void riscv_iommu_pci_setup_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
+فراغ riscv_iommu_pci_setup_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
          Error **errp);
-void riscv_iommu_set_cap_igs(RISCVIOMMUState *s, riscv_iommu_igs_mode mode);
-void riscv_iommu_reset(RISCVIOMMUState *s);
-void riscv_iommu_notify(RISCVIOMMUState *s, int vec_type);
-void riscv_iommu_fault(RISCVIOMMUState *s, struct riscv_iommu_fq_record *ev);
+فراغ riscv_iommu_set_cap_igs(RISCVIOMMUState *s, riscv_iommu_igs_mode mode);
+فراغ riscv_iommu_reset(RISCVIOMMUState *s);
+فراغ riscv_iommu_notify(RISCVIOMMUState *s, صحيح vec_type);
+فراغ riscv_iommu_fault(RISCVIOMMUState *s, بنية riscv_iommu_fq_record *ev);
 DeviceState *riscv_create_iommu_sys(DeviceState *mmio_irqchip,
-                                    hwaddr addr, int base_irq,
+                                    hwaddr addr, صحيح base_irq,
                                     bool is_32_bit);
 
-typedef struct RISCVIOMMUContext RISCVIOMMUContext;
+تعريفنوع بنية RISCVIOMMUContext RISCVIOMMUContext;
 /* Device translation context state. */
-struct RISCVIOMMUContext {
+بنية RISCVIOMMUContext {
     uint64_t devid:24;          /* Requester Id, AKA device_id */
     uint64_t process_id:20;     /* Process ID. PASID for PCIe */
     uint64_t tc;                /* Translation Control */
@@ -125,42 +125,42 @@ struct RISCVIOMMUContext {
 /* private helpers */
 
 /* Register helper functions */
-static inline uint32_t riscv_iommu_reg_mod32(RISCVIOMMUState *s,
+ساكن مضمن uint32_t riscv_iommu_reg_mod32(RISCVIOMMUState *s,
     unsigned idx, uint32_t set, uint32_t clr)
 {
     uint32_t val = ldl_le_p(s->regs + idx);
     stl_le_p(s->regs + idx, (val & ~clr) | set);
-    return val;
+    إرجاع val;
 }
 
-static inline void riscv_iommu_reg_set32(RISCVIOMMUState *s, unsigned idx,
+ساكن مضمن فراغ riscv_iommu_reg_set32(RISCVIOMMUState *s, unsigned idx,
                                          uint32_t set)
 {
     stl_le_p(s->regs + idx, set);
 }
 
-static inline uint32_t riscv_iommu_reg_get32(RISCVIOMMUState *s, unsigned idx)
+ساكن مضمن uint32_t riscv_iommu_reg_get32(RISCVIOMMUState *s, unsigned idx)
 {
-    return ldl_le_p(s->regs + idx);
+    إرجاع ldl_le_p(s->regs + idx);
 }
 
-static inline uint64_t riscv_iommu_reg_mod64(RISCVIOMMUState *s, unsigned idx,
+ساكن مضمن uint64_t riscv_iommu_reg_mod64(RISCVIOMMUState *s, unsigned idx,
                                              uint64_t set, uint64_t clr)
 {
     uint64_t val = ldq_le_p(s->regs + idx);
     stq_le_p(s->regs + idx, (val & ~clr) | set);
-    return val;
+    إرجاع val;
 }
 
-static inline void riscv_iommu_reg_set64(RISCVIOMMUState *s, unsigned idx,
+ساكن مضمن فراغ riscv_iommu_reg_set64(RISCVIOMMUState *s, unsigned idx,
                                          uint64_t set)
 {
     stq_le_p(s->regs + idx, set);
 }
 
-static inline uint64_t riscv_iommu_reg_get64(RISCVIOMMUState *s,
+ساكن مضمن uint64_t riscv_iommu_reg_get64(RISCVIOMMUState *s,
                                              unsigned idx)
 {
-    return ldq_le_p(s->regs + idx);
+    إرجاع ldq_le_p(s->regs + idx);
 }
 #endif
