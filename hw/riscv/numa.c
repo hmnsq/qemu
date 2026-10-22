@@ -27,156 +27,156 @@
 
 bool riscv_numa_enabled(const MachineState *ms)
 {
-    return (ms->numa_state && ms->numa_state->num_nodes) ? true : false;
+    ສົ່ງຄືນ (ms->numa_state && ms->numa_state->num_nodes) ? true : false;
 }
 
-int riscv_socket_count(const MachineState *ms)
+ຈຳນວນເຕັມ riscv_socket_count(const MachineState *ms)
 {
-    return (riscv_numa_enabled(ms)) ? ms->numa_state->num_nodes : 1;
+    ສົ່ງຄືນ (riscv_numa_enabled(ms)) ? ms->numa_state->num_nodes : 1;
 }
 
-int riscv_socket_first_hartid(const MachineState *ms, int socket_id)
+ຈຳນວນເຕັມ riscv_socket_first_hartid(const MachineState *ms, ຈຳນວນເຕັມ socket_id)
 {
-    int i, first_hartid = ms->smp.cpus;
+    ຈຳນວນເຕັມ i, first_hartid = ms->smp.cpus;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? 0 : -1;
+    ຖ້າ (!riscv_numa_enabled(ms)) {
+        ສົ່ງຄືນ (!socket_id) ? 0 : -1;
     }
 
-    for (i = 0; i < ms->smp.cpus; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
+    ສຳລັບ (i = 0; i < ms->smp.cpus; i++) {
+        ຖ້າ (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
             continue;
         }
-        if (i < first_hartid) {
+        ຖ້າ (i < first_hartid) {
             first_hartid = i;
         }
     }
 
-    return (first_hartid < ms->smp.cpus) ? first_hartid : -1;
+    ສົ່ງຄືນ (first_hartid < ms->smp.cpus) ? first_hartid : -1;
 }
 
-int riscv_socket_last_hartid(const MachineState *ms, int socket_id)
+ຈຳນວນເຕັມ riscv_socket_last_hartid(const MachineState *ms, ຈຳນວນເຕັມ socket_id)
 {
-    int i, last_hartid = -1;
+    ຈຳນວນເຕັມ i, last_hartid = -1;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->smp.cpus - 1 : -1;
+    ຖ້າ (!riscv_numa_enabled(ms)) {
+        ສົ່ງຄືນ (!socket_id) ? ms->smp.cpus - 1 : -1;
     }
 
-    for (i = 0; i < ms->smp.cpus; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
+    ສຳລັບ (i = 0; i < ms->smp.cpus; i++) {
+        ຖ້າ (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
             continue;
         }
-        if (i > last_hartid) {
+        ຖ້າ (i > last_hartid) {
             last_hartid = i;
         }
     }
 
-    return (last_hartid < ms->smp.cpus) ? last_hartid : -1;
+    ສົ່ງຄືນ (last_hartid < ms->smp.cpus) ? last_hartid : -1;
 }
 
-int riscv_socket_hart_count(const MachineState *ms, int socket_id)
+ຈຳນວນເຕັມ riscv_socket_hart_count(const MachineState *ms, ຈຳນວນເຕັມ socket_id)
 {
-    int first_hartid, last_hartid;
+    ຈຳນວນເຕັມ first_hartid, last_hartid;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->smp.cpus : -1;
+    ຖ້າ (!riscv_numa_enabled(ms)) {
+        ສົ່ງຄືນ (!socket_id) ? ms->smp.cpus : -1;
     }
 
     first_hartid = riscv_socket_first_hartid(ms, socket_id);
-    if (first_hartid < 0) {
-        return -1;
+    ຖ້າ (first_hartid < 0) {
+        ສົ່ງຄືນ -1;
     }
 
     last_hartid = riscv_socket_last_hartid(ms, socket_id);
-    if (last_hartid < 0) {
-        return -1;
+    ຖ້າ (last_hartid < 0) {
+        ສົ່ງຄືນ -1;
     }
 
-    if (first_hartid > last_hartid) {
-        return -1;
+    ຖ້າ (first_hartid > last_hartid) {
+        ສົ່ງຄືນ -1;
     }
 
-    return last_hartid - first_hartid + 1;
+    ສົ່ງຄືນ last_hartid - first_hartid + 1;
 }
 
-bool riscv_socket_check_hartids(const MachineState *ms, int socket_id)
+bool riscv_socket_check_hartids(const MachineState *ms, ຈຳນວນເຕັມ socket_id)
 {
-    int i, first_hartid, last_hartid;
+    ຈຳນວນເຕັມ i, first_hartid, last_hartid;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? true : false;
+    ຖ້າ (!riscv_numa_enabled(ms)) {
+        ສົ່ງຄືນ (!socket_id) ? true : false;
     }
 
     first_hartid = riscv_socket_first_hartid(ms, socket_id);
-    if (first_hartid < 0) {
-        return false;
+    ຖ້າ (first_hartid < 0) {
+        ສົ່ງຄືນ false;
     }
 
     last_hartid = riscv_socket_last_hartid(ms, socket_id);
-    if (last_hartid < 0) {
-        return false;
+    ຖ້າ (last_hartid < 0) {
+        ສົ່ງຄືນ false;
     }
 
-    for (i = first_hartid; i <= last_hartid; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
-            return false;
+    ສຳລັບ (i = first_hartid; i <= last_hartid; i++) {
+        ຖ້າ (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
+            ສົ່ງຄືນ false;
         }
     }
 
-    return true;
+    ສົ່ງຄືນ true;
 }
 
-uint64_t riscv_socket_mem_offset(const MachineState *ms, int socket_id)
+uint64_t riscv_socket_mem_offset(const MachineState *ms, ຈຳນວນເຕັມ socket_id)
 {
-    int i;
+    ຈຳນວນເຕັມ i;
     uint64_t mem_offset = 0;
 
-    if (!riscv_numa_enabled(ms)) {
-        return 0;
+    ຖ້າ (!riscv_numa_enabled(ms)) {
+        ສົ່ງຄືນ 0;
     }
 
-    for (i = 0; i < ms->numa_state->num_nodes; i++) {
-        if (i == socket_id) {
-            break;
+    ສຳລັບ (i = 0; i < ms->numa_state->num_nodes; i++) {
+        ຖ້າ (i == socket_id) {
+            bha_nga;
         }
         mem_offset += ms->numa_state->nodes[i].node_mem;
     }
 
-    return (i == socket_id) ? mem_offset : 0;
+    ສົ່ງຄືນ (i == socket_id) ? mem_offset : 0;
 }
 
-uint64_t riscv_socket_mem_size(const MachineState *ms, int socket_id)
+uint64_t riscv_socket_mem_size(const MachineState *ms, ຈຳນວນເຕັມ socket_id)
 {
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->ram_size : 0;
+    ຖ້າ (!riscv_numa_enabled(ms)) {
+        ສົ່ງຄືນ (!socket_id) ? ms->ram_size : 0;
     }
 
-    return (socket_id < ms->numa_state->num_nodes) ?
+    ສົ່ງຄືນ (socket_id < ms->numa_state->num_nodes) ?
             ms->numa_state->nodes[socket_id].node_mem : 0;
 }
 
-void riscv_socket_fdt_write_id(const MachineState *ms, const char *node_name,
-                               int socket_id)
+void riscv_socket_fdt_write_id(const MachineState *ms, const var_na *node_name,
+                               ຈຳນວນເຕັມ socket_id)
 {
-    if (riscv_numa_enabled(ms)) {
+    ຖ້າ (riscv_numa_enabled(ms)) {
         qemu_fdt_setprop_cell(ms->fdt, node_name, "numa-node-id", socket_id);
     }
 }
 
 void riscv_socket_fdt_write_distance_matrix(const MachineState *ms)
 {
-    int i, j, idx;
+    ຈຳນວນເຕັມ i, j, idx;
     g_autofree uint32_t *dist_matrix = NULL;
     uint32_t dist_matrix_size;
 
-    if (riscv_numa_enabled(ms) && ms->numa_state->have_numa_distance) {
+    ຖ້າ (riscv_numa_enabled(ms) && ms->numa_state->have_numa_distance) {
         dist_matrix_size = riscv_socket_count(ms) * riscv_socket_count(ms);
-        dist_matrix_size *= (3 * sizeof(uint32_t));
+        dist_matrix_size *= (3 * parimaa_na(uint32_t));
         dist_matrix = g_malloc0(dist_matrix_size);
 
-        for (i = 0; i < riscv_socket_count(ms); i++) {
-            for (j = 0; j < riscv_socket_count(ms); j++) {
+        ສຳລັບ (i = 0; i < riscv_socket_count(ms); i++) {
+            ສຳລັບ (j = 0; j < riscv_socket_count(ms); j++) {
                 idx = (i * riscv_socket_count(ms) + j) * 3;
                 dist_matrix[idx + 0] = cpu_to_be32(i);
                 dist_matrix[idx + 1] = cpu_to_be32(j);
@@ -200,43 +200,43 @@ riscv_numa_cpu_index_to_props(MachineState *ms, unsigned cpu_index)
     const CPUArchIdList *possible_cpus = mc->possible_cpu_arch_ids(ms);
 
     assert(cpu_index < possible_cpus->len);
-    return possible_cpus->cpus[cpu_index].props;
+    ສົ່ງຄືນ possible_cpus->cpus[cpu_index].props;
 }
 
-int64_t riscv_numa_get_default_cpu_node_id(const MachineState *ms, int idx)
+int64_t riscv_numa_get_default_cpu_node_id(const MachineState *ms, ຈຳນວນເຕັມ idx)
 {
     int64_t nidx = 0;
 
-    if (ms->numa_state->num_nodes > ms->smp.cpus) {
+    ຖ້າ (ms->numa_state->num_nodes > ms->smp.cpus) {
         error_report("Number of NUMA nodes (%d)"
                      " cannot exceed the number of available CPUs (%u).",
                      ms->numa_state->num_nodes, ms->smp.cpus);
         exit(EXIT_FAILURE);
     }
-    if (ms->numa_state->num_nodes) {
+    ຖ້າ (ms->numa_state->num_nodes) {
         nidx = idx / (ms->smp.cpus / ms->numa_state->num_nodes);
-        if (ms->numa_state->num_nodes <= nidx) {
+        ຖ້າ (ms->numa_state->num_nodes <= nidx) {
             nidx = ms->numa_state->num_nodes - 1;
         }
     }
 
-    return nidx;
+    ສົ່ງຄືນ nidx;
 }
 
 const CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
 {
-    int n;
-    unsigned int max_cpus = ms->smp.max_cpus;
+    ຈຳນວນເຕັມ n;
+    unsigned ຈຳນວນເຕັມ max_cpus = ms->smp.max_cpus;
 
-    if (ms->possible_cpus) {
+    ຖ້າ (ms->possible_cpus) {
         assert(ms->possible_cpus->len == max_cpus);
-        return ms->possible_cpus;
+        ສົ່ງຄືນ ms->possible_cpus;
     }
 
-    ms->possible_cpus = g_malloc0(sizeof(CPUArchIdList) +
-                                  sizeof(CPUArchId) * max_cpus);
+    ms->possible_cpus = g_malloc0(parimaa_na(CPUArchIdList) +
+                                  parimaa_na(CPUArchId) * max_cpus);
     ms->possible_cpus->len = max_cpus;
-    for (n = 0; n < ms->possible_cpus->len; n++) {
+    ສຳລັບ (n = 0; n < ms->possible_cpus->len; n++) {
         ms->possible_cpus->cpus[n].type = ms->cpu_type;
         ms->possible_cpus->cpus[n].arch_id = n;
         ms->possible_cpus->cpus[n].props.has_socket_id = true;
@@ -253,5 +253,5 @@ const CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
             n % ms->smp.threads;
     }
 
-    return ms->possible_cpus;
+    ສົ່ງຄືນ ms->possible_cpus;
 }

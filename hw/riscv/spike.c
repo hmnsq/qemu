@@ -53,9 +53,9 @@ static void create_fdt(SpikeState *s, const MemMapEntry *memmap,
                        bool is_32_bit, bool htif_custom_base)
 {
     void *fdt;
-    int fdt_size;
+    ຈຳນວນເຕັມ fdt_size;
     unsigned long clint_addr;
-    int socket;
+    ຈຳນວນເຕັມ socket;
     MachineState *ms = MACHINE(s);
     uint32_t phandle = 1;
     bool numa_enabled = riscv_numa_enabled(ms);
@@ -67,7 +67,7 @@ static void create_fdt(SpikeState *s, const MemMapEntry *memmap,
 
     qemu_fdt_add_subnode(fdt, "/htif");
     qemu_fdt_setprop_string(fdt, "/htif", "compatible", "ucb,htif0");
-    if (htif_custom_base) {
+    ຖ້າ (htif_custom_base) {
         qemu_fdt_setprop_cells(fdt, "/htif", "reg",
             0x0, memmap[SPIKE_HTIF].base, 0x0, memmap[SPIKE_HTIF].size);
     }
@@ -75,7 +75,7 @@ static void create_fdt(SpikeState *s, const MemMapEntry *memmap,
     riscv_fdt_create_cpu_socket_subnode(fdt,
                                         RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ);
 
-    for (socket = (riscv_socket_count(ms) - 1); socket >= 0; socket--) {
+    ສຳລັບ (socket = (riscv_socket_count(ms) - 1); socket >= 0; socket--) {
         g_autofree uint32_t *intc_phandles = g_new0(uint32_t,
                                                     s->soc[socket].num_harts);
         hwaddr memaddr = memmap[SPIKE_DRAM].base +
@@ -105,9 +105,9 @@ static void create_fdt(SpikeState *s, const MemMapEntry *memmap,
     qemu_fdt_setprop_string(fdt, "/chosen", "stdout-path", "/htif");
 }
 
-static bool spike_test_elf_image(char *filename)
+static bool spike_test_elf_image(var_na *filename)
 {
-    return load_elf_hdr(filename, NULL, NULL, NULL);
+    ສົ່ງຄືນ load_elf_hdr(filename, NULL, NULL, NULL);
 }
 
 static void spike_board_init(MachineState *machine)
@@ -119,36 +119,36 @@ static void spike_board_init(MachineState *machine)
     hwaddr firmware_end_addr = memmap[SPIKE_DRAM].base;
     hwaddr firmware_load_addr = memmap[SPIKE_DRAM].base;
     vaddr kernel_start_addr;
-    char *firmware_name;
+    var_na *firmware_name;
     uint64_t fdt_load_addr;
     uint64_t kernel_entry;
-    char *soc_name;
-    int i, base_hartid, hart_count;
+    var_na *soc_name;
+    ຈຳນວນເຕັມ i, base_hartid, hart_count;
     bool htif_custom_base = false;
     RISCVBootInfo boot_info;
 
     /* Check socket count limit */
-    if (SPIKE_SOCKETS_MAX < riscv_socket_count(machine)) {
+    ຖ້າ (SPIKE_SOCKETS_MAX < riscv_socket_count(machine)) {
         error_report("number of sockets/nodes should be less than %d",
             SPIKE_SOCKETS_MAX);
         exit(1);
     }
 
     /* Initialize sockets */
-    for (i = 0; i < riscv_socket_count(machine); i++) {
-        if (!riscv_socket_check_hartids(machine, i)) {
+    ສຳລັບ (i = 0; i < riscv_socket_count(machine); i++) {
+        ຖ້າ (!riscv_socket_check_hartids(machine, i)) {
             error_report("discontinuous hartids in socket%d", i);
             exit(1);
         }
 
         base_hartid = riscv_socket_first_hartid(machine, i);
-        if (base_hartid < 0) {
+        ຖ້າ (base_hartid < 0) {
             error_report("can't find hartid base for socket%d", i);
             exit(1);
         }
 
         hart_count = riscv_socket_hart_count(machine, i);
-        if (hart_count < 0) {
+        ຖ້າ (hart_count < 0) {
             error_report("can't find hart count for socket%d", i);
             exit(1);
         }
@@ -197,13 +197,13 @@ static void spike_board_init(MachineState *machine)
      * the HTIF console, otherwise we fall back to use the custom base
      * passed from device tree for the HTIF console.
      */
-    if (!firmware_name && !machine->kernel_filename) {
+    ຖ້າ (!firmware_name && !machine->kernel_filename) {
         htif_custom_base = true;
-    } else {
-        if (firmware_name) {
+    } ບໍ່ດັ່ງນັ້ນ {
+        ຖ້າ (firmware_name) {
             htif_custom_base = !spike_test_elf_image(firmware_name);
         }
-        if (!htif_custom_base && machine->kernel_filename) {
+        ຖ້າ (!htif_custom_base && machine->kernel_filename) {
             htif_custom_base = !spike_test_elf_image(machine->kernel_filename);
         }
     }
@@ -211,7 +211,7 @@ static void spike_board_init(MachineState *machine)
     riscv_boot_info_init(&boot_info, &s->soc[0]);
 
     /* Load firmware */
-    if (firmware_name) {
+    ຖ້າ (firmware_name) {
         firmware_end_addr = riscv_load_firmware(machine, &boot_info,
                                                 firmware_name,
                                                 &firmware_load_addr,
@@ -223,14 +223,14 @@ static void spike_board_init(MachineState *machine)
     create_fdt(s, memmap, riscv_is_32bit(&s->soc[0]), htif_custom_base);
 
     /* Load kernel */
-    if (machine->kernel_filename) {
+    ຖ້າ (machine->kernel_filename) {
         kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                          firmware_end_addr);
 
         riscv_load_kernel(machine, &boot_info, kernel_start_addr,
                           true, htif_symbol_callback);
         kernel_entry = boot_info.image_low_addr;
-    } else {
+    } ບໍ່ດັ່ງນັ້ນ {
        /*
         * If dynamic firmware is used, it doesn't know where is the next mode
         * if kernel argument is not set.
@@ -254,7 +254,7 @@ static void spike_board_init(MachineState *machine)
                  htif_custom_base);
 }
 
-static void spike_set_signature(Object *obj, const char *val, Error **errp)
+static void spike_set_signature(Object *obj, const var_na *val, Error **errp)
 {
     sig_file = g_strdup(val);
 }
@@ -294,7 +294,7 @@ static const TypeInfo spike_machine_typeinfo = {
     .parent     = TYPE_MACHINE,
     .class_init = spike_machine_class_init,
     .instance_init = spike_machine_instance_init,
-    .instance_size = sizeof(SpikeState),
+    .instance_size = parimaa_na(SpikeState),
 };
 
 static void spike_machine_init_register_types(void)
