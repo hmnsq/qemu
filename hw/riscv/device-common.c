@@ -6,54 +6,54 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#include "qemu/osdep.h"
+#ضمن "qemu/osdep.h"
 
-#include "hw/riscv/device-common.h"
+#ضمن "hw/riscv/device-common.h"
 
-#include "hw/block/flash.h"
-#include "hw/core/platform-bus.h"
-#include "hw/core/qdev.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/core/sysbus.h"
-#include "hw/pci/pci.h"
-#include "hw/pci-host/gpex.h"
-#include "qapi/error.h"
-#include "qom/object.h"
-#include "system/address-spaces.h"
-#include "system/memory.h"
+#ضمن "hw/block/flash.h"
+#ضمن "hw/core/platform-bus.h"
+#ضمن "hw/core/qdev.h"
+#ضمن "hw/core/qdev-properties.h"
+#ضمن "hw/core/sysbus.h"
+#ضمن "hw/pci/pci.h"
+#ضمن "hw/pci-host/gpex.h"
+#ضمن "qapi/error.h"
+#ضمن "qom/object.h"
+#ضمن "system/address-spaces.h"
+#ضمن "system/memory.h"
 
 
 DeviceState *riscv_create_platform_bus(DeviceState *irqchip,
-                                       const MemMapEntry *platform_bus_mem,
-                                       int platform_bus_base_irq,
-                                       int platform_bus_num_irqs)
+                                       ثابت Mem_Map_ثبت *platform_bus_mem,
+                                       صحيح platform_bus_بنسټ_irq,
+                                       صحيح platform_bus_عدد_irqs)
 {
-    MemoryRegion *sysmem = get_system_memory();
+    حافظه_Region *sysmem = get_system_حافظه();
     DeviceState *dev;
     SysBusDevice *sysbus;
 
     dev = qdev_new(TYPE_PLATFORM_BUS_DEVICE);
     dev->id = g_strdup(TYPE_PLATFORM_BUS_DEVICE);
-    qdev_prop_set_uint32(dev, "num_irqs", platform_bus_num_irqs);
-    qdev_prop_set_uint32(dev, "mmio_size", platform_bus_mem->size);
+    qdev_prop_سېټ_uint32(dev, "num_irqs", platform_bus_عدد_irqs);
+    qdev_prop_سېټ_uint32(dev, "mmio_size", platform_bus_mem->اندازه);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
     sysbus = SYS_BUS_DEVICE(dev);
-    for (int i = 0; i < platform_bus_num_irqs; i++) {
-        int irq = platform_bus_base_irq + i;
-        sysbus_connect_irq(sysbus, i, qdev_get_gpio_in(irqchip, irq));
+    لكل (صحيح i = 0; i < platform_bus_عدد_irqs; i++) {
+        صحيح irq = platform_bus_بنسټ_irq + i;
+        sysbus_connect_irq(sysbus, i, qdev_get_gpio_دننه(irqchip, irq));
     }
 
-    memory_region_add_subregion(sysmem,
-                                platform_bus_mem->base,
+    حافظه_region_جمع_کړه_subregion(sysmem,
+                                platform_bus_mem->بنسټ,
                                 sysbus_mmio_get_region(sysbus, 0));
 
-    return dev;
+    أرجع dev;
 }
 
-PFlashCFI01 *riscv_flash_create(Object *parent, const char *name,
-                                const char *alias_prop_name,
-                                int flash_sector_size)
+PFlashCFI01 *riscv_flash_create(Object *پلار, ثابت حرف *name,
+                                ثابت حرف *alias_prop_name,
+                                صحيح flash_sector_اندازه)
 {
     /*
      * Create a single flash device.  We use the same parameters as
@@ -61,108 +61,108 @@ PFlashCFI01 *riscv_flash_create(Object *parent, const char *name,
      */
     DeviceState *dev = qdev_new(TYPE_PFLASH_CFI01);
 
-    qdev_prop_set_uint64(dev, "sector-length", flash_sector_size);
-    qdev_prop_set_uint8(dev, "width", 4);
-    qdev_prop_set_uint8(dev, "device-width", 2);
-    qdev_prop_set_bit(dev, "big-endian", false);
-    qdev_prop_set_uint16(dev, "id0", 0x89);
-    qdev_prop_set_uint16(dev, "id1", 0x18);
-    qdev_prop_set_uint16(dev, "id2", 0x00);
-    qdev_prop_set_uint16(dev, "id3", 0x00);
-    qdev_prop_set_string(dev, "name", name);
+    qdev_prop_سېټ_uint64(dev, "sector-length", flash_sector_اندازه);
+    qdev_prop_سېټ_uint8(dev, "width", 4);
+    qdev_prop_سېټ_uint8(dev, "device-width", 2);
+    qdev_prop_سېټ_بټ(dev, "big-endian", false);
+    qdev_prop_سېټ_uint16(dev, "id0", 0x89);
+    qdev_prop_سېټ_uint16(dev, "id1", 0x18);
+    qdev_prop_سېټ_uint16(dev, "id2", 0x00);
+    qdev_prop_سېټ_uint16(dev, "id3", 0x00);
+    qdev_prop_سېټ_string(dev, "name", name);
 
-    object_property_add_child(parent, name, OBJECT(dev));
-    object_property_add_alias(parent, alias_prop_name,
+    object_property_جمع_کړه_ماشوم(پلار, name, OBJECT(dev));
+    object_property_جمع_کړه_alias(پلار, alias_prop_name,
                               OBJECT(dev), "drive");
 
-    return PFLASH_CFI01(dev);
+    أرجع PFLASH_CFI01(dev);
 }
 
-void riscv_init_flash_map(PFlashCFI01 *flash, hwaddr base, hwaddr size,
-                          MemoryRegion *sysmem, int flash_sector_size)
+فراغ riscv_init_flash_map(PFlashCFI01 *flash, hwaddr بنسټ, hwaddr اندازه,
+                          حافظه_Region *sysmem, صحيح flash_sector_اندازه)
 {
     DeviceState *dev = DEVICE(flash);
 
-    assert(QEMU_IS_ALIGNED(size, flash_sector_size));
-    assert(size / flash_sector_size <= UINT32_MAX);
+    أكد(QEMU_IS_ALIGNED(اندازه, flash_sector_اندازه));
+    أكد(اندازه / flash_sector_اندازه <= UINT32_MAX);
 
-    qdev_prop_set_uint32(dev, "num-blocks", size / flash_sector_size);
+    qdev_prop_سېټ_uint32(dev, "num-blocks", اندازه / flash_sector_اندازه);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
-    memory_region_add_subregion(sysmem, base,
+    حافظه_region_جمع_کړه_subregion(sysmem, بنسټ,
                             sysbus_mmio_get_region(SYS_BUS_DEVICE(dev), 0));
 }
 
-DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
+DeviceState *riscv_gpex_pcie_init(حافظه_Region *sys_mem,
                                   DeviceState *irqchip,
-                                  const MemMapEntry *pcie_ecam_mem,
-                                  const MemMapEntry *pcie_mmio_mem,
-                                  const MemMapEntry *high_pcie_mmio_mem,
-                                  const MemMapEntry *pcie_pio_mem,
-                                  int pcie_irq)
+                                  ثابت Mem_Map_ثبت *pcie_ecam_mem,
+                                  ثابت Mem_Map_ثبت *pcie_mmio_mem,
+                                  ثابت Mem_Map_ثبت *لوړ_pcie_mmio_mem,
+                                  ثابت Mem_Map_ثبت *pcie_pio_mem,
+                                  صحيح pcie_irq)
 {
     DeviceState *dev;
-    MemoryRegion *ecam_alias, *ecam_reg;
-    MemoryRegion *mmio_alias, *high_mmio_alias, *mmio_reg;
-    hwaddr ecam_base = pcie_ecam_mem->base;
-    hwaddr ecam_size = pcie_ecam_mem->size;
-    hwaddr mmio_base = pcie_mmio_mem->base;
-    hwaddr mmio_size = pcie_mmio_mem->size;
-    hwaddr high_mmio_base = high_pcie_mmio_mem->base;
-    hwaddr high_mmio_size = high_pcie_mmio_mem->size;
-    hwaddr pio_base = pcie_pio_mem->base;
-    hwaddr pio_size = pcie_pio_mem->size;
+    حافظه_Region *ecam_alias, *ecam_reg;
+    حافظه_Region *mmio_alias, *لوړ_mmio_alias, *mmio_reg;
+    hwaddr ecam_بنسټ = pcie_ecam_mem->بنسټ;
+    hwaddr ecam_اندازه = pcie_ecam_mem->اندازه;
+    hwaddr mmio_بنسټ = pcie_mmio_mem->بنسټ;
+    hwaddr mmio_اندازه = pcie_mmio_mem->اندازه;
+    hwaddr لوړ_mmio_بنسټ = لوړ_pcie_mmio_mem->بنسټ;
+    hwaddr لوړ_mmio_اندازه = لوړ_pcie_mmio_mem->اندازه;
+    hwaddr pio_بنسټ = pcie_pio_mem->بنسټ;
+    hwaddr pio_اندازه = pcie_pio_mem->اندازه;
 
     dev = qdev_new(TYPE_GPEX_HOST);
 
     /* Set GPEX object properties for the virt machine */
-    object_property_set_uint(OBJECT(dev), PCI_HOST_ECAM_BASE,
-                            ecam_base, NULL);
-    object_property_set_int(OBJECT(dev), PCI_HOST_ECAM_SIZE,
-                            ecam_size, NULL);
-    object_property_set_uint(OBJECT(dev), PCI_HOST_BELOW_4G_MMIO_BASE,
-                             mmio_base, NULL);
-    object_property_set_int(OBJECT(dev), PCI_HOST_BELOW_4G_MMIO_SIZE,
-                            mmio_size, NULL);
-    object_property_set_uint(OBJECT(dev), PCI_HOST_ABOVE_4G_MMIO_BASE,
-                             high_mmio_base, NULL);
-    object_property_set_int(OBJECT(dev), PCI_HOST_ABOVE_4G_MMIO_SIZE,
-                            high_mmio_size, NULL);
-    object_property_set_uint(OBJECT(dev), PCI_HOST_PIO_BASE,
-                            pio_base, NULL);
-    object_property_set_int(OBJECT(dev), PCI_HOST_PIO_SIZE,
-                            pio_size, NULL);
+    object_property_سېټ_uint(OBJECT(dev), PCI_HOST_ECAM_بنسټ,
+                            ecam_بنسټ, عدم);
+    object_property_سېټ_int(OBJECT(dev), PCI_HOST_ECAM_اندازه,
+                            ecam_اندازه, عدم);
+    object_property_سېټ_uint(OBJECT(dev), PCI_HOST_لاندې_4_G_MMIO_بنسټ,
+                             mmio_بنسټ, عدم);
+    object_property_سېټ_int(OBJECT(dev), PCI_HOST_لاندې_4_G_MMIO_اندازه,
+                            mmio_اندازه, عدم);
+    object_property_سېټ_uint(OBJECT(dev), PCI_HOST_ABOVE_4_G_MMIO_بنسټ,
+                             لوړ_mmio_بنسټ, عدم);
+    object_property_سېټ_int(OBJECT(dev), PCI_HOST_ABOVE_4_G_MMIO_اندازه,
+                            لوړ_mmio_اندازه, عدم);
+    object_property_سېټ_uint(OBJECT(dev), PCI_HOST_PIO_بنسټ,
+                            pio_بنسټ, عدم);
+    object_property_سېټ_int(OBJECT(dev), PCI_HOST_PIO_اندازه,
+                            pio_اندازه, عدم);
 
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
-    ecam_alias = g_new0(MemoryRegion, 1);
+    ecam_alias = g_new0(حافظه_Region, 1);
     ecam_reg = sysbus_mmio_get_region(SYS_BUS_DEVICE(dev), 0);
-    memory_region_init_alias(ecam_alias, OBJECT(dev), "pcie-ecam",
-                             ecam_reg, 0, ecam_size);
-    memory_region_add_subregion(get_system_memory(), ecam_base, ecam_alias);
+    حافظه_region_init_alias(ecam_alias, OBJECT(dev), "pcie-ecam",
+                             ecam_reg, 0, ecam_اندازه);
+    حافظه_region_جمع_کړه_subregion(get_system_حافظه(), ecam_بنسټ, ecam_alias);
 
-    mmio_alias = g_new0(MemoryRegion, 1);
+    mmio_alias = g_new0(حافظه_Region, 1);
     mmio_reg = sysbus_mmio_get_region(SYS_BUS_DEVICE(dev), 1);
-    memory_region_init_alias(mmio_alias, OBJECT(dev), "pcie-mmio",
-                             mmio_reg, mmio_base, mmio_size);
-    memory_region_add_subregion(get_system_memory(), mmio_base, mmio_alias);
+    حافظه_region_init_alias(mmio_alias, OBJECT(dev), "pcie-mmio",
+                             mmio_reg, mmio_بنسټ, mmio_اندازه);
+    حافظه_region_جمع_کړه_subregion(get_system_حافظه(), mmio_بنسټ, mmio_alias);
 
     /* Map high MMIO space */
-    high_mmio_alias = g_new0(MemoryRegion, 1);
-    memory_region_init_alias(high_mmio_alias, OBJECT(dev), "pcie-mmio-high",
-                             mmio_reg, high_mmio_base, high_mmio_size);
-    memory_region_add_subregion(get_system_memory(), high_mmio_base,
-                                high_mmio_alias);
+    لوړ_mmio_alias = g_new0(حافظه_Region, 1);
+    حافظه_region_init_alias(لوړ_mmio_alias, OBJECT(dev), "pcie-mmio-high",
+                             mmio_reg, لوړ_mmio_بنسټ, لوړ_mmio_اندازه);
+    حافظه_region_جمع_کړه_subregion(get_system_حافظه(), لوړ_mmio_بنسټ,
+                                لوړ_mmio_alias);
 
-    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 2, pio_base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(dev), 2, pio_بنسټ);
 
-    for (int i = 0; i < PCI_NUM_PINS; i++) {
-        qemu_irq irq = qdev_get_gpio_in(irqchip, pcie_irq + i);
+    لكل (صحيح i = 0; i < PCI_عدد_PINS; i++) {
+        qemu_irq irq = qdev_get_gpio_دننه(irqchip, pcie_irq + i);
 
         sysbus_connect_irq(SYS_BUS_DEVICE(dev), i, irq);
-        gpex_set_irq_num(GPEX_HOST(dev), i, pcie_irq + i);
+        gpex_سېټ_irq_عدد(GPEX_HOST(dev), i, pcie_irq + i);
     }
 
     GPEX_HOST(dev)->gpex_cfg.bus = PCI_HOST_BRIDGE(dev)->bus;
-    return dev;
+    أرجع dev;
 }

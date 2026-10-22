@@ -6,52 +6,52 @@
  * Copyright 2025 Tenstorrent, Joel Stanley <joel@jms.id.au>
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "qemu/cutils.h"
-#include "qemu/error-report.h"
-#include "qemu/guest-random.h"
-#include "qemu/units.h"
+#ضمن "qemu/osdep.h"
+#ضمن "qapi/error.h"
+#ضمن "qemu/cutils.h"
+#ضمن "qemu/error-report.h"
+#ضمن "qemu/guest-random.h"
+#ضمن "qemu/units.h"
 
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/core/sysbus.h"
+#ضمن "hw/core/boards.h"
+#ضمن "hw/core/loader.h"
+#ضمن "hw/core/qdev-properties.h"
+#ضمن "hw/core/sysbus.h"
 
-#include "target/riscv/cpu.h"
+#ضمن "target/riscv/cpu.h"
 
-#include "hw/riscv/boot.h"
-#include "hw/riscv/fdt-common.h"
-#include "hw/riscv/riscv_hart.h"
+#ضمن "hw/riscv/boot.h"
+#ضمن "hw/riscv/fdt-common.h"
+#ضمن "hw/riscv/riscv_hart.h"
 
-#include "hw/char/serial-mm.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/misc/unimp.h"
-#include "hw/misc/tt_atlantis_prcm.h"
+#ضمن "hw/char/serial-mm.h"
+#ضمن "hw/intc/riscv_aclint.h"
+#ضمن "hw/misc/unimp.h"
+#ضمن "hw/misc/tt_atlantis_prcm.h"
 
-#include "system/system.h"
-#include "system/device_tree.h"
+#ضمن "system/system.h"
+#ضمن "system/device_tree.h"
 
-#include "hw/riscv/tt_atlantis.h"
+#ضمن "hw/riscv/tt_atlantis.h"
 
-#include "aia.h"
+#ضمن "aia.h"
 
-#define TT_IRQCHIP_NUM_MSIS       255
-#define TT_IRQCHIP_NUM_SOURCES    128
-#define TT_IRQCHIP_NUM_PRIO_BITS  3
-#define TT_IMSIC_GUESTS           5
-#define TT_IMSIC_STRIDE           0x40000 /* Same stride for M and S */
-#define TT_IMSIC_GUEST_BITS       6
+#تعریف_کړه TT_IRQCHIP_عدد_MSIS       255
+#تعریف_کړه TT_IRQCHIP_عدد_SOURCES    128
+#تعریف_کړه TT_IRQCHIP_عدد_PRIO_بټونه  3
+#تعریف_کړه TT_IMSIC_GUESTS           5
+#تعریف_کړه TT_IMSIC_STRIDE           0x40000 /* Same stride for M and S */
+#تعریف_کړه TT_IMSIC_GUEST_بټونه       6
 
 /* Stride is fixed by hardware, check it's consistent with guest bits. */
-QEMU_BUILD_BUG_ON(TT_IMSIC_STRIDE != (0x1000 << TT_IMSIC_GUEST_BITS));
+QEMU_BUILD_BUG_ON(TT_IMSIC_STRIDE != (0x1000 << TT_IMSIC_GUEST_بټونه));
 
-#define TT_ACLINT_MTIME_SIZE    0x8050
-#define TT_ACLINT_MTIME         0x0
-#define TT_ACLINT_MTIMECMP      0x8000
-#define TT_ACLINT_TIMEBASE_FREQ 1000000000
+#تعریف_کړه TT_ACLINT_MTIME_اندازه    0x8050
+#تعریف_کړه TT_ACLINT_MTIME         0x0
+#تعریف_کړه TT_ACLINT_MTIMECMP      0x8000
+#تعریف_کړه TT_ACLINT_TIMEBASE_FREQ 1000000000
 
-static const MemMapEntry tt_atlantis_memmap[] = {
+ساكن ثابت Mem_Map_ثبت tt_atlantis_memmap[] = {
     /* Keep sorted with :'<,'>!sort -g -k 4 */
     [TT_ATL_DDR_LO] =           { 0x00000000,    0x80000000 },
     [TT_ATL_BOOTROM] =          { 0x80000000,        0x2000 },
@@ -73,64 +73,64 @@ static const MemMapEntry tt_atlantis_memmap[] = {
     [TT_ATL_DDR_HI] =          { 0x100000000,  0x1000000000 },
 };
 
-static I2CBus *i2c_get_bus(TTAtlantisSoCState *s, unsigned busnr)
+ساكن I2CBus *i2c_get_bus(TTAtlantisSoCState *s, بینښه busnr)
 {
-    assert(busnr < TT_ATL_NUM_I2C);
+    أكد(busnr < TT_ATL_عدد_I2_C);
 
-    return s->i2c[busnr].bus;
+    أرجع s->i2c[busnr].bus;
 }
 
-static uint32_t fdt_phandle = 1;
-static uint32_t next_phandle(void)
+ساكن uint32_t fdt_phandle = 1;
+ساكن uint32_t بل_phandle(فراغ)
 {
-    return fdt_phandle++;
+    أرجع fdt_phandle++;
 }
 
-static void create_fdt_memory(void *fdt, TTAtlantisSoCState *s)
+ساكن فراغ create_fdt_حافظه(فراغ *fdt, TTAtlantisSoCState *s)
 {
-    hwaddr ram_size = memory_region_size(s->dram);
-    hwaddr size_lo = ram_size;
-    hwaddr size_hi = 0;
+    hwaddr ram_اندازه = حافظه_region_اندازه(s->dram);
+    hwaddr اندازه_lo = ram_اندازه;
+    hwaddr اندازه_hi = 0;
 
-    if (size_lo > s->memmap[TT_ATL_DDR_LO].size) {
-        size_lo = s->memmap[TT_ATL_DDR_LO].size;
-        size_hi = ram_size - size_lo;
+    إذا (اندازه_lo > s->memmap[TT_ATL_DDR_LO].اندازه) {
+        اندازه_lo = s->memmap[TT_ATL_DDR_LO].اندازه;
+        اندازه_hi = ram_اندازه - اندازه_lo;
     }
 
-    riscv_create_fdt_socket_memory(fdt, s->memmap[TT_ATL_DDR_LO].base,
-                                   size_lo, 0, false);
-    if (size_hi) {
+    riscv_create_fdt_socket_حافظه(fdt, s->memmap[TT_ATL_DDR_LO].بنسټ,
+                                   اندازه_lo, 0, false);
+    إذا (اندازه_hi) {
         /*
          * The first part of the HI address is aliased at the LO address
          * so do not include that as usable memory. Is there any way
          * (or good reason) to describe that aliasing 2GB with DT?
          */
-        riscv_create_fdt_socket_memory(fdt,
-                                       s->memmap[TT_ATL_DDR_HI].base + size_lo,
-                                       size_hi, 0, false);
+        riscv_create_fdt_socket_حافظه(fdt,
+                                       s->memmap[TT_ATL_DDR_HI].بنسټ + اندازه_lo,
+                                       اندازه_hi, 0, false);
     }
 }
 
-static void create_fdt_aclint(void *fdt, TTAtlantisSoCState *s,
+ساكن فراغ create_fdt_aclint(فراغ *fdt, TTAtlantisSoCState *s,
                               uint32_t *intc_phandles)
 {
-    g_autofree char *name = NULL;
-    g_autofree uint32_t *aclint_mtimer_cells = NULL;
-    uint32_t aclint_cells_size;
+    g_autofree حرف *name = عدم;
+    g_autofree uint32_t *aclint_mtimer_cells = عدم;
+    uint32_t aclint_cells_اندازه;
     hwaddr addr;
 
-    aclint_mtimer_cells = g_new0(uint32_t, s->cpus.num_harts * 2);
+    aclint_mtimer_cells = g_new0(uint32_t, s->cpus.عدد_harts * 2);
 
-    for (int cpu = 0; cpu < s->cpus.num_harts; cpu++) {
-        aclint_mtimer_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aclint_mtimer_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_M_TIMER);
+    لكل (صحيح cpu = 0; cpu < s->cpus.عدد_harts; cpu++) {
+        aclint_mtimer_cells[cpu * 2 + 0] = cpu_منزل_be32(intc_phandles[cpu]);
+        aclint_mtimer_cells[cpu * 2 + 1] = cpu_منزل_be32(IRQ_M_TIMER);
     }
-    aclint_cells_size = s->cpus.num_harts * sizeof(uint32_t) * 2;
+    aclint_cells_اندازه = s->cpus.عدد_harts * حجم(uint32_t) * 2;
 
-    addr = s->memmap[TT_ATL_ACLINT].base;
+    addr = s->memmap[TT_ATL_ACLINT].بنسټ;
 
     name = g_strdup_printf("/soc/mtimer@%"HWADDR_PRIX, addr);
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_جمع_کړه_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,aclint-mtimer");
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
                                  2, addr + TT_ACLINT_MTIME,
@@ -138,145 +138,145 @@ static void create_fdt_aclint(void *fdt, TTAtlantisSoCState *s,
                                  2, addr + TT_ACLINT_MTIMECMP,
                                  2, 0x1000);
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     aclint_mtimer_cells, aclint_cells_size);
+                     aclint_mtimer_cells, aclint_cells_اندازه);
 }
 
-static void create_fdt_one_imsic(void *fdt, const MemMapEntry *mem, int cpus,
+ساكن فراغ create_fdt_one_imsic(فراغ *fdt, ثابت Mem_Map_ثبت *mem, صحيح cpus,
                                  uint32_t *intc_phandles, uint32_t msi_phandle,
-                                 int irq_line, uint32_t imsic_guest_bits)
+                                 صحيح irq_کرښه, uint32_t imsic_guest_بټونه)
 {
-    g_autofree char *name = NULL;
+    g_autofree حرف *name = عدم;
     g_autofree uint32_t *imsic_cells = g_new0(uint32_t, cpus * 2);
 
-    for (int cpu = 0; cpu < cpus; cpu++) {
-        imsic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        imsic_cells[cpu * 2 + 1] = cpu_to_be32(irq_line);
+    لكل (صحيح cpu = 0; cpu < cpus; cpu++) {
+        imsic_cells[cpu * 2 + 0] = cpu_منزل_be32(intc_phandles[cpu]);
+        imsic_cells[cpu * 2 + 1] = cpu_منزل_be32(irq_کرښه);
     }
 
-    name = g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->base);
-    qemu_fdt_add_subnode(fdt, name);
+    name = g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->بنسټ);
+    qemu_fdt_جمع_کړه_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,imsics");
 
     qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 0);
-    qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
-    qemu_fdt_setprop(fdt, name, "msi-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, name, "interrupt-controller", عدم, 0);
+    qemu_fdt_setprop(fdt, name, "msi-controller", عدم, 0);
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     imsic_cells, sizeof(uint32_t) * cpus * 2);
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
-    qemu_fdt_setprop_cell(fdt, name, "riscv,num-ids", TT_IRQCHIP_NUM_MSIS);
+                     imsic_cells, حجم(uint32_t) * cpus * 2);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->بنسټ, 2, mem->اندازه);
+    qemu_fdt_setprop_cell(fdt, name, "riscv,num-ids", TT_IRQCHIP_عدد_MSIS);
 
-    if (imsic_guest_bits) {
+    إذا (imsic_guest_بټونه) {
         qemu_fdt_setprop_cell(fdt, name, "riscv,guest-index-bits",
-                              imsic_guest_bits);
+                              imsic_guest_بټونه);
     }
     qemu_fdt_setprop_cell(fdt, name, "phandle", msi_phandle);
 }
 
-static void create_fdt_one_aplic(void *fdt,
-                                 const MemMapEntry *mem,
+ساكن فراغ create_fdt_one_aplic(فراغ *fdt,
+                                 ثابت Mem_Map_ثبت *mem,
                                  uint32_t msi_phandle,
                                  uint32_t *intc_phandles,
                                  uint32_t aplic_phandle,
-                                 uint32_t aplic_child_phandle,
-                                 int irq_line, int num_harts)
+                                 uint32_t aplic_ماشوم_phandle,
+                                 صحيح irq_کرښه, صحيح عدد_harts)
 {
-    g_autofree char *name =
-        g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->base);
-    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, num_harts * 2);
+    g_autofree حرف *name =
+        g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->بنسټ);
+    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, عدد_harts * 2);
 
-    for (int cpu = 0; cpu < num_harts; cpu++) {
-        aplic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aplic_cells[cpu * 2 + 1] = cpu_to_be32(irq_line);
+    لكل (صحيح cpu = 0; cpu < عدد_harts; cpu++) {
+        aplic_cells[cpu * 2 + 0] = cpu_منزل_be32(intc_phandles[cpu]);
+        aplic_cells[cpu * 2 + 1] = cpu_منزل_be32(irq_کرښه);
     }
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_جمع_کړه_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,aplic");
     qemu_fdt_setprop_cell(fdt, name, "#address-cells", 0);
     qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 2);
-    qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, name, "interrupt-controller", عدم, 0);
 
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     aplic_cells, num_harts * sizeof(uint32_t) * 2);
+                     aplic_cells, عدد_harts * حجم(uint32_t) * 2);
     qemu_fdt_setprop_cell(fdt, name, "msi-parent", msi_phandle);
 
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->بنسټ, 2, mem->اندازه);
     qemu_fdt_setprop_cell(fdt, name, "riscv,num-sources",
-                          TT_IRQCHIP_NUM_SOURCES);
+                          TT_IRQCHIP_عدد_SOURCES);
 
-    if (aplic_child_phandle) {
+    إذا (aplic_ماشوم_phandle) {
         qemu_fdt_setprop_cell(fdt, name, "riscv,children",
-                              aplic_child_phandle);
+                              aplic_ماشوم_phandle);
         qemu_fdt_setprop_cells(fdt, name, "riscv,delegation",
-                               aplic_child_phandle, 1, TT_IRQCHIP_NUM_SOURCES);
+                               aplic_ماشوم_phandle, 1, TT_IRQCHIP_عدد_SOURCES);
     }
 
     qemu_fdt_setprop_cell(fdt, name, "phandle", aplic_phandle);
 }
 
-static void create_fdt_pmu(void *fdt, TTAtlantisSoCState *s)
+ساكن فراغ create_fdt_pmu(فراغ *fdt, TTAtlantisSoCState *s)
 {
-    char pmu_name[] = "/pmu";
+    حرف pmu_name[] = "/pmu";
     RISCVCPU *hart = &s->cpus.harts[0];
 
-    qemu_fdt_add_subnode(fdt, pmu_name);
+    qemu_fdt_جمع_کړه_subnode(fdt, pmu_name);
     qemu_fdt_setprop_string(fdt, pmu_name, "compatible", "riscv,pmu");
-    riscv_pmu_generate_fdt_node(fdt, hart->pmu_avail_ctrs, pmu_name);
+    riscv_pmu_generate_fdt_غوټه(fdt, hart->pmu_avail_ctrs, pmu_name);
 }
 
-static void create_fdt_cpu(void *fdt, TTAtlantisSoCState *s,
+ساكن فراغ create_fdt_cpu(فراغ *fdt, TTAtlantisSoCState *s,
                            uint32_t aplic_s_phandle,
                            uint32_t imsic_s_phandle)
 {
-    g_autofree uint32_t *intc_phandles = g_new0(uint32_t, s->cpus.num_harts);
-    int num_harts = s->cpus.num_harts;
+    g_autofree uint32_t *intc_phandles = g_new0(uint32_t, s->cpus.عدد_harts);
+    صحيح عدد_harts = s->cpus.عدد_harts;
 
     riscv_fdt_create_cpu_socket_subnode(fdt, TT_ACLINT_TIMEBASE_FREQ);
 
-    riscv_create_fdt_socket_cpus(fdt, s->cpus.harts, 0, num_harts,
-                                 s->cpus.hartid_base, &fdt_phandle,
+    riscv_create_fdt_socket_cpus(fdt, s->cpus.harts, 0, عدد_harts,
+                                 s->cpus.hartid_بنسټ, &fdt_phandle,
                                  intc_phandles, false, false);
 
     create_fdt_aclint(fdt, s, intc_phandles);
 
     /* M-level IMSIC node */
-    uint32_t msi_m_phandle = next_phandle();
-    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_MIMSIC], num_harts,
+    uint32_t msi_m_phandle = بل_phandle();
+    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_MIMSIC], عدد_harts,
                          intc_phandles, msi_m_phandle,
-                         IRQ_M_EXT, TT_IMSIC_GUEST_BITS);
+                         IRQ_M_EXT, TT_IMSIC_GUEST_بټونه);
 
     /* S-level IMSIC node */
-    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_SIMSIC], num_harts,
+    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_SIMSIC], عدد_harts,
                          intc_phandles, imsic_s_phandle,
-                         IRQ_S_EXT, TT_IMSIC_GUEST_BITS);
+                         IRQ_S_EXT, TT_IMSIC_GUEST_بټونه);
 
-    uint32_t aplic_m_phandle = next_phandle();
+    uint32_t aplic_m_phandle = بل_phandle();
 
     /* M-level APLIC node */
     create_fdt_one_aplic(fdt, &s->memmap[TT_ATL_MAPLIC],
                          msi_m_phandle, intc_phandles,
                          aplic_m_phandle, aplic_s_phandle,
-                         IRQ_M_EXT, num_harts);
+                         IRQ_M_EXT, عدد_harts);
 
     /* S-level APLIC node */
     create_fdt_one_aplic(fdt, &s->memmap[TT_ATL_SAPLIC],
                          imsic_s_phandle, intc_phandles,
                          aplic_s_phandle, 0,
-                         IRQ_S_EXT, num_harts);
+                         IRQ_S_EXT, عدد_harts);
 }
 
-static void create_fdt_uart(void *fdt, const MemMapEntry *mem, int irq,
-                            int irqchip_phandle, uint32_t clk_parent_phandle,
+ساكن فراغ create_fdt_uart(فراغ *fdt, ثابت Mem_Map_ثبت *mem, صحيح irq,
+                            صحيح irqchip_phandle, uint32_t clk_پلار_phandle,
                             uint32_t clk_phandle)
 {
-    g_autofree char *name = g_strdup_printf("/soc/serial@%"HWADDR_PRIX,
-                                            mem->base);
+    g_autofree حرف *name = g_strdup_printf("/soc/serial@%"HWADDR_PRIX,
+                                            mem->بنسټ);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_جمع_کړه_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "ns16550a");
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->بنسټ, 2, mem->اندازه);
     qemu_fdt_setprop_cell(fdt, name, "reg-shift", 2);
     qemu_fdt_setprop_cell(fdt, name, "reg-io-width", 4);
-    qemu_fdt_setprop_cells(fdt, name, "clocks", clk_parent_phandle,
+    qemu_fdt_setprop_cells(fdt, name, "clocks", clk_پلار_phandle,
                            clk_phandle);
     qemu_fdt_setprop_cell(fdt, name, "clock-frequency", 3686400);
     qemu_fdt_setprop_cell(fdt, name, "interrupt-parent", irqchip_phandle);
@@ -286,20 +286,20 @@ static void create_fdt_uart(void *fdt, const MemMapEntry *mem, int irq,
     qemu_fdt_setprop_string(fdt, "/aliases", "serial0", name);
 }
 
-static void create_fdt_rng(void *fdt)
+ساكن فراغ create_fdt_rng(فراغ *fdt)
 {
-    uint8_t rng_seed[32];
+    uint8_t rng_تخم[32];
 
-    qemu_guest_getrandom_nofail(rng_seed, sizeof(rng_seed));
-    qemu_fdt_setprop(fdt, "/chosen", "rng-seed", rng_seed, sizeof(rng_seed));
+    qemu_guest_getrandom_nofail(rng_تخم, حجم(rng_تخم));
+    qemu_fdt_setprop(fdt, "/chosen", "rng-seed", rng_تخم, حجم(rng_تخم));
 }
 
-static void create_fdt_clk(void *fdt, const char *clock_name,
+ساكن فراغ create_fdt_clk(فراغ *fdt, ثابت حرف *clock_name,
                            uint32_t freq, uint32_t phandle)
 {
-    g_autofree char *name = g_strdup_printf("/clocks/%s", clock_name);
+    g_autofree حرف *name = g_strdup_printf("/clocks/%s", clock_name);
 
-    qemu_fdt_add_path(fdt, name);
+    qemu_fdt_جمع_کړه_لار(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "fixed-clock");
     qemu_fdt_setprop_string(fdt, name, "clock-output-names", clock_name);
     qemu_fdt_setprop_cell(fdt, name, "#clock-cells", 0);
@@ -307,68 +307,68 @@ static void create_fdt_clk(void *fdt, const char *clock_name,
     qemu_fdt_setprop_cell(fdt, name, "phandle", phandle);
 }
 
-static void create_fdt_i2c(void *fdt, const MemMapEntry *mem, uint32_t irq,
+ساكن فراغ create_fdt_i2c(فراغ *fdt, ثابت Mem_Map_ثبت *mem, uint32_t irq,
                            uint32_t irqchip_phandle,
-                           uint32_t clk_parent_phandle,
+                           uint32_t clk_پلار_phandle,
                            uint32_t clk_phandle)
 {
-    g_autofree char *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX, mem->base);
+    g_autofree حرف *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX, mem->بنسټ);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_جمع_کړه_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "snps,designware-i2c");
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->بنسټ, 2, mem->اندازه);
     qemu_fdt_setprop_cell(fdt, name, "interrupt-parent", irqchip_phandle);
     qemu_fdt_setprop_cells(fdt, name, "interrupts", irq, 0x4);
-    qemu_fdt_setprop_cells(fdt, name, "clocks", clk_parent_phandle,
+    qemu_fdt_setprop_cells(fdt, name, "clocks", clk_پلار_phandle,
                            clk_phandle);
     qemu_fdt_setprop_cell(fdt, name, "clock-frequency", 100000);
     qemu_fdt_setprop_cell(fdt, name, "#address-cells", 1);
     qemu_fdt_setprop_cell(fdt, name, "#size-cells", 0);
 }
 
-static void create_fdt_i2c_device(void *fdt, TTAtlantisSoCState *s, int bus,
-                                  const char *compat, int addr)
+ساكن فراغ create_fdt_i2c_device(فراغ *fdt, TTAtlantisSoCState *s, صحيح bus,
+                                  ثابت حرف *compat, صحيح addr)
 {
-    hwaddr base = s->memmap[TT_ATL_I2C0 + bus].base;
-    g_autofree char *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX"/sensor@%x",
-                                            base, addr);
+    hwaddr بنسټ = s->memmap[TT_ATL_I2C0 + bus].بنسټ;
+    g_autofree حرف *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX"/sensor@%x",
+                                            بنسټ, addr);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_جمع_کړه_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", compat);
     qemu_fdt_setprop_cell(fdt, name, "reg", addr);
 }
 
-static char *create_fdt_prcm(void *fdt, const MemMapEntry *mem,
-                             const char *prcm_name)
+ساكن حرف *create_fdt_prcm(فراغ *fdt, ثابت Mem_Map_ثبت *mem,
+                             ثابت حرف *prcm_name)
 {
-    hwaddr base = mem->base;
-    hwaddr size = mem->size;
-    char *name = g_strdup_printf("/soc/clock-controller@%" PRIx64,
-                                 base);
-    g_autofree char *compatible =
+    hwaddr بنسټ = mem->بنسټ;
+    hwaddr اندازه = mem->اندازه;
+    حرف *name = g_strdup_printf("/soc/clock-controller@%" PRIx64,
+                                 بنسټ);
+    g_autofree حرف *compatible =
         g_strdup_printf("tenstorrent,atlantis-prcm-%s", prcm_name);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_جمع_کړه_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", compatible);
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, base, 2, size);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, بنسټ, 2, اندازه);
     qemu_fdt_setprop_cell(fdt, name, "#clock-cells", 1);
     qemu_fdt_setprop_cell(fdt, name, "#reset-cells", 1);
-    qemu_fdt_setprop_cell(fdt, name, "phandle", next_phandle());
+    qemu_fdt_setprop_cell(fdt, name, "phandle", بل_phandle());
 
-    return name;
+    أرجع name;
 }
 
-static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
+ساكن فراغ finalize_fdt(فراغ *fdt, TTAtlantisSoCState *s)
 {
-    uint32_t aplic_s_phandle = next_phandle();
-    uint32_t imsic_s_phandle = next_phandle();
-    uint32_t osc_24m_phandle = next_phandle();
+    uint32_t aplic_s_phandle = بل_phandle();
+    uint32_t imsic_s_phandle = بل_phandle();
+    uint32_t osc_24m_phandle = بل_phandle();
     uint32_t prcm_rcpu_phandle;
-    g_autofree char *rcpu_name, *hsio_name, *pcie_name, *mm_name;
+    g_autofree حرف *rcpu_name, *hsio_name, *pcie_name, *mm_name;
 
     create_fdt_cpu(fdt, s, aplic_s_phandle, imsic_s_phandle);
 
-    create_fdt_memory(fdt, s);
+    create_fdt_حافظه(fdt, s);
 
     /*
      * We want to do this, but the Linux aplic driver was broken before v6.16
@@ -383,7 +383,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     prcm_rcpu_phandle = qemu_fdt_get_phandle(fdt, rcpu_name);
     qemu_fdt_setprop_cells(fdt, rcpu_name, "clocks", osc_24m_phandle);
     qemu_fdt_setprop_cells(fdt, rcpu_name, "assigned-clocks",
-                           prcm_rcpu_phandle, TT_ATL_CLK_RCPU_ROOT,
+                           prcm_rcpu_phandle, TT_ATL_CLK_RCPU_ریښه,
                            prcm_rcpu_phandle, TT_ATL_CLK_NOCC_CLK);
     qemu_fdt_setprop_cells(fdt, rcpu_name, "assigned-clock-parents",
                            prcm_rcpu_phandle, TT_ATL_CLK_RCPU_PLL,
@@ -405,7 +405,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     create_fdt_uart(fdt, &s->memmap[TT_ATL_UART1], TT_ATL_UART1_IRQ,
                     aplic_s_phandle, prcm_rcpu_phandle, TT_ATL_CLK_UART1_PCLK);
 
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    لكل (صحيح i = 0; i < TT_ATL_عدد_I2_C; i++) {
         create_fdt_i2c(fdt,
                        &s->memmap[TT_ATL_I2C0 + i],
                        TT_ATL_I2C0_IRQ + i,
@@ -418,206 +418,206 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     create_fdt_i2c_device(fdt, s, 4, "ti,tmp105", 0x48);
 }
 
-static void create_fdt(TTAtlantisState *ams)
+ساكن فراغ create_fdt(TTAtlantisState *ams)
 {
     MachineState *ms = MACHINE(ams);
-    int fdt_size = 0;
+    صحيح fdt_اندازه = 0;
 
-    ms->fdt = riscv_create_board_device_tree("Tenstorrent Atlantis RISC-V Machine",
-                                             "tenstorrent,atlantis", &fdt_size);
+    ms->fdt = riscv_create_board_device_ونه("Tenstorrent Atlantis RISC-V Machine",
+                                             "tenstorrent,atlantis", &fdt_اندازه);
 
-    qemu_fdt_add_subnode(ms->fdt, "/chosen");
+    qemu_fdt_جمع_کړه_subnode(ms->fdt, "/chosen");
 
     create_fdt_rng(ms->fdt);
 
-    qemu_fdt_add_subnode(ms->fdt, "/aliases");
+    qemu_fdt_جمع_کړه_subnode(ms->fdt, "/aliases");
 
     create_fdt_pmu(ms->fdt, &ams->soc);
 }
 
-static void load_fdt(TTAtlantisState *ams)
+ساكن فراغ بارول_fdt(TTAtlantisState *ams)
 {
     MachineState *ms = MACHINE(ams);
-    char **node_path;
-    Error *err = NULL;
-    int fdt_size = 0;
+    حرف **غوټه_لار;
+    Error *err = عدم;
+    صحيح fdt_اندازه = 0;
 
-    ms->fdt = load_device_tree(ms->dtb, &fdt_size);
-    if (!ms->fdt) {
+    ms->fdt = بارول_device_ونه(ms->dtb, &fdt_اندازه);
+    إذا (!ms->fdt) {
         error_report("load_device_tree() failed");
-        exit(1);
+        وتل(1);
     }
 
-    qemu_fdt_add_path(ms->fdt, "/chosen");
+    qemu_fdt_جمع_کړه_لار(ms->fdt, "/chosen");
 
     /* Clear memory nodes and update with the specified RAM size */
-    node_path = qemu_fdt_node_unit_path(ms->fdt, "memory", &err);
-    if (err) {
+    غوټه_لار = qemu_fdt_غوټه_unit_لار(ms->fdt, "memory", &err);
+    إذا (err) {
         warn_report_err(err);
-    } else {
-        for (int i = 0; node_path[i]; i++) {
+    } وإلا {
+        لكل (صحيح i = 0; غوټه_لار[i]; i++) {
             warn_report("Replacing device tree %s with the requested RAM size",
-                        node_path[i]);
-            qemu_fdt_nop_node(ms->fdt, node_path[i]);
+                        غوټه_لار[i]);
+            qemu_fdt_nop_غوټه(ms->fdt, غوټه_لار[i]);
         }
-        g_strfreev(node_path);
+        g_strfreev(غوټه_لار);
     }
 
-    create_fdt_memory(ms->fdt, &ams->soc);
+    create_fdt_حافظه(ms->fdt, &ams->soc);
 }
 
-static void mmio_map_unimplemented(MemoryRegion *memory, SysBusDevice *dev,
-                                   const char *name, hwaddr addr, uint64_t size)
+ساكن فراغ mmio_map_unimplemented(حافظه_Region *حافظه, SysBusDevice *dev,
+                                   ثابت حرف *name, hwaddr addr, uint64_t اندازه)
 {
-    qdev_prop_set_string(DEVICE(dev), "name", name);
-    qdev_prop_set_uint64(DEVICE(dev), "size", size);
+    qdev_prop_سېټ_string(DEVICE(dev), "name", name);
+    qdev_prop_سېټ_uint64(DEVICE(dev), "size", اندازه);
     sysbus_realize(dev, &error_abort);
 
-    memory_region_add_subregion_overlap(memory, addr,
+    حافظه_region_جمع_کړه_subregion_overlap(حافظه, addr,
                                         sysbus_mmio_get_region(dev, 0), -1000);
 }
 
-static void tt_atlantis_machine_done(Notifier *n, void *data)
+ساكن فراغ tt_atlantis_machine_بشپړ(Notifier *n, فراغ *معلومات)
 {
-    TTAtlantisState *ams = container_of(n, TTAtlantisState, machine_done);
+    TTAtlantisState *ams = container_د(n, TTAtlantisState, machine_بشپړ);
     TTAtlantisSoCState *s = &ams->soc;
     MachineState *machine = MACHINE(ams);
-    hwaddr start_addr = s->memmap[TT_ATL_DDR_LO].base;
-    hwaddr mem_size;
-    target_ulong firmware_end_addr, kernel_start_addr;
-    const char *firmware_name = riscv_default_firmware_name(&s->cpus);
-    uint64_t fdt_load_addr;
-    uint64_t kernel_entry;
+    hwaddr پیل_addr = s->memmap[TT_ATL_DDR_LO].بنسټ;
+    hwaddr mem_اندازه;
+    موخه_ulong firmware_پای_ټکی_addr, kernel_پیل_addr;
+    ثابت حرف *firmware_name = riscv_default_firmware_name(&s->cpus);
+    uint64_t fdt_بارول_addr;
+    uint64_t kernel_ثبت;
     RISCVBootInfo boot_info;
 
     /*
      * A user provided dtb must include everything, including
      * dynamic sysbus devices. Our FDT needs to be finalized.
      */
-    if (machine->dtb == NULL) {
+    إذا (machine->dtb == عدم) {
         finalize_fdt(machine->fdt, s);
     }
 
-    mem_size = machine->ram_size;
-    if (mem_size > s->memmap[TT_ATL_DDR_LO].size) {
-        mem_size = s->memmap[TT_ATL_DDR_LO].size;
+    mem_اندازه = machine->ram_اندازه;
+    إذا (mem_اندازه > s->memmap[TT_ATL_DDR_LO].اندازه) {
+        mem_اندازه = s->memmap[TT_ATL_DDR_LO].اندازه;
     }
     riscv_boot_info_init_discontig_mem(&boot_info, &s->cpus,
-                                       s->memmap[TT_ATL_DDR_LO].base,
-                                       mem_size);
+                                       s->memmap[TT_ATL_DDR_LO].بنسټ,
+                                       mem_اندازه);
 
-    firmware_end_addr = riscv_find_and_load_firmware(machine, &boot_info,
+    firmware_پای_ټکی_addr = riscv_پیدا_کړه_and_بارول_firmware(machine, &boot_info,
                                                      firmware_name,
-                                                     &start_addr, NULL);
+                                                     &پیل_addr, عدم);
 
-    kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
-                                                     firmware_end_addr);
-    if (machine->kernel_filename) {
-        riscv_load_kernel(machine, &boot_info, kernel_start_addr,
-                          true, NULL);
-        kernel_entry = boot_info.image_low_addr;
-    } else {
+    kernel_پیل_addr = riscv_calc_kernel_پیل_addr(&boot_info,
+                                                     firmware_پای_ټکی_addr);
+    إذا (machine->kernel_filename) {
+        riscv_بارول_kernel(machine, &boot_info, kernel_پیل_addr,
+                          true, عدم);
+        kernel_ثبت = boot_info.image_ټیټ_addr;
+    } وإلا {
         /* If we aren't loading a payload, OpenSBI thinks we are trying to boot
          * address 0, which fails `sbi_domain_check_addr()` as that is where
          * OpenSBI is running. Instead point OpenSBI to the end of the region
          * where it was loaded, which avoids the early hang, allowing the
          * system to proceed with the OpenSBI boot output.
          */
-        kernel_entry = kernel_start_addr;
+        kernel_ثبت = kernel_پیل_addr;
     }
 
-    fdt_load_addr = riscv_compute_fdt_addr(s->memmap[TT_ATL_DDR_LO].base,
-                                           s->memmap[TT_ATL_DDR_LO].size,
+    fdt_بارول_addr = riscv_compute_fdt_addr(s->memmap[TT_ATL_DDR_LO].بنسټ,
+                                           s->memmap[TT_ATL_DDR_LO].اندازه,
                                            machine, &boot_info);
-    riscv_load_fdt(fdt_load_addr, machine->fdt);
+    riscv_بارول_fdt(fdt_بارول_addr, machine->fdt);
 
     /* load the reset vector */
-    riscv_setup_rom_reset_vec(machine, &s->cpus, start_addr,
-                              s->memmap[TT_ATL_BOOTROM].base,
-                              s->memmap[TT_ATL_BOOTROM].size,
-                              kernel_entry,
-                              fdt_load_addr);
+    riscv_تیاری_rom_reset_vec(machine, &s->cpus, پیل_addr,
+                              s->memmap[TT_ATL_BOOTROM].بنسټ,
+                              s->memmap[TT_ATL_BOOTROM].اندازه,
+                              kernel_ثبت,
+                              fdt_بارول_addr);
 }
 
-static void tt_atlantis_soc_init(Object *obj)
+ساكن فراغ tt_atlantis_soc_init(Object *obj)
 {
     TTAtlantisSoCState *s = TT_ATLANTIS_SOC(obj);
 
-    object_initialize_child(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
+    object_initialize_ماشوم(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
 
-    object_initialize_child(obj, "uart1", &s->uart1,
+    object_initialize_ماشوم(obj, "uart1", &s->uart1,
                             TYPE_UNIMPLEMENTED_DEVICE);
 
-    object_initialize_child(obj, "prcm-rcpu",
+    object_initialize_ماشوم(obj, "prcm-rcpu",
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU],
                             TYPE_TT_ATLANTIS_PRCM_RCPU);
-    object_initialize_child(obj, "prcm-hsio",
+    object_initialize_ماشوم(obj, "prcm-hsio",
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO],
                             TYPE_TT_ATLANTIS_PRCM_HSIO);
-    object_initialize_child(obj, "prcm-pcie",
+    object_initialize_ماشوم(obj, "prcm-pcie",
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE],
                             TYPE_TT_ATLANTIS_PRCM_PCIE);
-    object_initialize_child(obj, "prcm-mm",
+    object_initialize_ماشوم(obj, "prcm-mm",
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM],
                             TYPE_TT_ATLANTIS_PRCM_MM);
 
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
-        object_initialize_child(obj, "i2c[*]", &s->i2c[i],
+    لكل (صحيح i = 0; i < TT_ATL_عدد_I2_C; i++) {
+        object_initialize_ماشوم(obj, "i2c[*]", &s->i2c[i],
                                 TYPE_DESIGNWARE_I2C);
     }
 }
 
-static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
+ساكن فراغ tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
 {
     TTAtlantisSoCState *s = TT_ATLANTIS_SOC(dev);
-    ram_addr_t lo_ram_size, ram_size;
-    int hart_count = s->num_harts;
+    ram_addr_t lo_ram_اندازه, ram_اندازه;
+    صحيح hart_شمېر = s->عدد_harts;
 
-    if (!s->memory) {
+    إذا (!s->حافظه) {
         error_setg(errp, "'memory' link is not set");
-        return;
+        أرجع;
     }
-    if (!s->dram) {
+    إذا (!s->dram) {
         error_setg(errp, "'dram' link is not set");
-        return;
+        أرجع;
     }
-    ram_size = memory_region_size(s->dram);
+    ram_اندازه = حافظه_region_اندازه(s->dram);
 
     s->memmap = tt_atlantis_memmap;
 
     /* CPUs */
-    object_property_set_str(OBJECT(&s->cpus), "cpu-type", s->cpu_type,
+    object_property_سېټ_str(OBJECT(&s->cpus), "cpu-type", s->cpu_type,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "hartid-base", 0,
+    object_property_سېټ_int(OBJECT(&s->cpus), "hartid-base", 0,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "num-harts", hart_count,
+    object_property_سېټ_int(OBJECT(&s->cpus), "num-harts", hart_شمېر,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "resetvec",
-                            s->memmap[TT_ATL_BOOTROM].base,
+    object_property_سېټ_int(OBJECT(&s->cpus), "resetvec",
+                            s->memmap[TT_ATL_BOOTROM].بنسټ,
                             &error_abort);
-    object_property_set_link(OBJECT(&s->cpus), "memory", OBJECT(s->memory),
+    object_property_سېټ_link(OBJECT(&s->cpus), "memory", OBJECT(s->حافظه),
                              &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
-        return;
+    إذا (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
+        أرجع;
     }
 
-    s->irqchip = riscv_create_aia(s->memory,
+    s->irqchip = riscv_create_aia(s->حافظه,
                                   true, TT_IMSIC_GUESTS,
                                   TT_IMSIC_STRIDE,
                                   TT_IMSIC_STRIDE,
-                                  TT_IRQCHIP_NUM_SOURCES,
+                                  TT_IRQCHIP_عدد_SOURCES,
                                   &s->memmap[TT_ATL_MAPLIC],
                                   &s->memmap[TT_ATL_SAPLIC],
                                   &s->memmap[TT_ATL_MIMSIC],
                                   &s->memmap[TT_ATL_SIMSIC],
-                                  0, 0, hart_count,
-                                  TT_IRQCHIP_NUM_MSIS,
-                                  TT_IRQCHIP_NUM_PRIO_BITS);
+                                  0, 0, hart_شمېر,
+                                  TT_IRQCHIP_عدد_MSIS,
+                                  TT_IRQCHIP_عدد_PRIO_بټونه);
 
-    riscv_aclint_mtimer_create(s->memory,
-            s->memmap[TT_ATL_ACLINT].base,
-            TT_ACLINT_MTIME_SIZE,
-            0, hart_count,
+    riscv_aclint_mtimer_create(s->حافظه,
+            s->memmap[TT_ATL_ACLINT].بنسټ,
+            TT_ACLINT_MTIME_اندازه,
+            0, hart_شمېر,
             TT_ACLINT_MTIMECMP,
             TT_ACLINT_MTIME,
             TT_ACLINT_TIMEBASE_FREQ, true);
@@ -628,70 +628,70 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
      * The high address is where RAM lives. It is always present and may be
      * up to 64GB. The low address is an alias of the first 2GB of that RAM.
      */
-    if (ram_size > s->memmap[TT_ATL_DDR_HI].size) {
-        g_autofree char *sz = size_to_str(s->memmap[TT_ATL_DDR_HI].size);
+    إذا (ram_اندازه > s->memmap[TT_ATL_DDR_HI].اندازه) {
+        g_autofree حرف *sz = اندازه_منزل_str(s->memmap[TT_ATL_DDR_HI].اندازه);
         error_setg(errp, "RAM size is too large, maximum is %s", sz);
-        return;
+        أرجع;
     }
 
-    memory_region_init_alias(&s->ram_hi, OBJECT(s), "ram.high", s->dram,
-                             0, ram_size);
-    memory_region_add_subregion(s->memory,
-                                s->memmap[TT_ATL_DDR_HI].base, &s->ram_hi);
+    حافظه_region_init_alias(&s->ram_hi, OBJECT(s), "ram.high", s->dram,
+                             0, ram_اندازه);
+    حافظه_region_جمع_کړه_subregion(s->حافظه,
+                                s->memmap[TT_ATL_DDR_HI].بنسټ, &s->ram_hi);
 
-    lo_ram_size = MIN(ram_size, s->memmap[TT_ATL_DDR_LO].size);
-    memory_region_init_alias(&s->ram_lo, OBJECT(s), "ram.low", s->dram,
-                             0, lo_ram_size);
-    memory_region_add_subregion(s->memory,
-                                s->memmap[TT_ATL_DDR_LO].base, &s->ram_lo);
+    lo_ram_اندازه = MIN(ram_اندازه, s->memmap[TT_ATL_DDR_LO].اندازه);
+    حافظه_region_init_alias(&s->ram_lo, OBJECT(s), "ram.low", s->dram,
+                             0, lo_ram_اندازه);
+    حافظه_region_جمع_کړه_subregion(s->حافظه,
+                                s->memmap[TT_ATL_DDR_LO].بنسټ, &s->ram_lo);
 
     /* Boot ROM */
-    if (!memory_region_init_rom(&s->bootrom, OBJECT(s), "tt-atlantis.bootrom",
-                                s->memmap[TT_ATL_BOOTROM].size, errp)) {
-        return;
+    إذا (!حافظه_region_init_rom(&s->bootrom, OBJECT(s), "tt-atlantis.bootrom",
+                                s->memmap[TT_ATL_BOOTROM].اندازه, errp)) {
+        أرجع;
     }
-    memory_region_add_subregion(s->memory, s->memmap[TT_ATL_BOOTROM].base,
+    حافظه_region_جمع_کړه_subregion(s->حافظه, s->memmap[TT_ATL_BOOTROM].بنسټ,
                                 &s->bootrom);
 
     /* UART1, the soc console (UART0 is for the boot microcontroller) */
-    serial_mm_init(s->memory, s->memmap[TT_ATL_UART1].base, 2,
-                   qdev_get_gpio_in(s->irqchip, TT_ATL_UART1_IRQ),
+    serial_mm_init(s->حافظه, s->memmap[TT_ATL_UART1].بنسټ, 2,
+                   qdev_get_gpio_دننه(s->irqchip, TT_ATL_UART1_IRQ),
                    115200, serial_hd(0), DEVICE_LITTLE_ENDIAN);
 
     /* 4 PRCM blocks */
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]),
+    إذا (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]),
                         errp)) {
-        return;
+        أرجع;
     }
-    memory_region_add_subregion(
-        s->memory, s->memmap[TT_ATL_PRCM_RCPU].base,
+    حافظه_region_جمع_کړه_subregion(
+        s->حافظه, s->memmap[TT_ATL_PRCM_RCPU].بنسټ,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]),
+    إذا (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]),
                         errp)) {
-        return;
+        أرجع;
     }
-    memory_region_add_subregion(
-        s->memory, s->memmap[TT_ATL_PRCM_HSIO].base,
+    حافظه_region_جمع_کړه_subregion(
+        s->حافظه, s->memmap[TT_ATL_PRCM_HSIO].بنسټ,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]),
+    إذا (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]),
                         errp)) {
-        return;
+        أرجع;
     }
-    memory_region_add_subregion(
-        s->memory, s->memmap[TT_ATL_PRCM_PCIE].base,
+    حافظه_region_جمع_کړه_subregion(
+        s->حافظه, s->memmap[TT_ATL_PRCM_PCIE].بنسټ,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]),
+    إذا (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]),
                         errp)) {
-        return;
+        أرجع;
     }
-    memory_region_add_subregion(
-        s->memory, s->memmap[TT_ATL_PRCM_MM].base,
+    حافظه_region_جمع_کړه_subregion(
+        s->حافظه, s->memmap[TT_ATL_PRCM_MM].بنسټ,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]), 0));
 
@@ -704,83 +704,83 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
      * Create an unimplemented device region so writes don't fault
      * and reads return zero, which keeps Linux happy.
      */
-    mmio_map_unimplemented(s->memory, SYS_BUS_DEVICE(&s->uart1),
-                           "tt-atlantis.uart1", s->memmap[TT_ATL_UART1].base,
-                           s->memmap[TT_ATL_UART1].size);
+    mmio_map_unimplemented(s->حافظه, SYS_BUS_DEVICE(&s->uart1),
+                           "tt-atlantis.uart1", s->memmap[TT_ATL_UART1].بنسټ,
+                           s->memmap[TT_ATL_UART1].اندازه);
 
     /* I2C */
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    لكل (صحيح i = 0; i < TT_ATL_عدد_I2_C; i++) {
         SysBusDevice *sbd = SYS_BUS_DEVICE(&s->i2c[i]);
 
-        if (!sysbus_realize(sbd, errp)) {
-            return;
+        إذا (!sysbus_realize(sbd, errp)) {
+            أرجع;
         }
-        memory_region_add_subregion(s->memory,
-                                    s->memmap[TT_ATL_I2C0 + i].base,
+        حافظه_region_جمع_کړه_subregion(s->حافظه,
+                                    s->memmap[TT_ATL_I2C0 + i].بنسټ,
                                     sysbus_mmio_get_region(sbd, 0));
         sysbus_connect_irq(sbd, 0,
-                           qdev_get_gpio_in(s->irqchip, TT_ATL_I2C0_IRQ + i));
+                           qdev_get_gpio_دننه(s->irqchip, TT_ATL_I2C0_IRQ + i));
     }
 }
 
-static const Property tt_atlantis_soc_props[] = {
+ساكن ثابت Property tt_atlantis_soc_props[] = {
     DEFINE_PROP_STRING("cpu-type", TTAtlantisSoCState, cpu_type),
-    DEFINE_PROP_UINT32("num-harts", TTAtlantisSoCState, num_harts, 8),
-    DEFINE_PROP_LINK("memory", TTAtlantisSoCState, memory,
-                     TYPE_MEMORY_REGION, MemoryRegion *),
+    DEFINE_PROP_UINT32("num-harts", TTAtlantisSoCState, عدد_harts, 8),
+    DEFINE_PROP_LINK("memory", TTAtlantisSoCState, حافظه,
+                     TYPE_حافظه_REGION, حافظه_Region *),
     DEFINE_PROP_LINK("dram", TTAtlantisSoCState, dram,
-                     TYPE_MEMORY_REGION, MemoryRegion *),
+                     TYPE_حافظه_REGION, حافظه_Region *),
 };
 
-static void tt_atlantis_soc_class_init(ObjectClass *oc, const void *data)
+ساكن فراغ tt_atlantis_soc_class_init(ObjectClass *oc, ثابت فراغ *معلومات)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
     dc->realize = tt_atlantis_soc_realize;
-    device_class_set_props(dc, tt_atlantis_soc_props);
+    device_class_سېټ_props(dc, tt_atlantis_soc_props);
     /* The SoC can only be instantiated from the machine */
     dc->user_creatable = false;
 }
 
-static void tt_atlantis_machine_init(MachineState *machine)
+ساكن فراغ tt_atlantis_machine_init(MachineState *machine)
 {
     TTAtlantisState *ams = TT_ATLANTIS_MACHINE(machine);
     TTAtlantisSoCState *s = &ams->soc;
 
-    memory_region_init(&ams->soc_memory, OBJECT(machine),
+    حافظه_region_init(&ams->soc_حافظه, OBJECT(machine),
                        "tt-atlantis.soc-memory", UINT64_MAX);
-    memory_region_add_subregion(get_system_memory(), 0, &ams->soc_memory);
+    حافظه_region_جمع_کړه_subregion(get_system_حافظه(), 0, &ams->soc_حافظه);
 
-    object_initialize_child(OBJECT(machine), "soc", &ams->soc,
+    object_initialize_ماشوم(OBJECT(machine), "soc", &ams->soc,
                             TYPE_TT_ATLANTIS_SOC);
-    object_property_set_str(OBJECT(&ams->soc), "cpu-type", machine->cpu_type,
+    object_property_سېټ_str(OBJECT(&ams->soc), "cpu-type", machine->cpu_type,
                             &error_abort);
-    object_property_set_int(OBJECT(&ams->soc), "num-harts", machine->smp.cpus,
+    object_property_سېټ_int(OBJECT(&ams->soc), "num-harts", machine->smp.cpus,
                             &error_abort);
 
-    object_property_set_link(OBJECT(&ams->soc), "memory",
-                             OBJECT(&ams->soc_memory), &error_abort);
-    object_property_set_link(OBJECT(&ams->soc), "dram", OBJECT(machine->ram),
+    object_property_سېټ_link(OBJECT(&ams->soc), "memory",
+                             OBJECT(&ams->soc_حافظه), &error_abort);
+    object_property_سېټ_link(OBJECT(&ams->soc), "dram", OBJECT(machine->ram),
                              &error_abort);
 
-    qdev_realize(DEVICE(&ams->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&ams->soc), عدم, &error_fatal);
 
     /* I2C peripherals: qemu specific */
     i2c_slave_create_simple(i2c_get_bus(s, 0), "ds1338", 0x6f);
     i2c_slave_create_simple(i2c_get_bus(s, 4), "tmp105", 0x48);
 
     /* Load or create device tree */
-    if (machine->dtb) {
-        load_fdt(ams);
-    } else {
+    إذا (machine->dtb) {
+        بارول_fdt(ams);
+    } وإلا {
         create_fdt(ams);
     }
 
-    ams->machine_done.notify = tt_atlantis_machine_done;
-    qemu_add_machine_init_done_notifier(&ams->machine_done);
+    ams->machine_بشپړ.notify = tt_atlantis_machine_بشپړ;
+    qemu_جمع_کړه_machine_init_بشپړ_notifier(&ams->machine_بشپړ);
 }
 
-static void tt_atlantis_machine_class_init(ObjectClass *oc, const void *data)
+ساكن فراغ tt_atlantis_machine_class_init(ObjectClass *oc, ثابت فراغ *معلومات)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -788,25 +788,25 @@ static void tt_atlantis_machine_class_init(ObjectClass *oc, const void *data)
     mc->init = tt_atlantis_machine_init;
     mc->max_cpus = 8;
     mc->default_cpus = 8;
-    mc->default_ram_size = 4 * GiB;
+    mc->default_ram_اندازه = 4 * GiB;
     mc->default_cpu_type = TYPE_RISCV_CPU_TT_ASCALON;
-    mc->block_default_type = IF_VIRTIO;
+    mc->بلاک_default_type = IF_VIRTIO;
     mc->no_cdrom = 1;
     mc->default_ram_id = "tt_atlantis.ram";
 }
 
-static const TypeInfo tt_atlantis_types[] = {
+ساكن ثابت TypeInfo tt_atlantis_types[] = {
     {
         .name       = TYPE_TT_ATLANTIS_SOC,
-        .parent     = TYPE_DEVICE,
-        .instance_size = sizeof(TTAtlantisSoCState),
+        .پلار     = TYPE_DEVICE,
+        .instance_اندازه = حجم(TTAtlantisSoCState),
         .instance_init = tt_atlantis_soc_init,
         .class_init = tt_atlantis_soc_class_init,
     }, {
         .name       = MACHINE_TYPE_NAME("tt-atlantis"),
-        .parent     = TYPE_MACHINE,
+        .پلار     = TYPE_MACHINE,
         .class_init = tt_atlantis_machine_class_init,
-        .instance_size = sizeof(TTAtlantisState),
+        .instance_اندازه = حجم(TTAtlantisState),
     },
 };
 

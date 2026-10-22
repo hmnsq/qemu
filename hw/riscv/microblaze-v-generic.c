@@ -13,87 +13,87 @@
  *     and by Michal Simek <michal.simek@amd.com>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/units.h"
-#include "qapi/error.h"
-#include "target/riscv/cpu.h"
-#include "hw/core/sysbus.h"
-#include "system/system.h"
-#include "net/net.h"
-#include "hw/core/boards.h"
-#include "hw/char/serial-mm.h"
-#include "system/address-spaces.h"
-#include "hw/char/xilinx_uartlite.h"
-#include "hw/misc/unimp.h"
+#ضمن "qemu/osdep.h"
+#ضمن "qemu/units.h"
+#ضمن "qapi/error.h"
+#ضمن "target/riscv/cpu.h"
+#ضمن "hw/core/sysbus.h"
+#ضمن "system/system.h"
+#ضمن "net/net.h"
+#ضمن "hw/core/boards.h"
+#ضمن "hw/char/serial-mm.h"
+#ضمن "system/address-spaces.h"
+#ضمن "hw/char/xilinx_uartlite.h"
+#ضمن "hw/misc/unimp.h"
 
-#define LMB_BRAM_SIZE (128 * KiB)
-#define MEMORY_BASEADDR 0x80000000
-#define INTC_BASEADDR 0x41200000
-#define TIMER_BASEADDR 0x41c00000
-#define TIMER_BASEADDR2 0x41c10000
-#define UARTLITE_BASEADDR 0x40600000
-#define ETHLITE_BASEADDR 0x40e00000
-#define UART16550_BASEADDR 0x44a10000
-#define AXIENET_BASEADDR 0x40c00000
-#define AXIDMA_BASEADDR 0x41e00000
-#define GPIO_BASEADDR 0x40000000
-#define GPIO_BASEADDR2 0x40010000
-#define GPIO_BASEADDR3 0x40020000
-#define I2C_BASEADDR 0x40800000
-#define QSPI_BASEADDR 0x44a00000
+#تعریف_کړه LMB_BRAM_اندازه (128 * KiB)
+#تعریف_کړه حافظه_BASEADDR 0x80000000
+#تعریف_کړه INTC_BASEADDR 0x41200000
+#تعریف_کړه TIMER_BASEADDR 0x41c00000
+#تعریف_کړه TIMER_BASEADDR2 0x41c10000
+#تعریف_کړه UARTLITE_BASEADDR 0x40600000
+#تعریف_کړه ETHLITE_BASEADDR 0x40e00000
+#تعریف_کړه UART16550_BASEADDR 0x44a10000
+#تعریف_کړه AXIENET_BASEADDR 0x40c00000
+#تعریف_کړه AXIDMA_BASEADDR 0x41e00000
+#تعریف_کړه GPIO_BASEADDR 0x40000000
+#تعریف_کړه GPIO_BASEADDR2 0x40010000
+#تعریف_کړه GPIO_BASEADDR3 0x40020000
+#تعریف_کړه I2C_BASEADDR 0x40800000
+#تعریف_کړه QSPI_BASEADDR 0x44a00000
 
-#define TIMER_IRQ           0
-#define UARTLITE_IRQ        1
-#define UART16550_IRQ       4
-#define ETHLITE_IRQ         5
-#define TIMER_IRQ2          6
-#define AXIENET_IRQ         7
-#define AXIDMA_IRQ1         8
-#define AXIDMA_IRQ0         9
+#تعریف_کړه TIMER_IRQ           0
+#تعریف_کړه UARTLITE_IRQ        1
+#تعریف_کړه UART16550_IRQ       4
+#تعریف_کړه ETHLITE_IRQ         5
+#تعریف_کړه TIMER_IRQ2          6
+#تعریف_کړه AXIENET_IRQ         7
+#تعریف_کړه AXIDMA_IRQ1         8
+#تعریف_کړه AXIDMA_IRQ0         9
 
-static void mb_v_generic_init(MachineState *machine)
+ساكن فراغ mb_v_generic_init(MachineState *machine)
 {
-    ram_addr_t ram_size = machine->ram_size;
+    ram_addr_t ram_اندازه = machine->ram_اندازه;
     DeviceState *dev, *dma, *eth0;
     Object *ds, *cs;
-    int i;
+    صحيح i;
     RISCVCPU *cpu;
-    hwaddr ddr_base = MEMORY_BASEADDR;
-    MemoryRegion *phys_lmb_bram = g_new(MemoryRegion, 1);
-    MemoryRegion *phys_ram = g_new(MemoryRegion, 1);
+    hwaddr ddr_بنسټ = حافظه_BASEADDR;
+    حافظه_Region *phys_lmb_bram = g_new(حافظه_Region, 1);
+    حافظه_Region *phys_ram = g_new(حافظه_Region, 1);
     qemu_irq irq[32];
-    MemoryRegion *sysmem = get_system_memory();
+    حافظه_Region *sysmem = get_system_حافظه();
 
     cpu = RISCV_CPU(object_new(machine->cpu_type));
-    object_property_set_bool(OBJECT(cpu), "h", false, NULL);
-    object_property_set_bool(OBJECT(cpu), "d", false, NULL);
-    qdev_realize(DEVICE(cpu), NULL, &error_abort);
+    object_property_سېټ_bool(OBJECT(cpu), "h", false, عدم);
+    object_property_سېټ_bool(OBJECT(cpu), "d", false, عدم);
+    qdev_realize(DEVICE(cpu), عدم, &error_abort);
     /* Attach emulated BRAM through the LMB.  */
-    memory_region_init_ram(phys_lmb_bram, NULL,
-                           "mb_v.lmb_bram", LMB_BRAM_SIZE,
+    حافظه_region_init_ram(phys_lmb_bram, عدم,
+                           "mb_v.lmb_bram", LMB_BRAM_اندازه,
                            &error_fatal);
-    memory_region_add_subregion(sysmem, 0x00000000, phys_lmb_bram);
+    حافظه_region_جمع_کړه_subregion(sysmem, 0x00000000, phys_lmb_bram);
 
-    memory_region_init_ram(phys_ram, NULL, "mb_v.ram",
-                           ram_size, &error_fatal);
-    memory_region_add_subregion(sysmem, ddr_base, phys_ram);
+    حافظه_region_init_ram(phys_ram, عدم, "mb_v.ram",
+                           ram_اندازه, &error_fatal);
+    حافظه_region_جمع_کړه_subregion(sysmem, ddr_بنسټ, phys_ram);
 
     dev = qdev_new("xlnx.xps-intc");
-    qdev_prop_set_enum(dev, "endianness", ENDIAN_MODE_LITTLE);
-    qdev_prop_set_uint32(dev, "kind-of-intr",
+    qdev_prop_سېټ_enum(dev, "endianness", ENDIAN_ډېرپېښ_LITTLE);
+    qdev_prop_سېټ_uint32(dev, "kind-of-intr",
                          1 << UARTLITE_IRQ);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
     sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, INTC_BASEADDR);
     sysbus_connect_irq(SYS_BUS_DEVICE(dev), 0,
-                       qdev_get_gpio_in(DEVICE(cpu), 11));
-    for (i = 0; i < 32; i++) {
-        irq[i] = qdev_get_gpio_in(dev, i);
+                       qdev_get_gpio_دننه(DEVICE(cpu), 11));
+    لكل (i = 0; i < 32; i++) {
+        irq[i] = qdev_get_gpio_دننه(dev, i);
     }
 
     /* Uartlite */
     dev = qdev_new(TYPE_XILINX_UARTLITE);
-    qdev_prop_set_enum(dev, "endianness", ENDIAN_MODE_LITTLE);
-    qdev_prop_set_chr(dev, "chardev", serial_hd(0));
+    qdev_prop_سېټ_enum(dev, "endianness", ENDIAN_ډېرپېښ_LITTLE);
+    qdev_prop_سېټ_chr(dev, "chardev", serial_hd(0));
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
     sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, UARTLITE_BASEADDR);
     sysbus_connect_irq(SYS_BUS_DEVICE(dev), 0, irq[UARTLITE_IRQ]);
@@ -105,28 +105,28 @@ static void mb_v_generic_init(MachineState *machine)
 
     /* 2 timers at irq 0 @ 100 Mhz.  */
     dev = qdev_new("xlnx.xps-timer");
-    qdev_prop_set_enum(dev, "endianness", ENDIAN_MODE_LITTLE);
-    qdev_prop_set_uint32(dev, "one-timer-only", 0);
-    qdev_prop_set_uint32(dev, "clock-frequency", 100000000);
+    qdev_prop_سېټ_enum(dev, "endianness", ENDIAN_ډېرپېښ_LITTLE);
+    qdev_prop_سېټ_uint32(dev, "one-timer-only", 0);
+    qdev_prop_سېټ_uint32(dev, "clock-frequency", 100000000);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
     sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, TIMER_BASEADDR);
     sysbus_connect_irq(SYS_BUS_DEVICE(dev), 0, irq[TIMER_IRQ]);
 
     /* 2 timers at irq 3 @ 100 Mhz.  */
     dev = qdev_new("xlnx.xps-timer");
-    qdev_prop_set_enum(dev, "endianness", ENDIAN_MODE_LITTLE);
-    qdev_prop_set_uint32(dev, "one-timer-only", 0);
-    qdev_prop_set_uint32(dev, "clock-frequency", 100000000);
+    qdev_prop_سېټ_enum(dev, "endianness", ENDIAN_ډېرپېښ_LITTLE);
+    qdev_prop_سېټ_uint32(dev, "one-timer-only", 0);
+    qdev_prop_سېټ_uint32(dev, "clock-frequency", 100000000);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
     sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, TIMER_BASEADDR2);
     sysbus_connect_irq(SYS_BUS_DEVICE(dev), 0, irq[TIMER_IRQ2]);
 
     /* Emaclite */
     dev = qdev_new("xlnx.xps-ethernetlite");
-    qdev_prop_set_enum(dev, "endianness", ENDIAN_MODE_LITTLE);
-    qemu_configure_nic_device(dev, true, NULL);
-    qdev_prop_set_uint32(dev, "tx-ping-pong", 0);
-    qdev_prop_set_uint32(dev, "rx-ping-pong", 0);
+    qdev_prop_سېټ_enum(dev, "endianness", ENDIAN_ډېرپېښ_LITTLE);
+    qemu_configure_nic_device(dev, true, عدم);
+    qdev_prop_سېټ_uint32(dev, "tx-ping-pong", 0);
+    qdev_prop_سېټ_uint32(dev, "rx-ping-pong", 0);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
     sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, ETHLITE_BASEADDR);
     sysbus_connect_irq(SYS_BUS_DEVICE(dev), 0, irq[ETHLITE_IRQ]);
@@ -136,32 +136,32 @@ static void mb_v_generic_init(MachineState *machine)
     dma = qdev_new("xlnx.axi-dma");
 
     /* FIXME: attach to the sysbus instead */
-    object_property_add_child(qdev_get_machine(), "xilinx-eth", OBJECT(eth0));
-    object_property_add_child(qdev_get_machine(), "xilinx-dma", OBJECT(dma));
+    object_property_جمع_کړه_ماشوم(qdev_get_machine(), "xilinx-eth", OBJECT(eth0));
+    object_property_جمع_کړه_ماشوم(qdev_get_machine(), "xilinx-dma", OBJECT(dma));
 
     ds = object_property_get_link(OBJECT(dma),
-                                  "axistream-connected-target", NULL);
+                                  "axistream-connected-target", عدم);
     cs = object_property_get_link(OBJECT(dma),
-                                  "axistream-control-connected-target", NULL);
-    qemu_configure_nic_device(eth0, true, NULL);
-    qdev_prop_set_uint32(eth0, "rxmem", 0x1000);
-    qdev_prop_set_uint32(eth0, "txmem", 0x1000);
-    object_property_set_link(OBJECT(eth0), "axistream-connected", ds,
+                                  "axistream-control-connected-target", عدم);
+    qemu_configure_nic_device(eth0, true, عدم);
+    qdev_prop_سېټ_uint32(eth0, "rxmem", 0x1000);
+    qdev_prop_سېټ_uint32(eth0, "txmem", 0x1000);
+    object_property_سېټ_link(OBJECT(eth0), "axistream-connected", ds,
                              &error_abort);
-    object_property_set_link(OBJECT(eth0), "axistream-control-connected", cs,
+    object_property_سېټ_link(OBJECT(eth0), "axistream-control-connected", cs,
                              &error_abort);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(eth0), &error_fatal);
     sysbus_mmio_map(SYS_BUS_DEVICE(eth0), 0, AXIENET_BASEADDR);
     sysbus_connect_irq(SYS_BUS_DEVICE(eth0), 0, irq[AXIENET_IRQ]);
 
     ds = object_property_get_link(OBJECT(eth0),
-                                  "axistream-connected-target", NULL);
+                                  "axistream-connected-target", عدم);
     cs = object_property_get_link(OBJECT(eth0),
-                                  "axistream-control-connected-target", NULL);
-    qdev_prop_set_uint32(dma, "freqhz", 100000000);
-    object_property_set_link(OBJECT(dma), "axistream-connected", ds,
+                                  "axistream-control-connected-target", عدم);
+    qdev_prop_سېټ_uint32(dma, "freqhz", 100000000);
+    object_property_سېټ_link(OBJECT(dma), "axistream-connected", ds,
                              &error_abort);
-    object_property_set_link(OBJECT(dma), "axistream-control-connected", cs,
+    object_property_سېټ_link(OBJECT(dma), "axistream-control-connected", cs,
                              &error_abort);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dma), &error_fatal);
     sysbus_mmio_map(SYS_BUS_DEVICE(dma), 0, AXIDMA_BASEADDR);
@@ -176,13 +176,13 @@ static void mb_v_generic_init(MachineState *machine)
     create_unimplemented_device("qspi", QSPI_BASEADDR, 0x10000);
 }
 
-static void mb_v_generic_machine_init(MachineClass *mc)
+ساكن فراغ mb_v_generic_machine_init(MachineClass *mc)
 {
     mc->desc = "AMD Microblaze-V generic platform";
     mc->init = mb_v_generic_init;
     mc->min_cpus = 1;
     mc->max_cpus = 1;
-    mc->default_cpu_type = TYPE_RISCV_CPU_BASE;
+    mc->default_cpu_type = TYPE_RISCV_CPU_بنسټ;
     mc->default_cpus = 1;
 }
 
