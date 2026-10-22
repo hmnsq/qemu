@@ -44,43 +44,43 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
 {
     RISCVCPSState *s = RISCV_CPS(dev);
     RISCVCPU *cpu;
-    int i;
+    정수 i;
 
     /* Validate num_vp */
-    if (s->num_vp == 0) {
+    만약 (s->num_vp == 0) {
         error_setg(errp, "num-vp must be at least 1");
-        return;
+        반환;
     }
-    if (s->num_vp > MAX_HARTS) {
+    만약 (s->num_vp > MAX_HARTS) {
         error_setg(errp, "num-vp cannot exceed %d", MAX_HARTS);
-        return;
+        반환;
     }
 
     /* Allocate CPU array */
     s->cpus = g_new0(CPUState *, s->num_vp);
 
     /* Set up cpu_index and mhartid for avaiable CPUs. */
-    int harts_in_cluster = s->num_hart * s->num_core;
-    int num_of_clusters = s->num_vp / harts_in_cluster;
-    for (i = 0; i < s->num_vp; i++) {
+    정수 harts_in_cluster = s->num_hart * s->num_core;
+    정수 num_of_clusters = s->num_vp / harts_in_cluster;
+    위해 (i = 0; i < s->num_vp; i++) {
         cpu = RISCV_CPU(object_new(s->cpu_type));
 
         /* All VPs are halted on reset. Leave powering up to CPC. */
         object_property_set_bool(OBJECT(cpu), "start-powered-off", true,
                                  &error_abort);
 
-        if (!qdev_realize_and_unref(DEVICE(cpu), NULL, errp)) {
-            return;
+        만약 (!qdev_realize_and_unref(DEVICE(cpu), NULL, errp)) {
+            반환;
         }
 
         /* Store CPU in array */
         s->cpus[i] = CPU(cpu);
 
         /* Set up mhartid */
-        int cluster_id = i / harts_in_cluster;
-        int hart_id = (i % harts_in_cluster) % s->num_hart;
-        int core_id = (i % harts_in_cluster) / s->num_hart;
-        int mhartid = (cluster_id << MHARTID_CLUSTER_SHIFT) +
+        정수 cluster_id = i / harts_in_cluster;
+        정수 hart_id = (i % harts_in_cluster) % s->num_hart;
+        정수 core_id = (i % harts_in_cluster) / s->num_hart;
+        정수 mhartid = (cluster_id << MHARTID_CLUSTER_SHIFT) +
                       (core_id << MHARTID_CORE_SHIFT) +
                       (hart_id << MHARTID_HART_SHIFT);
         cpu->env.mhartid = mhartid;
@@ -99,15 +99,15 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
                             &error_abort);
 
     /* Pass CPUs to CPC using link properties */
-    for (i = 0; i < s->num_vp; i++) {
+    위해 (i = 0; i < s->num_vp; i++) {
         char *propname = g_strdup_printf("cpu[%d]", i);
         object_property_set_link(OBJECT(&s->cpc), propname,
                                 OBJECT(s->cpus[i]), &error_abort);
         g_free(propname);
     }
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpc), errp)) {
-        return;
+    만약 (!sysbus_realize(SYS_BUS_DEVICE(&s->cpc), errp)) {
+        반환;
     }
 
     memory_region_add_subregion(&s->container, 0,
@@ -125,14 +125,14 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
                             &error_abort);
     object_property_set_link(OBJECT(&s->gcr), "cpc", OBJECT(&s->cpc.mr),
                              &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gcr), errp)) {
-        return;
+    만약 (!sysbus_realize(SYS_BUS_DEVICE(&s->gcr), errp)) {
+        반환;
     }
 
     memory_region_add_subregion(&s->container, s->gcr_base,
                             sysbus_mmio_get_region(SYS_BUS_DEVICE(&s->gcr), 0));
 
-    for (i = 0; i < num_of_clusters; i++) {
+    위해 (i = 0; i < num_of_clusters; i++) {
         uint64_t cm_base = GLOBAL_CM_BASE + (CM_SIZE * i);
         uint32_t hartid_base = i << MHARTID_CLUSTER_SHIFT;
         s->aplic = riscv_aplic_create(&s->container,

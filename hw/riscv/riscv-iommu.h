@@ -102,10 +102,10 @@ void riscv_iommu_pci_setup_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
          Error **errp);
 void riscv_iommu_set_cap_igs(RISCVIOMMUState *s, riscv_iommu_igs_mode mode);
 void riscv_iommu_reset(RISCVIOMMUState *s);
-void riscv_iommu_notify(RISCVIOMMUState *s, int vec_type);
+void riscv_iommu_notify(RISCVIOMMUState *s, 정수 vec_type);
 void riscv_iommu_fault(RISCVIOMMUState *s, struct riscv_iommu_fq_record *ev);
 DeviceState *riscv_create_iommu_sys(DeviceState *mmio_irqchip,
-                                    hwaddr addr, int base_irq,
+                                    hwaddr addr, 정수 base_irq,
                                     bool is_32_bit);
 
 typedef struct RISCVIOMMUContext RISCVIOMMUContext;
@@ -130,7 +130,7 @@ static inline uint32_t riscv_iommu_reg_mod32(RISCVIOMMUState *s,
 {
     uint32_t val = ldl_le_p(s->regs + idx);
     stl_le_p(s->regs + idx, (val & ~clr) | set);
-    return val;
+    반환 val;
 }
 
 static inline void riscv_iommu_reg_set32(RISCVIOMMUState *s, unsigned idx,
@@ -141,7 +141,7 @@ static inline void riscv_iommu_reg_set32(RISCVIOMMUState *s, unsigned idx,
 
 static inline uint32_t riscv_iommu_reg_get32(RISCVIOMMUState *s, unsigned idx)
 {
-    return ldl_le_p(s->regs + idx);
+    반환 ldl_le_p(s->regs + idx);
 }
 
 static inline uint64_t riscv_iommu_reg_mod64(RISCVIOMMUState *s, unsigned idx,
@@ -149,7 +149,7 @@ static inline uint64_t riscv_iommu_reg_mod64(RISCVIOMMUState *s, unsigned idx,
 {
     uint64_t val = ldq_le_p(s->regs + idx);
     stq_le_p(s->regs + idx, (val & ~clr) | set);
-    return val;
+    반환 val;
 }
 
 static inline void riscv_iommu_reg_set64(RISCVIOMMUState *s, unsigned idx,
@@ -161,6 +161,6 @@ static inline void riscv_iommu_reg_set64(RISCVIOMMUState *s, unsigned idx,
 static inline uint64_t riscv_iommu_reg_get64(RISCVIOMMUState *s,
                                              unsigned idx)
 {
-    return ldq_le_p(s->regs + idx);
+    반환 ldq_le_p(s->regs + idx);
 }
 #endif

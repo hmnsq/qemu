@@ -68,19 +68,19 @@ static bool virt_use_kvm_aia_aplic_imsic(RISCVVirtAIAType aia_type)
 {
     bool msimode = aia_type == VIRT_AIA_TYPE_APLIC_IMSIC;
 
-    return riscv_is_kvm_aia_aplic_imsic(msimode);
+    반환 riscv_is_kvm_aia_aplic_imsic(msimode);
 }
 
 static bool virt_use_emulated_aplic(RISCVVirtAIAType aia_type)
 {
     bool msimode = aia_type == VIRT_AIA_TYPE_APLIC_IMSIC;
 
-    return riscv_use_emulated_aplic(msimode);
+    반환 riscv_use_emulated_aplic(msimode);
 }
 
 static bool virt_aclint_allowed(void)
 {
-    return tcg_enabled() || qtest_enabled();
+    반환 tcg_enabled() || qtest_enabled();
 }
 
 static const MemMapEntry virt_memmap[] = {
@@ -141,11 +141,11 @@ static void virt_flash_map(RISCVVirtState *s,
 }
 
 static void create_fdt_socket_plic(RISCVVirtState *s,
-                                   int socket,
+                                   정수 socket,
                                    uint32_t *phandle, uint32_t *intc_phandles,
                                    uint32_t *plic_phandles)
 {
-    int cpu;
+    정수 cpu;
     g_autofree char *plic_name = NULL;
     g_autofree uint32_t *plic_cells;
     MachineState *ms = MACHINE(s);
@@ -156,19 +156,19 @@ static void create_fdt_socket_plic(RISCVVirtState *s,
 
     plic_name = g_strdup_printf("/soc/interrupt-controller@%lx", plic_addr);
 
-    if (kvm_enabled()) {
+    만약 (kvm_enabled()) {
         cells_length = s->soc[socket].num_harts * 2;
         plic_cells = g_new0(uint32_t, cells_length);
 
-        for (cpu = 0; cpu < s->soc[socket].num_harts; cpu++) {
+        위해 (cpu = 0; cpu < s->soc[socket].num_harts; cpu++) {
             plic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
             plic_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_S_EXT);
         }
-   } else {
+   } 아니면 {
         cells_length = s->soc[socket].num_harts * 4;
         plic_cells = g_new0(uint32_t, cells_length);
 
-        for (cpu = 0; cpu < s->soc[socket].num_harts; cpu++) {
+        위해 (cpu = 0; cpu < s->soc[socket].num_harts; cpu++) {
             plic_cells[cpu * 4 + 0] = cpu_to_be32(intc_phandles[cpu]);
             plic_cells[cpu * 4 + 1] = cpu_to_be32(IRQ_M_EXT);
             plic_cells[cpu * 4 + 2] = cpu_to_be32(intc_phandles[cpu]);
@@ -185,7 +185,7 @@ static void create_fdt_socket_plic(RISCVVirtState *s,
                           VIRT_IRQCHIP_NUM_SOURCES - 1,
                           numa_enabled, socket);
 
-    if (!socket) {
+    만약 (!socket) {
         platform_bus_add_all_fdt_nodes(ms->fdt, plic_name,
                                        s->memmap[VIRT_PLATFORM_BUS].base,
                                        s->memmap[VIRT_PLATFORM_BUS].size,
@@ -211,12 +211,12 @@ static void create_fdt_sockets(RISCVVirtState *s,
                                uint32_t *irq_virtio_phandle,
                                uint32_t *msi_pcie_phandle)
 {
-    int socket, phandle_pos;
+    정수 socket, phandle_pos;
     MachineState *ms = MACHINE(s);
     uint32_t msi_m_phandle = 0, msi_s_phandle = 0;
     uint32_t xplic_phandles[MAX_NODES];
     g_autofree uint32_t *intc_phandles = NULL;
-    int socket_count = riscv_socket_count(ms);
+    정수 socket_count = riscv_socket_count(ms);
     bool numa_enabled = riscv_numa_enabled(ms);
     bool is_32_bit = riscv_is_32bit(&s->soc[0]);
     APLICFdtProps aplic_props;
@@ -228,7 +228,7 @@ static void create_fdt_sockets(RISCVVirtState *s,
 
     intc_phandles = g_new0(uint32_t, ms->smp.cpus);
 
-    if (virt_aclint_allowed() && s->have_aclint) {
+    만약 (virt_aclint_allowed() && s->have_aclint) {
         aclint_props.clint = &s->memmap[VIRT_CLINT];
         aclint_props.aclint_sswi = &s->memmap[VIRT_ACLINT_SSWI];
         aclint_props.aia_type = s->aia_type;
@@ -236,7 +236,7 @@ static void create_fdt_sockets(RISCVVirtState *s,
     }
 
     phandle_pos = ms->smp.cpus;
-    for (socket = (socket_count - 1); socket >= 0; socket--) {
+    위해 (socket = (socket_count - 1); socket >= 0; socket--) {
         hwaddr memaddr = s->memmap[VIRT_DRAM].base +
                          riscv_socket_mem_offset(ms, socket);
         uint64_t memsize = riscv_socket_mem_size(ms, socket);
@@ -252,12 +252,12 @@ static void create_fdt_sockets(RISCVVirtState *s,
         riscv_create_fdt_socket_memory(ms->fdt, memaddr, memsize,
                                        socket, riscv_numa_enabled(ms));
 
-        if (virt_aclint_allowed() && s->have_aclint) {
+        만약 (virt_aclint_allowed() && s->have_aclint) {
             aclint_props.socket = socket;
             aclint_props.num_harts = s->soc[socket].num_harts;
             riscv_create_fdt_socket_aclint(ms->fdt, &aclint_props,
                                            &intc_phandles[phandle_pos]);
-        } else if (tcg_enabled()) {
+        } 아니면 만약 (tcg_enabled()) {
             hwaddr clintaddr = s->memmap[VIRT_CLINT].base +
                                s->memmap[VIRT_CLINT].size * socket;
 
@@ -269,7 +269,7 @@ static void create_fdt_sockets(RISCVVirtState *s,
         }
     }
 
-    if (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
+    만약 (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
         IMSICFdtProps props = {
             .soc = &s->soc,
             .socket_count = riscv_socket_count(ms),
@@ -287,7 +287,7 @@ static void create_fdt_sockets(RISCVVirtState *s,
         *msi_pcie_phandle = msi_s_phandle;
     }
 
-    if (s->aia_type != VIRT_AIA_TYPE_NONE) {
+    만약 (s->aia_type != VIRT_AIA_TYPE_NONE) {
         aplic_props.aplic_m = !kvm_enabled() ? &s->memmap[VIRT_APLIC_M] : NULL;
         aplic_props.aplic_s = &s->memmap[VIRT_APLIC_S];
         aplic_props.platform_bus = &s->memmap[VIRT_PLATFORM_BUS];
@@ -303,7 +303,7 @@ static void create_fdt_sockets(RISCVVirtState *s,
      * With KVM AIA aplic-imsic, using an irqchip without split
      * mode, we'll use only one APLIC instance.
      */
-    if (!virt_use_emulated_aplic(s->aia_type)) {
+    만약 (!virt_use_emulated_aplic(s->aia_type)) {
         riscv_create_fdt_socket_aplic(ms->fdt, &aplic_props,
                                       msi_m_phandle, msi_s_phandle, phandle,
                                       &intc_phandles[0], xplic_phandles);
@@ -311,16 +311,16 @@ static void create_fdt_sockets(RISCVVirtState *s,
         *irq_mmio_phandle = xplic_phandles[0];
         *irq_virtio_phandle = xplic_phandles[0];
         *irq_pcie_phandle = xplic_phandles[0];
-    } else {
+    } 아니면 {
         phandle_pos = ms->smp.cpus;
-        for (socket = (socket_count - 1); socket >= 0; socket--) {
+        위해 (socket = (socket_count - 1); socket >= 0; socket--) {
             phandle_pos -= s->soc[socket].num_harts;
 
-            if (s->aia_type == VIRT_AIA_TYPE_NONE) {
+            만약 (s->aia_type == VIRT_AIA_TYPE_NONE) {
                 create_fdt_socket_plic(s, socket, phandle,
                                        &intc_phandles[phandle_pos],
                                        xplic_phandles);
-            } else {
+            } 아니면 {
                 aplic_props.socket = socket;
                 aplic_props.num_harts = s->soc[socket].num_harts;
                 riscv_create_fdt_socket_aplic(ms->fdt, &aplic_props,
@@ -331,17 +331,17 @@ static void create_fdt_sockets(RISCVVirtState *s,
             }
         }
 
-        for (socket = 0; socket < socket_count; socket++) {
-            if (socket == 0) {
+        위해 (socket = 0; socket < socket_count; socket++) {
+            만약 (socket == 0) {
                 *irq_mmio_phandle = xplic_phandles[socket];
                 *irq_virtio_phandle = xplic_phandles[socket];
                 *irq_pcie_phandle = xplic_phandles[socket];
             }
-            if (socket == 1) {
+            만약 (socket == 1) {
                 *irq_virtio_phandle = xplic_phandles[socket];
                 *irq_pcie_phandle = xplic_phandles[socket];
             }
-            if (socket == 2) {
+            만약 (socket == 2) {
                 *irq_pcie_phandle = xplic_phandles[socket];
             }
         }
@@ -352,11 +352,11 @@ static void create_fdt_sockets(RISCVVirtState *s,
 
 static void create_fdt_virtio(RISCVVirtState *s, uint32_t irq_virtio_phandle)
 {
-    int i;
+    정수 i;
     MachineState *ms = MACHINE(s);
     hwaddr virtio_base = s->memmap[VIRT_VIRTIO].base;
 
-    for (i = 0; i < VIRTIO_COUNT; i++) {
+    위해 (i = 0; i < VIRTIO_COUNT; i++) {
         g_autofree char *name = NULL;
         uint64_t size = s->memmap[VIRT_VIRTIO].size;
         hwaddr addr = virtio_base + i * size;
@@ -368,10 +368,10 @@ static void create_fdt_virtio(RISCVVirtState *s, uint32_t irq_virtio_phandle)
         qemu_fdt_setprop_sized_cells(ms->fdt, name, "reg", 2, addr, 2, size);
         qemu_fdt_setprop_cell(ms->fdt, name, "interrupt-parent",
             irq_virtio_phandle);
-        if (s->aia_type == VIRT_AIA_TYPE_NONE) {
+        만약 (s->aia_type == VIRT_AIA_TYPE_NONE) {
             qemu_fdt_setprop_cell(ms->fdt, name, "interrupts",
                                   VIRTIO_IRQ + i);
-        } else {
+        } 아니면 {
             qemu_fdt_setprop_cells(ms->fdt, name, "interrupts",
                                    VIRTIO_IRQ + i, 0x4);
         }
@@ -383,7 +383,7 @@ static void create_fdt_uarts(RISCVVirtState *s, uint32_t irq_mmio_phandle)
     g_autofree char *name = NULL;
     MachineState *ms = MACHINE(s);
 
-    if (s->uart1_present) {
+    만약 (s->uart1_present) {
         riscv_create_fdt_uart(ms->fdt, &s->memmap[VIRT_UART1],
                               UART1_IRQ, s->aia_type, irq_mmio_phandle);
     }
@@ -476,7 +476,7 @@ static void finalize_fdt(RISCVVirtState *s)
 
     create_fdt_virtio(s, irq_virtio_phandle);
 
-    if (virt_is_iommu_sys_enabled(s)) {
+    만약 (virt_is_iommu_sys_enabled(s)) {
         iommu_sys_phandle =
             riscv_create_fdt_riscv_iommu_sys(MACHINE(s)->fdt,
                                              s->memmap[VIRT_IOMMU_SYS].base,
@@ -547,11 +547,11 @@ static FWCfgState *create_fw_cfg(const MachineState *ms, hwaddr base)
     fw_cfg = fw_cfg_init_mem_dma(base, &address_space_memory);
     fw_cfg_add_i16(fw_cfg, FW_CFG_NB_CPUS, (uint16_t)ms->smp.cpus);
 
-    return fw_cfg;
+    반환 fw_cfg;
 }
 
-static DeviceState *virt_create_plic(const MemMapEntry *memmap, int socket,
-                                     int base_hartid, int hart_count)
+static DeviceState *virt_create_plic(const MemMapEntry *memmap, 정수 socket,
+                                     정수 base_hartid, 정수 hart_count)
 {
     g_autofree char *plic_hart_config = NULL;
 
@@ -559,7 +559,7 @@ static DeviceState *virt_create_plic(const MemMapEntry *memmap, int socket,
     plic_hart_config = riscv_plic_hart_config_string(hart_count);
 
     /* Per-socket PLIC */
-    return sifive_plic_create(
+    반환 sifive_plic_create(
              get_system_memory(),
              memmap[VIRT_PLIC].base + socket * memmap[VIRT_PLIC].size,
              plic_hart_config, hart_count, base_hartid,
@@ -581,15 +581,15 @@ static void virt_build_smbios(RISCVVirtState *s)
     struct smbios_phys_mem_area mem_array;
     const char *product = "QEMU Virtual Machine";
 
-    if (kvm_enabled()) {
+    만약 (kvm_enabled()) {
         product = "KVM Virtual Machine";
     }
 
     smbios_set_defaults("QEMU", product, mc->name);
 
-    if (riscv_is_32bit(&s->soc[0])) {
+    만약 (riscv_is_32bit(&s->soc[0])) {
         smbios_set_default_processor_family(0x200);
-    } else {
+    } 아니면 {
         smbios_set_default_processor_family(0x201);
     }
 
@@ -603,7 +603,7 @@ static void virt_build_smbios(RISCVVirtState *s)
                       &smbios_anchor, &smbios_anchor_len,
                       &error_fatal);
 
-    if (smbios_anchor) {
+    만약 (smbios_anchor) {
         fw_cfg_add_file(s->fw_cfg, "etc/smbios/smbios-tables",
                         smbios_tables, smbios_tables_len);
         fw_cfg_add_file(s->fw_cfg, "etc/smbios/smbios-anchor",
@@ -629,7 +629,7 @@ static void virt_machine_done(Notifier *notifier, void *data)
      * An user provided dtb must include everything, including
      * dynamic sysbus devices. Our FDT needs to be finalized.
      */
-    if (machine->dtb == NULL) {
+    만약 (machine->dtb == NULL) {
         finalize_fdt(s);
     }
 
@@ -637,14 +637,14 @@ static void virt_machine_done(Notifier *notifier, void *data)
      * Only direct boot kernel is currently supported for KVM VM,
      * so the "-bios" parameter is not supported when KVM is enabled.
      */
-    if (kvm_enabled()) {
-        if (machine->firmware) {
-            if (strcmp(machine->firmware, "none")) {
+    만약 (kvm_enabled()) {
+        만약 (machine->firmware) {
+            만약 (strcmp(machine->firmware, "none")) {
                 error_report("Machine mode firmware is not supported in "
                              "combination with KVM.");
                 exit(1);
             }
-        } else {
+        } 아니면 {
             machine->firmware = g_strdup("none");
         }
     }
@@ -656,8 +656,8 @@ static void virt_machine_done(Notifier *notifier, void *data)
                                                      &start_addr, NULL);
 
     pflash_blk0 = pflash_cfi01_get_blk(s->flash[0]);
-    if (pflash_blk0) {
-        if (machine->firmware && !strcmp(machine->firmware, "none") &&
+    만약 (pflash_blk0) {
+        만약 (machine->firmware && !strcmp(machine->firmware, "none") &&
             !kvm_enabled()) {
             /*
              * Pflash was supplied but bios is none and not KVM guest,
@@ -665,7 +665,7 @@ static void virt_machine_done(Notifier *notifier, void *data)
              * the base of the flash.
              */
             start_addr = s->memmap[VIRT_FLASH].base;
-        } else {
+        } 아니면 {
             /*
              * Pflash was supplied but either KVM guest or bios is not none.
              * In this case, base of the flash would contain S-mode payload.
@@ -675,7 +675,7 @@ static void virt_machine_done(Notifier *notifier, void *data)
         }
     }
 
-    if (machine->kernel_filename && !kernel_entry) {
+    만약 (machine->kernel_filename && !kernel_entry) {
         kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                          firmware_end_addr);
         riscv_load_kernel(machine, &boot_info, kernel_start_addr,
@@ -699,13 +699,13 @@ static void virt_machine_done(Notifier *notifier, void *data)
      * So here setup kernel start address and fdt address.
      * TODO:Support firmware loading and integrate to TCG start
      */
-    if (kvm_enabled()) {
+    만약 (kvm_enabled()) {
         riscv_setup_direct_kernel(kernel_entry, fdt_load_addr);
     }
 
     virt_build_smbios(s);
 
-    if (virt_is_acpi_enabled(s)) {
+    만약 (virt_is_acpi_enabled(s)) {
         virt_acpi_setup(s);
     }
 }
@@ -716,41 +716,41 @@ static void virt_machine_init(MachineState *machine)
     MemoryRegion *system_memory = get_system_memory();
     MemoryRegion *mask_rom = g_new(MemoryRegion, 1);
     DeviceState *mmio_irqchip, *virtio_irqchip, *pcie_irqchip;
-    int i, base_hartid, hart_count;
-    int socket_count = riscv_socket_count(machine);
+    정수 i, base_hartid, hart_count;
+    정수 socket_count = riscv_socket_count(machine);
 
     s->memmap = virt_memmap;
 
     /* Check socket count limit */
-    if (VIRT_SOCKETS_MAX < socket_count) {
+    만약 (VIRT_SOCKETS_MAX < socket_count) {
         error_report("number of sockets/nodes should be less than %d",
             VIRT_SOCKETS_MAX);
         exit(1);
     }
 
-    if (!virt_aclint_allowed() && s->have_aclint) {
+    만약 (!virt_aclint_allowed() && s->have_aclint) {
         error_report("'aclint' is only available with TCG acceleration");
         exit(1);
     }
 
     /* Initialize sockets */
     mmio_irqchip = virtio_irqchip = pcie_irqchip = NULL;
-    for (i = 0; i < socket_count; i++) {
+    위해 (i = 0; i < socket_count; i++) {
         g_autofree char *soc_name = g_strdup_printf("soc%d", i);
 
-        if (!riscv_socket_check_hartids(machine, i)) {
+        만약 (!riscv_socket_check_hartids(machine, i)) {
             error_report("discontinuous hartids in socket%d", i);
             exit(1);
         }
 
         base_hartid = riscv_socket_first_hartid(machine, i);
-        if (base_hartid < 0) {
+        만약 (base_hartid < 0) {
             error_report("can't find hartid base for socket%d", i);
             exit(1);
         }
 
         hart_count = riscv_socket_hart_count(machine, i);
-        if (hart_count < 0) {
+        만약 (hart_count < 0) {
             error_report("can't find hart count for socket%d", i);
             exit(1);
         }
@@ -765,8 +765,8 @@ static void virt_machine_init(MachineState *machine)
                                 hart_count, &error_abort);
         sysbus_realize(SYS_BUS_DEVICE(&s->soc[i]), &error_fatal);
 
-        if (virt_aclint_allowed() && s->have_aclint) {
-            if (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
+        만약 (virt_aclint_allowed() && s->have_aclint) {
+            만약 (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
                 /* Per-socket ACLINT MTIMER */
                 riscv_aclint_mtimer_create(system_memory,
                         s->memmap[VIRT_CLINT].base +
@@ -776,7 +776,7 @@ static void virt_machine_init(MachineState *machine)
                         RISCV_ACLINT_DEFAULT_MTIMECMP,
                         RISCV_ACLINT_DEFAULT_MTIME,
                         RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
-            } else {
+            } 아니면 {
                 /* Per-socket ACLINT MSWI, MTIMER, and SSWI */
                 riscv_aclint_swi_create(system_memory,
                         s->memmap[VIRT_CLINT].base +
@@ -796,7 +796,7 @@ static void virt_machine_init(MachineState *machine)
                             i * s->memmap[VIRT_ACLINT_SSWI].size,
                         base_hartid, hart_count, true);
             }
-        } else if (tcg_enabled()) {
+        } 아니면 만약 (tcg_enabled()) {
             /* Per-socket SiFive CLINT */
             riscv_aclint_swi_create(system_memory,
                     s->memmap[VIRT_CLINT].base + i * s->memmap[VIRT_CLINT].size,
@@ -810,12 +810,12 @@ static void virt_machine_init(MachineState *machine)
         }
 
         /* Per-socket interrupt controller */
-        if (s->aia_type == VIRT_AIA_TYPE_NONE) {
+        만약 (s->aia_type == VIRT_AIA_TYPE_NONE) {
             s->irqchip[i] = virt_create_plic(s->memmap, i,
                                              base_hartid, hart_count);
-        } else {
+        } 아니면 {
             bool msimode = s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC;
-            int imsic_bits = imsic_num_bits(s->aia_guests + 1);
+            정수 imsic_bits = imsic_num_bits(s->aia_guests + 1);
             s->irqchip[i] = riscv_create_aia(system_memory, msimode,
                                              s->aia_guests,
                                              IMSIC_HART_SIZE(0),
@@ -831,21 +831,21 @@ static void virt_machine_init(MachineState *machine)
         }
 
         /* Try to use different IRQCHIP instance based device type */
-        if (i == 0) {
+        만약 (i == 0) {
             mmio_irqchip = s->irqchip[i];
             virtio_irqchip = s->irqchip[i];
             pcie_irqchip = s->irqchip[i];
         }
-        if (i == 1) {
+        만약 (i == 1) {
             virtio_irqchip = s->irqchip[i];
             pcie_irqchip = s->irqchip[i];
         }
-        if (i == 2) {
+        만약 (i == 2) {
             pcie_irqchip = s->irqchip[i];
         }
     }
 
-    if (kvm_enabled() && virt_use_kvm_aia_aplic_imsic(s->aia_type)) {
+    만약 (kvm_enabled() && virt_use_kvm_aia_aplic_imsic(s->aia_type)) {
         kvm_riscv_aia_create(machine, IMSIC_MMIO_GROUP_MIN_SHIFT,
                              VIRT_IRQCHIP_NUM_SOURCES, VIRT_IRQCHIP_NUM_MSIS,
                              s->memmap[VIRT_APLIC_S].base,
@@ -853,17 +853,17 @@ static void virt_machine_init(MachineState *machine)
                              s->aia_guests);
     }
 
-    if (riscv_is_32bit(&s->soc[0])) {
-#if HOST_LONG_BITS == 64
+    만약 (riscv_is_32bit(&s->soc[0])) {
+#만약 HOST_LONG_BITS == 64
         /* limit RAM size in a 32-bit system */
-        if (machine->ram_size > 10 * GiB) {
+        만약 (machine->ram_size > 10 * GiB) {
             machine->ram_size = 10 * GiB;
             error_report("Limiting RAM size to 10 GiB");
         }
 #endif
         virt_high_pcie_memmap.base = VIRT32_HIGH_PCIE_MMIO_BASE;
         virt_high_pcie_memmap.size = VIRT32_HIGH_PCIE_MMIO_SIZE;
-    } else {
+    } 아니면 {
         virt_high_pcie_memmap.size = VIRT64_HIGH_PCIE_MMIO_SIZE;
         virt_high_pcie_memmap.base = s->memmap[VIRT_DRAM].base +
                                      machine->ram_size;
@@ -892,7 +892,7 @@ static void virt_machine_init(MachineState *machine)
     sifive_test_create(s->memmap[VIRT_TEST].base);
 
     /* VirtIO MMIO devices */
-    for (i = 0; i < VIRTIO_COUNT; i++) {
+    위해 (i = 0; i < VIRTIO_COUNT; i++) {
         sysbus_create_simple("virtio-mmio",
             s->memmap[VIRT_VIRTIO].base + i * s->memmap[VIRT_VIRTIO].size,
             qdev_get_gpio_in(virtio_irqchip, VIRTIO_IRQ + i));
@@ -911,7 +911,7 @@ static void virt_machine_init(MachineState *machine)
         0, qdev_get_gpio_in(mmio_irqchip, UART0_IRQ), 399193,
         serial_hd(0), DEVICE_LITTLE_ENDIAN);
 
-    if (serial_hd(1)) {
+    만약 (serial_hd(1)) {
         serial_mm_init(system_memory, s->memmap[VIRT_UART1].base,
             0, qdev_get_gpio_in(mmio_irqchip, UART1_IRQ), 399193,
             serial_hd(1), DEVICE_LITTLE_ENDIAN);
@@ -921,7 +921,7 @@ static void virt_machine_init(MachineState *machine)
     sysbus_create_simple("goldfish_rtc", s->memmap[VIRT_RTC].base,
         qdev_get_gpio_in(mmio_irqchip, RTC_IRQ));
 
-    for (i = 0; i < ARRAY_SIZE(s->flash); i++) {
+    위해 (i = 0; i < ARRAY_SIZE(s->flash); i++) {
         /* Map legacy -drive if=pflash to machine properties */
         pflash_cfi01_legacy_drive(s->flash[i],
                                   drive_get(IF_PFLASH, 0, i));
@@ -929,17 +929,17 @@ static void virt_machine_init(MachineState *machine)
     virt_flash_map(s, system_memory);
 
     /* load/create device tree */
-    if (machine->dtb) {
+    만약 (machine->dtb) {
         machine->fdt = load_device_tree(machine->dtb, &s->fdt_size);
-        if (!machine->fdt) {
+        만약 (!machine->fdt) {
             error_report("load_device_tree() failed");
             exit(1);
         }
-    } else {
+    } 아니면 {
         create_fdt(s);
     }
 
-    if (virt_is_iommu_sys_enabled(s)) {
+    만약 (virt_is_iommu_sys_enabled(s)) {
         riscv_create_iommu_sys(mmio_irqchip, s->memmap[VIRT_IOMMU_SYS].base,
                                IOMMU_SYS_IRQ, riscv_is_32bit(&s->soc[0]));
     }
@@ -952,8 +952,8 @@ static void virt_machine_instance_finalize(Object *obj)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
-    for (int i = 0; i < ARRAY_SIZE(s->flash); i++) {
-        if (s->flash[i] && !qdev_is_realized(DEVICE(s->flash[i]))) {
+    위해 (정수 i = 0; i < ARRAY_SIZE(s->flash); i++) {
+        만약 (s->flash[i] && !qdev_is_realized(DEVICE(s->flash[i]))) {
             object_unref(OBJECT(s->flash[i]));
         }
     }
@@ -978,7 +978,7 @@ static char *virt_get_aia_guests(Object *obj, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
-    return g_strdup_printf("%d", s->aia_guests);
+    반환 g_strdup_printf("%d", s->aia_guests);
 }
 
 static void virt_set_aia_guests(Object *obj, const char *val, Error **errp)
@@ -986,7 +986,7 @@ static void virt_set_aia_guests(Object *obj, const char *val, Error **errp)
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
     s->aia_guests = atoi(val);
-    if (s->aia_guests < 0 || s->aia_guests > VIRT_IRQCHIP_MAX_GUESTS) {
+    만약 (s->aia_guests < 0 || s->aia_guests > VIRT_IRQCHIP_MAX_GUESTS) {
         error_setg(errp, "Invalid number of AIA IMSIC guests");
         error_append_hint(errp, "Valid values be between 0 and %d.\n",
                           VIRT_IRQCHIP_MAX_GUESTS);
@@ -1010,20 +1010,20 @@ static char *virt_get_aia(Object *obj, Error **errp)
         break;
     };
 
-    return g_strdup(val);
+    반환 g_strdup(val);
 }
 
 static void virt_set_aia(Object *obj, const char *val, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
-    if (!strcmp(val, "none")) {
+    만약 (!strcmp(val, "none")) {
         s->aia_type = VIRT_AIA_TYPE_NONE;
-    } else if (!strcmp(val, "aplic")) {
+    } 아니면 만약 (!strcmp(val, "aplic")) {
         s->aia_type = VIRT_AIA_TYPE_APLIC;
-    } else if (!strcmp(val, "aplic-imsic")) {
+    } 아니면 만약 (!strcmp(val, "aplic-imsic")) {
         s->aia_type = VIRT_AIA_TYPE_APLIC_IMSIC;
-    } else {
+    } 아니면 {
         error_setg(errp, "Invalid AIA interrupt controller type");
         error_append_hint(errp, "Valid values are none, aplic, and "
                           "aplic-imsic.\n");
@@ -1034,7 +1034,7 @@ static bool virt_get_aclint(Object *obj, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
-    return s->have_aclint;
+    반환 s->have_aclint;
 }
 
 static void virt_set_aclint(Object *obj, bool value, Error **errp)
@@ -1046,7 +1046,7 @@ static void virt_set_aclint(Object *obj, bool value, Error **errp)
 
 bool virt_is_iommu_sys_enabled(RISCVVirtState *s)
 {
-    return s->iommu_sys == ON_OFF_AUTO_ON;
+    반환 s->iommu_sys == ON_OFF_AUTO_ON;
 }
 
 static void virt_get_iommu_sys(Object *obj, Visitor *v, const char *name,
@@ -1068,7 +1068,7 @@ static void virt_set_iommu_sys(Object *obj, Visitor *v, const char *name,
 
 bool virt_is_acpi_enabled(RISCVVirtState *s)
 {
-    return s->acpi != ON_OFF_AUTO_OFF;
+    반환 s->acpi != ON_OFF_AUTO_OFF;
 }
 
 static void virt_get_acpi(Object *obj, Visitor *v, const char *name,
@@ -1094,14 +1094,14 @@ virt_machine_get_hotplug_handler(MachineState *machine, DeviceState *dev)
     MachineClass *mc = MACHINE_GET_CLASS(machine);
     RISCVVirtState *s = RISCV_VIRT_MACHINE(machine);
 
-    if (device_is_dynamic_sysbus(mc, dev) ||
+    만약 (device_is_dynamic_sysbus(mc, dev) ||
         object_dynamic_cast(OBJECT(dev), TYPE_VIRTIO_IOMMU_PCI) ||
         object_dynamic_cast(OBJECT(dev), TYPE_RISCV_IOMMU_PCI)) {
         s->iommu_sys = ON_OFF_AUTO_OFF;
-        return HOTPLUG_HANDLER(machine);
+        반환 HOTPLUG_HANDLER(machine);
     }
 
-    return NULL;
+    반환 NULL;
 }
 
 static void virt_machine_device_plug_cb(const HotplugHandler *hotplug_dev,
@@ -1109,20 +1109,20 @@ static void virt_machine_device_plug_cb(const HotplugHandler *hotplug_dev,
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(hotplug_dev);
 
-    if (s->platform_bus_dev) {
+    만약 (s->platform_bus_dev) {
         MachineClass *mc = MACHINE_GET_CLASS(s);
 
-        if (device_is_dynamic_sysbus(mc, dev)) {
+        만약 (device_is_dynamic_sysbus(mc, dev)) {
             platform_bus_link_device(PLATFORM_BUS_DEVICE(s->platform_bus_dev),
                                      SYS_BUS_DEVICE(dev));
         }
     }
 
-    if (object_dynamic_cast(OBJECT(dev), TYPE_VIRTIO_IOMMU_PCI)) {
+    만약 (object_dynamic_cast(OBJECT(dev), TYPE_VIRTIO_IOMMU_PCI)) {
         create_fdt_virtio_iommu(s, pci_get_bdf(PCI_DEVICE(dev)));
     }
 
-    if (object_dynamic_cast(OBJECT(dev), TYPE_RISCV_IOMMU_PCI)) {
+    만약 (object_dynamic_cast(OBJECT(dev), TYPE_RISCV_IOMMU_PCI)) {
         create_fdt_iommu(s, pci_get_bdf(PCI_DEVICE(dev)));
         s->iommu_sys = ON_OFF_AUTO_OFF;
     }
