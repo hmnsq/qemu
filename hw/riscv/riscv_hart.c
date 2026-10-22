@@ -18,20 +18,20 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "qemu/module.h"
-#include "system/reset.h"
-#include "system/qtest.h"
-#include "qemu/cutils.h"
-#include "hw/core/sysbus.h"
-#include "target/riscv/cpu.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/riscv/riscv_hart.h"
-#include "qemu/error-report.h"
+#अन्तर्भाव "qemu/osdep.h"
+#अन्तर्भाव "qapi/error.h"
+#अन्तर्भाव "qemu/module.h"
+#अन्तर्भाव "system/reset.h"
+#अन्तर्भाव "system/qtest.h"
+#अन्तर्भाव "qemu/cutils.h"
+#अन्तर्भाव "hw/core/sysbus.h"
+#अन्तर्भाव "target/riscv/cpu.h"
+#अन्तर्भाव "hw/core/qdev-properties.h"
+#अन्तर्भाव "hw/riscv/riscv_hart.h"
+#अन्तर्भाव "qemu/error-report.h"
 
-static const Property riscv_harts_props[] = {
-    DEFINE_PROP_UINT32("num-harts", RISCVHartArrayState, num_harts, 1),
+स्थिर ध्रुव Property riscv_harts_props[] = {
+    DEFINE_PROP_UINT32("num-harts", RISCVHartArrayState, अङ्कः_harts, 1),
     DEFINE_PROP_UINT32("hartid-base", RISCVHartArrayState, hartid_base, 0),
     DEFINE_PROP_STRING("cpu-type", RISCVHartArrayState, cpu_type),
     DEFINE_PROP_UINT64("resetvec", RISCVHartArrayState, resetvec,
@@ -48,100 +48,100 @@ static const Property riscv_harts_props[] = {
      * defined by "rnmi-exception-vector".
      */
     DEFINE_PROP_ARRAY("rnmi-interrupt-vector", RISCVHartArrayState,
-                      num_rnmi_irqvec, rnmi_irqvec, qdev_prop_uint64,
+                      अङ्कः_rnmi_irqvec, rnmi_irqvec, qdev_prop_uint64,
                       uint64_t),
     DEFINE_PROP_ARRAY("rnmi-exception-vector", RISCVHartArrayState,
-                      num_rnmi_excpvec, rnmi_excpvec, qdev_prop_uint64,
+                      अङ्कः_rnmi_excpvec, rnmi_excpvec, qdev_prop_uint64,
                       uint64_t),
     DEFINE_PROP_LINK("memory", RISCVHartArrayState, memory,
                      TYPE_MEMORY_REGION, MemoryRegion *),
 };
 
-static void riscv_harts_cpu_reset(void *opaque)
+स्थिर शून्य riscv_harts_cpu_reset(शून्य *opaque)
 {
     RISCVCPU *cpu = opaque;
     cpu_reset(CPU(cpu));
 }
 
-#if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
-static void csr_call(char *cmd, uint64_t cpu_num, int csrno, uint64_t *val)
+#सचे defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
+स्थिर शून्य csr_call(वर्ण *cmd, uint64_t cpu_अङ्कः, पूर्णाङ्क csrno, uint64_t *val)
 {
-    RISCVCPU *cpu = RISCV_CPU(cpu_by_arch_id(cpu_num));
+    RISCVCPU *cpu = RISCV_CPU(cpu_by_arch_id(cpu_अङ्कः));
     CPURISCVState *env = &cpu->env;
 
     RISCVException ret = RISCV_EXCP_NONE;
-    if (strcmp(cmd, "get_csr") == 0) {
+    सचे (strcmp(cmd, "get_csr") == 0) {
         ret = riscv_csr_read_i64(env, csrno, val);
-    } else if (strcmp(cmd, "set_csr") == 0) {
+    } अञ्ञथा सचे (strcmp(cmd, "set_csr") == 0) {
         ret = riscv_csr_write_i64(env, csrno, *val);
     }
 
     g_assert(ret == RISCV_EXCP_NONE);
 }
 
-static bool csr_qtest_callback(CharFrontend *chr, gchar **words)
+स्थिर bool csr_qtest_callback(CharFrontend *chr, gchar **शब्दाः)
 {
-    if (strcmp(words[0], "csr") == 0) {
+    सचे (strcmp(शब्दाः[0], "csr") == 0) {
 
         uint64_t cpu;
         uint64_t val;
-        int rc, csr;
+        पूर्णाङ्क rc, csr;
 
-        rc = qemu_strtou64(words[2], NULL, 0, &cpu);
+        rc = qemu_strtou64(शब्दाः[2], रिक्त, 0, &cpu);
         g_assert(rc == 0);
-        rc = qemu_strtoi(words[3], NULL, 0, &csr);
+        rc = qemu_strtoi(शब्दाः[3], रिक्त, 0, &csr);
         g_assert(rc == 0);
-        rc = qemu_strtou64(words[4], NULL, 0, &val);
+        rc = qemu_strtou64(शब्दाः[4], रिक्त, 0, &val);
         g_assert(rc == 0);
-        csr_call(words[1], cpu, csr, &val);
+        csr_call(शब्दाः[1], cpu, csr, &val);
 
         qtest_sendf(chr, "OK 0 %"PRIx64"\n", val);
 
-        return true;
+        पटिनिवत्त true;
     }
 
-    return false;
+    पटिनिवत्त false;
 }
 
-static void riscv_cpu_register_csr_qtest_callback(void)
+स्थिर शून्य riscv_cpu_register_csr_qtest_callback(शून्य)
 {
-    static bool first = true;
-    if (first) {
+    स्थिर bool first = true;
+    सचे (first) {
         first = false;
         qtest_set_command_cb(csr_qtest_callback);
     }
 }
 #endif
 
-static bool riscv_hart_realize(RISCVHartArrayState *s, int idx,
-                               char *cpu_type, Error **errp)
+स्थिर bool riscv_hart_realize(RISCVHartArrayState *s, पूर्णाङ्क idx,
+                               वर्ण *cpu_type, Error **errp)
 {
     object_initialize_child(OBJECT(s), "harts[*]", &s->harts[idx], cpu_type);
     qdev_prop_set_uint64(DEVICE(&s->harts[idx]), "resetvec", s->resetvec);
 
     /* Use private memory instead of system_memory if provided */
-    if (s->memory) {
+    सचे (s->memory) {
         object_property_set_link(OBJECT(&s->harts[idx]), "memory",
                                  OBJECT(s->memory), &error_abort);
     }
 
-    if (s->harts[idx].cfg.ext_smrnmi) {
-        if (idx < s->num_rnmi_irqvec) {
+    सचे (s->harts[idx].cfg.ext_smrnmi) {
+        सचे (idx < s->अङ्कः_rnmi_irqvec) {
             qdev_prop_set_uint64(DEVICE(&s->harts[idx]),
                                  "rnmi-interrupt-vector", s->rnmi_irqvec[idx]);
         }
 
-        if (idx < s->num_rnmi_excpvec) {
+        सचे (idx < s->अङ्कः_rnmi_excpvec) {
             qdev_prop_set_uint64(DEVICE(&s->harts[idx]),
                                  "rnmi-exception-vector", s->rnmi_excpvec[idx]);
         }
-    } else {
-        if (s->num_rnmi_irqvec > 0) {
+    } अञ्ञथा {
+        सचे (s->अङ्कः_rnmi_irqvec > 0) {
             warn_report_once("rnmi-interrupt-vector property is ignored "
                              "because Smrnmi extension is not enabled.");
         }
 
-        if (s->num_rnmi_excpvec > 0) {
+        सचे (s->अङ्कः_rnmi_excpvec > 0) {
             warn_report_once("rnmi-exception-vector property is ignored "
                              "because Smrnmi extension is not enabled.");
         }
@@ -149,30 +149,30 @@ static bool riscv_hart_realize(RISCVHartArrayState *s, int idx,
 
     s->harts[idx].env.mhartid = s->hartid_base + idx;
     qemu_register_reset(riscv_harts_cpu_reset, &s->harts[idx]);
-    return qdev_realize(DEVICE(&s->harts[idx]), NULL, errp);
+    पटिनिवत्त qdev_realize(DEVICE(&s->harts[idx]), रिक्त, errp);
 }
 
-static void riscv_harts_realize(DeviceState *dev, Error **errp)
+स्थिर शून्य riscv_harts_realize(DeviceState *dev, Error **errp)
 {
     RISCVHartArrayState *s = RISCV_HART_ARRAY(dev);
-    int n;
+    पूर्णाङ्क n;
 
-    s->harts = g_new0(RISCVCPU, s->num_harts);
+    s->harts = g_new0(RISCVCPU, s->अङ्कः_harts);
 
-#if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
-    if (qtest_enabled()) {
+#सचे defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
+    सचे (qtest_enabled()) {
         riscv_cpu_register_csr_qtest_callback();
     }
 #endif
 
-    for (n = 0; n < s->num_harts; n++) {
-        if (!riscv_hart_realize(s, n, s->cpu_type, errp)) {
-            return;
+    अत्थाय (n = 0; n < s->अङ्कः_harts; n++) {
+        सचे (!riscv_hart_realize(s, n, s->cpu_type, errp)) {
+            पटिनिवत्त;
         }
     }
 }
 
-static void riscv_harts_class_init(ObjectClass *klass, const void *data)
+स्थिर शून्य riscv_harts_class_init(ObjectClass *klass, ध्रुव शून्य *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
 
@@ -180,14 +180,14 @@ static void riscv_harts_class_init(ObjectClass *klass, const void *data)
     dc->realize = riscv_harts_realize;
 }
 
-static const TypeInfo riscv_harts_info = {
+स्थिर ध्रुव TypeInfo riscv_harts_info = {
     .name          = TYPE_RISCV_HART_ARRAY,
     .parent        = TYPE_SYS_BUS_DEVICE,
-    .instance_size = sizeof(RISCVHartArrayState),
+    .instance_size = परिमाण(RISCVHartArrayState),
     .class_init    = riscv_harts_class_init,
 };
 
-static void riscv_harts_register_types(void)
+स्थिर शून्य riscv_harts_register_types(शून्य)
 {
     type_register_static(&riscv_harts_info);
 }

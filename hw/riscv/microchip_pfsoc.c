@@ -34,26 +34,26 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/error-report.h"
-#include "qemu/units.h"
-#include "qemu/cutils.h"
-#include "qapi/error.h"
-#include "qapi/visitor.h"
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/core/sysbus.h"
-#include "chardev/char.h"
-#include "hw/cpu/cluster.h"
-#include "target/riscv/cpu.h"
-#include "hw/misc/unimp.h"
-#include "hw/riscv/boot.h"
-#include "hw/riscv/riscv_hart.h"
-#include "hw/riscv/microchip_pfsoc.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/sifive_plic.h"
-#include "system/device_tree.h"
-#include "system/system.h"
+#अन्तर्भाव "qemu/osdep.h"
+#अन्तर्भाव "qemu/error-report.h"
+#अन्तर्भाव "qemu/units.h"
+#अन्तर्भाव "qemu/cutils.h"
+#अन्तर्भाव "qapi/error.h"
+#अन्तर्भाव "qapi/visitor.h"
+#अन्तर्भाव "hw/core/boards.h"
+#अन्तर्भाव "hw/core/loader.h"
+#अन्तर्भाव "hw/core/sysbus.h"
+#अन्तर्भाव "chardev/char.h"
+#अन्तर्भाव "hw/cpu/cluster.h"
+#अन्तर्भाव "target/riscv/cpu.h"
+#अन्तर्भाव "hw/misc/unimp.h"
+#अन्तर्भाव "hw/riscv/boot.h"
+#अन्तर्भाव "hw/riscv/riscv_hart.h"
+#अन्तर्भाव "hw/riscv/microchip_pfsoc.h"
+#अन्तर्भाव "hw/intc/riscv_aclint.h"
+#अन्तर्भाव "hw/intc/sifive_plic.h"
+#अन्तर्भाव "system/device_tree.h"
+#अन्तर्भाव "system/system.h"
 
 /*
  * The BIOS image used by this machine is called Hart Software Services (HSS).
@@ -83,7 +83,7 @@
  *   - Register Map/PF_SoC_RegMap_V1_1/MPFS250T/mpfs250t_ioscb_memmap_dri.htm
  *     describes the complete IOSCB modules memory maps
  */
-static const MemMapEntry microchip_pfsoc_memmap[] = {
+स्थिर ध्रुव MemMapEntry microchip_pfsoc_memmap[] = {
     [MICROCHIP_PFSOC_RSVD0] =           {        0x0,        0x100 },
     [MICROCHIP_PFSOC_DEBUG] =           {      0x100,        0xf00 },
     [MICROCHIP_PFSOC_E51_DTIM] =        {  0x1000000,       0x2000 },
@@ -141,7 +141,7 @@ static const MemMapEntry microchip_pfsoc_memmap[] = {
 
 };
 
-static void microchip_pfsoc_soc_instance_init(Object *obj)
+स्थिर शून्य microchip_pfsoc_soc_instance_init(Object *obj)
 {
     MicrochipPFSoCState *s = MICROCHIP_PFSOC(obj);
 
@@ -190,20 +190,20 @@ static void microchip_pfsoc_soc_instance_init(Object *obj)
     object_initialize_child(obj, "ioscb", &s->ioscb, TYPE_MCHP_PFSOC_IOSCB);
 }
 
-static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
+स्थिर शून्य microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
 {
     MachineState *ms = MACHINE(qdev_get_machine());
     MicrochipIcicleKitState *iks = MICROCHIP_ICICLE_KIT_MACHINE(ms);
     MicrochipPFSoCState *s = MICROCHIP_PFSOC(dev);
-    const MemMapEntry *memmap = microchip_pfsoc_memmap;
+    ध्रुव MemMapEntry *memmap = microchip_pfsoc_memmap;
     MemoryRegion *system_memory = get_system_memory();
     MemoryRegion *rsvd0_mem = g_new(MemoryRegion, 1);
     MemoryRegion *e51_dtim_mem = g_new(MemoryRegion, 1);
     MemoryRegion *l2lim_mem = g_new(MemoryRegion, 1);
     MemoryRegion *envm_data = g_new(MemoryRegion, 1);
     MemoryRegion *qspi_xip_mem = g_new(MemoryRegion, 1);
-    char *plic_hart_config;
-    int i;
+    वर्ण *plic_hart_config;
+    पूर्णाङ्क i;
 
     sysbus_realize(SYS_BUS_DEVICE(&s->e_cpus), &error_abort);
     qdev_prop_set_uint32(DEVICE(&s->u_cpus), "num-harts", ms->smp.cpus - 1);
@@ -214,18 +214,18 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
      * CPU must exist and have been parented into the cluster before the
      * cluster is realized.
      */
-    qdev_realize(DEVICE(&s->e_cluster), NULL, &error_abort);
-    qdev_realize(DEVICE(&s->u_cluster), NULL, &error_abort);
+    qdev_realize(DEVICE(&s->e_cluster), रिक्त, &error_abort);
+    qdev_realize(DEVICE(&s->u_cluster), रिक्त, &error_abort);
 
     /* Reserved Memory at address 0 */
-    memory_region_init_ram(rsvd0_mem, NULL, "microchip.pfsoc.rsvd0_mem",
+    memory_region_init_ram(rsvd0_mem, रिक्त, "microchip.pfsoc.rsvd0_mem",
                            memmap[MICROCHIP_PFSOC_RSVD0].size, &error_fatal);
     memory_region_add_subregion(system_memory,
                                 memmap[MICROCHIP_PFSOC_RSVD0].base,
                                 rsvd0_mem);
 
     /* E51 DTIM */
-    memory_region_init_ram(e51_dtim_mem, NULL, "microchip.pfsoc.e51_dtim_mem",
+    memory_region_init_ram(e51_dtim_mem, रिक्त, "microchip.pfsoc.e51_dtim_mem",
                            memmap[MICROCHIP_PFSOC_E51_DTIM].size, &error_fatal);
     memory_region_add_subregion(system_memory,
                                 memmap[MICROCHIP_PFSOC_E51_DTIM].base,
@@ -271,7 +271,7 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
      * leave it enabled all the time. This won't break anything, but will be
      * too generous to misbehaving guests.
      */
-    memory_region_init_ram(l2lim_mem, NULL, "microchip.pfsoc.l2lim",
+    memory_region_init_ram(l2lim_mem, रिक्त, "microchip.pfsoc.l2lim",
                            memmap[MICROCHIP_PFSOC_L2LIM].size, &error_fatal);
     memory_region_add_subregion(system_memory,
                                 memmap[MICROCHIP_PFSOC_L2LIM].base,
@@ -284,8 +284,8 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
     s->plic = sifive_plic_create(system_memory,
         memmap[MICROCHIP_PFSOC_PLIC].base,
         plic_hart_config, ms->smp.cpus, 0,
-        MICROCHIP_PFSOC_PLIC_NUM_SOURCES,
-        MICROCHIP_PFSOC_PLIC_NUM_PRIORITIES,
+        MICROCHIP_PFSOC_PLIC_अङ्कः_SOURCES,
+        MICROCHIP_PFSOC_PLIC_अङ्कः_PRIORITIES,
         MICROCHIP_PFSOC_PLIC_PRIORITY_BASE,
         MICROCHIP_PFSOC_PLIC_PENDING_BASE,
         MICROCHIP_PFSOC_PLIC_ENABLE_BASE,
@@ -299,7 +299,7 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
     sysbus_realize(SYS_BUS_DEVICE(&s->dma), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->dma), 0,
                     memmap[MICROCHIP_PFSOC_DMA].base);
-    for (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
+    अत्थाय (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
         sysbus_connect_irq(SYS_BUS_DEVICE(&s->dma), i,
                            qdev_get_gpio_in(DEVICE(s->plic),
                                             MICROCHIP_PFSOC_DMA_IRQ0 + i));
@@ -414,8 +414,8 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
         memmap[MICROCHIP_PFSOC_USB].size);
 
     /* GEMs */
-    qemu_configure_nic_device(DEVICE(&s->gem0), true, NULL);
-    qemu_configure_nic_device(DEVICE(&s->gem1), true, NULL);
+    qemu_configure_nic_device(DEVICE(&s->gem0), true, रिक्त);
+    qemu_configure_nic_device(DEVICE(&s->gem1), true, रिक्त);
 
     object_property_set_int(OBJECT(&s->gem0), "revision", GEM_REVISION, errp);
     object_property_set_int(OBJECT(&s->gem0), "phy-addr", 8, errp);
@@ -489,7 +489,7 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
                                 qspi_xip_mem);
 }
 
-static void microchip_pfsoc_soc_class_init(ObjectClass *oc, const void *data)
+स्थिर शून्य microchip_pfsoc_soc_class_init(ObjectClass *oc, ध्रुव शून्य *data)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
@@ -498,34 +498,34 @@ static void microchip_pfsoc_soc_class_init(ObjectClass *oc, const void *data)
     dc->user_creatable = false;
 }
 
-static const TypeInfo microchip_pfsoc_soc_type_info = {
+स्थिर ध्रुव TypeInfo microchip_pfsoc_soc_type_info = {
     .name = TYPE_MICROCHIP_PFSOC,
     .parent = TYPE_DEVICE,
-    .instance_size = sizeof(MicrochipPFSoCState),
+    .instance_size = परिमाण(MicrochipPFSoCState),
     .instance_init = microchip_pfsoc_soc_instance_init,
     .class_init = microchip_pfsoc_soc_class_init,
 };
 
-static void microchip_pfsoc_soc_register_types(void)
+स्थिर शून्य microchip_pfsoc_soc_register_types(शून्य)
 {
     type_register_static(&microchip_pfsoc_soc_type_info);
 }
 
 type_init(microchip_pfsoc_soc_register_types)
 
-static void microchip_icicle_kit_machine_init(MachineState *machine)
+स्थिर शून्य microchip_icicle_kit_machine_init(MachineState *machine)
 {
     MachineClass *mc = MACHINE_GET_CLASS(machine);
-    const MemMapEntry *memmap = microchip_pfsoc_memmap;
+    ध्रुव MemMapEntry *memmap = microchip_pfsoc_memmap;
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(machine);
     MemoryRegion *system_memory = get_system_memory();
-    MemoryRegion *mem_low = g_new(MemoryRegion, 1);
-    MemoryRegion *mem_low_alias = g_new(MemoryRegion, 1);
-    MemoryRegion *mem_high = g_new(MemoryRegion, 1);
-    MemoryRegion *mem_high_alias = g_new(MemoryRegion, 1);
-    uint64_t mem_low_size, mem_high_size;
+    MemoryRegion *mem_नीचः = g_new(MemoryRegion, 1);
+    MemoryRegion *mem_नीचः_alias = g_new(MemoryRegion, 1);
+    MemoryRegion *mem_उच्चः = g_new(MemoryRegion, 1);
+    MemoryRegion *mem_उच्चः_alias = g_new(MemoryRegion, 1);
+    uint64_t mem_नीचः_size, mem_उच्चः_size;
     hwaddr firmware_load_addr;
-    const char *firmware_name;
+    ध्रुव वर्ण *firmware_name;
     hwaddr firmware_end_addr;
     vaddr kernel_start_addr;
     uint64_t kernel_entry;
@@ -534,8 +534,8 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
     RISCVBootInfo boot_info;
 
     /* Sanity check on RAM size */
-    if (machine->ram_size < mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    सचे (machine->ram_size < mc->default_ram_size) {
+        वर्ण *sz = size_to_str(mc->default_ram_size);
         error_report("Invalid RAM size, should be bigger than %s", sz);
         g_free(sz);
         exit(EXIT_FAILURE);
@@ -544,42 +544,42 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
     /* Initialize SoC */
     object_initialize_child(OBJECT(machine), "soc", &s->soc,
                             TYPE_MICROCHIP_PFSOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&s->soc), रिक्त, &error_fatal);
 
     /* Split RAM into low and high regions using aliases to machine->ram */
-    mem_low_size = memmap[MICROCHIP_PFSOC_DRAM_LO].size;
-    mem_high_size = machine->ram_size - mem_low_size;
-    memory_region_init_alias(mem_low, NULL,
+    mem_नीचः_size = memmap[MICROCHIP_PFSOC_DRAM_LO].size;
+    mem_उच्चः_size = machine->ram_size - mem_नीचः_size;
+    memory_region_init_alias(mem_नीचः, रिक्त,
                              "microchip.icicle.kit.ram_low", machine->ram,
-                             0, mem_low_size);
-    memory_region_init_alias(mem_high, NULL,
+                             0, mem_नीचः_size);
+    memory_region_init_alias(mem_उच्चः, रिक्त,
                              "microchip.icicle.kit.ram_high", machine->ram,
-                             mem_low_size, mem_high_size);
+                             mem_नीचः_size, mem_उच्चः_size);
 
     /* Register RAM */
     memory_region_add_subregion(system_memory,
                                 memmap[MICROCHIP_PFSOC_DRAM_LO].base,
-                                mem_low);
+                                mem_नीचः);
     memory_region_add_subregion(system_memory,
                                 memmap[MICROCHIP_PFSOC_DRAM_HI].base,
-                                mem_high);
+                                mem_उच्चः);
 
     /* Create aliases for the low and high RAM regions */
-    memory_region_init_alias(mem_low_alias, NULL,
+    memory_region_init_alias(mem_नीचः_alias, रिक्त,
                              "microchip.icicle.kit.ram_low.alias",
-                             mem_low, 0, mem_low_size);
+                             mem_नीचः, 0, mem_नीचः_size);
     memory_region_add_subregion(system_memory,
                                 memmap[MICROCHIP_PFSOC_DRAM_LO_ALIAS].base,
-                                mem_low_alias);
-    memory_region_init_alias(mem_high_alias, NULL,
+                                mem_नीचः_alias);
+    memory_region_init_alias(mem_उच्चः_alias, रिक्त,
                              "microchip.icicle.kit.ram_high.alias",
-                             mem_high, 0, mem_high_size);
+                             mem_उच्चः, 0, mem_उच्चः_size);
     memory_region_add_subregion(system_memory,
                                 memmap[MICROCHIP_PFSOC_DRAM_HI_ALIAS].base,
-                                mem_high_alias);
+                                mem_उच्चः_alias);
 
     /* Attach an SD card */
-    if (dinfo) {
+    सचे (dinfo) {
         CadenceSDHCIState *sdhci = &(s->soc.sdhci);
         DeviceState *card = qdev_new(TYPE_SD_CARD);
 
@@ -599,55 +599,55 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
      * NULL, default |          Y | RISCV64_BIOS_BIN
      * other         | don't care | other
      */
-    if (machine->firmware && !strcmp(machine->firmware, "none")) {
-        if (!machine->kernel_filename) {
+    सचे (machine->firmware && !strcmp(machine->firmware, "none")) {
+        सचे (!machine->kernel_filename) {
             error_report("for -bios none, a kernel is required");
             exit(1);
         }
 
-        firmware_name = NULL;
+        firmware_name = रिक्त;
         firmware_load_addr = RESET_VECTOR;
-    } else if (!machine->firmware || !strcmp(machine->firmware, "default")) {
-        if (machine->kernel_filename) {
+    } अञ्ञथा सचे (!machine->firmware || !strcmp(machine->firmware, "default")) {
+        सचे (machine->kernel_filename) {
             firmware_name = RISCV64_BIOS_BIN;
             firmware_load_addr = memmap[MICROCHIP_PFSOC_DRAM_LO].base;
-        } else {
+        } अञ्ञथा {
             firmware_name = BIOS_FILENAME;
             firmware_load_addr = RESET_VECTOR;
         }
-    } else {
+    } अञ्ञथा {
         firmware_name = machine->firmware;
         firmware_load_addr = RESET_VECTOR;
     }
 
     riscv_boot_info_init_discontig_mem(&boot_info, &s->soc.u_cpus,
                                        memmap[MICROCHIP_PFSOC_DRAM_LO].base,
-                                       mem_low_size);
+                                       mem_नीचः_size);
 
     /* Load the firmware if necessary */
     firmware_end_addr = firmware_load_addr;
-    if (firmware_name) {
-        char *filename = riscv_find_firmware(firmware_name, NULL);
-        if (filename) {
+    सचे (firmware_name) {
+        वर्ण *filename = riscv_find_firmware(firmware_name, रिक्त);
+        सचे (filename) {
             firmware_end_addr = riscv_load_firmware(machine, &boot_info,
                                                     filename,
-                                                    &firmware_load_addr, NULL);
+                                                    &firmware_load_addr, रिक्त);
             g_free(filename);
         }
     }
 
-    if (machine->kernel_filename) {
+    सचे (machine->kernel_filename) {
         kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                          firmware_end_addr);
 
         riscv_load_kernel(machine, &boot_info, kernel_start_addr,
-                          true, NULL);
-        kernel_entry = boot_info.image_low_addr;
+                          true, रिक्त);
+        kernel_entry = boot_info.image_नीचः_addr;
 
-        if (machine->dtb) {
-            int fdt_size;
-            machine->fdt = load_device_tree(machine->dtb, &fdt_size);
-            if (!machine->fdt) {
+        सचे (machine->dtb) {
+            पूर्णाङ्क fdt_size;
+            machine->fdt = load_device_वृक्षः(machine->dtb, &fdt_size);
+            सचे (!machine->fdt) {
                 error_report("load_device_tree() failed");
                 exit(1);
             }
@@ -656,15 +656,15 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
             hwaddr kernel_ram_base = memmap[MICROCHIP_PFSOC_DRAM_LO].base;
             hwaddr kernel_ram_size = memmap[MICROCHIP_PFSOC_DRAM_LO].size;
 
-            if (kernel_entry - kernel_ram_base >= kernel_ram_size) {
+            सचे (kernel_entry - kernel_ram_base >= kernel_ram_size) {
                 kernel_ram_base = memmap[MICROCHIP_PFSOC_DRAM_HI].base;
-                kernel_ram_size = mem_high_size;
+                kernel_ram_size = mem_उच्चः_size;
             }
 
             fdt_load_addr = riscv_compute_fdt_addr(kernel_ram_base, kernel_ram_size,
                                                    machine, &boot_info);
             riscv_load_fdt(fdt_load_addr, machine->fdt);
-        } else {
+        } अञ्ञथा {
             warn_report_once("The QEMU microchip-icicle-kit machine does not "
                              "generate a device tree, so no device tree is "
                              "being provided to the guest.");
@@ -672,9 +672,9 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
         }
 
         hwaddr start_addr;
-        if (firmware_name) {
+        सचे (firmware_name) {
             start_addr = firmware_load_addr;
-        } else {
+        } अञ्ञथा {
             start_addr = kernel_entry;
         }
 
@@ -686,50 +686,50 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
     }
 }
 
-static void microchip_icicle_kit_set_clint_timebase_freq(Object *obj,
+स्थिर शून्य microchip_icicle_kit_set_clint_timebase_freq(Object *obj,
                                                          Visitor *v,
-                                                         const char *name,
-                                                         void *opaque,
+                                                         ध्रुव वर्ण *name,
+                                                         शून्य *opaque,
                                                          Error **errp)
 {
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(obj);
-    uint32_t value;
+    uint32_t मानम्;
 
-    if (!visit_type_uint32(v, name, &value, errp)) {
-        return;
+    सचे (!visit_type_uint32(v, name, &मानम्, errp)) {
+        पटिनिवत्त;
     }
 
-    s->clint_timebase_freq = value;
+    s->clint_timebase_freq = मानम्;
 }
 
-static void microchip_icicle_kit_get_clint_timebase_freq(Object *obj,
+स्थिर शून्य microchip_icicle_kit_get_clint_timebase_freq(Object *obj,
                                                          Visitor *v,
-                                                         const char *name,
-                                                         void *opaque,
+                                                         ध्रुव वर्ण *name,
+                                                         शून्य *opaque,
                                                          Error **errp)
 {
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(obj);
-    uint32_t value = s->clint_timebase_freq;
+    uint32_t मानम् = s->clint_timebase_freq;
 
-    visit_type_uint32(v, name, &value, errp);
+    visit_type_uint32(v, name, &मानम्, errp);
 }
 
-static void microchip_icicle_kit_machine_instance_init(Object *obj)
+स्थिर शून्य microchip_icicle_kit_machine_instance_init(Object *obj)
 {
     MicrochipIcicleKitState *m = MICROCHIP_ICICLE_KIT_MACHINE(obj);
     m->clint_timebase_freq = 1000000;
 }
 
-static void microchip_icicle_kit_machine_class_init(ObjectClass *oc,
-                                                    const void *data)
+स्थिर शून्य microchip_icicle_kit_machine_class_init(ObjectClass *oc,
+                                                    ध्रुव शून्य *data)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
     mc->desc = "Microchip PolarFire SoC Icicle Kit";
     mc->init = microchip_icicle_kit_machine_init;
-    mc->max_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_COUNT +
-                   MICROCHIP_PFSOC_COMPUTE_CPU_COUNT;
-    mc->min_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_COUNT + 1;
+    mc->max_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_गणनम् +
+                   MICROCHIP_PFSOC_COMPUTE_CPU_गणनम्;
+    mc->min_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_गणनम् + 1;
     mc->default_cpus = mc->min_cpus;
     mc->default_ram_id = "microchip.icicle.kit.ram";
     mc->auto_create_sdcard = true;
@@ -746,20 +746,20 @@ static void microchip_icicle_kit_machine_class_init(ObjectClass *oc,
     object_class_property_add(oc, "clint-timebase-frequency", "uint32_t",
                               microchip_icicle_kit_get_clint_timebase_freq,
                               microchip_icicle_kit_set_clint_timebase_freq,
-                              NULL, NULL);
+                              रिक्त, रिक्त);
     object_class_property_set_description(oc, "clint-timebase-frequency",
                                   "Set CLINT timebase frequency in Hz.");
 }
 
-static const TypeInfo microchip_icicle_kit_machine_typeinfo = {
+स्थिर ध्रुव TypeInfo microchip_icicle_kit_machine_typeinfo = {
     .name       = MACHINE_TYPE_NAME("microchip-icicle-kit"),
     .parent     = TYPE_MACHINE,
     .class_init = microchip_icicle_kit_machine_class_init,
     .instance_init = microchip_icicle_kit_machine_instance_init,
-    .instance_size = sizeof(MicrochipIcicleKitState),
+    .instance_size = परिमाण(MicrochipIcicleKitState),
 };
 
-static void microchip_icicle_kit_machine_init_register_types(void)
+स्थिर शून्य microchip_icicle_kit_machine_init_register_types(शून्य)
 {
     type_register_static(&microchip_icicle_kit_machine_typeinfo);
 }
