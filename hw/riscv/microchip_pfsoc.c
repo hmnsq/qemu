@@ -34,36 +34,36 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/error-report.h"
-#include "qemu/units.h"
-#include "qemu/cutils.h"
-#include "qapi/error.h"
-#include "qapi/visitor.h"
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/core/sysbus.h"
-#include "chardev/char.h"
-#include "hw/cpu/cluster.h"
-#include "target/riscv/cpu.h"
-#include "hw/misc/unimp.h"
-#include "hw/riscv/boot.h"
-#include "hw/riscv/riscv_hart.h"
-#include "hw/riscv/microchip_pfsoc.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/sifive_plic.h"
-#include "system/device_tree.h"
-#include "system/system.h"
+#ضمن "qemu/osdep.h"
+#ضمن "qemu/error-report.h"
+#ضمن "qemu/units.h"
+#ضمن "qemu/cutils.h"
+#ضمن "qapi/error.h"
+#ضمن "qapi/visitor.h"
+#ضمن "hw/core/boards.h"
+#ضمن "hw/core/loader.h"
+#ضمن "hw/core/sysbus.h"
+#ضمن "chardev/char.h"
+#ضمن "hw/cpu/cluster.h"
+#ضمن "target/riscv/cpu.h"
+#ضمن "hw/misc/unimp.h"
+#ضمن "hw/riscv/boot.h"
+#ضمن "hw/riscv/riscv_hart.h"
+#ضمن "hw/riscv/microchip_pfsoc.h"
+#ضمن "hw/intc/riscv_aclint.h"
+#ضمن "hw/intc/sifive_plic.h"
+#ضمن "system/device_tree.h"
+#ضمن "system/system.h"
 
 /*
  * The BIOS image used by this machine is called Hart Software Services (HSS).
  * See https://github.com/polarfire-soc/hart-software-services
  */
-#define BIOS_FILENAME   "hss.bin"
-#define RESET_VECTOR    0x20220000
+#وصف_ڪريو BIOS_FILENAME   "hss.bin"
+#وصف_ڪريو RESET_ويڪٽر    0x20220000
 
 /* GEM version */
-#define GEM_REVISION    0x0107010c
+#وصف_ڪريو GEM_REVISION    0x0107010c
 
 /*
  * The complete description of the whole PolarFire SoC memory map is scattered
@@ -83,7 +83,7 @@
  *   - Register Map/PF_SoC_RegMap_V1_1/MPFS250T/mpfs250t_ioscb_memmap_dri.htm
  *     describes the complete IOSCB modules memory maps
  */
-static const MemMapEntry microchip_pfsoc_memmap[] = {
+ساكن ثابت Mem_Map_داخلا microchip_pfsoc_memmap[] = {
     [MICROCHIP_PFSOC_RSVD0] =           {        0x0,        0x100 },
     [MICROCHIP_PFSOC_DEBUG] =           {      0x100,        0xf00 },
     [MICROCHIP_PFSOC_E51_DTIM] =        {  0x1000000,       0x2000 },
@@ -127,7 +127,7 @@ static const MemMapEntry microchip_pfsoc_memmap[] = {
     [MICROCHIP_PFSOC_GPIO2] =           { 0x20122000,       0x1000 },
     [MICROCHIP_PFSOC_RTC] =             { 0x20124000,       0x1000 },
     [MICROCHIP_PFSOC_ENVM_CFG] =        { 0x20200000,       0x1000 },
-    [MICROCHIP_PFSOC_ENVM_DATA] =       { 0x20220000,      0x20000 },
+    [MICROCHIP_PFSOC_ENVM_معلومات] =       { 0x20220000,      0x20000 },
     [MICROCHIP_PFSOC_USB] =             { 0x20201000,       0x1000 },
     [MICROCHIP_PFSOC_QSPI_XIP] =        { 0x21000000,    0x1000000 },
     [MICROCHIP_PFSOC_IOSCB] =           { 0x30000000,   0x10000000 },
@@ -141,72 +141,72 @@ static const MemMapEntry microchip_pfsoc_memmap[] = {
 
 };
 
-static void microchip_pfsoc_soc_instance_init(Object *obj)
+ساكن فراغ microchip_pfsoc_soc_instance_init(Object *obj)
 {
     MicrochipPFSoCState *s = MICROCHIP_PFSOC(obj);
 
-    object_initialize_child(obj, "e-cluster", &s->e_cluster, TYPE_CPU_CLUSTER);
-    qdev_prop_set_uint32(DEVICE(&s->e_cluster), "cluster-id", 0);
+    object_initialize_ٻار(obj, "e-cluster", &s->e_cluster, TYPE_CPU_CLUSTER);
+    qdev_prop_سيٽ_uint32(DEVICE(&s->e_cluster), "cluster-id", 0);
 
-    object_initialize_child(OBJECT(&s->e_cluster), "e-cpus", &s->e_cpus,
+    object_initialize_ٻار(OBJECT(&s->e_cluster), "e-cpus", &s->e_cpus,
                             TYPE_RISCV_HART_ARRAY);
-    qdev_prop_set_uint32(DEVICE(&s->e_cpus), "num-harts", 1);
-    qdev_prop_set_uint32(DEVICE(&s->e_cpus), "hartid-base", 0);
-    qdev_prop_set_string(DEVICE(&s->e_cpus), "cpu-type",
+    qdev_prop_سيٽ_uint32(DEVICE(&s->e_cpus), "num-harts", 1);
+    qdev_prop_سيٽ_uint32(DEVICE(&s->e_cpus), "hartid-base", 0);
+    qdev_prop_سيٽ_string(DEVICE(&s->e_cpus), "cpu-type",
                          TYPE_RISCV_CPU_SIFIVE_E51);
-    qdev_prop_set_uint64(DEVICE(&s->e_cpus), "resetvec", RESET_VECTOR);
+    qdev_prop_سيٽ_uint64(DEVICE(&s->e_cpus), "resetvec", RESET_ويڪٽر);
 
-    object_initialize_child(obj, "u-cluster", &s->u_cluster, TYPE_CPU_CLUSTER);
-    qdev_prop_set_uint32(DEVICE(&s->u_cluster), "cluster-id", 1);
+    object_initialize_ٻار(obj, "u-cluster", &s->u_cluster, TYPE_CPU_CLUSTER);
+    qdev_prop_سيٽ_uint32(DEVICE(&s->u_cluster), "cluster-id", 1);
 
-    object_initialize_child(OBJECT(&s->u_cluster), "u-cpus", &s->u_cpus,
+    object_initialize_ٻار(OBJECT(&s->u_cluster), "u-cpus", &s->u_cpus,
                             TYPE_RISCV_HART_ARRAY);
     /*
      * Set the `num-harts` property later as the machine is potentially not
      * created yet.
      */
-    qdev_prop_set_uint32(DEVICE(&s->u_cpus), "hartid-base", 1);
-    qdev_prop_set_string(DEVICE(&s->u_cpus), "cpu-type",
+    qdev_prop_سيٽ_uint32(DEVICE(&s->u_cpus), "hartid-base", 1);
+    qdev_prop_سيٽ_string(DEVICE(&s->u_cpus), "cpu-type",
                          TYPE_RISCV_CPU_SIFIVE_U54);
-    qdev_prop_set_uint64(DEVICE(&s->u_cpus), "resetvec", RESET_VECTOR);
+    qdev_prop_سيٽ_uint64(DEVICE(&s->u_cpus), "resetvec", RESET_ويڪٽر);
 
-    object_initialize_child(obj, "dma-controller", &s->dma,
+    object_initialize_ٻار(obj, "dma-controller", &s->dma,
                             TYPE_SIFIVE_PDMA);
 
-    object_initialize_child(obj, "sysreg", &s->sysreg,
+    object_initialize_ٻار(obj, "sysreg", &s->sysreg,
                             TYPE_MCHP_PFSOC_SYSREG);
 
-    object_initialize_child(obj, "ddr-sgmii-phy", &s->ddr_sgmii_phy,
+    object_initialize_ٻار(obj, "ddr-sgmii-phy", &s->ddr_sgmii_phy,
                             TYPE_MCHP_PFSOC_DDR_SGMII_PHY);
-    object_initialize_child(obj, "ddr-cfg", &s->ddr_cfg,
+    object_initialize_ٻار(obj, "ddr-cfg", &s->ddr_cfg,
                             TYPE_MCHP_PFSOC_DDR_CFG);
 
-    object_initialize_child(obj, "gem0", &s->gem0, TYPE_CADENCE_GEM);
-    object_initialize_child(obj, "gem1", &s->gem1, TYPE_CADENCE_GEM);
+    object_initialize_ٻار(obj, "gem0", &s->gem0, TYPE_CADENCE_GEM);
+    object_initialize_ٻار(obj, "gem1", &s->gem1, TYPE_CADENCE_GEM);
 
-    object_initialize_child(obj, "sd-controller", &s->sdhci,
+    object_initialize_ٻار(obj, "sd-controller", &s->sdhci,
                             TYPE_CADENCE_SDHCI);
 
-    object_initialize_child(obj, "ioscb", &s->ioscb, TYPE_MCHP_PFSOC_IOSCB);
+    object_initialize_ٻار(obj, "ioscb", &s->ioscb, TYPE_MCHP_PFSOC_IOSCB);
 }
 
-static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
+ساكن فراغ microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
 {
     MachineState *ms = MACHINE(qdev_get_machine());
     MicrochipIcicleKitState *iks = MICROCHIP_ICICLE_KIT_MACHINE(ms);
     MicrochipPFSoCState *s = MICROCHIP_PFSOC(dev);
-    const MemMapEntry *memmap = microchip_pfsoc_memmap;
-    MemoryRegion *system_memory = get_system_memory();
-    MemoryRegion *rsvd0_mem = g_new(MemoryRegion, 1);
-    MemoryRegion *e51_dtim_mem = g_new(MemoryRegion, 1);
-    MemoryRegion *l2lim_mem = g_new(MemoryRegion, 1);
-    MemoryRegion *envm_data = g_new(MemoryRegion, 1);
-    MemoryRegion *qspi_xip_mem = g_new(MemoryRegion, 1);
-    char *plic_hart_config;
-    int i;
+    ثابت Mem_Map_داخلا *memmap = microchip_pfsoc_memmap;
+    يادگيري_Region *system_يادگيري = get_system_يادگيري();
+    يادگيري_Region *rsvd0_mem = g_new(يادگيري_Region, 1);
+    يادگيري_Region *e51_dtim_mem = g_new(يادگيري_Region, 1);
+    يادگيري_Region *l2lim_mem = g_new(يادگيري_Region, 1);
+    يادگيري_Region *envm_معلومات = g_new(يادگيري_Region, 1);
+    يادگيري_Region *qspi_xip_mem = g_new(يادگيري_Region, 1);
+    حرف *plic_hart_config;
+    صحيح i;
 
     sysbus_realize(SYS_BUS_DEVICE(&s->e_cpus), &error_abort);
-    qdev_prop_set_uint32(DEVICE(&s->u_cpus), "num-harts", ms->smp.cpus - 1);
+    qdev_prop_سيٽ_uint32(DEVICE(&s->u_cpus), "num-harts", ms->smp.cpus - 1);
     sysbus_realize(SYS_BUS_DEVICE(&s->u_cpus), &error_abort);
     /*
      * The cluster must be realized after the RISC-V hart array container,
@@ -214,53 +214,53 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
      * CPU must exist and have been parented into the cluster before the
      * cluster is realized.
      */
-    qdev_realize(DEVICE(&s->e_cluster), NULL, &error_abort);
-    qdev_realize(DEVICE(&s->u_cluster), NULL, &error_abort);
+    qdev_realize(DEVICE(&s->e_cluster), عدم, &error_abort);
+    qdev_realize(DEVICE(&s->u_cluster), عدم, &error_abort);
 
     /* Reserved Memory at address 0 */
-    memory_region_init_ram(rsvd0_mem, NULL, "microchip.pfsoc.rsvd0_mem",
-                           memmap[MICROCHIP_PFSOC_RSVD0].size, &error_fatal);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_RSVD0].base,
+    يادگيري_region_init_ram(rsvd0_mem, عدم, "microchip.pfsoc.rsvd0_mem",
+                           memmap[MICROCHIP_PFSOC_RSVD0].سائيز, &error_fatal);
+    يادگيري_region_جوڙيو_subregion(system_يادگيري,
+                                memmap[MICROCHIP_PFSOC_RSVD0].بنياد,
                                 rsvd0_mem);
 
     /* E51 DTIM */
-    memory_region_init_ram(e51_dtim_mem, NULL, "microchip.pfsoc.e51_dtim_mem",
-                           memmap[MICROCHIP_PFSOC_E51_DTIM].size, &error_fatal);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_E51_DTIM].base,
+    يادگيري_region_init_ram(e51_dtim_mem, عدم, "microchip.pfsoc.e51_dtim_mem",
+                           memmap[MICROCHIP_PFSOC_E51_DTIM].سائيز, &error_fatal);
+    يادگيري_region_جوڙيو_subregion(system_يادگيري,
+                                memmap[MICROCHIP_PFSOC_E51_DTIM].بنياد,
                                 e51_dtim_mem);
 
     /* Bus Error Units */
     create_unimplemented_device("microchip.pfsoc.buserr_unit0_mem",
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT0].base,
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT0].size);
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT0].بنياد,
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT0].سائيز);
     create_unimplemented_device("microchip.pfsoc.buserr_unit1_mem",
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT1].base,
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT1].size);
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT1].بنياد,
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT1].سائيز);
     create_unimplemented_device("microchip.pfsoc.buserr_unit2_mem",
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT2].base,
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT2].size);
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT2].بنياد,
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT2].سائيز);
     create_unimplemented_device("microchip.pfsoc.buserr_unit3_mem",
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT3].base,
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT3].size);
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT3].بنياد,
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT3].سائيز);
     create_unimplemented_device("microchip.pfsoc.buserr_unit4_mem",
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT4].base,
-        memmap[MICROCHIP_PFSOC_BUSERR_UNIT4].size);
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT4].بنياد,
+        memmap[MICROCHIP_PFSOC_BUSERR_UNIT4].سائيز);
 
     /* CLINT */
-    riscv_aclint_swi_create(system_memory,
-        memmap[MICROCHIP_PFSOC_CLINT].base,
+    riscv_aclint_swi_create(system_يادگيري,
+        memmap[MICROCHIP_PFSOC_CLINT].بنياد,
         0, ms->smp.cpus, false);
-    riscv_aclint_mtimer_create(system_memory,
-        memmap[MICROCHIP_PFSOC_CLINT].base + RISCV_ACLINT_SWI_SIZE,
-        RISCV_ACLINT_DEFAULT_MTIMER_SIZE, 0, ms->smp.cpus,
+    riscv_aclint_mtimer_create(system_يادگيري,
+        memmap[MICROCHIP_PFSOC_CLINT].بنياد + RISCV_ACLINT_SWI_سائيز,
+        RISCV_ACLINT_DEFAULT_MTIMER_سائيز, 0, ms->smp.cpus,
         RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
         iks->clint_timebase_freq, false);
 
     /* L2 cache controller */
     create_unimplemented_device("microchip.pfsoc.l2cc",
-        memmap[MICROCHIP_PFSOC_L2CC].base, memmap[MICROCHIP_PFSOC_L2CC].size);
+        memmap[MICROCHIP_PFSOC_L2CC].بنياد, memmap[MICROCHIP_PFSOC_L2CC].سائيز);
 
     /*
      * Add L2-LIM at reset size.
@@ -271,225 +271,225 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
      * leave it enabled all the time. This won't break anything, but will be
      * too generous to misbehaving guests.
      */
-    memory_region_init_ram(l2lim_mem, NULL, "microchip.pfsoc.l2lim",
-                           memmap[MICROCHIP_PFSOC_L2LIM].size, &error_fatal);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_L2LIM].base,
+    يادگيري_region_init_ram(l2lim_mem, عدم, "microchip.pfsoc.l2lim",
+                           memmap[MICROCHIP_PFSOC_L2LIM].سائيز, &error_fatal);
+    يادگيري_region_جوڙيو_subregion(system_يادگيري,
+                                memmap[MICROCHIP_PFSOC_L2LIM].بنياد,
                                 l2lim_mem);
 
     /* create PLIC hart topology configuration string */
     plic_hart_config = riscv_plic_hart_config_string(ms->smp.cpus);
 
     /* PLIC */
-    s->plic = sifive_plic_create(system_memory,
-        memmap[MICROCHIP_PFSOC_PLIC].base,
+    s->plic = sifive_plic_create(system_يادگيري,
+        memmap[MICROCHIP_PFSOC_PLIC].بنياد,
         plic_hart_config, ms->smp.cpus, 0,
-        MICROCHIP_PFSOC_PLIC_NUM_SOURCES,
-        MICROCHIP_PFSOC_PLIC_NUM_PRIORITIES,
-        MICROCHIP_PFSOC_PLIC_PRIORITY_BASE,
-        MICROCHIP_PFSOC_PLIC_PENDING_BASE,
-        MICROCHIP_PFSOC_PLIC_ENABLE_BASE,
+        MICROCHIP_PFSOC_PLIC_انگ_SOURCES,
+        MICROCHIP_PFSOC_PLIC_انگ_PRIORITIES,
+        MICROCHIP_PFSOC_PLIC_ترجيح_بنياد,
+        MICROCHIP_PFSOC_PLIC_PENDING_بنياد,
+        MICROCHIP_PFSOC_PLIC_ENABLE_بنياد,
         MICROCHIP_PFSOC_PLIC_ENABLE_STRIDE,
-        MICROCHIP_PFSOC_PLIC_CONTEXT_BASE,
+        MICROCHIP_PFSOC_PLIC_CONTEXT_بنياد,
         MICROCHIP_PFSOC_PLIC_CONTEXT_STRIDE,
-        memmap[MICROCHIP_PFSOC_PLIC].size);
+        memmap[MICROCHIP_PFSOC_PLIC].سائيز);
     g_free(plic_hart_config);
 
     /* DMA */
     sysbus_realize(SYS_BUS_DEVICE(&s->dma), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->dma), 0,
-                    memmap[MICROCHIP_PFSOC_DMA].base);
-    for (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
+                    memmap[MICROCHIP_PFSOC_DMA].بنياد);
+    لكل (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
         sysbus_connect_irq(SYS_BUS_DEVICE(&s->dma), i,
-                           qdev_get_gpio_in(DEVICE(s->plic),
+                           qdev_get_gpio_اندريون(DEVICE(s->plic),
                                             MICROCHIP_PFSOC_DMA_IRQ0 + i));
     }
 
     /* SYSREG */
     sysbus_realize(SYS_BUS_DEVICE(&s->sysreg), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->sysreg), 0,
-                    memmap[MICROCHIP_PFSOC_SYSREG].base);
+                    memmap[MICROCHIP_PFSOC_SYSREG].بنياد);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->sysreg), 0,
-                       qdev_get_gpio_in(DEVICE(s->plic),
+                       qdev_get_gpio_اندريون(DEVICE(s->plic),
                        MICROCHIP_PFSOC_MAILBOX_IRQ));
 
     /* AXISW */
     create_unimplemented_device("microchip.pfsoc.axisw",
-        memmap[MICROCHIP_PFSOC_AXISW].base,
-        memmap[MICROCHIP_PFSOC_AXISW].size);
+        memmap[MICROCHIP_PFSOC_AXISW].بنياد,
+        memmap[MICROCHIP_PFSOC_AXISW].سائيز);
 
     /* MPUCFG */
     create_unimplemented_device("microchip.pfsoc.mpucfg",
-        memmap[MICROCHIP_PFSOC_MPUCFG].base,
-        memmap[MICROCHIP_PFSOC_MPUCFG].size);
+        memmap[MICROCHIP_PFSOC_MPUCFG].بنياد,
+        memmap[MICROCHIP_PFSOC_MPUCFG].سائيز);
 
     /* FMETER */
     create_unimplemented_device("microchip.pfsoc.fmeter",
-        memmap[MICROCHIP_PFSOC_FMETER].base,
-        memmap[MICROCHIP_PFSOC_FMETER].size);
+        memmap[MICROCHIP_PFSOC_FMETER].بنياد,
+        memmap[MICROCHIP_PFSOC_FMETER].سائيز);
 
     /* DDR SGMII PHY */
     sysbus_realize(SYS_BUS_DEVICE(&s->ddr_sgmii_phy), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ddr_sgmii_phy), 0,
-                    memmap[MICROCHIP_PFSOC_DDR_SGMII_PHY].base);
+                    memmap[MICROCHIP_PFSOC_DDR_SGMII_PHY].بنياد);
 
     /* DDR CFG */
     sysbus_realize(SYS_BUS_DEVICE(&s->ddr_cfg), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ddr_cfg), 0,
-                    memmap[MICROCHIP_PFSOC_DDR_CFG].base);
+                    memmap[MICROCHIP_PFSOC_DDR_CFG].بنياد);
 
     /* SDHCI */
     sysbus_realize(SYS_BUS_DEVICE(&s->sdhci), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->sdhci), 0,
-                    memmap[MICROCHIP_PFSOC_EMMC_SD].base);
+                    memmap[MICROCHIP_PFSOC_EMMC_SD].بنياد);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->sdhci), 0,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_EMMC_SD_IRQ));
+        qdev_get_gpio_اندريون(DEVICE(s->plic), MICROCHIP_PFSOC_EMMC_SD_IRQ));
 
     /* MMUARTs */
-    s->serial0 = mchp_pfsoc_mmuart_create(system_memory,
-        memmap[MICROCHIP_PFSOC_MMUART0].base,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART0_IRQ),
+    s->serial0 = mchp_pfsoc_mmuart_create(system_يادگيري,
+        memmap[MICROCHIP_PFSOC_MMUART0].بنياد,
+        qdev_get_gpio_اندريون(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART0_IRQ),
         serial_hd(0));
-    s->serial1 = mchp_pfsoc_mmuart_create(system_memory,
-        memmap[MICROCHIP_PFSOC_MMUART1].base,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART1_IRQ),
+    s->serial1 = mchp_pfsoc_mmuart_create(system_يادگيري,
+        memmap[MICROCHIP_PFSOC_MMUART1].بنياد,
+        qdev_get_gpio_اندريون(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART1_IRQ),
         serial_hd(1));
-    s->serial2 = mchp_pfsoc_mmuart_create(system_memory,
-        memmap[MICROCHIP_PFSOC_MMUART2].base,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART2_IRQ),
+    s->serial2 = mchp_pfsoc_mmuart_create(system_يادگيري,
+        memmap[MICROCHIP_PFSOC_MMUART2].بنياد,
+        qdev_get_gpio_اندريون(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART2_IRQ),
         serial_hd(2));
-    s->serial3 = mchp_pfsoc_mmuart_create(system_memory,
-        memmap[MICROCHIP_PFSOC_MMUART3].base,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART3_IRQ),
+    s->serial3 = mchp_pfsoc_mmuart_create(system_يادگيري,
+        memmap[MICROCHIP_PFSOC_MMUART3].بنياد,
+        qdev_get_gpio_اندريون(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART3_IRQ),
         serial_hd(3));
-    s->serial4 = mchp_pfsoc_mmuart_create(system_memory,
-        memmap[MICROCHIP_PFSOC_MMUART4].base,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART4_IRQ),
+    s->serial4 = mchp_pfsoc_mmuart_create(system_يادگيري,
+        memmap[MICROCHIP_PFSOC_MMUART4].بنياد,
+        qdev_get_gpio_اندريون(DEVICE(s->plic), MICROCHIP_PFSOC_MMUART4_IRQ),
         serial_hd(4));
 
     /* Watchdogs */
     create_unimplemented_device("microchip.pfsoc.watchdog0",
-        memmap[MICROCHIP_PFSOC_WDOG0].base,
-        memmap[MICROCHIP_PFSOC_WDOG0].size);
+        memmap[MICROCHIP_PFSOC_WDOG0].بنياد,
+        memmap[MICROCHIP_PFSOC_WDOG0].سائيز);
     create_unimplemented_device("microchip.pfsoc.watchdog1",
-        memmap[MICROCHIP_PFSOC_WDOG1].base,
-        memmap[MICROCHIP_PFSOC_WDOG1].size);
+        memmap[MICROCHIP_PFSOC_WDOG1].بنياد,
+        memmap[MICROCHIP_PFSOC_WDOG1].سائيز);
     create_unimplemented_device("microchip.pfsoc.watchdog2",
-        memmap[MICROCHIP_PFSOC_WDOG2].base,
-        memmap[MICROCHIP_PFSOC_WDOG2].size);
+        memmap[MICROCHIP_PFSOC_WDOG2].بنياد,
+        memmap[MICROCHIP_PFSOC_WDOG2].سائيز);
     create_unimplemented_device("microchip.pfsoc.watchdog3",
-        memmap[MICROCHIP_PFSOC_WDOG3].base,
-        memmap[MICROCHIP_PFSOC_WDOG3].size);
+        memmap[MICROCHIP_PFSOC_WDOG3].بنياد,
+        memmap[MICROCHIP_PFSOC_WDOG3].سائيز);
     create_unimplemented_device("microchip.pfsoc.watchdog4",
-        memmap[MICROCHIP_PFSOC_WDOG4].base,
-        memmap[MICROCHIP_PFSOC_WDOG4].size);
+        memmap[MICROCHIP_PFSOC_WDOG4].بنياد,
+        memmap[MICROCHIP_PFSOC_WDOG4].سائيز);
 
     /* SPI */
     create_unimplemented_device("microchip.pfsoc.spi0",
-        memmap[MICROCHIP_PFSOC_SPI0].base,
-        memmap[MICROCHIP_PFSOC_SPI0].size);
+        memmap[MICROCHIP_PFSOC_SPI0].بنياد,
+        memmap[MICROCHIP_PFSOC_SPI0].سائيز);
     create_unimplemented_device("microchip.pfsoc.spi1",
-        memmap[MICROCHIP_PFSOC_SPI1].base,
-        memmap[MICROCHIP_PFSOC_SPI1].size);
+        memmap[MICROCHIP_PFSOC_SPI1].بنياد,
+        memmap[MICROCHIP_PFSOC_SPI1].سائيز);
 
     /* I2C */
     create_unimplemented_device("microchip.pfsoc.i2c0",
-        memmap[MICROCHIP_PFSOC_I2C0].base,
-        memmap[MICROCHIP_PFSOC_I2C0].size);
+        memmap[MICROCHIP_PFSOC_I2C0].بنياد,
+        memmap[MICROCHIP_PFSOC_I2C0].سائيز);
     create_unimplemented_device("microchip.pfsoc.i2c1",
-        memmap[MICROCHIP_PFSOC_I2C1].base,
-        memmap[MICROCHIP_PFSOC_I2C1].size);
+        memmap[MICROCHIP_PFSOC_I2C1].بنياد,
+        memmap[MICROCHIP_PFSOC_I2C1].سائيز);
 
     /* CAN */
     create_unimplemented_device("microchip.pfsoc.can0",
-        memmap[MICROCHIP_PFSOC_CAN0].base,
-        memmap[MICROCHIP_PFSOC_CAN0].size);
+        memmap[MICROCHIP_PFSOC_CAN0].بنياد,
+        memmap[MICROCHIP_PFSOC_CAN0].سائيز);
     create_unimplemented_device("microchip.pfsoc.can1",
-        memmap[MICROCHIP_PFSOC_CAN1].base,
-        memmap[MICROCHIP_PFSOC_CAN1].size);
+        memmap[MICROCHIP_PFSOC_CAN1].بنياد,
+        memmap[MICROCHIP_PFSOC_CAN1].سائيز);
 
     /* USB */
     create_unimplemented_device("microchip.pfsoc.usb",
-        memmap[MICROCHIP_PFSOC_USB].base,
-        memmap[MICROCHIP_PFSOC_USB].size);
+        memmap[MICROCHIP_PFSOC_USB].بنياد,
+        memmap[MICROCHIP_PFSOC_USB].سائيز);
 
     /* GEMs */
-    qemu_configure_nic_device(DEVICE(&s->gem0), true, NULL);
-    qemu_configure_nic_device(DEVICE(&s->gem1), true, NULL);
+    qemu_configure_nic_device(DEVICE(&s->gem0), true, عدم);
+    qemu_configure_nic_device(DEVICE(&s->gem1), true, عدم);
 
-    object_property_set_int(OBJECT(&s->gem0), "revision", GEM_REVISION, errp);
-    object_property_set_int(OBJECT(&s->gem0), "phy-addr", 8, errp);
-    object_property_set_bool(OBJECT(&s->gem0), "phy-connected", false, errp);
-    object_property_set_bool(OBJECT(&s->gem0), "pcs-enabled", true, errp);
+    object_property_سيٽ_int(OBJECT(&s->gem0), "revision", GEM_REVISION, errp);
+    object_property_سيٽ_int(OBJECT(&s->gem0), "phy-addr", 8, errp);
+    object_property_سيٽ_bool(OBJECT(&s->gem0), "phy-connected", false, errp);
+    object_property_سيٽ_bool(OBJECT(&s->gem0), "pcs-enabled", true, errp);
 
     sysbus_realize(SYS_BUS_DEVICE(&s->gem0), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->gem0), 0,
-                    memmap[MICROCHIP_PFSOC_GEM0].base);
+                    memmap[MICROCHIP_PFSOC_GEM0].بنياد);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->gem0), 0,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_GEM0_IRQ));
+        qdev_get_gpio_اندريون(DEVICE(s->plic), MICROCHIP_PFSOC_GEM0_IRQ));
 
-    object_property_set_int(OBJECT(&s->gem1), "revision", GEM_REVISION, errp);
-    object_property_set_int(OBJECT(&s->gem1), "phy-addr", 9, errp);
-    object_property_set_link(OBJECT(&s->gem1), "phy-consumer",
+    object_property_سيٽ_int(OBJECT(&s->gem1), "revision", GEM_REVISION, errp);
+    object_property_سيٽ_int(OBJECT(&s->gem1), "phy-addr", 9, errp);
+    object_property_سيٽ_link(OBJECT(&s->gem1), "phy-consumer",
                              OBJECT(&s->gem0), errp);
-    object_property_set_bool(OBJECT(&s->gem1), "pcs-enabled", true, errp);
+    object_property_سيٽ_bool(OBJECT(&s->gem1), "pcs-enabled", true, errp);
     sysbus_realize(SYS_BUS_DEVICE(&s->gem1), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->gem1), 0,
-                    memmap[MICROCHIP_PFSOC_GEM1].base);
+                    memmap[MICROCHIP_PFSOC_GEM1].بنياد);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->gem1), 0,
-        qdev_get_gpio_in(DEVICE(s->plic), MICROCHIP_PFSOC_GEM1_IRQ));
+        qdev_get_gpio_اندريون(DEVICE(s->plic), MICROCHIP_PFSOC_GEM1_IRQ));
 
     /* GPIOs */
     create_unimplemented_device("microchip.pfsoc.gpio0",
-        memmap[MICROCHIP_PFSOC_GPIO0].base,
-        memmap[MICROCHIP_PFSOC_GPIO0].size);
+        memmap[MICROCHIP_PFSOC_GPIO0].بنياد,
+        memmap[MICROCHIP_PFSOC_GPIO0].سائيز);
     create_unimplemented_device("microchip.pfsoc.gpio1",
-        memmap[MICROCHIP_PFSOC_GPIO1].base,
-        memmap[MICROCHIP_PFSOC_GPIO1].size);
+        memmap[MICROCHIP_PFSOC_GPIO1].بنياد,
+        memmap[MICROCHIP_PFSOC_GPIO1].سائيز);
     create_unimplemented_device("microchip.pfsoc.gpio2",
-        memmap[MICROCHIP_PFSOC_GPIO2].base,
-        memmap[MICROCHIP_PFSOC_GPIO2].size);
+        memmap[MICROCHIP_PFSOC_GPIO2].بنياد,
+        memmap[MICROCHIP_PFSOC_GPIO2].سائيز);
 
     /* eNVM */
-    memory_region_init_rom(envm_data, OBJECT(dev), "microchip.pfsoc.envm.data",
-                           memmap[MICROCHIP_PFSOC_ENVM_DATA].size,
+    يادگيري_region_init_rom(envm_معلومات, OBJECT(dev), "microchip.pfsoc.envm.data",
+                           memmap[MICROCHIP_PFSOC_ENVM_معلومات].سائيز,
                            &error_fatal);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_ENVM_DATA].base,
-                                envm_data);
+    يادگيري_region_جوڙيو_subregion(system_يادگيري,
+                                memmap[MICROCHIP_PFSOC_ENVM_معلومات].بنياد,
+                                envm_معلومات);
 
     /* IOSCB */
     sysbus_realize(SYS_BUS_DEVICE(&s->ioscb), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ioscb), 0,
-                    memmap[MICROCHIP_PFSOC_IOSCB].base);
+                    memmap[MICROCHIP_PFSOC_IOSCB].بنياد);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->ioscb), 0,
-                       qdev_get_gpio_in(DEVICE(s->plic),
+                       qdev_get_gpio_اندريون(DEVICE(s->plic),
                        MICROCHIP_PFSOC_MAILBOX_IRQ));
 
     /* FPGA Fabric */
     create_unimplemented_device("microchip.pfsoc.fabricfic3",
-        memmap[MICROCHIP_PFSOC_FABRIC_FIC3].base,
-        memmap[MICROCHIP_PFSOC_FABRIC_FIC3].size);
+        memmap[MICROCHIP_PFSOC_FABRIC_FIC3].بنياد,
+        memmap[MICROCHIP_PFSOC_FABRIC_FIC3].سائيز);
     /* FPGA Fabric */
     create_unimplemented_device("microchip.pfsoc.fabricfic0",
-        memmap[MICROCHIP_PFSOC_FABRIC_FIC0].base,
-        memmap[MICROCHIP_PFSOC_FABRIC_FIC0].size);
+        memmap[MICROCHIP_PFSOC_FABRIC_FIC0].بنياد,
+        memmap[MICROCHIP_PFSOC_FABRIC_FIC0].سائيز);
     /* FPGA Fabric */
     create_unimplemented_device("microchip.pfsoc.fabricfic1",
-        memmap[MICROCHIP_PFSOC_FABRIC_FIC1].base,
-        memmap[MICROCHIP_PFSOC_FABRIC_FIC1].size);
+        memmap[MICROCHIP_PFSOC_FABRIC_FIC1].بنياد,
+        memmap[MICROCHIP_PFSOC_FABRIC_FIC1].سائيز);
 
     /* QSPI Flash */
-    memory_region_init_rom(qspi_xip_mem, OBJECT(dev),
+    يادگيري_region_init_rom(qspi_xip_mem, OBJECT(dev),
                            "microchip.pfsoc.qspi_xip",
-                           memmap[MICROCHIP_PFSOC_QSPI_XIP].size,
+                           memmap[MICROCHIP_PFSOC_QSPI_XIP].سائيز,
                            &error_fatal);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_QSPI_XIP].base,
+    يادگيري_region_جوڙيو_subregion(system_يادگيري,
+                                memmap[MICROCHIP_PFSOC_QSPI_XIP].بنياد,
                                 qspi_xip_mem);
 }
 
-static void microchip_pfsoc_soc_class_init(ObjectClass *oc, const void *data)
+ساكن فراغ microchip_pfsoc_soc_class_init(ObjectClass *oc, ثابت فراغ *معلومات)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
@@ -498,92 +498,92 @@ static void microchip_pfsoc_soc_class_init(ObjectClass *oc, const void *data)
     dc->user_creatable = false;
 }
 
-static const TypeInfo microchip_pfsoc_soc_type_info = {
+ساكن ثابت TypeInfo microchip_pfsoc_soc_type_info = {
     .name = TYPE_MICROCHIP_PFSOC,
-    .parent = TYPE_DEVICE,
-    .instance_size = sizeof(MicrochipPFSoCState),
+    .والد = TYPE_DEVICE,
+    .instance_سائيز = حجم(MicrochipPFSoCState),
     .instance_init = microchip_pfsoc_soc_instance_init,
     .class_init = microchip_pfsoc_soc_class_init,
 };
 
-static void microchip_pfsoc_soc_register_types(void)
+ساكن فراغ microchip_pfsoc_soc_رجسٽر_types(فراغ)
 {
-    type_register_static(&microchip_pfsoc_soc_type_info);
+    type_رجسٽر_static(&microchip_pfsoc_soc_type_info);
 }
 
-type_init(microchip_pfsoc_soc_register_types)
+type_init(microchip_pfsoc_soc_رجسٽر_types)
 
-static void microchip_icicle_kit_machine_init(MachineState *machine)
+ساكن فراغ microchip_icicle_kit_machine_init(MachineState *machine)
 {
     MachineClass *mc = MACHINE_GET_CLASS(machine);
-    const MemMapEntry *memmap = microchip_pfsoc_memmap;
+    ثابت Mem_Map_داخلا *memmap = microchip_pfsoc_memmap;
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(machine);
-    MemoryRegion *system_memory = get_system_memory();
-    MemoryRegion *mem_low = g_new(MemoryRegion, 1);
-    MemoryRegion *mem_low_alias = g_new(MemoryRegion, 1);
-    MemoryRegion *mem_high = g_new(MemoryRegion, 1);
-    MemoryRegion *mem_high_alias = g_new(MemoryRegion, 1);
-    uint64_t mem_low_size, mem_high_size;
-    hwaddr firmware_load_addr;
-    const char *firmware_name;
-    hwaddr firmware_end_addr;
-    vaddr kernel_start_addr;
-    uint64_t kernel_entry;
-    uint64_t fdt_load_addr;
+    يادگيري_Region *system_يادگيري = get_system_يادگيري();
+    يادگيري_Region *mem_هيٺيون = g_new(يادگيري_Region, 1);
+    يادگيري_Region *mem_هيٺيون_alias = g_new(يادگيري_Region, 1);
+    يادگيري_Region *mem_مٿاهون = g_new(يادگيري_Region, 1);
+    يادگيري_Region *mem_مٿاهون_alias = g_new(يادگيري_Region, 1);
+    uint64_t mem_هيٺيون_سائيز, mem_مٿاهون_سائيز;
+    hwaddr firmware_ڀريو_addr;
+    ثابت حرف *firmware_name;
+    hwaddr firmware_پڇاڙي_addr;
+    vaddr kernel_شروعات_addr;
+    uint64_t kernel_داخلا;
+    uint64_t fdt_ڀريو_addr;
     DriveInfo *dinfo = drive_get(IF_SD, 0, 0);
     RISCVBootInfo boot_info;
 
     /* Sanity check on RAM size */
-    if (machine->ram_size < mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    إذا (machine->ram_سائيز < mc->default_ram_سائيز) {
+        حرف *sz = سائيز_منزل_str(mc->default_ram_سائيز);
         error_report("Invalid RAM size, should be bigger than %s", sz);
         g_free(sz);
-        exit(EXIT_FAILURE);
+        ٻاهر_نڪرو(EXIT_FAILURE);
     }
 
     /* Initialize SoC */
-    object_initialize_child(OBJECT(machine), "soc", &s->soc,
+    object_initialize_ٻار(OBJECT(machine), "soc", &s->soc,
                             TYPE_MICROCHIP_PFSOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&s->soc), عدم, &error_fatal);
 
     /* Split RAM into low and high regions using aliases to machine->ram */
-    mem_low_size = memmap[MICROCHIP_PFSOC_DRAM_LO].size;
-    mem_high_size = machine->ram_size - mem_low_size;
-    memory_region_init_alias(mem_low, NULL,
+    mem_هيٺيون_سائيز = memmap[MICROCHIP_PFSOC_DRAM_LO].سائيز;
+    mem_مٿاهون_سائيز = machine->ram_سائيز - mem_هيٺيون_سائيز;
+    يادگيري_region_init_alias(mem_هيٺيون, عدم,
                              "microchip.icicle.kit.ram_low", machine->ram,
-                             0, mem_low_size);
-    memory_region_init_alias(mem_high, NULL,
+                             0, mem_هيٺيون_سائيز);
+    يادگيري_region_init_alias(mem_مٿاهون, عدم,
                              "microchip.icicle.kit.ram_high", machine->ram,
-                             mem_low_size, mem_high_size);
+                             mem_هيٺيون_سائيز, mem_مٿاهون_سائيز);
 
     /* Register RAM */
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_DRAM_LO].base,
-                                mem_low);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_DRAM_HI].base,
-                                mem_high);
+    يادگيري_region_جوڙيو_subregion(system_يادگيري,
+                                memmap[MICROCHIP_PFSOC_DRAM_LO].بنياد,
+                                mem_هيٺيون);
+    يادگيري_region_جوڙيو_subregion(system_يادگيري,
+                                memmap[MICROCHIP_PFSOC_DRAM_HI].بنياد,
+                                mem_مٿاهون);
 
     /* Create aliases for the low and high RAM regions */
-    memory_region_init_alias(mem_low_alias, NULL,
+    يادگيري_region_init_alias(mem_هيٺيون_alias, عدم,
                              "microchip.icicle.kit.ram_low.alias",
-                             mem_low, 0, mem_low_size);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_DRAM_LO_ALIAS].base,
-                                mem_low_alias);
-    memory_region_init_alias(mem_high_alias, NULL,
+                             mem_هيٺيون, 0, mem_هيٺيون_سائيز);
+    يادگيري_region_جوڙيو_subregion(system_يادگيري,
+                                memmap[MICROCHIP_PFSOC_DRAM_LO_ALIAS].بنياد,
+                                mem_هيٺيون_alias);
+    يادگيري_region_init_alias(mem_مٿاهون_alias, عدم,
                              "microchip.icicle.kit.ram_high.alias",
-                             mem_high, 0, mem_high_size);
-    memory_region_add_subregion(system_memory,
-                                memmap[MICROCHIP_PFSOC_DRAM_HI_ALIAS].base,
-                                mem_high_alias);
+                             mem_مٿاهون, 0, mem_مٿاهون_سائيز);
+    يادگيري_region_جوڙيو_subregion(system_يادگيري,
+                                memmap[MICROCHIP_PFSOC_DRAM_HI_ALIAS].بنياد,
+                                mem_مٿاهون_alias);
 
     /* Attach an SD card */
-    if (dinfo) {
+    إذا (dinfo) {
         CadenceSDHCIState *sdhci = &(s->soc.sdhci);
         DeviceState *card = qdev_new(TYPE_SD_CARD);
 
-        qdev_prop_set_drive_err(card, "drive", blk_by_legacy_dinfo(dinfo),
+        qdev_prop_سيٽ_drive_err(card, "drive", blk_by_legacy_dinfo(dinfo),
                                 &error_fatal);
         qdev_realize_and_unref(card, sdhci->bus, &error_fatal);
     }
@@ -599,137 +599,137 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
      * NULL, default |          Y | RISCV64_BIOS_BIN
      * other         | don't care | other
      */
-    if (machine->firmware && !strcmp(machine->firmware, "none")) {
-        if (!machine->kernel_filename) {
+    إذا (machine->firmware && !strcmp(machine->firmware, "none")) {
+        إذا (!machine->kernel_filename) {
             error_report("for -bios none, a kernel is required");
-            exit(1);
+            ٻاهر_نڪرو(1);
         }
 
-        firmware_name = NULL;
-        firmware_load_addr = RESET_VECTOR;
-    } else if (!machine->firmware || !strcmp(machine->firmware, "default")) {
-        if (machine->kernel_filename) {
+        firmware_name = عدم;
+        firmware_ڀريو_addr = RESET_ويڪٽر;
+    } وإلا إذا (!machine->firmware || !strcmp(machine->firmware, "default")) {
+        إذا (machine->kernel_filename) {
             firmware_name = RISCV64_BIOS_BIN;
-            firmware_load_addr = memmap[MICROCHIP_PFSOC_DRAM_LO].base;
-        } else {
+            firmware_ڀريو_addr = memmap[MICROCHIP_PFSOC_DRAM_LO].بنياد;
+        } وإلا {
             firmware_name = BIOS_FILENAME;
-            firmware_load_addr = RESET_VECTOR;
+            firmware_ڀريو_addr = RESET_ويڪٽر;
         }
-    } else {
+    } وإلا {
         firmware_name = machine->firmware;
-        firmware_load_addr = RESET_VECTOR;
+        firmware_ڀريو_addr = RESET_ويڪٽر;
     }
 
     riscv_boot_info_init_discontig_mem(&boot_info, &s->soc.u_cpus,
-                                       memmap[MICROCHIP_PFSOC_DRAM_LO].base,
-                                       mem_low_size);
+                                       memmap[MICROCHIP_PFSOC_DRAM_LO].بنياد,
+                                       mem_هيٺيون_سائيز);
 
     /* Load the firmware if necessary */
-    firmware_end_addr = firmware_load_addr;
-    if (firmware_name) {
-        char *filename = riscv_find_firmware(firmware_name, NULL);
-        if (filename) {
-            firmware_end_addr = riscv_load_firmware(machine, &boot_info,
+    firmware_پڇاڙي_addr = firmware_ڀريو_addr;
+    إذا (firmware_name) {
+        حرف *filename = riscv_ڳوليو_firmware(firmware_name, عدم);
+        إذا (filename) {
+            firmware_پڇاڙي_addr = riscv_ڀريو_firmware(machine, &boot_info,
                                                     filename,
-                                                    &firmware_load_addr, NULL);
+                                                    &firmware_ڀريو_addr, عدم);
             g_free(filename);
         }
     }
 
-    if (machine->kernel_filename) {
-        kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
-                                                         firmware_end_addr);
+    إذا (machine->kernel_filename) {
+        kernel_شروعات_addr = riscv_calc_kernel_شروعات_addr(&boot_info,
+                                                         firmware_پڇاڙي_addr);
 
-        riscv_load_kernel(machine, &boot_info, kernel_start_addr,
-                          true, NULL);
-        kernel_entry = boot_info.image_low_addr;
+        riscv_ڀريو_kernel(machine, &boot_info, kernel_شروعات_addr,
+                          true, عدم);
+        kernel_داخلا = boot_info.image_هيٺيون_addr;
 
-        if (machine->dtb) {
-            int fdt_size;
-            machine->fdt = load_device_tree(machine->dtb, &fdt_size);
-            if (!machine->fdt) {
+        إذا (machine->dtb) {
+            صحيح fdt_سائيز;
+            machine->fdt = ڀريو_device_وڻ(machine->dtb, &fdt_سائيز);
+            إذا (!machine->fdt) {
                 error_report("load_device_tree() failed");
-                exit(1);
+                ٻاهر_نڪرو(1);
             }
 
             /* Compute the FDT load address in DRAM */
-            hwaddr kernel_ram_base = memmap[MICROCHIP_PFSOC_DRAM_LO].base;
-            hwaddr kernel_ram_size = memmap[MICROCHIP_PFSOC_DRAM_LO].size;
+            hwaddr kernel_ram_بنياد = memmap[MICROCHIP_PFSOC_DRAM_LO].بنياد;
+            hwaddr kernel_ram_سائيز = memmap[MICROCHIP_PFSOC_DRAM_LO].سائيز;
 
-            if (kernel_entry - kernel_ram_base >= kernel_ram_size) {
-                kernel_ram_base = memmap[MICROCHIP_PFSOC_DRAM_HI].base;
-                kernel_ram_size = mem_high_size;
+            إذا (kernel_داخلا - kernel_ram_بنياد >= kernel_ram_سائيز) {
+                kernel_ram_بنياد = memmap[MICROCHIP_PFSOC_DRAM_HI].بنياد;
+                kernel_ram_سائيز = mem_مٿاهون_سائيز;
             }
 
-            fdt_load_addr = riscv_compute_fdt_addr(kernel_ram_base, kernel_ram_size,
+            fdt_ڀريو_addr = riscv_compute_fdt_addr(kernel_ram_بنياد, kernel_ram_سائيز,
                                                    machine, &boot_info);
-            riscv_load_fdt(fdt_load_addr, machine->fdt);
-        } else {
+            riscv_ڀريو_fdt(fdt_ڀريو_addr, machine->fdt);
+        } وإلا {
             warn_report_once("The QEMU microchip-icicle-kit machine does not "
                              "generate a device tree, so no device tree is "
                              "being provided to the guest.");
-            fdt_load_addr = 0;
+            fdt_ڀريو_addr = 0;
         }
 
-        hwaddr start_addr;
-        if (firmware_name) {
-            start_addr = firmware_load_addr;
-        } else {
-            start_addr = kernel_entry;
+        hwaddr شروعات_addr;
+        إذا (firmware_name) {
+            شروعات_addr = firmware_ڀريو_addr;
+        } وإلا {
+            شروعات_addr = kernel_داخلا;
         }
 
         /* Load the reset vector */
-        riscv_setup_rom_reset_vec(machine, &s->soc.u_cpus, start_addr,
-                                  memmap[MICROCHIP_PFSOC_ENVM_DATA].base,
-                                  memmap[MICROCHIP_PFSOC_ENVM_DATA].size,
-                                  kernel_entry, fdt_load_addr);
+        riscv_تياري_rom_reset_vec(machine, &s->soc.u_cpus, شروعات_addr,
+                                  memmap[MICROCHIP_PFSOC_ENVM_معلومات].بنياد,
+                                  memmap[MICROCHIP_PFSOC_ENVM_معلومات].سائيز,
+                                  kernel_داخلا, fdt_ڀريو_addr);
     }
 }
 
-static void microchip_icicle_kit_set_clint_timebase_freq(Object *obj,
+ساكن فراغ microchip_icicle_kit_سيٽ_clint_timebase_freq(Object *obj,
                                                          Visitor *v,
-                                                         const char *name,
-                                                         void *opaque,
+                                                         ثابت حرف *name,
+                                                         فراغ *opaque,
                                                          Error **errp)
 {
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(obj);
-    uint32_t value;
+    uint32_t قدر;
 
-    if (!visit_type_uint32(v, name, &value, errp)) {
-        return;
+    إذا (!گهمو_type_uint32(v, name, &قدر, errp)) {
+        أرجع;
     }
 
-    s->clint_timebase_freq = value;
+    s->clint_timebase_freq = قدر;
 }
 
-static void microchip_icicle_kit_get_clint_timebase_freq(Object *obj,
+ساكن فراغ microchip_icicle_kit_get_clint_timebase_freq(Object *obj,
                                                          Visitor *v,
-                                                         const char *name,
-                                                         void *opaque,
+                                                         ثابت حرف *name,
+                                                         فراغ *opaque,
                                                          Error **errp)
 {
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(obj);
-    uint32_t value = s->clint_timebase_freq;
+    uint32_t قدر = s->clint_timebase_freq;
 
-    visit_type_uint32(v, name, &value, errp);
+    گهمو_type_uint32(v, name, &قدر, errp);
 }
 
-static void microchip_icicle_kit_machine_instance_init(Object *obj)
+ساكن فراغ microchip_icicle_kit_machine_instance_init(Object *obj)
 {
     MicrochipIcicleKitState *m = MICROCHIP_ICICLE_KIT_MACHINE(obj);
     m->clint_timebase_freq = 1000000;
 }
 
-static void microchip_icicle_kit_machine_class_init(ObjectClass *oc,
-                                                    const void *data)
+ساكن فراغ microchip_icicle_kit_machine_class_init(ObjectClass *oc,
+                                                    ثابت فراغ *معلومات)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
     mc->desc = "Microchip PolarFire SoC Icicle Kit";
     mc->init = microchip_icicle_kit_machine_init;
-    mc->max_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_COUNT +
-                   MICROCHIP_PFSOC_COMPUTE_CPU_COUNT;
-    mc->min_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_COUNT + 1;
+    mc->max_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_ڳڻپ +
+                   MICROCHIP_PFSOC_COMPUTE_CPU_ڳڻپ;
+    mc->min_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_ڳڻپ + 1;
     mc->default_cpus = mc->min_cpus;
     mc->default_ram_id = "microchip.icicle.kit.ram";
     mc->auto_create_sdcard = true;
@@ -741,27 +741,27 @@ static void microchip_icicle_kit_machine_class_init(ObjectClass *oc,
      *
      * See memory_tests() in mss_ddr.c in the HSS source code.
      */
-    mc->default_ram_size = 1537 * MiB;
+    mc->default_ram_سائيز = 1537 * MiB;
 
-    object_class_property_add(oc, "clint-timebase-frequency", "uint32_t",
+    object_class_property_جوڙيو(oc, "clint-timebase-frequency", "uint32_t",
                               microchip_icicle_kit_get_clint_timebase_freq,
-                              microchip_icicle_kit_set_clint_timebase_freq,
-                              NULL, NULL);
-    object_class_property_set_description(oc, "clint-timebase-frequency",
+                              microchip_icicle_kit_سيٽ_clint_timebase_freq,
+                              عدم, عدم);
+    object_class_property_سيٽ_description(oc, "clint-timebase-frequency",
                                   "Set CLINT timebase frequency in Hz.");
 }
 
-static const TypeInfo microchip_icicle_kit_machine_typeinfo = {
+ساكن ثابت TypeInfo microchip_icicle_kit_machine_typeinfo = {
     .name       = MACHINE_TYPE_NAME("microchip-icicle-kit"),
-    .parent     = TYPE_MACHINE,
+    .والد     = TYPE_MACHINE,
     .class_init = microchip_icicle_kit_machine_class_init,
     .instance_init = microchip_icicle_kit_machine_instance_init,
-    .instance_size = sizeof(MicrochipIcicleKitState),
+    .instance_سائيز = حجم(MicrochipIcicleKitState),
 };
 
-static void microchip_icicle_kit_machine_init_register_types(void)
+ساكن فراغ microchip_icicle_kit_machine_init_رجسٽر_types(فراغ)
 {
-    type_register_static(&microchip_icicle_kit_machine_typeinfo);
+    type_رجسٽر_static(&microchip_icicle_kit_machine_typeinfo);
 }
 
-type_init(microchip_icicle_kit_machine_init_register_types)
+type_init(microchip_icicle_kit_machine_init_رجسٽر_types)

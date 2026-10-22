@@ -23,111 +23,111 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "hw/acpi/acpi-defs.h"
-#include "hw/acpi/acpi.h"
-#include "hw/acpi/aml-build.h"
-#include "hw/acpi/pci.h"
-#include "hw/acpi/utils.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/nvram/fw_cfg_acpi.h"
-#include "hw/pci-host/gpex.h"
-#include "hw/riscv/virt.h"
-#include "hw/riscv/numa.h"
-#include "hw/virtio/virtio-acpi.h"
-#include "kvm/kvm_riscv.h"
-#include "migration/vmstate.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "system/kvm.h"
-#include "system/reset.h"
+#ضمن "qemu/osdep.h"
+#ضمن "hw/acpi/acpi-defs.h"
+#ضمن "hw/acpi/acpi.h"
+#ضمن "hw/acpi/aml-build.h"
+#ضمن "hw/acpi/pci.h"
+#ضمن "hw/acpi/utils.h"
+#ضمن "hw/intc/riscv_aclint.h"
+#ضمن "hw/nvram/fw_cfg_acpi.h"
+#ضمن "hw/pci-host/gpex.h"
+#ضمن "hw/riscv/virt.h"
+#ضمن "hw/riscv/numa.h"
+#ضمن "hw/virtio/virtio-acpi.h"
+#ضمن "kvm/kvm_riscv.h"
+#ضمن "migration/vmstate.h"
+#ضمن "qapi/error.h"
+#ضمن "qemu/error-report.h"
+#ضمن "system/kvm.h"
+#ضمن "system/reset.h"
 
-#include "aia.h"
+#ضمن "aia.h"
 
-#define ACPI_BUILD_TABLE_SIZE             0x20000
-#define ACPI_BUILD_INTC_ID(socket, index) ((socket << 24) | (index))
+#وصف_ڪريو ACPI_BUILD_جدول_سائيز             0x20000
+#وصف_ڪريو ACPI_BUILD_INTC_ID(socket, اشاريو) ((socket << 24) | (اشاريو))
 
-typedef struct AcpiBuildState {
+تعريفنوع بنية AcpiBuildState {
     /* Copy of table in RAM (for patching) */
-    MemoryRegion *table_mr;
-    MemoryRegion *rsdp_mr;
-    MemoryRegion *linker_mr;
+    يادگيري_Region *جدول_mr;
+    يادگيري_Region *rsdp_mr;
+    يادگيري_Region *linker_mr;
     /* Is table patched? */
     bool patched;
 } AcpiBuildState;
 
-static void acpi_align_size(GArray *blob, unsigned align)
+ساكن فراغ acpi_align_سائيز(GArray *blob, بنانشان align)
 {
     /*
      * Align size to multiple of given size. This reduces the chance
      * we need to change size in the future (breaking cross version migration).
      */
-    g_array_set_size(blob, ROUND_UP(acpi_data_len(blob), align));
+    g_array_سيٽ_سائيز(blob, ڦيرو_مٿي(acpi_معلومات_len(blob), align));
 }
 
-static void riscv_acpi_madt_add_rintc(uint32_t uid,
-                                      const CPUArchIdList *arch_ids,
-                                      GArray *entry,
+ساكن فراغ riscv_acpi_madt_جوڙيو_rintc(uint32_t uid,
+                                      ثابت CPUArchIdList *arch_ids,
+                                      GArray *داخلا,
                                       RISCVVirtState *s)
 {
-    uint8_t  guest_index_bits = imsic_num_bits(s->aia_guests + 1);
+    uint8_t  guest_اشاريو_بٽ = imsic_انگ_بٽ(s->aia_guests + 1);
     uint64_t hart_id = arch_ids->cpus[uid].arch_id;
-    uint32_t imsic_size, local_cpu_id, socket_id;
+    uint32_t imsic_سائيز, local_cpu_id, socket_id;
     uint64_t imsic_socket_addr, imsic_addr;
     MachineState *ms = MACHINE(s);
 
-    socket_id = arch_ids->cpus[uid].props.node_id;
+    socket_id = arch_ids->cpus[uid].props.ڳنڍ_id;
     local_cpu_id = (arch_ids->cpus[uid].arch_id -
-                    riscv_socket_first_hartid(ms, socket_id)) %
-                    riscv_socket_hart_count(ms, socket_id);
-    imsic_socket_addr = s->memmap[VIRT_IMSIC_S].base +
-                        (socket_id * VIRT_IMSIC_GROUP_MAX_SIZE);
-    imsic_size = IMSIC_HART_SIZE(guest_index_bits);
-    imsic_addr = imsic_socket_addr + local_cpu_id * imsic_size;
-    build_append_int_noprefix(entry, 0x18, 1);       /* Type     */
-    build_append_int_noprefix(entry, 36, 1);         /* Length   */
-    build_append_int_noprefix(entry, 1, 1);          /* Version  */
-    build_append_int_noprefix(entry, 0, 1);          /* Reserved */
-    build_append_int_noprefix(entry, 0x1, 4);        /* Flags    */
-    build_append_int_noprefix(entry, hart_id, 8);    /* Hart ID  */
-    build_append_int_noprefix(entry, uid, 4);        /* ACPI Processor UID */
+                    riscv_socket_پهريون_hartid(ms, socket_id)) %
+                    riscv_socket_hart_ڳڻپ(ms, socket_id);
+    imsic_socket_addr = s->memmap[VIRT_IMSIC_S].بنياد +
+                        (socket_id * VIRT_IMSIC_گروهه_MAX_سائيز);
+    imsic_سائيز = IMSIC_HART_سائيز(guest_اشاريو_بٽ);
+    imsic_addr = imsic_socket_addr + local_cpu_id * imsic_سائيز;
+    build_append_int_noprefix(داخلا, 0x18, 1);       /* Type     */
+    build_append_int_noprefix(داخلا, 36, 1);         /*ڊيگهائي*/
+    build_append_int_noprefix(داخلا, 1, 1);          /*نسخو*/
+    build_append_int_noprefix(داخلا, 0, 1);          /* Reserved */
+    build_append_int_noprefix(داخلا, 0x1, 4);        /* Flags    */
+    build_append_int_noprefix(داخلا, hart_id, 8);    /* Hart ID  */
+    build_append_int_noprefix(داخلا, uid, 4);        /* ACPI Processor UID */
     /* External Interrupt Controller ID */
-    if (s->aia_type == VIRT_AIA_TYPE_APLIC) {
-        build_append_int_noprefix(entry,
+    إذا (s->aia_type == VIRT_AIA_TYPE_APLIC) {
+        build_append_int_noprefix(داخلا,
                                   ACPI_BUILD_INTC_ID(
-                                      arch_ids->cpus[uid].props.node_id,
+                                      arch_ids->cpus[uid].props.ڳنڍ_id,
                                       local_cpu_id),
                                   4);
-    } else if (s->aia_type == VIRT_AIA_TYPE_NONE) {
-        build_append_int_noprefix(entry,
+    } وإلا إذا (s->aia_type == VIRT_AIA_TYPE_NONE) {
+        build_append_int_noprefix(داخلا,
                                   ACPI_BUILD_INTC_ID(
-                                      arch_ids->cpus[uid].props.node_id,
+                                      arch_ids->cpus[uid].props.ڳنڍ_id,
                                       kvm_enabled() ?
                                       local_cpu_id :
                                       2 * local_cpu_id + 1),
                                   4);
-    } else {
-        build_append_int_noprefix(entry, 0, 4);
+    } وإلا {
+        build_append_int_noprefix(داخلا, 0, 4);
     }
 
-    if (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
+    إذا (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
         /* IMSIC Base address */
-        build_append_int_noprefix(entry, imsic_addr, 8);
+        build_append_int_noprefix(داخلا, imsic_addr, 8);
         /* IMSIC Size */
-        build_append_int_noprefix(entry, imsic_size, 4);
-    } else {
-        build_append_int_noprefix(entry, 0, 8);
-        build_append_int_noprefix(entry, 0, 4);
+        build_append_int_noprefix(داخلا, imsic_سائيز, 4);
+    } وإلا {
+        build_append_int_noprefix(داخلا, 0, 8);
+        build_append_int_noprefix(داخلا, 0, 4);
     }
 }
 
-static void acpi_dsdt_add_cpus(Aml *scope, RISCVVirtState *s)
+ساكن فراغ acpi_dsdt_جوڙيو_cpus(Aml *scope, RISCVVirtState *s)
 {
     MachineClass *mc = MACHINE_GET_CLASS(s);
     MachineState *ms = MACHINE(s);
-    const CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
+    ثابت CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
 
-    for (int i = 0; i < arch_ids->len; i++) {
+    لكل (صحيح i = 0; i < arch_ids->len; i++) {
             Aml *dev;
             GArray *madt_buf = g_array_new(0, 1, 1);
 
@@ -137,57 +137,57 @@ static void acpi_dsdt_add_cpus(Aml *scope, RISCVVirtState *s)
                        aml_int(arch_ids->cpus[i].arch_id)));
 
             /* build _MAT object */
-            riscv_acpi_madt_add_rintc(i, arch_ids, madt_buf, s);
+            riscv_acpi_madt_جوڙيو_rintc(i, arch_ids, madt_buf, s);
             aml_append(dev, aml_name_decl("_MAT",
-                                          aml_buffer(madt_buf->len,
-                                          (uint8_t *)madt_buf->data)));
+                                          aml_بفر(madt_buf->len,
+                                          (uint8_t *)madt_buf->معلومات)));
             g_array_free(madt_buf, true);
 
             aml_append(scope, dev);
     }
 }
 
-static void acpi_dsdt_add_plic_aplic(Aml *scope, uint8_t socket_count,
-                                     uint16_t num_sources,
-                                     uint64_t mmio_base, uint64_t mmio_size,
-                                     const char *hid)
+ساكن فراغ acpi_dsdt_جوڙيو_plic_aplic(Aml *scope, uint8_t socket_ڳڻپ,
+                                     uint16_t انگ_sources,
+                                     uint64_t mmio_بنياد, uint64_t mmio_سائيز,
+                                     ثابت حرف *hid)
 {
     uint64_t plic_aplic_addr;
-    uint32_t gsi_base;
+    uint32_t gsi_بنياد;
     uint8_t  socket;
 
     /* The RISC-V Advanced Interrupt Architecture, Chapter 1.2. Limits */
-    g_assert(num_sources <= 1023);
+    g_assert(انگ_sources <= 1023);
 
-    for (socket = 0; socket < socket_count; socket++) {
-        plic_aplic_addr = mmio_base + mmio_size * socket;
-        gsi_base = num_sources * socket;
+    لكل (socket = 0; socket < socket_ڳڻپ; socket++) {
+        plic_aplic_addr = mmio_بنياد + mmio_سائيز * socket;
+        gsi_بنياد = انگ_sources * socket;
         Aml *dev = aml_device("IC%.02X", socket);
         aml_append(dev, aml_name_decl("_HID", aml_string("%s", hid)));
         aml_append(dev, aml_name_decl("_UID", aml_int(socket)));
-        aml_append(dev, aml_name_decl("_GSB", aml_int(gsi_base)));
+        aml_append(dev, aml_name_decl("_GSB", aml_int(gsi_بنياد)));
 
         Aml *crs = aml_resource_template();
-        aml_append(crs, aml_memory32_fixed(plic_aplic_addr, mmio_size,
+        aml_append(crs, aml_memory32_fixed(plic_aplic_addr, mmio_سائيز,
                                            AML_READ_WRITE));
         aml_append(dev, aml_name_decl("_CRS", crs));
         aml_append(scope, dev);
     }
 }
 
-static void
-acpi_dsdt_add_uart(Aml *scope, const MemMapEntry *uart_memmap,
-                    uint32_t uart_irq, int uartidx)
+ساكن فراغ
+acpi_dsdt_جوڙيو_uart(Aml *scope, ثابت Mem_Map_داخلا *uart_memmap,
+                    uint32_t uart_irq, صحيح uartidx)
 {
     Aml *dev = aml_device("COM%d", uartidx);
     aml_append(dev, aml_name_decl("_HID", aml_string("RSCV0003")));
     aml_append(dev, aml_name_decl("_UID", aml_int(uartidx)));
 
     Aml *crs = aml_resource_template();
-    aml_append(crs, aml_memory32_fixed(uart_memmap->base,
-                                         uart_memmap->size, AML_READ_WRITE));
+    aml_append(crs, aml_memory32_fixed(uart_memmap->بنياد,
+                                         uart_memmap->سائيز, AML_READ_WRITE));
     aml_append(crs,
-                aml_interrupt(AML_CONSUMER, AML_LEVEL, AML_ACTIVE_HIGH,
+                aml_مداخلت(AML_استعمال_ڪندڙ, AML_LEVEL, AML_سرگرم_مٿاهون,
                                AML_EXCLUSIVE, &uart_irq, 1));
     aml_append(dev, aml_name_decl("_CRS", crs));
 
@@ -213,7 +213,7 @@ acpi_dsdt_add_uart(Aml *scope, const MemMapEntry *uart_memmap,
  * ACPI ID for IOMMU is defined in the section 6.2 of RISC-V BRS spec.
  * https://github.com/riscv-non-isa/riscv-brs/releases/download/v0.8/riscv-brs-spec.pdf
  */
-static void acpi_dsdt_add_iommu_sys(Aml *scope, const MemMapEntry *iommu_memmap,
+ساكن فراغ acpi_dsdt_جوڙيو_iommu_sys(Aml *scope, ثابت Mem_Map_داخلا *iommu_memmap,
                                     uint32_t iommu_irq)
 {
     uint32_t i;
@@ -223,10 +223,10 @@ static void acpi_dsdt_add_iommu_sys(Aml *scope, const MemMapEntry *iommu_memmap,
     aml_append(dev, aml_name_decl("_UID", aml_int(0)));
 
     Aml *crs = aml_resource_template();
-    aml_append(crs, aml_memory32_fixed(iommu_memmap->base,
-                                       iommu_memmap->size, AML_READ_WRITE));
-    for (i = iommu_irq; i < iommu_irq + 4; i++) {
-        aml_append(crs, aml_interrupt(AML_CONSUMER, AML_EDGE, AML_ACTIVE_LOW,
+    aml_append(crs, aml_memory32_fixed(iommu_memmap->بنياد,
+                                       iommu_memmap->سائيز, AML_READ_WRITE));
+    لكل (i = iommu_irq; i < iommu_irq + 4; i++) {
+        aml_append(crs, aml_مداخلت(AML_استعمال_ڪندڙ, AML_ڪنارو, AML_سرگرم_هيٺيون,
                                       AML_EXCLUSIVE, &i, 1));
     }
 
@@ -239,23 +239,23 @@ static void acpi_dsdt_add_iommu_sys(Aml *scope, const MemMapEntry *iommu_memmap,
  * Rev: 1.10
  */
 
-static void
-spcr_setup(GArray *table_data, BIOSLinker *linker, RISCVVirtState *s)
+ساكن فراغ
+spcr_تياري(GArray *جدول_معلومات, BIOSLinker *linker, RISCVVirtState *s)
 {
-    const char name[] = ".";
-    AcpiSpcrData serial = {
+    ثابت حرف name[] = ".";
+    Acpi_Spcr_معلومات serial = {
         .interface_type = 0x12,       /* 16550 compatible */
-        .base_addr.id = AML_AS_SYSTEM_MEMORY,
-        .base_addr.width = 8,
-        .base_addr.offset = 0,
-        .base_addr.size = 1,
-        .base_addr.addr = s->memmap[VIRT_UART0].base,
-        .interrupt_type = (1 << 4),/* Bit[4] RISC-V PLIC/APLIC */
-        .pc_interrupt = 0,
-        .interrupt = UART0_IRQ,
-        .baud_rate = 7,            /* 15200 */
+        .بنياد_addr.id = AML_AS_SYSTEM_يادگيري,
+        .بنياد_addr.ويڪر = 8,
+        .بنياد_addr.وٿي = 0,
+        .بنياد_addr.سائيز = 1,
+        .بنياد_addr.addr = s->memmap[VIRT_UART0].بنياد,
+        .مداخلت_type = (1 << 4),/* Bit[4] RISC-V PLIC/APLIC */
+        .pc_مداخلت = 0,
+        .مداخلت = UART0_IRQ,
+        .baud_شرح = 7,            /* 15200 */
         .parity = 0,
-        .stop_bits = 1,
+        .stop_بٽ = 1,
         .flow_control = 0,
         .terminal_type = 3,        /* ANSI */
         .language = 0,             /* Language */
@@ -268,202 +268,202 @@ spcr_setup(GArray *table_data, BIOSLinker *linker, RISCVVirtState *s)
         .pci_segment = 0,
         .uart_clk_freq = 0,
         .precise_baudrate = 0,
-        .namespace_string_length = sizeof(name),
-        .namespace_string_offset = 88,
+        .namespace_string_ڊيگهائي = حجم(name),
+        .namespace_string_وٿي = 88,
     };
 
-    build_spcr(table_data, linker, &serial, 4, s->oem_id, s->oem_table_id,
+    build_spcr(جدول_معلومات, linker, &serial, 4, s->oem_id, s->oem_جدول_id,
                name);
 }
 
 /* RHCT Node[N] starts at offset 56 */
-#define RHCT_NODE_ARRAY_OFFSET 56
+#وصف_ڪريو RHCT_ڳنڍ_ARRAY_وٿي 56
 
 /*
  * ACPI spec, Revision 6.6
  * 5.2.37 RISC-V Hart Capabilities Table (RHCT)
  */
-static void build_rhct(GArray *table_data,
+ساكن فراغ build_rhct(GArray *جدول_معلومات,
                        BIOSLinker *linker,
                        RISCVVirtState *s)
 {
     MachineClass *mc = MACHINE_GET_CLASS(s);
     MachineState *ms = MACHINE(s);
-    const CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
-    size_t len, aligned_len;
-    uint32_t isa_offset, num_rhct_nodes, cmo_offset = 0;
+    ثابت CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
+    سائيز_t len, aligned_len;
+    uint32_t isa_وٿي, انگ_rhct_nodes, cmo_وٿي = 0;
     RISCVCPU *cpu = &s->soc[0].harts[0];
-    uint32_t mmu_offset = 0;
+    uint32_t mmu_وٿي = 0;
     bool rv32 = riscv_cpu_is_32bit(cpu);
-    g_autofree char *isa = NULL;
+    g_autofree حرف *isa = عدم;
 
-    AcpiTable table = { .sig = "RHCT", .rev = 1, .oem_id = s->oem_id,
-                        .oem_table_id = s->oem_table_id };
+    Acpi_جدول جدول = { .sig = "RHCT", .rev = 1, .oem_id = s->oem_id,
+                        .oem_جدول_id = s->oem_جدول_id };
 
-    acpi_table_begin(&table, table_data);
+    acpi_جدول_begin(&جدول, جدول_معلومات);
 
-    build_append_int_noprefix(table_data, 0x0, 4);   /* Reserved */
+    build_append_int_noprefix(جدول_معلومات, 0x0, 4);   /* Reserved */
 
     /* Time Base Frequency */
-    build_append_int_noprefix(table_data,
+    build_append_int_noprefix(جدول_معلومات,
                               kvm_enabled() ?
                               kvm_riscv_get_timebase_frequency(&s->soc->harts[0]) :
                               RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ,
                               8);
 
     /* ISA + N hart info */
-    num_rhct_nodes = 1 + ms->smp.cpus;
-    if (cpu->cfg.ext_zicbom || cpu->cfg.ext_zicboz) {
-        num_rhct_nodes++;
+    انگ_rhct_nodes = 1 + ms->smp.cpus;
+    إذا (cpu->cfg.ext_zicbom || cpu->cfg.ext_zicboz) {
+        انگ_rhct_nodes++;
     }
 
-    if (!rv32 && cpu->cfg.max_satp_mode >= VM_1_10_SV39) {
-        num_rhct_nodes++;
+    إذا (!rv32 && cpu->cfg.max_satp_گهڻائي >= VM_1_10_SV39) {
+        انگ_rhct_nodes++;
     }
 
     /* Number of RHCT nodes*/
-    build_append_int_noprefix(table_data, num_rhct_nodes, 4);
+    build_append_int_noprefix(جدول_معلومات, انگ_rhct_nodes, 4);
 
     /* Offset to the RHCT node array */
-    build_append_int_noprefix(table_data, RHCT_NODE_ARRAY_OFFSET, 4);
+    build_append_int_noprefix(جدول_معلومات, RHCT_ڳنڍ_ARRAY_وٿي, 4);
 
     /* ISA String Node */
-    isa_offset = table_data->len - table.table_offset;
-    build_append_int_noprefix(table_data, 0, 2);   /* Type 0 */
+    isa_وٿي = جدول_معلومات->len - جدول.جدول_وٿي;
+    build_append_int_noprefix(جدول_معلومات, 0, 2);   /* Type 0 */
 
     isa = riscv_isa_string(cpu);
-    len = 8 + strlen(isa) + 1;
+    len = 8 + لڙي_ڊيگهه(isa) + 1;
     aligned_len = (len % 2) ? (len + 1) : len;
 
-    build_append_int_noprefix(table_data, aligned_len, 2);   /* Length */
-    build_append_int_noprefix(table_data, 0x1, 2);           /* Revision */
+    build_append_int_noprefix(جدول_معلومات, aligned_len, 2);   /* Length */
+    build_append_int_noprefix(جدول_معلومات, 0x1, 2);           /* Revision */
 
     /* ISA string length including NUL */
-    build_append_int_noprefix(table_data, strlen(isa) + 1, 2);
-    g_array_append_vals(table_data, isa, strlen(isa) + 1);   /* ISA string */
+    build_append_int_noprefix(جدول_معلومات, لڙي_ڊيگهه(isa) + 1, 2);
+    g_array_append_vals(جدول_معلومات, isa, لڙي_ڊيگهه(isa) + 1);   /* ISA string */
 
-    if (aligned_len != len) {
-        build_append_int_noprefix(table_data, 0x0, 1);   /* Optional Padding */
+    إذا (aligned_len != len) {
+        build_append_int_noprefix(جدول_معلومات, 0x0, 1);   /* Optional Padding */
     }
 
     /* CMO node */
-    if (cpu->cfg.ext_zicbom || cpu->cfg.ext_zicboz) {
-        cmo_offset = table_data->len - table.table_offset;
-        build_append_int_noprefix(table_data, 1, 2);    /* Type */
-        build_append_int_noprefix(table_data, 10, 2);   /* Length */
-        build_append_int_noprefix(table_data, 0x1, 2);  /* Revision */
-        build_append_int_noprefix(table_data, 0, 1);    /* Reserved */
+    إذا (cpu->cfg.ext_zicbom || cpu->cfg.ext_zicboz) {
+        cmo_وٿي = جدول_معلومات->len - جدول.جدول_وٿي;
+        build_append_int_noprefix(جدول_معلومات, 1, 2);    /* Type */
+        build_append_int_noprefix(جدول_معلومات, 10, 2);   /* Length */
+        build_append_int_noprefix(جدول_معلومات, 0x1, 2);  /* Revision */
+        build_append_int_noprefix(جدول_معلومات, 0, 1);    /* Reserved */
 
         /* CBOM block size */
-        if (cpu->cfg.cbom_blocksize) {
-            build_append_int_noprefix(table_data,
+        إذا (cpu->cfg.cbom_blocksize) {
+            build_append_int_noprefix(جدول_معلومات,
                                       __builtin_ctz(cpu->cfg.cbom_blocksize),
                                       1);
-        } else {
-            build_append_int_noprefix(table_data, 0, 1);
+        } وإلا {
+            build_append_int_noprefix(جدول_معلومات, 0, 1);
         }
 
         /* CBOP block size */
-        build_append_int_noprefix(table_data, 0, 1);
+        build_append_int_noprefix(جدول_معلومات, 0, 1);
 
         /* CBOZ block size */
-        if (cpu->cfg.cboz_blocksize) {
-            build_append_int_noprefix(table_data,
+        إذا (cpu->cfg.cboz_blocksize) {
+            build_append_int_noprefix(جدول_معلومات,
                                       __builtin_ctz(cpu->cfg.cboz_blocksize),
                                       1);
-        } else {
-            build_append_int_noprefix(table_data, 0, 1);
+        } وإلا {
+            build_append_int_noprefix(جدول_معلومات, 0, 1);
         }
     }
 
     /* MMU node structure */
-    if (!rv32 && cpu->cfg.max_satp_mode >= VM_1_10_SV39) {
-        mmu_offset = table_data->len - table.table_offset;
-        build_append_int_noprefix(table_data, 2, 2);    /* Type */
-        build_append_int_noprefix(table_data, 8, 2);    /* Length */
-        build_append_int_noprefix(table_data, 0x1, 2);  /* Revision */
-        build_append_int_noprefix(table_data, 0, 1);    /* Reserved */
+    إذا (!rv32 && cpu->cfg.max_satp_گهڻائي >= VM_1_10_SV39) {
+        mmu_وٿي = جدول_معلومات->len - جدول.جدول_وٿي;
+        build_append_int_noprefix(جدول_معلومات, 2, 2);    /* Type */
+        build_append_int_noprefix(جدول_معلومات, 8, 2);    /* Length */
+        build_append_int_noprefix(جدول_معلومات, 0x1, 2);  /* Revision */
+        build_append_int_noprefix(جدول_معلومات, 0, 1);    /* Reserved */
         /* MMU Type */
-        if (cpu->cfg.max_satp_mode == VM_1_10_SV57) {
-            build_append_int_noprefix(table_data, 2, 1);    /* Sv57 */
-        } else if (cpu->cfg.max_satp_mode == VM_1_10_SV48) {
-            build_append_int_noprefix(table_data, 1, 1);    /* Sv48 */
-        } else if (cpu->cfg.max_satp_mode == VM_1_10_SV39) {
-            build_append_int_noprefix(table_data, 0, 1);    /* Sv39 */
-        } else {
+        إذا (cpu->cfg.max_satp_گهڻائي == VM_1_10_SV57) {
+            build_append_int_noprefix(جدول_معلومات, 2, 1);    /* Sv57 */
+        } وإلا إذا (cpu->cfg.max_satp_گهڻائي == VM_1_10_SV48) {
+            build_append_int_noprefix(جدول_معلومات, 1, 1);    /* Sv48 */
+        } وإلا إذا (cpu->cfg.max_satp_گهڻائي == VM_1_10_SV39) {
+            build_append_int_noprefix(جدول_معلومات, 0, 1);    /* Sv39 */
+        } وإلا {
             g_assert_not_reached();
         }
     }
 
     /* Hart Info Node */
-    for (int i = 0; i < arch_ids->len; i++) {
+    لكل (صحيح i = 0; i < arch_ids->len; i++) {
         len = 16;
-        int num_offsets = 1;
-        build_append_int_noprefix(table_data, 0xFFFF, 2);  /* Type */
+        صحيح انگ_offsets = 1;
+        build_append_int_noprefix(جدول_معلومات, 0xFFFF, 2);  /* Type */
 
         /* Length */
-        if (cmo_offset) {
+        إذا (cmo_وٿي) {
             len += 4;
-            num_offsets++;
+            انگ_offsets++;
         }
 
-        if (mmu_offset) {
+        إذا (mmu_وٿي) {
             len += 4;
-            num_offsets++;
+            انگ_offsets++;
         }
 
-        build_append_int_noprefix(table_data, len, 2);
-        build_append_int_noprefix(table_data, 0x1, 2); /* Revision */
+        build_append_int_noprefix(جدول_معلومات, len, 2);
+        build_append_int_noprefix(جدول_معلومات, 0x1, 2); /* Revision */
         /* Number of offsets */
-        build_append_int_noprefix(table_data, num_offsets, 2);
-        build_append_int_noprefix(table_data, i, 4);   /* ACPI Processor UID */
+        build_append_int_noprefix(جدول_معلومات, انگ_offsets, 2);
+        build_append_int_noprefix(جدول_معلومات, i, 4);   /* ACPI Processor UID */
         /* Offsets */
-        build_append_int_noprefix(table_data, isa_offset, 4);
-        if (cmo_offset) {
-            build_append_int_noprefix(table_data, cmo_offset, 4);
+        build_append_int_noprefix(جدول_معلومات, isa_وٿي, 4);
+        إذا (cmo_وٿي) {
+            build_append_int_noprefix(جدول_معلومات, cmo_وٿي, 4);
         }
 
-        if (mmu_offset) {
-            build_append_int_noprefix(table_data, mmu_offset, 4);
+        إذا (mmu_وٿي) {
+            build_append_int_noprefix(جدول_معلومات, mmu_وٿي, 4);
         }
     }
 
-    acpi_table_end(linker, &table);
+    acpi_جدول_پڇاڙي(linker, &جدول);
 }
 
 /*
  * ACPI spec, Revision 6.6
  * 5.2.9 Fixed ACPI Description Table (MADT)
  */
-static void build_fadt_rev6(GArray *table_data,
+ساكن فراغ build_fadt_rev6(GArray *جدول_معلومات,
                             BIOSLinker *linker,
                             RISCVVirtState *s,
-                            unsigned dsdt_tbl_offset)
+                            بنانشان dsdt_tbl_وٿي)
 {
-    AcpiFadtData fadt = {
+    Acpi_Fadt_معلومات fadt = {
         .rev = 6,
         .minor_ver = 6,
         .flags = 1 << ACPI_FADT_F_HW_REDUCED_ACPI,
-        .xdsdt_tbl_offset = &dsdt_tbl_offset,
+        .xdsdt_tbl_وٿي = &dsdt_tbl_وٿي,
     };
 
-    build_fadt(table_data, linker, &fadt, s->oem_id, s->oem_table_id);
+    build_fadt(جدول_معلومات, linker, &fadt, s->oem_id, s->oem_جدول_id);
 }
 
 /* DSDT */
-static void build_dsdt(GArray *table_data,
+ساكن فراغ build_dsdt(GArray *جدول_معلومات,
                        BIOSLinker *linker,
                        RISCVVirtState *s)
 {
     Aml *scope, *dsdt;
     MachineState *ms = MACHINE(s);
-    uint8_t socket_count;
-    const MemMapEntry *memmap = s->memmap;
-    AcpiTable table = { .sig = "DSDT", .rev = 2, .oem_id = s->oem_id,
-                        .oem_table_id = s->oem_table_id };
+    uint8_t socket_ڳڻپ;
+    ثابت Mem_Map_داخلا *memmap = s->memmap;
+    Acpi_جدول جدول = { .sig = "DSDT", .rev = 2, .oem_id = s->oem_id,
+                        .oem_جدول_id = s->oem_جدول_id };
 
 
-    acpi_table_begin(&table, table_data);
+    acpi_جدول_begin(&جدول, جدول_معلومات);
     dsdt = init_aml_allocator();
 
     /*
@@ -473,57 +473,57 @@ static void build_dsdt(GArray *table_data,
      * the RTC ACPI device at all when using UEFI.
      */
     scope = aml_scope("\\_SB");
-    acpi_dsdt_add_cpus(scope, s);
+    acpi_dsdt_جوڙيو_cpus(scope, s);
 
-    fw_cfg_acpi_dsdt_add(scope, &memmap[VIRT_FW_CFG]);
+    fw_cfg_acpi_dsdt_جوڙيو(scope, &memmap[VIRT_FW_CFG]);
 
-    socket_count = riscv_socket_count(ms);
+    socket_ڳڻپ = riscv_socket_ڳڻپ(ms);
 
-    if (s->aia_type == VIRT_AIA_TYPE_NONE) {
-        acpi_dsdt_add_plic_aplic(scope, socket_count, s->num_sources,
-                                 memmap[VIRT_PLIC].base,
-                                 memmap[VIRT_PLIC].size,
+    إذا (s->aia_type == VIRT_AIA_TYPE_NONE) {
+        acpi_dsdt_جوڙيو_plic_aplic(scope, socket_ڳڻپ, s->انگ_sources,
+                                 memmap[VIRT_PLIC].بنياد,
+                                 memmap[VIRT_PLIC].سائيز,
                                  "RSCV0001");
-    } else {
-        acpi_dsdt_add_plic_aplic(scope, socket_count, s->num_sources,
-                                 memmap[VIRT_APLIC_S].base,
-                                 memmap[VIRT_APLIC_S].size, "RSCV0002");
+    } وإلا {
+        acpi_dsdt_جوڙيو_plic_aplic(scope, socket_ڳڻپ, s->انگ_sources,
+                                 memmap[VIRT_APLIC_S].بنياد,
+                                 memmap[VIRT_APLIC_S].سائيز, "RSCV0002");
     }
 
-    acpi_dsdt_add_uart(scope, &memmap[VIRT_UART0], UART0_IRQ, 0);
-    if (s->uart1_present) {
-        acpi_dsdt_add_uart(scope, &memmap[VIRT_UART1], UART1_IRQ, 1);
+    acpi_dsdt_جوڙيو_uart(scope, &memmap[VIRT_UART0], UART0_IRQ, 0);
+    إذا (s->uart1_present) {
+        acpi_dsdt_جوڙيو_uart(scope, &memmap[VIRT_UART1], UART1_IRQ, 1);
     }
 
-    if (virt_is_iommu_sys_enabled(s)) {
-        acpi_dsdt_add_iommu_sys(scope, &memmap[VIRT_IOMMU_SYS], IOMMU_SYS_IRQ);
+    إذا (virt_is_iommu_sys_enabled(s)) {
+        acpi_dsdt_جوڙيو_iommu_sys(scope, &memmap[VIRT_IOMMU_SYS], IOMMU_SYS_IRQ);
     }
 
-    if (socket_count == 1) {
-        virtio_acpi_dsdt_add(scope, memmap[VIRT_VIRTIO].base,
-                             memmap[VIRT_VIRTIO].size,
-                             VIRTIO_IRQ, 0, VIRTIO_COUNT);
-        acpi_dsdt_add_gpex_host(scope, PCIE_IRQ);
-    } else if (socket_count == 2) {
-        virtio_acpi_dsdt_add(scope, memmap[VIRT_VIRTIO].base,
-                             memmap[VIRT_VIRTIO].size,
-                             VIRTIO_IRQ + s->num_sources, 0,
-                             VIRTIO_COUNT);
-        acpi_dsdt_add_gpex_host(scope, PCIE_IRQ + s->num_sources);
-    } else {
-        virtio_acpi_dsdt_add(scope, memmap[VIRT_VIRTIO].base,
-                             memmap[VIRT_VIRTIO].size,
-                             VIRTIO_IRQ + s->num_sources, 0,
-                             VIRTIO_COUNT);
-        acpi_dsdt_add_gpex_host(scope, PCIE_IRQ + s->num_sources * 2);
+    إذا (socket_ڳڻپ == 1) {
+        virtio_acpi_dsdt_جوڙيو(scope, memmap[VIRT_VIRTIO].بنياد,
+                             memmap[VIRT_VIRTIO].سائيز,
+                             VIRTIO_IRQ, 0, VIRTIO_ڳڻپ);
+        acpi_dsdt_جوڙيو_gpex_host(scope, PCIE_IRQ);
+    } وإلا إذا (socket_ڳڻپ == 2) {
+        virtio_acpi_dsdt_جوڙيو(scope, memmap[VIRT_VIRTIO].بنياد,
+                             memmap[VIRT_VIRTIO].سائيز,
+                             VIRTIO_IRQ + s->انگ_sources, 0,
+                             VIRTIO_ڳڻپ);
+        acpi_dsdt_جوڙيو_gpex_host(scope, PCIE_IRQ + s->انگ_sources);
+    } وإلا {
+        virtio_acpi_dsdt_جوڙيو(scope, memmap[VIRT_VIRTIO].بنياد,
+                             memmap[VIRT_VIRTIO].سائيز,
+                             VIRTIO_IRQ + s->انگ_sources, 0,
+                             VIRTIO_ڳڻپ);
+        acpi_dsdt_جوڙيو_gpex_host(scope, PCIE_IRQ + s->انگ_sources * 2);
     }
 
     aml_append(dsdt, scope);
 
     /* copy AML table into ACPI tables blob and patch header there */
-    g_array_append_vals(table_data, dsdt->buf->data, dsdt->buf->len);
+    g_array_append_vals(جدول_معلومات, dsdt->buf->معلومات, dsdt->buf->len);
 
-    acpi_table_end(linker, &table);
+    acpi_جدول_پڇاڙي(linker, &جدول);
     free_aml_allocator();
 }
 
@@ -531,363 +531,363 @@ static void build_dsdt(GArray *table_data,
  * ACPI spec, Revision 6.6
  * 5.2.12 Multiple APIC Description Table (MADT)
  */
-static void build_madt(GArray *table_data,
+ساكن فراغ build_madt(GArray *جدول_معلومات,
                        BIOSLinker *linker,
                        RISCVVirtState *s)
 {
     MachineClass *mc = MACHINE_GET_CLASS(s);
     MachineState *ms = MACHINE(s);
-    const CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
-    uint8_t  group_index_bits = imsic_num_bits(riscv_socket_count(ms));
-    uint8_t  guest_index_bits = imsic_num_bits(s->aia_guests + 1);
-    uint16_t imsic_max_hart_per_socket = 0;
-    uint8_t  hart_index_bits;
+    ثابت CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
+    uint8_t  گروهه_اشاريو_بٽ = imsic_انگ_بٽ(riscv_socket_ڳڻپ(ms));
+    uint8_t  guest_اشاريو_بٽ = imsic_انگ_بٽ(s->aia_guests + 1);
+    uint16_t imsic_max_hart_في_socket = 0;
+    uint8_t  hart_اشاريو_بٽ;
     uint64_t aplic_addr;
-    uint32_t gsi_base;
+    uint32_t gsi_بنياد;
     uint8_t  socket;
 
-    for (socket = 0; socket < riscv_socket_count(ms); socket++) {
-        if (imsic_max_hart_per_socket < s->soc[socket].num_harts) {
-            imsic_max_hart_per_socket = s->soc[socket].num_harts;
+    لكل (socket = 0; socket < riscv_socket_ڳڻپ(ms); socket++) {
+        إذا (imsic_max_hart_في_socket < s->soc[socket].انگ_harts) {
+            imsic_max_hart_في_socket = s->soc[socket].انگ_harts;
         }
     }
 
-    hart_index_bits = imsic_num_bits(imsic_max_hart_per_socket);
+    hart_اشاريو_بٽ = imsic_انگ_بٽ(imsic_max_hart_في_socket);
 
-    AcpiTable table = { .sig = "APIC", .rev = 7, .oem_id = s->oem_id,
-                        .oem_table_id = s->oem_table_id };
+    Acpi_جدول جدول = { .sig = "APIC", .rev = 7, .oem_id = s->oem_id,
+                        .oem_جدول_id = s->oem_جدول_id };
 
-    acpi_table_begin(&table, table_data);
+    acpi_جدول_begin(&جدول, جدول_معلومات);
     /* Local Interrupt Controller Address */
-    build_append_int_noprefix(table_data, 0, 4);
-    build_append_int_noprefix(table_data, 0, 4);   /* MADT Flags */
+    build_append_int_noprefix(جدول_معلومات, 0, 4);
+    build_append_int_noprefix(جدول_معلومات, 0, 4);   /* MADT Flags */
 
     /* RISC-V Local INTC structures per HART */
-    for (int i = 0; i < arch_ids->len; i++) {
-        riscv_acpi_madt_add_rintc(i, arch_ids, table_data, s);
+    لكل (صحيح i = 0; i < arch_ids->len; i++) {
+        riscv_acpi_madt_جوڙيو_rintc(i, arch_ids, جدول_معلومات, s);
     }
 
     /* IMSIC */
-    if (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
+    إذا (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
         /* IMSIC */
-        build_append_int_noprefix(table_data, 0x19, 1);     /* Type */
-        build_append_int_noprefix(table_data, 16, 1);       /* Length */
-        build_append_int_noprefix(table_data, 1, 1);        /* Version */
-        build_append_int_noprefix(table_data, 0, 1);        /* Reserved */
-        build_append_int_noprefix(table_data, 0, 4);        /* Flags */
+        build_append_int_noprefix(جدول_معلومات, 0x19, 1);     /* Type */
+        build_append_int_noprefix(جدول_معلومات, 16, 1);       /* Length */
+        build_append_int_noprefix(جدول_معلومات, 1, 1);        /* Version */
+        build_append_int_noprefix(جدول_معلومات, 0, 1);        /* Reserved */
+        build_append_int_noprefix(جدول_معلومات, 0, 4);        /* Flags */
         /* Number of supervisor mode Interrupt Identities */
-        build_append_int_noprefix(table_data, VIRT_IRQCHIP_NUM_MSIS, 2);
+        build_append_int_noprefix(جدول_معلومات, VIRT_IRQCHIP_انگ_MSIS, 2);
         /* Number of guest mode Interrupt Identities */
-        build_append_int_noprefix(table_data, VIRT_IRQCHIP_NUM_MSIS, 2);
+        build_append_int_noprefix(جدول_معلومات, VIRT_IRQCHIP_انگ_MSIS, 2);
         /* Guest Index Bits */
-        build_append_int_noprefix(table_data, guest_index_bits, 1);
+        build_append_int_noprefix(جدول_معلومات, guest_اشاريو_بٽ, 1);
         /* Hart Index Bits */
-        build_append_int_noprefix(table_data, hart_index_bits, 1);
+        build_append_int_noprefix(جدول_معلومات, hart_اشاريو_بٽ, 1);
         /* Group Index Bits */
-        build_append_int_noprefix(table_data, group_index_bits, 1);
+        build_append_int_noprefix(جدول_معلومات, گروهه_اشاريو_بٽ, 1);
         /* Group Index Shift */
-        build_append_int_noprefix(table_data, IMSIC_MMIO_GROUP_MIN_SHIFT, 1);
+        build_append_int_noprefix(جدول_معلومات, IMSIC_MMIO_گروهه_MIN_سرڪايو, 1);
     }
 
-    if (s->aia_type != VIRT_AIA_TYPE_NONE) {
+    إذا (s->aia_type != VIRT_AIA_TYPE_NONE) {
         /* APLICs */
-        for (socket = 0; socket < riscv_socket_count(ms); socket++) {
-            aplic_addr = s->memmap[VIRT_APLIC_S].base +
-                             s->memmap[VIRT_APLIC_S].size * socket;
-            gsi_base = s->num_sources * socket;
-            build_append_int_noprefix(table_data, 0x1A, 1);    /* Type */
-            build_append_int_noprefix(table_data, 36, 1);      /* Length */
-            build_append_int_noprefix(table_data, 1, 1);       /* Version */
-            build_append_int_noprefix(table_data, socket, 1);  /* APLIC ID */
-            build_append_int_noprefix(table_data, 0, 4);       /* Flags */
-            build_append_int_noprefix(table_data, 0, 8);       /* Hardware ID */
+        لكل (socket = 0; socket < riscv_socket_ڳڻپ(ms); socket++) {
+            aplic_addr = s->memmap[VIRT_APLIC_S].بنياد +
+                             s->memmap[VIRT_APLIC_S].سائيز * socket;
+            gsi_بنياد = s->انگ_sources * socket;
+            build_append_int_noprefix(جدول_معلومات, 0x1A, 1);    /* Type */
+            build_append_int_noprefix(جدول_معلومات, 36, 1);      /* Length */
+            build_append_int_noprefix(جدول_معلومات, 1, 1);       /* Version */
+            build_append_int_noprefix(جدول_معلومات, socket, 1);  /* APLIC ID */
+            build_append_int_noprefix(جدول_معلومات, 0, 4);       /* Flags */
+            build_append_int_noprefix(جدول_معلومات, 0, 8);       /* Hardware ID */
             /* Number of IDCs */
-            if (s->aia_type == VIRT_AIA_TYPE_APLIC) {
-                build_append_int_noprefix(table_data,
-                                          s->soc[socket].num_harts,
+            إذا (s->aia_type == VIRT_AIA_TYPE_APLIC) {
+                build_append_int_noprefix(جدول_معلومات,
+                                          s->soc[socket].انگ_harts,
                                           2);
-            } else {
-                build_append_int_noprefix(table_data, 0, 2);
+            } وإلا {
+                build_append_int_noprefix(جدول_معلومات, 0, 2);
             }
             /* Total External Interrupt Sources Supported */
-            build_append_int_noprefix(table_data, VIRT_IRQCHIP_NUM_SOURCES, 2);
+            build_append_int_noprefix(جدول_معلومات, VIRT_IRQCHIP_انگ_SOURCES, 2);
             /* Global System Interrupt Base */
-            build_append_int_noprefix(table_data, gsi_base, 4);
+            build_append_int_noprefix(جدول_معلومات, gsi_بنياد, 4);
             /* APLIC Address */
-            build_append_int_noprefix(table_data, aplic_addr, 8);
+            build_append_int_noprefix(جدول_معلومات, aplic_addr, 8);
             /* APLIC size */
-            build_append_int_noprefix(table_data,
-                                      s->memmap[VIRT_APLIC_S].size, 4);
+            build_append_int_noprefix(جدول_معلومات,
+                                      s->memmap[VIRT_APLIC_S].سائيز, 4);
         }
-    } else {
+    } وإلا {
         /* PLICs */
-        for (socket = 0; socket < riscv_socket_count(ms); socket++) {
-            aplic_addr = s->memmap[VIRT_PLIC].base +
-                         s->memmap[VIRT_PLIC].size * socket;
-            gsi_base = VIRT_IRQCHIP_NUM_SOURCES * socket;
-            build_append_int_noprefix(table_data, 0x1B, 1);   /* Type */
-            build_append_int_noprefix(table_data, 36, 1);     /* Length */
-            build_append_int_noprefix(table_data, 1, 1);      /* Version */
-            build_append_int_noprefix(table_data, socket, 1); /* PLIC ID */
-            build_append_int_noprefix(table_data, 0, 8);      /* Hardware ID */
+        لكل (socket = 0; socket < riscv_socket_ڳڻپ(ms); socket++) {
+            aplic_addr = s->memmap[VIRT_PLIC].بنياد +
+                         s->memmap[VIRT_PLIC].سائيز * socket;
+            gsi_بنياد = VIRT_IRQCHIP_انگ_SOURCES * socket;
+            build_append_int_noprefix(جدول_معلومات, 0x1B, 1);   /* Type */
+            build_append_int_noprefix(جدول_معلومات, 36, 1);     /* Length */
+            build_append_int_noprefix(جدول_معلومات, 1, 1);      /* Version */
+            build_append_int_noprefix(جدول_معلومات, socket, 1); /* PLIC ID */
+            build_append_int_noprefix(جدول_معلومات, 0, 8);      /* Hardware ID */
             /* Total External Interrupt Sources Supported */
-            build_append_int_noprefix(table_data,
-                                      VIRT_IRQCHIP_NUM_SOURCES - 1, 2);
-            build_append_int_noprefix(table_data, 0, 2);     /* Max Priority */
-            build_append_int_noprefix(table_data, 0, 4);     /* Flags */
+            build_append_int_noprefix(جدول_معلومات,
+                                      VIRT_IRQCHIP_انگ_SOURCES - 1, 2);
+            build_append_int_noprefix(جدول_معلومات, 0, 2);     /* Max Priority */
+            build_append_int_noprefix(جدول_معلومات, 0, 4);     /* Flags */
             /* PLIC Size */
-            build_append_int_noprefix(table_data, s->memmap[VIRT_PLIC].size, 4);
+            build_append_int_noprefix(جدول_معلومات, s->memmap[VIRT_PLIC].سائيز, 4);
             /* PLIC Address */
-            build_append_int_noprefix(table_data, aplic_addr, 8);
+            build_append_int_noprefix(جدول_معلومات, aplic_addr, 8);
             /* Global System Interrupt Vector Base */
-            build_append_int_noprefix(table_data, gsi_base, 4);
+            build_append_int_noprefix(جدول_معلومات, gsi_بنياد, 4);
         }
     }
 
-    acpi_table_end(linker, &table);
+    acpi_جدول_پڇاڙي(linker, &جدول);
 }
 
-#define ID_MAPPING_ENTRY_SIZE        20
-#define IOMMU_ENTRY_SIZE             40
-#define RISCV_INTERRUPT_WIRE_OFFSSET 40
-#define ROOT_COMPLEX_ENTRY_SIZE      20
-#define RIMT_NODE_OFFSET             48
+#وصف_ڪريو ID_MAPPING_داخلا_سائيز        20
+#وصف_ڪريو IOMMU_داخلا_سائيز             40
+#وصف_ڪريو RISCV_مداخلت_WIRE_OFFSSET 40
+#وصف_ڪريو پاڙ_COMPLEX_داخلا_سائيز      20
+#وصف_ڪريو RIMT_ڳنڍ_وٿي             48
 
 /*
  * ID Mapping Structure
  */
-static void build_rimt_id_mapping(GArray *table_data, uint32_t source_id_base,
-                                  uint32_t num_ids, uint32_t dest_id_base)
+ساكن فراغ build_rimt_id_mapping(GArray *جدول_معلومات, uint32_t ذريعو_id_بنياد,
+                                  uint32_t انگ_ids, uint32_t dest_id_بنياد)
 {
     /* Source ID Base */
-    build_append_int_noprefix(table_data, source_id_base, 4);
+    build_append_int_noprefix(جدول_معلومات, ذريعو_id_بنياد, 4);
     /* Number of IDs */
-    build_append_int_noprefix(table_data, num_ids, 4);
+    build_append_int_noprefix(جدول_معلومات, انگ_ids, 4);
     /* Destination Device ID Base */
-    build_append_int_noprefix(table_data, source_id_base, 4);
+    build_append_int_noprefix(جدول_معلومات, ذريعو_id_بنياد, 4);
     /* Destination IOMMU Offset */
-    build_append_int_noprefix(table_data, dest_id_base, 4);
+    build_append_int_noprefix(جدول_معلومات, dest_id_بنياد, 4);
     /* Flags */
-    build_append_int_noprefix(table_data, 0, 4);
+    build_append_int_noprefix(جدول_معلومات, 0, 4);
 }
 
-struct AcpiRimtIdMapping {
-    uint32_t source_id_base;
-    uint32_t num_ids;
+بنية AcpiRimtIdMapping {
+    uint32_t ذريعو_id_بنياد;
+    uint32_t انگ_ids;
 };
-typedef struct AcpiRimtIdMapping AcpiRimtIdMapping;
+تعريفنوع بنية AcpiRimtIdMapping AcpiRimtIdMapping;
 
 /* Build the rimt ID mapping to IOMMU for a given PCI host bridge */
-static int rimt_host_bridges(Object *obj, void *opaque)
+ساكن صحيح rimt_host_bridges(Object *obj, فراغ *opaque)
 {
     GArray *idmap_blob = opaque;
 
-    if (object_dynamic_cast(obj, TYPE_PCI_HOST_BRIDGE)) {
+    إذا (object_dynamic_cast(obj, TYPE_PCI_HOST_BRIDGE)) {
         PCIBus *bus = PCI_HOST_BRIDGE(obj)->bus;
 
-        if (bus && !pci_bus_bypass_iommu(bus)) {
-            int min_bus, max_bus;
+        إذا (bus && !pci_bus_bypass_iommu(bus)) {
+            صحيح min_bus, max_bus;
 
             pci_bus_range(bus, &min_bus, &max_bus);
 
             AcpiRimtIdMapping idmap = {
-                .source_id_base = min_bus << 8,
-                .num_ids = (max_bus - min_bus + 1) << 8,
+                .ذريعو_id_بنياد = min_bus << 8,
+                .انگ_ids = (max_bus - min_bus + 1) << 8,
             };
             g_array_append_val(idmap_blob, idmap);
         }
     }
 
-    return 0;
+    أرجع 0;
 }
 
-static int rimt_idmap_compare(gconstpointer a, gconstpointer b)
+ساكن صحيح rimt_idmap_compare(gconstpointer a, gconstpointer b)
 {
     AcpiRimtIdMapping *idmap_a = (AcpiRimtIdMapping *)a;
     AcpiRimtIdMapping *idmap_b = (AcpiRimtIdMapping *)b;
 
-    return idmap_a->source_id_base - idmap_b->source_id_base;
+    أرجع idmap_a->ذريعو_id_بنياد - idmap_b->ذريعو_id_بنياد;
 }
 
 /*
  * RISC-V IO Mapping Table (RIMT)
  * https://github.com/riscv-non-isa/riscv-acpi-rimt/releases/download/v0.99/rimt-spec.pdf
  */
-static void build_rimt(GArray *table_data, BIOSLinker *linker,
+ساكن فراغ build_rimt(GArray *جدول_معلومات, BIOSLinker *linker,
                        RISCVVirtState *s)
 {
-    int i, nb_nodes, rc_mapping_count;
-    size_t node_size, iommu_offset = 0;
+    صحيح i, nb_nodes, rc_mapping_ڳڻپ;
+    سائيز_t ڳنڍ_سائيز, iommu_وٿي = 0;
     uint32_t id = 0;
     g_autoptr(GArray) iommu_idmaps = g_array_new(false, true,
-                                                 sizeof(AcpiRimtIdMapping));
+                                                 حجم(AcpiRimtIdMapping));
 
-    AcpiTable table = { .sig = "RIMT", .rev = 1, .oem_id = s->oem_id,
-                        .oem_table_id = s->oem_table_id };
+    Acpi_جدول جدول = { .sig = "RIMT", .rev = 1, .oem_id = s->oem_id,
+                        .oem_جدول_id = s->oem_جدول_id };
 
-    acpi_table_begin(&table, table_data);
+    acpi_جدول_begin(&جدول, جدول_معلومات);
 
-    object_child_foreach_recursive(object_get_root(),
+    object_ٻار_foreach_recursive(object_get_پاڙ(),
                                    rimt_host_bridges, iommu_idmaps);
 
     /* Sort the ID mapping  by Source ID Base*/
-    g_array_sort(iommu_idmaps, rimt_idmap_compare);
+    g_array_ترتيب_ڏيو(iommu_idmaps, rimt_idmap_compare);
 
     nb_nodes = 2; /* RC, IOMMU */
-    rc_mapping_count = iommu_idmaps->len;
+    rc_mapping_ڳڻپ = iommu_idmaps->len;
     /* Number of RIMT Nodes */
-    build_append_int_noprefix(table_data, nb_nodes, 4);
+    build_append_int_noprefix(جدول_معلومات, nb_nodes, 4);
 
     /* Offset to Array of RIMT Nodes */
-    build_append_int_noprefix(table_data, RIMT_NODE_OFFSET, 4);
-    build_append_int_noprefix(table_data, 0, 4); /* Reserved */
+    build_append_int_noprefix(جدول_معلومات, RIMT_ڳنڍ_وٿي, 4);
+    build_append_int_noprefix(جدول_معلومات, 0, 4); /* Reserved */
 
-    iommu_offset = table_data->len - table.table_offset;
+    iommu_وٿي = جدول_معلومات->len - جدول.جدول_وٿي;
     /*  IOMMU Device Structure */
-    build_append_int_noprefix(table_data, 0, 1);         /* Type - IOMMU*/
-    build_append_int_noprefix(table_data, 1, 1);         /* Revision */
-    node_size =  IOMMU_ENTRY_SIZE;
-    build_append_int_noprefix(table_data, node_size, 2); /* Length */
-    build_append_int_noprefix(table_data, 0, 2);         /* Reserved */
-    build_append_int_noprefix(table_data, id++, 2);      /* ID */
-    if (virt_is_iommu_sys_enabled(s)) {
+    build_append_int_noprefix(جدول_معلومات, 0, 1);         /* Type - IOMMU*/
+    build_append_int_noprefix(جدول_معلومات, 1, 1);         /* Revision */
+    ڳنڍ_سائيز =  IOMMU_داخلا_سائيز;
+    build_append_int_noprefix(جدول_معلومات, ڳنڍ_سائيز, 2); /* Length */
+    build_append_int_noprefix(جدول_معلومات, 0, 2);         /* Reserved */
+    build_append_int_noprefix(جدول_معلومات, id++, 2);      /* ID */
+    إذا (virt_is_iommu_sys_enabled(s)) {
         /* Hardware ID */
-        build_append_int_noprefix(table_data, 'R', 1);
-        build_append_int_noprefix(table_data, 'S', 1);
-        build_append_int_noprefix(table_data, 'C', 1);
-        build_append_int_noprefix(table_data, 'V', 1);
-        build_append_int_noprefix(table_data, '0', 1);
-        build_append_int_noprefix(table_data, '0', 1);
-        build_append_int_noprefix(table_data, '0', 1);
-        build_append_int_noprefix(table_data, '4', 1);
+        build_append_int_noprefix(جدول_معلومات, 'R', 1);
+        build_append_int_noprefix(جدول_معلومات, 'S', 1);
+        build_append_int_noprefix(جدول_معلومات, 'C', 1);
+        build_append_int_noprefix(جدول_معلومات, 'V', 1);
+        build_append_int_noprefix(جدول_معلومات, '0', 1);
+        build_append_int_noprefix(جدول_معلومات, '0', 1);
+        build_append_int_noprefix(جدول_معلومات, '0', 1);
+        build_append_int_noprefix(جدول_معلومات, '4', 1);
         /* Base Address */
-        build_append_int_noprefix(table_data,
-                                  s->memmap[VIRT_IOMMU_SYS].base, 8);
-        build_append_int_noprefix(table_data, 0, 4);   /* Flags */
-    } else {
+        build_append_int_noprefix(جدول_معلومات,
+                                  s->memmap[VIRT_IOMMU_SYS].بنياد, 8);
+        build_append_int_noprefix(جدول_معلومات, 0, 4);   /* Flags */
+    } وإلا {
         /* Hardware ID */
-        build_append_int_noprefix(table_data, '0', 1);
-        build_append_int_noprefix(table_data, '0', 1);
-        build_append_int_noprefix(table_data, '1', 1);
-        build_append_int_noprefix(table_data, '0', 1);
-        build_append_int_noprefix(table_data, '0', 1);
-        build_append_int_noprefix(table_data, '0', 1);
-        build_append_int_noprefix(table_data, '1', 1);
-        build_append_int_noprefix(table_data, '4', 1);
+        build_append_int_noprefix(جدول_معلومات, '0', 1);
+        build_append_int_noprefix(جدول_معلومات, '0', 1);
+        build_append_int_noprefix(جدول_معلومات, '1', 1);
+        build_append_int_noprefix(جدول_معلومات, '0', 1);
+        build_append_int_noprefix(جدول_معلومات, '0', 1);
+        build_append_int_noprefix(جدول_معلومات, '0', 1);
+        build_append_int_noprefix(جدول_معلومات, '1', 1);
+        build_append_int_noprefix(جدول_معلومات, '4', 1);
 
-        build_append_int_noprefix(table_data, 0, 8);   /* Base Address */
-        build_append_int_noprefix(table_data, 1, 4);   /* Flags */
+        build_append_int_noprefix(جدول_معلومات, 0, 8);   /* Base Address */
+        build_append_int_noprefix(جدول_معلومات, 1, 4);   /* Flags */
     }
 
-    build_append_int_noprefix(table_data, 0, 4);       /* Proximity Domain */
-    build_append_int_noprefix(table_data, 0, 2);       /* PCI Segment number */
+    build_append_int_noprefix(جدول_معلومات, 0, 4);       /* Proximity Domain */
+    build_append_int_noprefix(جدول_معلومات, 0, 2);       /* PCI Segment number */
     /* PCIe B/D/F */
-    if (virt_is_iommu_sys_enabled(s)) {
-        build_append_int_noprefix(table_data, 0, 2);
-    } else {
-        build_append_int_noprefix(table_data, s->pci_iommu_bdf, 2);
+    إذا (virt_is_iommu_sys_enabled(s)) {
+        build_append_int_noprefix(جدول_معلومات, 0, 2);
+    } وإلا {
+        build_append_int_noprefix(جدول_معلومات, s->pci_iommu_bdf, 2);
     }
     /* Number of interrupt wires */
-    build_append_int_noprefix(table_data, 0, 2);
+    build_append_int_noprefix(جدول_معلومات, 0, 2);
     /* Interrupt wire array offset */
-    build_append_int_noprefix(table_data, RISCV_INTERRUPT_WIRE_OFFSSET, 2);
+    build_append_int_noprefix(جدول_معلومات, RISCV_مداخلت_WIRE_OFFSSET, 2);
 
     /*  PCIe Root Complex Node */
-    build_append_int_noprefix(table_data, 1, 1);           /* Type */
-    build_append_int_noprefix(table_data, 1, 1);           /* Revision */
-    node_size =  ROOT_COMPLEX_ENTRY_SIZE +
-                 ID_MAPPING_ENTRY_SIZE * rc_mapping_count;
-    build_append_int_noprefix(table_data, node_size, 2);   /* Length */
-    build_append_int_noprefix(table_data, 0, 2);           /* Reserved */
-    build_append_int_noprefix(table_data, id++, 2);        /* ID */
-    build_append_int_noprefix(table_data, 0, 4);           /* Flags */
-    build_append_int_noprefix(table_data, 0, 2);           /* Reserved */
+    build_append_int_noprefix(جدول_معلومات, 1, 1);           /* Type */
+    build_append_int_noprefix(جدول_معلومات, 1, 1);           /* Revision */
+    ڳنڍ_سائيز =  پاڙ_COMPLEX_داخلا_سائيز +
+                 ID_MAPPING_داخلا_سائيز * rc_mapping_ڳڻپ;
+    build_append_int_noprefix(جدول_معلومات, ڳنڍ_سائيز, 2);   /* Length */
+    build_append_int_noprefix(جدول_معلومات, 0, 2);           /* Reserved */
+    build_append_int_noprefix(جدول_معلومات, id++, 2);        /* ID */
+    build_append_int_noprefix(جدول_معلومات, 0, 4);           /* Flags */
+    build_append_int_noprefix(جدول_معلومات, 0, 2);           /* Reserved */
     /* PCI Segment number */
-    build_append_int_noprefix(table_data, 0, 2);
+    build_append_int_noprefix(جدول_معلومات, 0, 2);
     /* ID mapping array offset */
-    build_append_int_noprefix(table_data, ROOT_COMPLEX_ENTRY_SIZE, 2);
+    build_append_int_noprefix(جدول_معلومات, پاڙ_COMPLEX_داخلا_سائيز, 2);
     /* Number of ID mappings */
-    build_append_int_noprefix(table_data, rc_mapping_count, 2);
+    build_append_int_noprefix(جدول_معلومات, rc_mapping_ڳڻپ, 2);
 
     /* Output Reference */
     AcpiRimtIdMapping *range;
 
     /* ID mapping array */
-    for (i = 0; i < iommu_idmaps->len; i++) {
-        range = &g_array_index(iommu_idmaps, AcpiRimtIdMapping, i);
-        if (virt_is_iommu_sys_enabled(s)) {
-            range->source_id_base = 0;
-            range->num_ids = 0x10000;
-        } else {
-            range->source_id_base = s->pci_iommu_bdf + 1;
-            range->num_ids = 0xffff - s->pci_iommu_bdf;
+    لكل (i = 0; i < iommu_idmaps->len; i++) {
+        range = &g_array_اشاريو(iommu_idmaps, AcpiRimtIdMapping, i);
+        إذا (virt_is_iommu_sys_enabled(s)) {
+            range->ذريعو_id_بنياد = 0;
+            range->انگ_ids = 0x10000;
+        } وإلا {
+            range->ذريعو_id_بنياد = s->pci_iommu_bdf + 1;
+            range->انگ_ids = 0xffff - s->pci_iommu_bdf;
         }
-        build_rimt_id_mapping(table_data, range->source_id_base,
-                              range->num_ids, iommu_offset);
+        build_rimt_id_mapping(جدول_معلومات, range->ذريعو_id_بنياد,
+                              range->انگ_ids, iommu_وٿي);
     }
 
-    acpi_table_end(linker, &table);
+    acpi_جدول_پڇاڙي(linker, &جدول);
 }
 
 /*
  * ACPI spec, Revision 6.6
  * 5.2.16 System Resource Affinity Table (SRAT)
  */
-static void
-build_srat(GArray *table_data, BIOSLinker *linker, RISCVVirtState *vms)
+ساكن فراغ
+build_srat(GArray *جدول_معلومات, BIOSLinker *linker, RISCVVirtState *vms)
 {
-    int i;
-    uint64_t mem_base;
+    صحيح i;
+    uint64_t mem_بنياد;
     MachineClass *mc = MACHINE_GET_CLASS(vms);
     MachineState *ms = MACHINE(vms);
-    const CPUArchIdList *cpu_list = mc->possible_cpu_arch_ids(ms);
-    AcpiTable table = { .sig = "SRAT", .rev = 3, .oem_id = vms->oem_id,
-                        .oem_table_id = vms->oem_table_id };
+    ثابت CPUArchIdList *cpu_list = mc->possible_cpu_arch_ids(ms);
+    Acpi_جدول جدول = { .sig = "SRAT", .rev = 3, .oem_id = vms->oem_id,
+                        .oem_جدول_id = vms->oem_جدول_id };
 
-    acpi_table_begin(&table, table_data);
-    build_append_int_noprefix(table_data, 1, 4); /* Reserved */
-    build_append_int_noprefix(table_data, 0, 8); /* Reserved */
+    acpi_جدول_begin(&جدول, جدول_معلومات);
+    build_append_int_noprefix(جدول_معلومات, 1, 4); /* Reserved */
+    build_append_int_noprefix(جدول_معلومات, 0, 8); /* Reserved */
 
-    for (i = 0; i < cpu_list->len; ++i) {
-        uint32_t nodeid = cpu_list->cpus[i].props.node_id;
+    لكل (i = 0; i < cpu_list->len; ++i) {
+        uint32_t nodeid = cpu_list->cpus[i].props.ڳنڍ_id;
         /*
          * 5.2.16.8 RINTC Affinity Structure
          */
-        build_append_int_noprefix(table_data, 7, 1);      /* Type */
-        build_append_int_noprefix(table_data, 20, 1);     /* Length */
-        build_append_int_noprefix(table_data, 0, 2);        /* Reserved */
-        build_append_int_noprefix(table_data, nodeid, 4); /* Proximity Domain */
-        build_append_int_noprefix(table_data, i, 4); /* ACPI Processor UID */
+        build_append_int_noprefix(جدول_معلومات, 7, 1);      /* Type */
+        build_append_int_noprefix(جدول_معلومات, 20, 1);     /* Length */
+        build_append_int_noprefix(جدول_معلومات, 0, 2);        /* Reserved */
+        build_append_int_noprefix(جدول_معلومات, nodeid, 4); /* Proximity Domain */
+        build_append_int_noprefix(جدول_معلومات, i, 4); /* ACPI Processor UID */
         /* Flags, Table 5-70 */
-        build_append_int_noprefix(table_data, 1 /* Flags: Enabled */, 4);
-        build_append_int_noprefix(table_data, 0, 4); /* Clock Domain */
+        build_append_int_noprefix(جدول_معلومات, 1 /* Flags: Enabled */, 4);
+        build_append_int_noprefix(جدول_معلومات, 0, 4); /* Clock Domain */
     }
 
-    mem_base = vms->memmap[VIRT_DRAM].base;
-    for (i = 0; i < ms->numa_state->num_nodes; ++i) {
-        if (ms->numa_state->nodes[i].node_mem > 0) {
-            build_srat_memory(table_data, mem_base,
-                              ms->numa_state->nodes[i].node_mem, i,
+    mem_بنياد = vms->memmap[VIRT_DRAM].بنياد;
+    لكل (i = 0; i < ms->numa_state->انگ_nodes; ++i) {
+        إذا (ms->numa_state->nodes[i].ڳنڍ_mem > 0) {
+            build_srat_يادگيري(جدول_معلومات, mem_بنياد,
+                              ms->numa_state->nodes[i].ڳنڍ_mem, i,
                               MEM_AFFINITY_ENABLED);
-            mem_base += ms->numa_state->nodes[i].node_mem;
+            mem_بنياد += ms->numa_state->nodes[i].ڳنڍ_mem;
         }
     }
 
-    acpi_table_end(linker, &table);
+    acpi_جدول_پڇاڙي(linker, &جدول);
 }
 
-static void virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
+ساكن فراغ virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
 {
-    GArray *table_offsets;
-    unsigned dsdt, xsdt;
-    GArray *tables_blob = tables->table_data;
+    GArray *جدول_offsets;
+    بنانشان dsdt, xsdt;
+    GArray *tables_blob = tables->جدول_معلومات;
     MachineState *ms = MACHINE(s);
 
-    table_offsets = g_array_new(false, true,
-                                sizeof(uint32_t));
+    جدول_offsets = g_array_new(false, true,
+                                حجم(uint32_t));
 
     bios_linker_loader_alloc(tables->linker,
-                             ACPI_BUILD_TABLE_FILE, tables_blob,
+                             ACPI_BUILD_جدول_FILE, tables_blob,
                              64, false);
 
     /* DSDT is pointed to by FADT */
@@ -895,101 +895,101 @@ static void virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
     build_dsdt(tables_blob, tables->linker, s);
 
     /* FADT and others pointed to by XSDT */
-    acpi_add_table(table_offsets, tables_blob);
+    acpi_جوڙيو_جدول(جدول_offsets, tables_blob);
     build_fadt_rev6(tables_blob, tables->linker, s, dsdt);
 
-    acpi_add_table(table_offsets, tables_blob);
+    acpi_جوڙيو_جدول(جدول_offsets, tables_blob);
     build_madt(tables_blob, tables->linker, s);
 
-    acpi_add_table(table_offsets, tables_blob);
+    acpi_جوڙيو_جدول(جدول_offsets, tables_blob);
     build_rhct(tables_blob, tables->linker, s);
 
-    if (virt_is_iommu_sys_enabled(s) || s->pci_iommu_bdf) {
-        acpi_add_table(table_offsets, tables_blob);
+    إذا (virt_is_iommu_sys_enabled(s) || s->pci_iommu_bdf) {
+        acpi_جوڙيو_جدول(جدول_offsets, tables_blob);
         build_rimt(tables_blob, tables->linker, s);
     }
 
-    acpi_add_table(table_offsets, tables_blob);
+    acpi_جوڙيو_جدول(جدول_offsets, tables_blob);
 
-    if (ms->acpi_spcr_enabled) {
-        spcr_setup(tables_blob, tables->linker, s);
+    إذا (ms->acpi_spcr_enabled) {
+        spcr_تياري(tables_blob, tables->linker, s);
     }
 
-    acpi_add_table(table_offsets, tables_blob);
+    acpi_جوڙيو_جدول(جدول_offsets, tables_blob);
     {
         AcpiMcfgInfo mcfg = {
-           .base = s->memmap[VIRT_PCIE_ECAM].base,
-           .size = s->memmap[VIRT_PCIE_ECAM].size,
+           .بنياد = s->memmap[VIRT_PCIE_ECAM].بنياد,
+           .سائيز = s->memmap[VIRT_PCIE_ECAM].سائيز,
         };
         build_mcfg(tables_blob, tables->linker, &mcfg, s->oem_id,
-                   s->oem_table_id);
+                   s->oem_جدول_id);
     }
 
-    if (ms->numa_state->num_nodes > 0) {
-        acpi_add_table(table_offsets, tables_blob);
+    إذا (ms->numa_state->انگ_nodes > 0) {
+        acpi_جوڙيو_جدول(جدول_offsets, tables_blob);
         build_srat(tables_blob, tables->linker, s);
-        if (ms->numa_state->have_numa_distance) {
-            acpi_add_table(table_offsets, tables_blob);
+        إذا (ms->numa_state->have_numa_مفاصلو) {
+            acpi_جوڙيو_جدول(جدول_offsets, tables_blob);
             build_slit(tables_blob, tables->linker, ms, s->oem_id,
-                       s->oem_table_id);
+                       s->oem_جدول_id);
         }
     }
 
     /* XSDT is pointed to by RSDP */
     xsdt = tables_blob->len;
-    build_xsdt(tables_blob, tables->linker, table_offsets, s->oem_id,
-                s->oem_table_id);
+    build_xsdt(tables_blob, tables->linker, جدول_offsets, s->oem_id,
+                s->oem_جدول_id);
 
     /* RSDP is in FSEG memory, so allocate it separately */
     {
-        AcpiRsdpData rsdp_data = {
+        Acpi_Rsdp_معلومات rsdp_معلومات = {
             .revision = 2,
             .oem_id = s->oem_id,
-            .xsdt_tbl_offset = &xsdt,
-            .rsdt_tbl_offset = NULL,
+            .xsdt_tbl_وٿي = &xsdt,
+            .rsdt_tbl_وٿي = عدم,
         };
-        build_rsdp(tables->rsdp, tables->linker, &rsdp_data);
+        build_rsdp(tables->rsdp, tables->linker, &rsdp_معلومات);
     }
 
     /*
      * The align size is 128, warn if 64k is not enough therefore
      * the align size could be resized.
      */
-    if (tables_blob->len > ACPI_BUILD_TABLE_SIZE / 2) {
+    إذا (tables_blob->len > ACPI_BUILD_جدول_سائيز / 2) {
         warn_report("ACPI table size %u exceeds %d bytes,"
                     " migration may not work",
-                    tables_blob->len, ACPI_BUILD_TABLE_SIZE / 2);
+                    tables_blob->len, ACPI_BUILD_جدول_سائيز / 2);
         error_printf("Try removing some objects.");
     }
 
-    acpi_align_size(tables_blob, ACPI_BUILD_TABLE_SIZE);
+    acpi_align_سائيز(tables_blob, ACPI_BUILD_جدول_سائيز);
 
     /* Clean up memory that's no longer used */
-    g_array_free(table_offsets, true);
+    g_array_free(جدول_offsets, true);
 }
 
-static void acpi_ram_update(MemoryRegion *mr, GArray *data)
+ساكن فراغ acpi_ram_update(يادگيري_Region *mr, GArray *معلومات)
 {
-    uint32_t size = acpi_data_len(data);
+    uint32_t سائيز = acpi_معلومات_len(معلومات);
 
     /*
      * Make sure RAM size is correct - in case it got changed
      * e.g. by migration
      */
-    memory_region_ram_resize(mr, size, &error_abort);
+    يادگيري_region_ram_resize(mr, سائيز, &error_abort);
 
-    memcpy(memory_region_get_ram_ptr(mr), data->data, size);
-    memory_region_set_dirty(mr, 0, size);
+    يادگيري_نقل(يادگيري_region_get_ram_ptr(mr), معلومات->معلومات, سائيز);
+    يادگيري_region_سيٽ_dirty(mr, 0, سائيز);
 }
 
-static void virt_acpi_build_update(void *build_opaque)
+ساكن فراغ virt_acpi_build_update(فراغ *build_opaque)
 {
     AcpiBuildState *build_state = build_opaque;
     AcpiBuildTables tables;
 
     /* No state to update or already patched? Nothing to do. */
-    if (!build_state || build_state->patched) {
-        return;
+    إذا (!build_state || build_state->patched) {
+        أرجع;
     }
 
     build_state->patched = true;
@@ -998,57 +998,57 @@ static void virt_acpi_build_update(void *build_opaque)
 
     virt_acpi_build(RISCV_VIRT_MACHINE(qdev_get_machine()), &tables);
 
-    acpi_ram_update(build_state->table_mr, tables.table_data);
+    acpi_ram_update(build_state->جدول_mr, tables.جدول_معلومات);
     acpi_ram_update(build_state->rsdp_mr, tables.rsdp);
     acpi_ram_update(build_state->linker_mr, tables.linker->cmd_blob);
 
     acpi_build_tables_cleanup(&tables, true);
 }
 
-static void virt_acpi_build_reset(void *build_opaque)
+ساكن فراغ virt_acpi_build_reset(فراغ *build_opaque)
 {
     AcpiBuildState *build_state = build_opaque;
     build_state->patched = false;
 }
 
-static const VMStateDescription vmstate_virt_acpi_build = {
+ساكن ثابت VMStateDescription vmstate_virt_acpi_build = {
     .name = "virt_acpi_build",
-    .version_id = 1,
-    .minimum_version_id = 1,
-    .fields = (const VMStateField[]) {
+    .نسخو_id = 1,
+    .minimum_نسخو_id = 1,
+    .fields = (ثابت VMState_ميدان[]) {
         VMSTATE_BOOL(patched, AcpiBuildState),
-        VMSTATE_END_OF_LIST()
+        VMSTATE_پڇاڙي_جو_LIST()
     },
 };
 
-void virt_acpi_setup(RISCVVirtState *s)
+فراغ virt_acpi_تياري(RISCVVirtState *s)
 {
     AcpiBuildTables tables;
     AcpiBuildState *build_state;
 
-    build_state = g_malloc0(sizeof *build_state);
+    build_state = g_malloc0(حجم *build_state);
 
     acpi_build_tables_init(&tables);
     virt_acpi_build(s, &tables);
 
     /* Now expose it all to Guest */
-    build_state->table_mr = acpi_add_rom_blob(virt_acpi_build_update,
-                                              build_state, tables.table_data,
-                                              ACPI_BUILD_TABLE_FILE);
-    assert(build_state->table_mr != NULL);
+    build_state->جدول_mr = acpi_جوڙيو_rom_blob(virt_acpi_build_update,
+                                              build_state, tables.جدول_معلومات,
+                                              ACPI_BUILD_جدول_FILE);
+    أكد(build_state->جدول_mr != عدم);
 
-    build_state->linker_mr = acpi_add_rom_blob(virt_acpi_build_update,
+    build_state->linker_mr = acpi_جوڙيو_rom_blob(virt_acpi_build_update,
                                                build_state,
                                                tables.linker->cmd_blob,
                                                ACPI_BUILD_LOADER_FILE);
 
-    build_state->rsdp_mr = acpi_add_rom_blob(virt_acpi_build_update,
+    build_state->rsdp_mr = acpi_جوڙيو_rom_blob(virt_acpi_build_update,
                                              build_state, tables.rsdp,
                                              ACPI_BUILD_RSDP_FILE);
 
-    qemu_register_reset(virt_acpi_build_reset, build_state);
+    qemu_رجسٽر_reset(virt_acpi_build_reset, build_state);
     virt_acpi_build_reset(build_state);
-    vmstate_register(NULL, 0, &vmstate_virt_acpi_build, build_state);
+    vmstate_رجسٽر(عدم, 0, &vmstate_virt_acpi_build, build_state);
 
     /*
      * Clean up tables but don't free the memory: we track it

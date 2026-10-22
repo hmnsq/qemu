@@ -6,32 +6,32 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#include "qemu/osdep.h"
+#ضمن "qemu/osdep.h"
 
-#include "qemu/error-report.h"
-#include "system/device_tree.h"
-#include "hw/core/boards.h"
-#include "hw/core/sysbus-fdt.h"
-#include "hw/riscv/fdt-common.h"
-#include "target/riscv/cpu_bits.h"
-#include "hw/riscv/riscv-iommu-bits.h"
-#include "hw/riscv/iommu.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/riscv_imsic.h"
-#include "hw/pci/pci.h"
-#include "hw/pci/pcie_host.h"
-#include "hw/riscv/aia.h"
+#ضمن "qemu/error-report.h"
+#ضمن "system/device_tree.h"
+#ضمن "hw/core/boards.h"
+#ضمن "hw/core/sysbus-fdt.h"
+#ضمن "hw/riscv/fdt-common.h"
+#ضمن "target/riscv/cpu_bits.h"
+#ضمن "hw/riscv/riscv-iommu-bits.h"
+#ضمن "hw/riscv/iommu.h"
+#ضمن "hw/intc/riscv_aclint.h"
+#ضمن "hw/intc/riscv_imsic.h"
+#ضمن "hw/pci/pci.h"
+#ضمن "hw/pci/pcie_host.h"
+#ضمن "hw/riscv/aia.h"
 
-#define UART_STD_CLOCK_FREQ 3686400 /* 3.6864 MHz */
+#وصف_ڪريو UART_STD_CLOCK_FREQ 3686400 /* 3.6864 MHz */
 
-void *riscv_create_board_device_tree(const char *model, const char *compatible,
-                                     int *fdt_size)
+فراغ *riscv_create_board_device_وڻ(ثابت حرف *model, ثابت حرف *compatible,
+                                     صحيح *fdt_سائيز)
 {
-    void *fdt = create_device_tree(fdt_size);
+    فراغ *fdt = create_device_وڻ(fdt_سائيز);
 
-    if (!fdt) {
+    إذا (!fdt) {
         error_report("create_device_tree() failed");
-        exit(1);
+        ٻاهر_نڪرو(1);
     }
 
     qemu_fdt_setprop_string(fdt, "/", "model", model);
@@ -39,85 +39,85 @@ void *riscv_create_board_device_tree(const char *model, const char *compatible,
     qemu_fdt_setprop_cell(fdt, "/", "#size-cells", 0x2);
     qemu_fdt_setprop_cell(fdt, "/", "#address-cells", 0x2);
 
-    qemu_fdt_add_subnode(fdt, "/soc");
-    qemu_fdt_setprop(fdt, "/soc", "ranges", NULL, 0);
+    qemu_fdt_جوڙيو_subnode(fdt, "/soc");
+    qemu_fdt_setprop(fdt, "/soc", "ranges", عدم, 0);
     qemu_fdt_setprop_string(fdt, "/soc", "compatible", "simple-bus");
     qemu_fdt_setprop_cell(fdt, "/soc", "#size-cells", 0x2);
     qemu_fdt_setprop_cell(fdt, "/soc", "#address-cells", 0x2);
 
-    return fdt;
+    أرجع fdt;
 }
 
-void riscv_create_fdt_socket_memory(void *fdt, hwaddr addr, uint64_t size,
-                                    int socket_id, bool numa_enabled)
+فراغ riscv_create_fdt_socket_يادگيري(فراغ *fdt, hwaddr addr, uint64_t سائيز,
+                                    صحيح socket_id, bool numa_enabled)
 {
-    g_autofree char *mem_name = g_strdup_printf("/memory@%"HWADDR_PRIx, addr);
+    g_autofree حرف *mem_name = g_strdup_printf("/memory@%"HWADDR_PRIx, addr);
 
-    qemu_fdt_add_subnode(fdt, mem_name);
-    qemu_fdt_setprop_sized_cells(fdt, mem_name, "reg", 2, addr, 2, size);
+    qemu_fdt_جوڙيو_subnode(fdt, mem_name);
+    qemu_fdt_setprop_sized_cells(fdt, mem_name, "reg", 2, addr, 2, سائيز);
     qemu_fdt_setprop_string(fdt, mem_name, "device_type", "memory");
 
-    if (numa_enabled) {
+    إذا (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, mem_name, "numa-node-id", socket_id);
     }
 }
 
-void riscv_create_fdt_socket_clint(void *fdt, hwaddr addr, uint64_t size,
-                                   int socket_id, uint32_t *intc_phandles,
-                                   int num_harts, bool numa_enabled)
+فراغ riscv_create_fdt_socket_clint(فراغ *fdt, hwaddr addr, uint64_t سائيز,
+                                   صحيح socket_id, uint32_t *intc_phandles,
+                                   صحيح انگ_harts, bool numa_enabled)
 {
-    g_autofree uint32_t *clint_cells = g_new0(uint32_t, num_harts * 4);
-    g_autofree char *clint_name = NULL;
-    static const char * const clint_compat[2] = {
+    g_autofree uint32_t *clint_cells = g_new0(uint32_t, انگ_harts * 4);
+    g_autofree حرف *clint_name = عدم;
+    ساكن ثابت حرف * ثابت clint_compat[2] = {
         "sifive,clint0", "riscv,clint0"
     };
 
-    for (int cpu = 0; cpu < num_harts; cpu++) {
-        clint_cells[cpu * 4 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        clint_cells[cpu * 4 + 1] = cpu_to_be32(IRQ_M_SOFT);
-        clint_cells[cpu * 4 + 2] = cpu_to_be32(intc_phandles[cpu]);
-        clint_cells[cpu * 4 + 3] = cpu_to_be32(IRQ_M_TIMER);
+    لكل (صحيح cpu = 0; cpu < انگ_harts; cpu++) {
+        clint_cells[cpu * 4 + 0] = cpu_منزل_be32(intc_phandles[cpu]);
+        clint_cells[cpu * 4 + 1] = cpu_منزل_be32(IRQ_M_SOFT);
+        clint_cells[cpu * 4 + 2] = cpu_منزل_be32(intc_phandles[cpu]);
+        clint_cells[cpu * 4 + 3] = cpu_منزل_be32(IRQ_M_TIMER);
     }
 
     clint_name = g_strdup_printf("/soc/clint@%"HWADDR_PRIx, addr);
-    qemu_fdt_add_subnode(fdt, clint_name);
+    qemu_fdt_جوڙيو_subnode(fdt, clint_name);
     qemu_fdt_setprop_string_array(fdt, clint_name, "compatible",
-                                  (char **)&clint_compat,
-                                  ARRAY_SIZE(clint_compat));
+                                  (حرف **)&clint_compat,
+                                  ARRAY_سائيز(clint_compat));
     qemu_fdt_setprop_sized_cells(fdt, clint_name, "reg",
-                                 2, addr, 2, size);
+                                 2, addr, 2, سائيز);
     qemu_fdt_setprop(fdt, clint_name, "interrupts-extended",
-                     clint_cells, num_harts * sizeof(uint32_t) * 4);
+                     clint_cells, انگ_harts * حجم(uint32_t) * 4);
 
-    if (numa_enabled) {
+    إذا (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, clint_name, "numa-node-id", socket_id);
     }
 }
 
-void riscv_fdt_create_cpu_socket_subnode(void *fdt,
+فراغ riscv_fdt_create_cpu_socket_subnode(فراغ *fdt,
                                          uint64_t timebase_frequency)
 {
-    qemu_fdt_add_subnode(fdt, "/cpus");
+    qemu_fdt_جوڙيو_subnode(fdt, "/cpus");
     qemu_fdt_setprop_cell(fdt, "/cpus", "timebase-frequency",
                           timebase_frequency);
     qemu_fdt_setprop_cell(fdt, "/cpus", "#size-cells", 0x0);
     qemu_fdt_setprop_cell(fdt, "/cpus", "#address-cells", 0x1);
-    qemu_fdt_add_subnode(fdt, "/cpus/cpu-map");
+    qemu_fdt_جوڙيو_subnode(fdt, "/cpus/cpu-map");
 }
 
-static void
-create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
-                               int cpu, int socket_id, int socket_hartid_base,
+ساكن فراغ
+create_fdt_socket_cpu_اندروني(فراغ *fdt, حرف *clust_name, RISCVCPU *cpu_ptr,
+                               صحيح cpu, صحيح socket_id, صحيح socket_hartid_بنياد,
                                uint32_t *phandle, uint32_t *intc_phandles,
-                               bool numa_enabled, bool is_32_bit)
+                               bool numa_enabled, bool is_32_ٻٽو_انگ)
 {
-    g_autofree char *cpu_name = NULL;
-    g_autofree char *core_name = NULL;
-    g_autofree char *intc_name = NULL;
+    g_autofree حرف *cpu_name = عدم;
+    g_autofree حرف *core_name = عدم;
+    g_autofree حرف *intc_name = عدم;
     uint32_t cpu_phandle = (*phandle)++;
-    bool is_sifive_u = cpu_ptr == NULL;
+    bool is_sifive_u = cpu_ptr == عدم;
 
-    cpu_name = g_strdup_printf("/cpus/cpu@%d", socket_hartid_base + cpu);
+    cpu_name = g_strdup_printf("/cpus/cpu@%d", socket_hartid_بنياد + cpu);
 
     /*
      * The sifive_u board has an exclusive satp and riscv,isa
@@ -125,30 +125,30 @@ create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
      * of the CPU FDT creation (i.e. the /cpus/cpu@N subnode)
      * is still being done by the board.
      */
-    if (!is_sifive_u) {
-        int8_t satp_mode_max = cpu_ptr->cfg.max_satp_mode;
+    إذا (!is_sifive_u) {
+        int8_t satp_گهڻائي_max = cpu_ptr->cfg.max_satp_گهڻائي;
 
-        qemu_fdt_add_subnode(fdt, cpu_name);
+        qemu_fdt_جوڙيو_subnode(fdt, cpu_name);
 
-        if (satp_mode_max != -1) {
-            g_autofree char *sv_name = NULL;
+        إذا (satp_گهڻائي_max != -1) {
+            g_autofree حرف *sv_name = عدم;
             sv_name = g_strdup_printf("riscv,%s",
-                                      satp_mode_str(satp_mode_max, is_32_bit));
+                                      satp_گهڻائي_str(satp_گهڻائي_max, is_32_ٻٽو_انگ));
             qemu_fdt_setprop_string(fdt, cpu_name, "mmu-type", sv_name);
         }
         riscv_isa_write_fdt(cpu_ptr, fdt, cpu_name);
 
-        if (cpu_ptr->cfg.ext_zicbom) {
+        إذا (cpu_ptr->cfg.ext_zicbom) {
             qemu_fdt_setprop_cell(fdt, cpu_name, "riscv,cbom-block-size",
                                   cpu_ptr->cfg.cbom_blocksize);
         }
 
-        if (cpu_ptr->cfg.ext_zicboz) {
+        إذا (cpu_ptr->cfg.ext_zicboz) {
             qemu_fdt_setprop_cell(fdt, cpu_name, "riscv,cboz-block-size",
                                   cpu_ptr->cfg.cboz_blocksize);
         }
 
-        if (cpu_ptr->cfg.ext_zicbop) {
+        إذا (cpu_ptr->cfg.ext_zicbop) {
             qemu_fdt_setprop_cell(fdt, cpu_name, "riscv,cbop-block-size",
                                   cpu_ptr->cfg.cbop_blocksize);
         }
@@ -157,9 +157,9 @@ create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
     qemu_fdt_setprop_string(fdt, cpu_name, "compatible", "riscv");
     qemu_fdt_setprop_string(fdt, cpu_name, "status", "okay");
     qemu_fdt_setprop_cell(fdt, cpu_name, "reg",
-                          socket_hartid_base + cpu);
+                          socket_hartid_بنياد + cpu);
     qemu_fdt_setprop_string(fdt, cpu_name, "device_type", "cpu");
-    if (numa_enabled) {
+    إذا (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, cpu_name, "numa-node-id", socket_id);
     }
     qemu_fdt_setprop_cell(fdt, cpu_name, "phandle", cpu_phandle);
@@ -167,76 +167,76 @@ create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
     intc_phandles[cpu] = (*phandle)++;
 
     intc_name = g_strdup_printf("%s/interrupt-controller", cpu_name);
-    qemu_fdt_add_subnode(fdt, intc_name);
+    qemu_fdt_جوڙيو_subnode(fdt, intc_name);
     qemu_fdt_setprop_cell(fdt, intc_name, "phandle",
                           intc_phandles[cpu]);
     qemu_fdt_setprop_string(fdt, intc_name, "compatible",
                             "riscv,cpu-intc");
-    qemu_fdt_setprop(fdt, intc_name, "interrupt-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, intc_name, "interrupt-controller", عدم, 0);
     qemu_fdt_setprop_cell(fdt, intc_name, "#interrupt-cells", 1);
 
     core_name = g_strdup_printf("%s/core%d", clust_name, cpu);
-    qemu_fdt_add_subnode(fdt, core_name);
+    qemu_fdt_جوڙيو_subnode(fdt, core_name);
     qemu_fdt_setprop_cell(fdt, core_name, "cpu", cpu_phandle);
 }
 
-void riscv_create_fdt_socket_cpus(void *fdt, RISCVCPU *socket_harts,
-                                  int socket_id, int num_harts_socket,
-                                  int socket_hartid_base, uint32_t *phandle,
+فراغ riscv_create_fdt_socket_cpus(فراغ *fdt, RISCVCPU *socket_harts,
+                                  صحيح socket_id, صحيح انگ_harts_socket,
+                                  صحيح socket_hartid_بنياد, uint32_t *phandle,
                                   uint32_t *intc_phandles, bool numa_enabled,
-                                  bool is_32_bit)
+                                  bool is_32_ٻٽو_انگ)
 {
-    g_autofree char *clust_name = NULL;
+    g_autofree حرف *clust_name = عدم;
 
     clust_name = g_strdup_printf("/cpus/cpu-map/cluster%d", socket_id);
-    qemu_fdt_add_subnode(fdt, clust_name);
+    qemu_fdt_جوڙيو_subnode(fdt, clust_name);
 
-    for (int cpu = num_harts_socket - 1; cpu >= 0; cpu--) {
+    لكل (صحيح cpu = انگ_harts_socket - 1; cpu >= 0; cpu--) {
         RISCVCPU *cpu_ptr = &socket_harts[cpu];
 
-        create_fdt_socket_cpu_internal(fdt, clust_name, cpu_ptr, cpu,
-                                       socket_id, socket_hartid_base,
+        create_fdt_socket_cpu_اندروني(fdt, clust_name, cpu_ptr, cpu,
+                                       socket_id, socket_hartid_بنياد,
                                        phandle, intc_phandles, numa_enabled,
-                                       is_32_bit);
+                                       is_32_ٻٽو_انگ);
     }
 }
 
-void
-riscv_create_fdt_socket_cpu_sifive(void *fdt, char *clust_name,
-                                   int cpu_id, int socket_id,
-                                   int socket_hartid_base, uint32_t *phandle,
+فراغ
+riscv_create_fdt_socket_cpu_sifive(فراغ *fdt, حرف *clust_name,
+                                   صحيح cpu_id, صحيح socket_id,
+                                   صحيح socket_hartid_بنياد, uint32_t *phandle,
                                    uint32_t *intc_phandles)
 {
-    create_fdt_socket_cpu_internal(fdt, clust_name, NULL, cpu_id,
-                                   socket_id, socket_hartid_base,
+    create_fdt_socket_cpu_اندروني(fdt, clust_name, عدم, cpu_id,
+                                   socket_id, socket_hartid_بنياد,
                                    phandle, intc_phandles, false, false);
 }
 
-void riscv_create_fdt_plic(void *fdt, hwaddr addr, uint64_t size,
+فراغ riscv_create_fdt_plic(فراغ *fdt, hwaddr addr, uint64_t سائيز,
                            uint32_t plic_phandle, uint32_t int_cells,
                            uint32_t addr_cells, uint32_t *plic_cells,
-                           uint32_t cells_size, uint32_t ndev_sources,
-                           bool numa_enabled, int socket_id)
+                           uint32_t cells_سائيز, uint32_t ndev_sources,
+                           bool numa_enabled, صحيح socket_id)
 {
-    g_autofree char *nodename = NULL;
-    static const char * const plic_compat[2] = {
+    g_autofree حرف *nodename = عدم;
+    ساكن ثابت حرف * ثابت plic_compat[2] = {
         "sifive,plic-1.0.0", "riscv,plic0"
     };
 
     nodename = g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIx, addr);
 
-    qemu_fdt_add_subnode(fdt, nodename);
+    qemu_fdt_جوڙيو_subnode(fdt, nodename);
     qemu_fdt_setprop_cell(fdt, nodename, "#interrupt-cells", int_cells);
     qemu_fdt_setprop_cell(fdt, nodename, "#address-cells", addr_cells);
     qemu_fdt_setprop_string_array(fdt, nodename, "compatible",
-        (char **)&plic_compat, ARRAY_SIZE(plic_compat));
-    qemu_fdt_setprop(fdt, nodename, "interrupt-controller", NULL, 0);
+        (حرف **)&plic_compat, ARRAY_سائيز(plic_compat));
+    qemu_fdt_setprop(fdt, nodename, "interrupt-controller", عدم, 0);
     qemu_fdt_setprop(fdt, nodename, "interrupts-extended",
-                     plic_cells, cells_size);
+                     plic_cells, cells_سائيز);
     qemu_fdt_setprop_sized_cells(fdt, nodename, "reg",
-                                 2, addr, 2, size);
+                                 2, addr, 2, سائيز);
     qemu_fdt_setprop_cell(fdt, nodename, "riscv,ndev", ndev_sources);
-    if (numa_enabled) {
+    إذا (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, nodename, "numa-node-id", socket_id);
     }
     qemu_fdt_setprop_cell(fdt, nodename, "phandle", plic_phandle);
@@ -249,7 +249,7 @@ void riscv_create_fdt_plic(void *fdt, hwaddr addr, uint64_t size,
  * to provide the correct value as well. Heterogeneous PMU per hart is not
  * supported yet. Thus, number of counters are same across all harts.
  */
-void riscv_pmu_generate_fdt_node(void *fdt, uint32_t cmask, char *pmu_name)
+فراغ riscv_pmu_generate_fdt_ڳنڍ(فراغ *fdt, uint32_t cmask, حرف *pmu_name)
 {
     uint32_t fdt_event_ctr_map[15] = {};
 
@@ -265,40 +265,40 @@ void riscv_pmu_generate_fdt_node(void *fdt, uint32_t cmask, char *pmu_name)
     */
 
    /* SBI_PMU_HW_CPU_CYCLES: 0x01 : type(0x00) */
-   fdt_event_ctr_map[0] = cpu_to_be32(0x00000001);
-   fdt_event_ctr_map[1] = cpu_to_be32(0x00000001);
-   fdt_event_ctr_map[2] = cpu_to_be32(cmask | 1 << 0);
+   fdt_event_ctr_map[0] = cpu_منزل_be32(0x00000001);
+   fdt_event_ctr_map[1] = cpu_منزل_be32(0x00000001);
+   fdt_event_ctr_map[2] = cpu_منزل_be32(cmask | 1 << 0);
 
    /* SBI_PMU_HW_INSTRUCTIONS: 0x02 : type(0x00) */
-   fdt_event_ctr_map[3] = cpu_to_be32(0x00000002);
-   fdt_event_ctr_map[4] = cpu_to_be32(0x00000002);
-   fdt_event_ctr_map[5] = cpu_to_be32(cmask | 1 << 2);
+   fdt_event_ctr_map[3] = cpu_منزل_be32(0x00000002);
+   fdt_event_ctr_map[4] = cpu_منزل_be32(0x00000002);
+   fdt_event_ctr_map[5] = cpu_منزل_be32(cmask | 1 << 2);
 
    /* SBI_PMU_HW_CACHE_DTLB : 0x03 READ : 0x00 MISS : 0x00 type(0x01) */
-   fdt_event_ctr_map[6] = cpu_to_be32(0x00010019);
-   fdt_event_ctr_map[7] = cpu_to_be32(0x00010019);
-   fdt_event_ctr_map[8] = cpu_to_be32(cmask);
+   fdt_event_ctr_map[6] = cpu_منزل_be32(0x00010019);
+   fdt_event_ctr_map[7] = cpu_منزل_be32(0x00010019);
+   fdt_event_ctr_map[8] = cpu_منزل_be32(cmask);
 
    /* SBI_PMU_HW_CACHE_DTLB : 0x03 WRITE : 0x01 MISS : 0x00 type(0x01) */
-   fdt_event_ctr_map[9] = cpu_to_be32(0x0001001B);
-   fdt_event_ctr_map[10] = cpu_to_be32(0x0001001B);
-   fdt_event_ctr_map[11] = cpu_to_be32(cmask);
+   fdt_event_ctr_map[9] = cpu_منزل_be32(0x0001001B);
+   fdt_event_ctr_map[10] = cpu_منزل_be32(0x0001001B);
+   fdt_event_ctr_map[11] = cpu_منزل_be32(cmask);
 
    /* SBI_PMU_HW_CACHE_ITLB : 0x04 READ : 0x00 MISS : 0x00 type(0x01) */
-   fdt_event_ctr_map[12] = cpu_to_be32(0x00010021);
-   fdt_event_ctr_map[13] = cpu_to_be32(0x00010021);
-   fdt_event_ctr_map[14] = cpu_to_be32(cmask);
+   fdt_event_ctr_map[12] = cpu_منزل_be32(0x00010021);
+   fdt_event_ctr_map[13] = cpu_منزل_be32(0x00010021);
+   fdt_event_ctr_map[14] = cpu_منزل_be32(cmask);
 
    /* This a OpenSBI specific DT property documented in OpenSBI docs */
    qemu_fdt_setprop(fdt, pmu_name, "riscv,event-to-mhpmcounters",
-                    fdt_event_ctr_map, sizeof(fdt_event_ctr_map));
+                    fdt_event_ctr_map, حجم(fdt_event_ctr_map));
 }
 
-void riscv_create_fdt_flash(void *fdt, hwaddr flashbase, hwaddr flashsize)
+فراغ riscv_create_fdt_flash(فراغ *fdt, hwaddr flashbase, hwaddr flashsize)
 {
-    g_autofree char *name = g_strdup_printf("/flash@%" PRIx64, flashbase);
+    g_autofree حرف *name = g_strdup_printf("/flash@%" PRIx64, flashbase);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_جوڙيو_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "cfi-flash");
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
                                  2, flashbase, 2, flashsize,
@@ -312,39 +312,39 @@ void riscv_create_fdt_flash(void *fdt, hwaddr flashbase, hwaddr flashsize)
  * to be the case for the 'virt' machine that also creates a
  * 'sifive_test' syscon device.
  */
-void riscv_create_fdt_syscon(void *fdt, uint32_t *next_phandle,
-                             hwaddr addr, hwaddr size,
+فراغ riscv_create_fdt_syscon(فراغ *fdt, uint32_t *ايندڙ_phandle,
+                             hwaddr addr, hwaddr سائيز,
                              uint32_t reboot, uint32_t poweroff,
                              bool sifive_test_compat)
 {
     uint32_t syscon_phandle;
-    char *name;
+    حرف *name;
 
     name = g_strdup_printf("/soc/syscon@%"HWADDR_PRIx, addr);
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_جوڙيو_subnode(fdt, name);
 
-    if (sifive_test_compat) {
-        static const char * const compat[3] = {
+    إذا (sifive_test_compat) {
+        ساكن ثابت حرف * ثابت compat[3] = {
             "sifive,test1", "sifive,test0", "syscon"
         };
 
         qemu_fdt_setprop_string_array(fdt, name, "compatible",
-                                      (char **)&compat, ARRAY_SIZE(compat));
-    } else {
+                                      (حرف **)&compat, ARRAY_سائيز(compat));
+    } وإلا {
         qemu_fdt_setprop_string(fdt, name, "compatible", "syscon");
     }
 
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
                                  2, addr,
-                                 2, size);
+                                 2, سائيز);
 
-    syscon_phandle = next_phandle ? (*next_phandle)++ : qemu_fdt_alloc_phandle(fdt);
+    syscon_phandle = ايندڙ_phandle ? (*ايندڙ_phandle)++ : qemu_fdt_alloc_phandle(fdt);
     qemu_fdt_setprop_cell(fdt, name, "phandle", syscon_phandle);
 
     g_free(name);
 
     name = g_strdup_printf("/reboot");
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_جوڙيو_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "syscon-reboot");
     qemu_fdt_setprop_cell(fdt, name, "regmap", syscon_phandle);
     qemu_fdt_setprop_cell(fdt, name, "offset", 0x0);
@@ -352,7 +352,7 @@ void riscv_create_fdt_syscon(void *fdt, uint32_t *next_phandle,
     g_free(name);
 
     name = g_strdup_printf("/poweroff");
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_جوڙيو_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "syscon-poweroff");
     qemu_fdt_setprop_cell(fdt, name, "regmap", syscon_phandle);
     qemu_fdt_setprop_cell(fdt, name, "offset", 0x0);
@@ -360,48 +360,48 @@ void riscv_create_fdt_syscon(void *fdt, uint32_t *next_phandle,
     g_free(name);
 }
 
-uint32_t riscv_create_fdt_riscv_iommu_sys(void *fdt, hwaddr addr, hwaddr size,
-                                          uint32_t *next_phandle,
+uint32_t riscv_create_fdt_riscv_iommu_sys(فراغ *fdt, hwaddr addr, hwaddr سائيز,
+                                          uint32_t *ايندڙ_phandle,
                                           uint32_t irq_chip,
                                           uint32_t msi_phandle,
                                           uint32_t iommu_sys_irq)
 {
-    const char comp[] = "riscv,iommu";
-    g_autofree char *iommu_node = NULL;
+    ثابت حرف comp[] = "riscv,iommu";
+    g_autofree حرف *iommu_ڳنڍ = عدم;
     uint32_t iommu_phandle;
 
-    iommu_node = g_strdup_printf("/soc/iommu@%"HWADDR_PRIx, addr);
-    qemu_fdt_add_subnode(fdt, iommu_node);
+    iommu_ڳنڍ = g_strdup_printf("/soc/iommu@%"HWADDR_PRIx, addr);
+    qemu_fdt_جوڙيو_subnode(fdt, iommu_ڳنڍ);
 
-    qemu_fdt_setprop(fdt, iommu_node, "compatible", comp, sizeof(comp));
-    qemu_fdt_setprop_cell(fdt, iommu_node, "#iommu-cells", 1);
+    qemu_fdt_setprop(fdt, iommu_ڳنڍ, "compatible", comp, حجم(comp));
+    qemu_fdt_setprop_cell(fdt, iommu_ڳنڍ, "#iommu-cells", 1);
 
-    iommu_phandle = next_phandle ? (*next_phandle)++ : qemu_fdt_alloc_phandle(fdt);
-    qemu_fdt_setprop_cell(fdt, iommu_node, "phandle", iommu_phandle);
+    iommu_phandle = ايندڙ_phandle ? (*ايندڙ_phandle)++ : qemu_fdt_alloc_phandle(fdt);
+    qemu_fdt_setprop_cell(fdt, iommu_ڳنڍ, "phandle", iommu_phandle);
 
-    qemu_fdt_setprop_sized_cells(fdt, iommu_node, "reg", 2, addr, 2, size);
-    qemu_fdt_setprop_cell(fdt, iommu_node, "interrupt-parent", irq_chip);
+    qemu_fdt_setprop_sized_cells(fdt, iommu_ڳنڍ, "reg", 2, addr, 2, سائيز);
+    qemu_fdt_setprop_cell(fdt, iommu_ڳنڍ, "interrupt-parent", irq_chip);
 
-    qemu_fdt_setprop_cells(fdt, iommu_node, "interrupts",
-        iommu_sys_irq + RISCV_IOMMU_INTR_CQ, FDT_IRQ_TYPE_EDGE_LOW,
-        iommu_sys_irq + RISCV_IOMMU_INTR_FQ, FDT_IRQ_TYPE_EDGE_LOW,
-        iommu_sys_irq + RISCV_IOMMU_INTR_PM, FDT_IRQ_TYPE_EDGE_LOW,
-        iommu_sys_irq + RISCV_IOMMU_INTR_PQ, FDT_IRQ_TYPE_EDGE_LOW);
+    qemu_fdt_setprop_cells(fdt, iommu_ڳنڍ, "interrupts",
+        iommu_sys_irq + RISCV_IOMMU_INTR_CQ, FDT_IRQ_TYPE_ڪنارو_هيٺيون,
+        iommu_sys_irq + RISCV_IOMMU_INTR_FQ, FDT_IRQ_TYPE_ڪنارو_هيٺيون,
+        iommu_sys_irq + RISCV_IOMMU_INTR_PM, FDT_IRQ_TYPE_ڪنارو_هيٺيون,
+        iommu_sys_irq + RISCV_IOMMU_INTR_PQ, FDT_IRQ_TYPE_ڪنارو_هيٺيون);
 
-    qemu_fdt_setprop_cell(fdt, iommu_node, "msi-parent", msi_phandle);
+    qemu_fdt_setprop_cell(fdt, iommu_ڳنڍ, "msi-parent", msi_phandle);
 
-    return iommu_phandle;
+    أرجع iommu_phandle;
 }
 
-static void create_pcie_irq_map(void *fdt, char *nodename,
+ساكن فراغ create_pcie_irq_map(فراغ *fdt, حرف *nodename,
                                 uint32_t irqchip_phandle,
                                 RISCVAIAType aia_type, uint32_t pcie_irq)
 {
-    int pin, dev;
+    صحيح pin, dev;
     uint32_t irq_map_stride = 0;
-    uint32_t full_irq_map[PCI_NUM_PINS * PCI_NUM_PINS *
-                          FDT_MAX_INT_MAP_WIDTH] = {};
-    uint32_t *irq_map = full_irq_map;
+    uint32_t ڀريل_irq_map[PCI_انگ_PINS * PCI_انگ_PINS *
+                          FDT_MAX_INT_MAP_ويڪر] = {};
+    uint32_t *irq_map = ڀريل_irq_map;
 
     /*
      * This code creates a standard swizzle of interrupts such that
@@ -412,39 +412,39 @@ static void create_pcie_irq_map(void *fdt, char *nodename,
      * possible slot) seeing the interrupt-map-mask will allow the table
      * to wrap to any number of devices.
      */
-    for (dev = 0; dev < PCI_NUM_PINS; dev++) {
-        int devfn = dev * 0x8;
+    لكل (dev = 0; dev < PCI_انگ_PINS; dev++) {
+        صحيح devfn = dev * 0x8;
 
-        for (pin = 0; pin < PCI_NUM_PINS; pin++) {
-            int irq_nr = pcie_irq + ((pin + PCI_SLOT(devfn)) % PCI_NUM_PINS);
-            int i = 0;
+        لكل (pin = 0; pin < PCI_انگ_PINS; pin++) {
+            صحيح irq_nr = pcie_irq + ((pin + PCI_جڳهه(devfn)) % PCI_انگ_PINS);
+            صحيح i = 0;
 
             /* Fill PCI address cells */
-            irq_map[i] = cpu_to_be32(devfn << 8);
+            irq_map[i] = cpu_منزل_be32(devfn << 8);
             i += FDT_PCI_ADDR_CELLS;
 
             /* Fill PCI Interrupt cells */
-            irq_map[i] = cpu_to_be32(pin + 1);
+            irq_map[i] = cpu_منزل_be32(pin + 1);
             i += FDT_PCI_INT_CELLS;
 
             /* Fill interrupt controller phandle and cells */
-            irq_map[i++] = cpu_to_be32(irqchip_phandle);
-            irq_map[i++] = cpu_to_be32(irq_nr);
+            irq_map[i++] = cpu_منزل_be32(irqchip_phandle);
+            irq_map[i++] = cpu_منزل_be32(irq_nr);
 
-            if (aia_type != AIA_TYPE_NONE) {
-                irq_map[i++] = cpu_to_be32(0x4);
+            إذا (aia_type != AIA_TYPE_NONE) {
+                irq_map[i++] = cpu_منزل_be32(0x4);
             }
 
-            if (!irq_map_stride) {
+            إذا (!irq_map_stride) {
                 irq_map_stride = i;
             }
             irq_map += irq_map_stride;
         }
     }
 
-    qemu_fdt_setprop(fdt, nodename, "interrupt-map", full_irq_map,
-                     PCI_NUM_PINS * PCI_NUM_PINS *
-                     irq_map_stride * sizeof(uint32_t));
+    qemu_fdt_setprop(fdt, nodename, "interrupt-map", ڀريل_irq_map,
+                     PCI_انگ_PINS * PCI_انگ_PINS *
+                     irq_map_stride * حجم(uint32_t));
 
     qemu_fdt_setprop_cells(fdt, nodename, "interrupt-map-mask",
                            0x1800, 0, 0, 0x7);
@@ -454,18 +454,18 @@ static void create_pcie_irq_map(void *fdt, char *nodename,
  * NOTE: this function uses a "/soc/pci@..." FDT subnode that
  * should be created beforehand.
  */
-void riscv_create_fdt_pcie(void *fdt, int aia_type, bool has_iommu_sys,
-                           const MemMapEntry *pcie_ecam,
-                           const MemMapEntry *pcie_pio,
-                           const MemMapEntry *pcie_mmio,
-                           const MemMapEntry *high_pcie,
+فراغ riscv_create_fdt_pcie(فراغ *fdt, صحيح aia_type, bool has_iommu_sys,
+                           ثابت Mem_Map_داخلا *pcie_ecam,
+                           ثابت Mem_Map_داخلا *pcie_pio,
+                           ثابت Mem_Map_داخلا *pcie_mmio,
+                           ثابت Mem_Map_داخلا *مٿاهون_pcie,
                            uint32_t irq_pcie_phandle,
                            uint32_t msi_pcie_phandle,
                            uint32_t iommu_sys_phandle, uint32_t pcie_irq)
 {
-    g_autofree char *name = NULL;
+    g_autofree حرف *name = عدم;
 
-    name = g_strdup_printf("/soc/pci@%"HWADDR_PRIx, pcie_ecam->base);
+    name = g_strdup_printf("/soc/pci@%"HWADDR_PRIx, pcie_ecam->بنياد);
     qemu_fdt_setprop_cell(fdt, name, "#address-cells", FDT_PCI_ADDR_CELLS);
     qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", FDT_PCI_INT_CELLS);
     qemu_fdt_setprop_cell(fdt, name, "#size-cells", 0x2);
@@ -474,27 +474,27 @@ void riscv_create_fdt_pcie(void *fdt, int aia_type, bool has_iommu_sys,
     qemu_fdt_setprop_cell(fdt, name, "linux,pci-domain", 0);
 
     qemu_fdt_setprop_cells(fdt, name, "bus-range", 0,
-                           pcie_ecam->size / PCIE_MMCFG_SIZE_MIN - 1);
-    qemu_fdt_setprop(fdt, name, "dma-coherent", NULL, 0);
+                           pcie_ecam->سائيز / PCIE_MMCFG_سائيز_MIN - 1);
+    qemu_fdt_setprop(fdt, name, "dma-coherent", عدم, 0);
 
-    if (aia_type == AIA_TYPE_APLIC_IMSIC) {
+    إذا (aia_type == AIA_TYPE_APLIC_IMSIC) {
         qemu_fdt_setprop_cell(fdt, name, "msi-parent", msi_pcie_phandle);
     }
 
     qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2,
-                                 pcie_ecam->base, 2, pcie_ecam->size);
+                                 pcie_ecam->بنياد, 2, pcie_ecam->سائيز);
 
     qemu_fdt_setprop_sized_cells(fdt, name, "ranges",
         1, FDT_PCI_RANGE_IOPORT, 2, 0,
-        2, pcie_pio->base, 2, pcie_pio->size,
+        2, pcie_pio->بنياد, 2, pcie_pio->سائيز,
         1, FDT_PCI_RANGE_MMIO,
-        2, pcie_mmio->base,
-        2, pcie_mmio->base, 2, pcie_mmio->size,
-        1, FDT_PCI_RANGE_MMIO_64BIT,
-        2, high_pcie->base,
-        2, high_pcie->base, 2, high_pcie->size);
+        2, pcie_mmio->بنياد,
+        2, pcie_mmio->بنياد, 2, pcie_mmio->سائيز,
+        1, FDT_PCI_RANGE_MMIO_64_ٻٽو_انگ,
+        2, مٿاهون_pcie->بنياد,
+        2, مٿاهون_pcie->بنياد, 2, مٿاهون_pcie->سائيز);
 
-    if (has_iommu_sys) {
+    إذا (has_iommu_sys) {
         qemu_fdt_setprop_cells(fdt, name, "iommu-map",
                                0, iommu_sys_phandle, 0, 0x10000);
     }
@@ -502,299 +502,299 @@ void riscv_create_fdt_pcie(void *fdt, int aia_type, bool has_iommu_sys,
     create_pcie_irq_map(fdt, name, irq_pcie_phandle, aia_type, pcie_irq);
 }
 
-static void create_fdt_one_imsic(void *fdt, IMSICFdtProps *props,
-                                 hwaddr base_addr,
+ساكن فراغ create_fdt_one_imsic(فراغ *fdt, IMSICFdtProps *props,
+                                 hwaddr بنياد_addr,
                                  uint32_t *intc_phandles, uint32_t msi_phandle,
-                                 bool m_mode, uint32_t imsic_guest_bits)
+                                 bool m_گهڻائي, uint32_t imsic_guest_بٽ)
 {
     RISCVHartArrayState *soc = (RISCVHartArrayState *)props->soc;
-    g_autofree char *imsic_name = NULL;
-    g_autofree uint32_t *imsic_cells = NULL;
-    g_autofree uint32_t *imsic_regs = NULL;
-    uint32_t imsic_max_hart_per_socket = 0;
-    static const char * const imsic_compat[2] = {
+    g_autofree حرف *imsic_name = عدم;
+    g_autofree uint32_t *imsic_cells = عدم;
+    g_autofree uint32_t *imsic_regs = عدم;
+    uint32_t imsic_max_hart_في_socket = 0;
+    ساكن ثابت حرف * ثابت imsic_compat[2] = {
         "qemu,imsics", "riscv,imsics"
     };
 
     imsic_cells = g_new0(uint32_t, props->smp_cpus * 2);
-    imsic_regs = g_new0(uint32_t, props->socket_count * 4);
+    imsic_regs = g_new0(uint32_t, props->socket_ڳڻپ * 4);
 
-    for (int cpu = 0; cpu < props->smp_cpus; cpu++) {
-        imsic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        imsic_cells[cpu * 2 + 1] = cpu_to_be32(m_mode ? IRQ_M_EXT : IRQ_S_EXT);
+    لكل (صحيح cpu = 0; cpu < props->smp_cpus; cpu++) {
+        imsic_cells[cpu * 2 + 0] = cpu_منزل_be32(intc_phandles[cpu]);
+        imsic_cells[cpu * 2 + 1] = cpu_منزل_be32(m_گهڻائي ? IRQ_M_EXT : IRQ_S_EXT);
     }
 
-    for (int socket = 0; socket < props->socket_count; socket++) {
-        hwaddr imsic_addr = base_addr + socket * props->imsic_group_max_size;
-        uint32_t imsic_size = IMSIC_HART_SIZE(imsic_guest_bits) *
-                              soc[socket].num_harts;
+    لكل (صحيح socket = 0; socket < props->socket_ڳڻپ; socket++) {
+        hwaddr imsic_addr = بنياد_addr + socket * props->imsic_گروهه_max_سائيز;
+        uint32_t imsic_سائيز = IMSIC_HART_سائيز(imsic_guest_بٽ) *
+                              soc[socket].انگ_harts;
 
-        imsic_regs[socket * 4 + 0] = cpu_to_be32(imsic_addr >> 32);
-        imsic_regs[socket * 4 + 1] = cpu_to_be32(imsic_addr);
+        imsic_regs[socket * 4 + 0] = cpu_منزل_be32(imsic_addr >> 32);
+        imsic_regs[socket * 4 + 1] = cpu_منزل_be32(imsic_addr);
         imsic_regs[socket * 4 + 2] = 0;
-        imsic_regs[socket * 4 + 3] = cpu_to_be32(imsic_size);
-        if (imsic_max_hart_per_socket < soc[socket].num_harts) {
-            imsic_max_hart_per_socket = soc[socket].num_harts;
+        imsic_regs[socket * 4 + 3] = cpu_منزل_be32(imsic_سائيز);
+        إذا (imsic_max_hart_في_socket < soc[socket].انگ_harts) {
+            imsic_max_hart_في_socket = soc[socket].انگ_harts;
         }
     }
 
     imsic_name = g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIx,
-                                 base_addr);
-    qemu_fdt_add_subnode(fdt, imsic_name);
+                                 بنياد_addr);
+    qemu_fdt_جوڙيو_subnode(fdt, imsic_name);
 
     qemu_fdt_setprop_string_array(fdt, imsic_name, "compatible",
-                                  (char **)&imsic_compat,
-                                  ARRAY_SIZE(imsic_compat));
+                                  (حرف **)&imsic_compat,
+                                  ARRAY_سائيز(imsic_compat));
 
     qemu_fdt_setprop_cell(fdt, imsic_name, "#interrupt-cells",
                           FDT_IMSIC_INT_CELLS);
-    qemu_fdt_setprop(fdt, imsic_name, "interrupt-controller", NULL, 0);
-    qemu_fdt_setprop(fdt, imsic_name, "msi-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, imsic_name, "interrupt-controller", عدم, 0);
+    qemu_fdt_setprop(fdt, imsic_name, "msi-controller", عدم, 0);
     qemu_fdt_setprop(fdt, imsic_name, "interrupts-extended",
-                     imsic_cells, props->smp_cpus * sizeof(uint32_t) * 2);
+                     imsic_cells, props->smp_cpus * حجم(uint32_t) * 2);
     qemu_fdt_setprop(fdt, imsic_name, "reg", imsic_regs,
-                     props->socket_count * sizeof(uint32_t) * 4);
+                     props->socket_ڳڻپ * حجم(uint32_t) * 4);
     qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,num-ids",
-                          props->irqchip_num_msis);
+                          props->irqchip_انگ_msis);
 
-    if (imsic_guest_bits) {
+    إذا (imsic_guest_بٽ) {
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,guest-index-bits",
-                              imsic_guest_bits);
+                              imsic_guest_بٽ);
     }
 
-    if (props->socket_count > 1) {
+    إذا (props->socket_ڳڻپ > 1) {
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,hart-index-bits",
-                              imsic_num_bits(imsic_max_hart_per_socket));
+                              imsic_انگ_بٽ(imsic_max_hart_في_socket));
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,group-index-bits",
-                              imsic_num_bits(props->socket_count));
+                              imsic_انگ_بٽ(props->socket_ڳڻپ));
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,group-index-shift",
-                              IMSIC_MMIO_GROUP_MIN_SHIFT);
+                              IMSIC_MMIO_گروهه_MIN_سرڪايو);
     }
     qemu_fdt_setprop_cell(fdt, imsic_name, "phandle", msi_phandle);
 }
 
-void riscv_create_fdt_imsic(void *fdt, IMSICFdtProps *props,
-                            uint32_t *next_phandle, uint32_t *intc_phandles,
+فراغ riscv_create_fdt_imsic(فراغ *fdt, IMSICFdtProps *props,
+                            uint32_t *ايندڙ_phandle, uint32_t *intc_phandles,
                             uint32_t *msi_m_phandle, uint32_t *msi_s_phandle)
 {
-    if (next_phandle) {
-        *msi_m_phandle = (*next_phandle)++;
-        *msi_s_phandle = (*next_phandle)++;
-    } else {
+    إذا (ايندڙ_phandle) {
+        *msi_m_phandle = (*ايندڙ_phandle)++;
+        *msi_s_phandle = (*ايندڙ_phandle)++;
+    } وإلا {
         *msi_m_phandle = qemu_fdt_alloc_phandle(fdt);
         *msi_s_phandle = qemu_fdt_alloc_phandle(fdt);
     }
 
-    if (props->imsic_m_base) {
+    إذا (props->imsic_m_بنياد) {
         /* M-level IMSIC node */
-        create_fdt_one_imsic(fdt, props, props->imsic_m_base,
+        create_fdt_one_imsic(fdt, props, props->imsic_m_بنياد,
                              intc_phandles, *msi_m_phandle, true, 0);
     }
 
     /* S-level IMSIC node */
-    create_fdt_one_imsic(fdt, props, props->imsic_s_base,
+    create_fdt_one_imsic(fdt, props, props->imsic_s_بنياد,
                          intc_phandles, *msi_s_phandle, false,
-                         imsic_num_bits(props->aia_guests + 1));
+                         imsic_انگ_بٽ(props->aia_guests + 1));
 
 }
 
 /* Caller must free string after use */
-static char *fdt_get_aplic_nodename(hwaddr aplic_addr)
+ساكن حرف *fdt_get_aplic_nodename(hwaddr aplic_addr)
 {
-    return g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIx,
+    أرجع g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIx,
                            aplic_addr);
 }
 
-static void create_fdt_one_aplic(void *fdt, APLICFdtProps *props,
-                                 hwaddr aplic_addr, uint32_t aplic_size,
+ساكن فراغ create_fdt_one_aplic(فراغ *fdt, APLICFdtProps *props,
+                                 hwaddr aplic_addr, uint32_t aplic_سائيز,
                                  uint32_t msi_phandle,
                                  uint32_t *intc_phandles,
                                  uint32_t aplic_phandle,
-                                 uint32_t aplic_child_phandle,
-                                 bool m_mode)
+                                 uint32_t aplic_ٻار_phandle,
+                                 bool m_گهڻائي)
 {
-    g_autofree char *aplic_name = fdt_get_aplic_nodename(aplic_addr);
-    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, props->num_harts * 2);
-    static const char * const aplic_compat[2] = {
+    g_autofree حرف *aplic_name = fdt_get_aplic_nodename(aplic_addr);
+    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, props->انگ_harts * 2);
+    ساكن ثابت حرف * ثابت aplic_compat[2] = {
         "qemu,aplic", "riscv,aplic"
     };
 
-    for (int cpu = 0; cpu < props->num_harts; cpu++) {
-        aplic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aplic_cells[cpu * 2 + 1] = cpu_to_be32(m_mode ? IRQ_M_EXT : IRQ_S_EXT);
+    لكل (صحيح cpu = 0; cpu < props->انگ_harts; cpu++) {
+        aplic_cells[cpu * 2 + 0] = cpu_منزل_be32(intc_phandles[cpu]);
+        aplic_cells[cpu * 2 + 1] = cpu_منزل_be32(m_گهڻائي ? IRQ_M_EXT : IRQ_S_EXT);
     }
 
-    qemu_fdt_add_subnode(fdt, aplic_name);
+    qemu_fdt_جوڙيو_subnode(fdt, aplic_name);
     qemu_fdt_setprop_string_array(fdt, aplic_name, "compatible",
-                                  (char **)&aplic_compat,
-                                  ARRAY_SIZE(aplic_compat));
+                                  (حرف **)&aplic_compat,
+                                  ARRAY_سائيز(aplic_compat));
     qemu_fdt_setprop_cell(fdt, aplic_name, "#address-cells",
                           FDT_APLIC_ADDR_CELLS);
     qemu_fdt_setprop_cell(fdt, aplic_name,
                           "#interrupt-cells", FDT_APLIC_INT_CELLS);
-    qemu_fdt_setprop(fdt, aplic_name, "interrupt-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, aplic_name, "interrupt-controller", عدم, 0);
 
-    if (props->aia_type == AIA_TYPE_APLIC) {
+    إذا (props->aia_type == AIA_TYPE_APLIC) {
         qemu_fdt_setprop(fdt, aplic_name, "interrupts-extended",
-                         aplic_cells, props->num_harts * sizeof(uint32_t) * 2);
-    } else {
+                         aplic_cells, props->انگ_harts * حجم(uint32_t) * 2);
+    } وإلا {
         qemu_fdt_setprop_cell(fdt, aplic_name, "msi-parent", msi_phandle);
     }
 
     qemu_fdt_setprop_sized_cells(fdt, aplic_name, "reg",
-                                 2, aplic_addr, 2, aplic_size);
+                                 2, aplic_addr, 2, aplic_سائيز);
     qemu_fdt_setprop_cell(fdt, aplic_name, "riscv,num-sources",
-                          props->irqchip_num_sources);
+                          props->irqchip_انگ_sources);
 
-    if (aplic_child_phandle) {
+    إذا (aplic_ٻار_phandle) {
         qemu_fdt_setprop_cell(fdt, aplic_name, "riscv,children",
-                              aplic_child_phandle);
+                              aplic_ٻار_phandle);
         qemu_fdt_setprop_cells(fdt, aplic_name, "riscv,delegation",
-                               aplic_child_phandle, 0x1,
-                               props->irqchip_num_sources);
+                               aplic_ٻار_phandle, 0x1,
+                               props->irqchip_انگ_sources);
     }
 
-    if (props->numa_enabled) {
+    إذا (props->numa_enabled) {
         qemu_fdt_setprop_cell(fdt, aplic_name, "numa-node-id", props->socket);
     }
 
     qemu_fdt_setprop_cell(fdt, aplic_name, "phandle", aplic_phandle);
 }
 
-void riscv_create_fdt_socket_aplic(void *fdt, APLICFdtProps *props,
+فراغ riscv_create_fdt_socket_aplic(فراغ *fdt, APLICFdtProps *props,
                                    uint32_t msi_m_phandle,
                                    uint32_t msi_s_phandle,
-                                   uint32_t *next_phandle,
+                                   uint32_t *ايندڙ_phandle,
                                    uint32_t *intc_phandles,
                                    uint32_t *aplic_phandles)
 {
     uint32_t aplic_m_phandle, aplic_s_phandle;
     hwaddr aplic_addr;
 
-    if (next_phandle) {
-        aplic_m_phandle = (*next_phandle)++;
-        aplic_s_phandle = (*next_phandle)++;
-    } else {
+    إذا (ايندڙ_phandle) {
+        aplic_m_phandle = (*ايندڙ_phandle)++;
+        aplic_s_phandle = (*ايندڙ_phandle)++;
+    } وإلا {
         aplic_m_phandle = qemu_fdt_alloc_phandle(fdt);
         aplic_s_phandle = qemu_fdt_alloc_phandle(fdt);
     }
 
-    if (props->aplic_m) {
+    إذا (props->aplic_m) {
         /* M-level APLIC node */
-        aplic_addr = props->aplic_m->base + (props->aplic_m->size * props->socket);
-        create_fdt_one_aplic(fdt, props, aplic_addr, props->aplic_m->size,
+        aplic_addr = props->aplic_m->بنياد + (props->aplic_m->سائيز * props->socket);
+        create_fdt_one_aplic(fdt, props, aplic_addr, props->aplic_m->سائيز,
                              msi_m_phandle, intc_phandles,
                              aplic_m_phandle, aplic_s_phandle,
                              true);
     }
 
     /* S-level APLIC node */
-    aplic_addr = props->aplic_s->base + (props->aplic_s->size * props->socket);
-    create_fdt_one_aplic(fdt, props, aplic_addr, props->aplic_s->size,
+    aplic_addr = props->aplic_s->بنياد + (props->aplic_s->سائيز * props->socket);
+    create_fdt_one_aplic(fdt, props, aplic_addr, props->aplic_s->سائيز,
                          msi_s_phandle, intc_phandles,
                          aplic_s_phandle, 0,
                          false);
 
-    if (!props->socket && props->platform_bus_irq) {
-        g_autofree char *aplic_name = fdt_get_aplic_nodename(aplic_addr);
-        platform_bus_add_all_fdt_nodes(fdt, aplic_name,
-                                       props->platform_bus->base,
-                                       props->platform_bus->size,
+    إذا (!props->socket && props->platform_bus_irq) {
+        g_autofree حرف *aplic_name = fdt_get_aplic_nodename(aplic_addr);
+        platform_bus_جوڙيو_all_fdt_nodes(fdt, aplic_name,
+                                       props->platform_bus->بنياد,
+                                       props->platform_bus->سائيز,
                                        props->platform_bus_irq);
     }
 
     aplic_phandles[props->socket] = aplic_s_phandle;
 }
 
-void riscv_create_fdt_socket_aclint(void *fdt, ACLINTFdtProps *props,
+فراغ riscv_create_fdt_socket_aclint(فراغ *fdt, ACLINTFdtProps *props,
                                     uint32_t *intc_phandles)
 {
-    uint32_t aclint_cells_size = props->num_harts * sizeof(uint32_t) * 2;
-    g_autofree uint32_t *aclint_mswi_cells = NULL;
-    g_autofree uint32_t *aclint_sswi_cells = NULL;
-    g_autofree uint32_t *aclint_mtimer_cells = NULL;
-    hwaddr addr, size;
-    char *name;
-    int cpu;
+    uint32_t aclint_cells_سائيز = props->انگ_harts * حجم(uint32_t) * 2;
+    g_autofree uint32_t *aclint_mswi_cells = عدم;
+    g_autofree uint32_t *aclint_sswi_cells = عدم;
+    g_autofree uint32_t *aclint_mtimer_cells = عدم;
+    hwaddr addr, سائيز;
+    حرف *name;
+    صحيح cpu;
 
-    aclint_mswi_cells = g_new0(uint32_t, props->num_harts * 2);
-    aclint_mtimer_cells = g_new0(uint32_t, props->num_harts * 2);
-    aclint_sswi_cells = g_new0(uint32_t, props->num_harts * 2);
+    aclint_mswi_cells = g_new0(uint32_t, props->انگ_harts * 2);
+    aclint_mtimer_cells = g_new0(uint32_t, props->انگ_harts * 2);
+    aclint_sswi_cells = g_new0(uint32_t, props->انگ_harts * 2);
 
-    for (cpu = 0; cpu < props->num_harts; cpu++) {
-        aclint_mswi_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aclint_mswi_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_M_SOFT);
-        aclint_mtimer_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aclint_mtimer_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_M_TIMER);
-        aclint_sswi_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aclint_sswi_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_S_SOFT);
+    لكل (cpu = 0; cpu < props->انگ_harts; cpu++) {
+        aclint_mswi_cells[cpu * 2 + 0] = cpu_منزل_be32(intc_phandles[cpu]);
+        aclint_mswi_cells[cpu * 2 + 1] = cpu_منزل_be32(IRQ_M_SOFT);
+        aclint_mtimer_cells[cpu * 2 + 0] = cpu_منزل_be32(intc_phandles[cpu]);
+        aclint_mtimer_cells[cpu * 2 + 1] = cpu_منزل_be32(IRQ_M_TIMER);
+        aclint_sswi_cells[cpu * 2 + 0] = cpu_منزل_be32(intc_phandles[cpu]);
+        aclint_sswi_cells[cpu * 2 + 1] = cpu_منزل_be32(IRQ_S_SOFT);
     }
 
-    if (props->aia_type != AIA_TYPE_APLIC_IMSIC) {
-        addr = props->clint->base + (props->clint->size * props->socket);
+    إذا (props->aia_type != AIA_TYPE_APLIC_IMSIC) {
+        addr = props->clint->بنياد + (props->clint->سائيز * props->socket);
         name = g_strdup_printf("/soc/mswi@%"HWADDR_PRIx, addr);
 
-        qemu_fdt_add_subnode(fdt, name);
+        qemu_fdt_جوڙيو_subnode(fdt, name);
         qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,aclint-mswi");
         qemu_fdt_setprop_sized_cells(fdt, name, "reg",
-                                     2, addr, 2, RISCV_ACLINT_SWI_SIZE);
+                                     2, addr, 2, RISCV_ACLINT_SWI_سائيز);
         qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                         aclint_mswi_cells, aclint_cells_size);
-        qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
+                         aclint_mswi_cells, aclint_cells_سائيز);
+        qemu_fdt_setprop(fdt, name, "interrupt-controller", عدم, 0);
         qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 0);
 
-        if (props->numa_enabled) {
+        إذا (props->numa_enabled) {
             qemu_fdt_setprop_cell(fdt, name, "numa-node-id", props->socket);
         }
 
         g_free(name);
     }
 
-    if (props->aia_type == AIA_TYPE_APLIC_IMSIC) {
-        addr = props->clint->base +
-               (RISCV_ACLINT_DEFAULT_MTIMER_SIZE * props->socket);
-        size = RISCV_ACLINT_DEFAULT_MTIMER_SIZE;
-    } else {
-        addr = props->clint->base + RISCV_ACLINT_SWI_SIZE +
-               (props->clint->size * props->socket);
-        size = props->clint->size - RISCV_ACLINT_SWI_SIZE;
+    إذا (props->aia_type == AIA_TYPE_APLIC_IMSIC) {
+        addr = props->clint->بنياد +
+               (RISCV_ACLINT_DEFAULT_MTIMER_سائيز * props->socket);
+        سائيز = RISCV_ACLINT_DEFAULT_MTIMER_سائيز;
+    } وإلا {
+        addr = props->clint->بنياد + RISCV_ACLINT_SWI_سائيز +
+               (props->clint->سائيز * props->socket);
+        سائيز = props->clint->سائيز - RISCV_ACLINT_SWI_سائيز;
     }
 
     name = g_strdup_printf("/soc/mtimer@%"HWADDR_PRIx,
                            addr + RISCV_ACLINT_DEFAULT_MTIME);
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_جوڙيو_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible",
                             "riscv,aclint-mtimer");
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
         2, addr + RISCV_ACLINT_DEFAULT_MTIME,
-        2, size - RISCV_ACLINT_DEFAULT_MTIME,
+        2, سائيز - RISCV_ACLINT_DEFAULT_MTIME,
         2, addr + RISCV_ACLINT_DEFAULT_MTIMECMP,
         2, RISCV_ACLINT_DEFAULT_MTIME);
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     aclint_mtimer_cells, aclint_cells_size);
+                     aclint_mtimer_cells, aclint_cells_سائيز);
 
-    if (props->numa_enabled) {
+    إذا (props->numa_enabled) {
         qemu_fdt_setprop_cell(fdt, name, "numa-node-id", props->socket);
     }
 
     g_free(name);
 
-    if (props->aia_type != AIA_TYPE_APLIC_IMSIC) {
-        addr = props->aclint_sswi->base
-               + (props->aclint_sswi->size * props->socket);
+    إذا (props->aia_type != AIA_TYPE_APLIC_IMSIC) {
+        addr = props->aclint_sswi->بنياد
+               + (props->aclint_sswi->سائيز * props->socket);
 
         name = g_strdup_printf("/soc/sswi@%"HWADDR_PRIx, addr);
-        qemu_fdt_add_subnode(fdt, name);
+        qemu_fdt_جوڙيو_subnode(fdt, name);
         qemu_fdt_setprop_string(fdt, name, "compatible",
             "riscv,aclint-sswi");
         qemu_fdt_setprop_sized_cells(fdt, name, "reg",
-                                     2, addr, 2, props->aclint_sswi->size);
+                                     2, addr, 2, props->aclint_sswi->سائيز);
         qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                         aclint_sswi_cells, aclint_cells_size);
-        qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
+                         aclint_sswi_cells, aclint_cells_سائيز);
+        qemu_fdt_setprop(fdt, name, "interrupt-controller", عدم, 0);
         qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 0);
 
-        if (props->numa_enabled) {
+        إذا (props->numa_enabled) {
             qemu_fdt_setprop_cell(fdt, name, "numa-node-id", props->socket);
         }
 
@@ -802,50 +802,50 @@ void riscv_create_fdt_socket_aclint(void *fdt, ACLINTFdtProps *props,
     }
 }
 
-char *riscv_fdt_get_uart_nodename(hwaddr addr)
+حرف *riscv_fdt_get_uart_nodename(hwaddr addr)
 {
-    return g_strdup_printf("/soc/serial@%"HWADDR_PRIx, addr);
+    أرجع g_strdup_printf("/soc/serial@%"HWADDR_PRIx, addr);
 }
 
-void riscv_create_fdt_uart(void *fdt, const MemMapEntry *uart_mem,
-                           int uart_irq, int aia_type,
+فراغ riscv_create_fdt_uart(فراغ *fdt, ثابت Mem_Map_داخلا *uart_mem,
+                           صحيح uart_irq, صحيح aia_type,
                            uint32_t irq_phandle)
 {
-    g_autofree char *name = riscv_fdt_get_uart_nodename(uart_mem->base);
+    g_autofree حرف *name = riscv_fdt_get_uart_nodename(uart_mem->بنياد);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_جوڙيو_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "ns16550a");
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
-                                 2, uart_mem->base,
-                                 2, uart_mem->size);
+                                 2, uart_mem->بنياد,
+                                 2, uart_mem->سائيز);
 
     qemu_fdt_setprop_cell(fdt, name, "clock-frequency", UART_STD_CLOCK_FREQ);
     qemu_fdt_setprop_cell(fdt, name, "interrupt-parent", irq_phandle);
 
-    if (aia_type == AIA_TYPE_NONE) {
+    إذا (aia_type == AIA_TYPE_NONE) {
         qemu_fdt_setprop_cell(fdt, name, "interrupts", uart_irq);
-    } else {
+    } وإلا {
         qemu_fdt_setprop_cells(fdt, name, "interrupts", uart_irq, 0x4);
     }
 }
 
-void riscv_create_fdt_rtc(void *fdt, const MemMapEntry *rtc_mem,
-                          int rtc_irq, int aia_type,
+فراغ riscv_create_fdt_rtc(فراغ *fdt, ثابت Mem_Map_داخلا *rtc_mem,
+                          صحيح rtc_irq, صحيح aia_type,
                           uint32_t irq_phandle)
 {
-    g_autofree char *name = NULL;
+    g_autofree حرف *name = عدم;
 
     name = g_strdup_printf("/soc/rtc@%"HWADDR_PRIx,
-                           rtc_mem->base);
-    qemu_fdt_add_subnode(fdt, name);
+                           rtc_mem->بنياد);
+    qemu_fdt_جوڙيو_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "google,goldfish-rtc");
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
-                                 2, rtc_mem->base,
-                                 2, rtc_mem->size);
+                                 2, rtc_mem->بنياد,
+                                 2, rtc_mem->سائيز);
     qemu_fdt_setprop_cell(fdt, name, "interrupt-parent", irq_phandle);
-    if (aia_type == AIA_TYPE_NONE) {
+    إذا (aia_type == AIA_TYPE_NONE) {
         qemu_fdt_setprop_cell(fdt, name, "interrupts", rtc_irq);
-    } else {
+    } وإلا {
         qemu_fdt_setprop_cells(fdt, name, "interrupts", rtc_irq, 0x4);
     }
 }

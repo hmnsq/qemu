@@ -5,96 +5,96 @@
  * Copyright (c) 2026 Kuan-Wei Chiu <visitorckw@gmail.com>
  */
 
-#include "qemu/osdep.h"
-#include "qemu/units.h"
-#include "qapi/error.h"
-#include "hw/core/boards.h"
-#include "hw/riscv/cv1800b.h"
-#include "hw/riscv/boot.h"
-#include "target/riscv/cpu-qom.h"
-#include "system/system.h"
-#include "system/device_tree.h"
-#include "qemu/error-report.h"
-#include "hw/core/loader.h"
-#include <libfdt.h>
+#ضمن "qemu/osdep.h"
+#ضمن "qemu/units.h"
+#ضمن "qapi/error.h"
+#ضمن "hw/core/boards.h"
+#ضمن "hw/riscv/cv1800b.h"
+#ضمن "hw/riscv/boot.h"
+#ضمن "target/riscv/cpu-qom.h"
+#ضمن "system/system.h"
+#ضمن "system/device_tree.h"
+#ضمن "qemu/error-report.h"
+#ضمن "hw/core/loader.h"
+#ضمن <libfdt.h>
 
-struct MilkVDuoState {
-    MachineState parent_obj;
+بنية MilkVDuoState {
+    MachineState والد_obj;
     CV1800BSoCState soc;
 };
 
-#define TYPE_MILK_V_DUO MACHINE_TYPE_NAME("milkv-duo")
+#وصف_ڪريو TYPE_MILK_V_DUO MACHINE_TYPE_NAME("milkv-duo")
 OBJECT_DECLARE_SIMPLE_TYPE(MilkVDuoState, MILK_V_DUO)
 
-static void milkv_duo_init(MachineState *machine)
+ساكن فراغ milkv_duo_init(MachineState *machine)
 {
     MilkVDuoState *s = MILK_V_DUO(machine);
-    MemoryRegion *system_memory = get_system_memory();
+    يادگيري_Region *system_يادگيري = get_system_يادگيري();
     RISCVBootInfo boot_info;
-    const char *firmware_name;
-    hwaddr firmware_load_addr, firmware_end_addr;
-    hwaddr fdt_load_addr = 0;
-    int fdt_size = 0;
-    uint64_t kernel_entry = 0;
+    ثابت حرف *firmware_name;
+    hwaddr firmware_ڀريو_addr, firmware_پڇاڙي_addr;
+    hwaddr fdt_ڀريو_addr = 0;
+    صحيح fdt_سائيز = 0;
+    uint64_t kernel_داخلا = 0;
 
-    object_initialize_child(OBJECT(machine), "soc", &s->soc, TYPE_CV1800B_SOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    object_initialize_ٻار(OBJECT(machine), "soc", &s->soc, TYPE_CV1800B_SOC);
+    qdev_realize(DEVICE(&s->soc), عدم, &error_fatal);
 
-    memory_region_add_subregion(system_memory,
-                                cv1800b_memmap[CV1800B_DEV_DRAM].base,
+    يادگيري_region_جوڙيو_subregion(system_يادگيري,
+                                cv1800b_memmap[CV1800B_DEV_DRAM].بنياد,
                                 machine->ram);
 
     riscv_boot_info_init(&boot_info, &s->soc.cpus);
 
     firmware_name = riscv_default_firmware_name(&s->soc.cpus);
-    firmware_load_addr = cv1800b_memmap[CV1800B_DEV_DRAM].base;
-    firmware_end_addr = riscv_find_and_load_firmware(machine, &boot_info,
+    firmware_ڀريو_addr = cv1800b_memmap[CV1800B_DEV_DRAM].بنياد;
+    firmware_پڇاڙي_addr = riscv_ڳوليو_and_ڀريو_firmware(machine, &boot_info,
                                                      firmware_name,
-                                                     &firmware_load_addr, NULL);
+                                                     &firmware_ڀريو_addr, عدم);
 
-    if (machine->dtb) {
-        machine->fdt = load_device_tree(machine->dtb, &fdt_size);
-        if (!machine->fdt) {
+    إذا (machine->dtb) {
+        machine->fdt = ڀريو_device_وڻ(machine->dtb, &fdt_سائيز);
+        إذا (!machine->fdt) {
             error_report("Failed to load device tree");
-            exit(1);
+            ٻاهر_نڪرو(1);
         }
 
-        if (machine->kernel_cmdline && *machine->kernel_cmdline) {
-            if (fdt_path_offset(machine->fdt, "/chosen") < 0) {
-                qemu_fdt_add_subnode(machine->fdt, "/chosen");
+        إذا (machine->kernel_cmdline && *machine->kernel_cmdline) {
+            إذا (fdt_رستو_وٿي(machine->fdt, "/chosen") < 0) {
+                qemu_fdt_جوڙيو_subnode(machine->fdt, "/chosen");
             }
             qemu_fdt_setprop_string(machine->fdt, "/chosen", "bootargs",
                                     machine->kernel_cmdline);
         }
     }
 
-    if (machine->kernel_filename) {
-        hwaddr kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
-                                                                firmware_end_addr);
-        riscv_load_kernel(machine, &boot_info, kernel_start_addr, true, NULL);
-        kernel_entry = boot_info.image_low_addr;
+    إذا (machine->kernel_filename) {
+        hwaddr kernel_شروعات_addr = riscv_calc_kernel_شروعات_addr(&boot_info,
+                                                                firmware_پڇاڙي_addr);
+        riscv_ڀريو_kernel(machine, &boot_info, kernel_شروعات_addr, true, عدم);
+        kernel_داخلا = boot_info.image_هيٺيون_addr;
     }
 
-    if (machine->dtb) {
-        fdt_load_addr = riscv_compute_fdt_addr(cv1800b_memmap[CV1800B_DEV_DRAM].base,
-                                               machine->ram_size, machine, &boot_info);
-        riscv_load_fdt(fdt_load_addr, machine->fdt);
+    إذا (machine->dtb) {
+        fdt_ڀريو_addr = riscv_compute_fdt_addr(cv1800b_memmap[CV1800B_DEV_DRAM].بنياد,
+                                               machine->ram_سائيز, machine, &boot_info);
+        riscv_ڀريو_fdt(fdt_ڀريو_addr, machine->fdt);
     }
 
-    riscv_setup_rom_reset_vec(machine, &s->soc.cpus,
-                              firmware_load_addr,
-                              cv1800b_memmap[CV1800B_DEV_ROM].base,
-                              cv1800b_memmap[CV1800B_DEV_ROM].size,
-                              kernel_entry,
-                              fdt_load_addr);
+    riscv_تياري_rom_reset_vec(machine, &s->soc.cpus,
+                              firmware_ڀريو_addr,
+                              cv1800b_memmap[CV1800B_DEV_ROM].بنياد,
+                              cv1800b_memmap[CV1800B_DEV_ROM].سائيز,
+                              kernel_داخلا,
+                              fdt_ڀريو_addr);
 }
 
-static void milkv_duo_machine_class_init(ObjectClass *oc, const void *data)
+ساكن فراغ milkv_duo_machine_class_init(ObjectClass *oc, ثابت فراغ *معلومات)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
-    static const char *const valid_cpu_types[] = {
+    ساكن ثابت حرف *ثابت valid_cpu_types[] = {
         TYPE_RISCV_CPU_THEAD_C906,
-        NULL
+        عدم
     };
 
     mc->desc = "Milk-V Duo Board (CV1800B)";
@@ -102,15 +102,15 @@ static void milkv_duo_machine_class_init(ObjectClass *oc, const void *data)
     mc->max_cpus = 2;
     mc->default_cpu_type = TYPE_RISCV_CPU_THEAD_C906;
     mc->valid_cpu_types = valid_cpu_types;
-    mc->default_ram_size = 64 * MiB;
+    mc->default_ram_سائيز = 64 * MiB;
     mc->default_ram_id = "riscv.milkv_duo.ram";
 }
 
-static const TypeInfo milkv_duo_machine_type_infos[] = {
+ساكن ثابت TypeInfo milkv_duo_machine_type_infos[] = {
     {
         .name = TYPE_MILK_V_DUO,
-        .parent = TYPE_MACHINE,
-        .instance_size = sizeof(MilkVDuoState),
+        .والد = TYPE_MACHINE,
+        .instance_سائيز = حجم(MilkVDuoState),
         .class_init = milkv_duo_machine_class_init,
     },
 };

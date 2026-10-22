@@ -6,23 +6,23 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#ifndef HW_RISCV_AIA_H
-#define HW_RISCV_AIA_H
+#جيڪڏهن_وصف_نه_ٿيل HW_RISCV_AIA_H
+#وصف_ڪريو HW_RISCV_AIA_H
 
-#include "exec/hwaddr.h"
+#ضمن "exec/hwaddr.h"
 
-uint32_t imsic_num_bits(uint32_t count);
+uint32_t imsic_انگ_بٽ(uint32_t ڳڻپ);
 
-DeviceState *riscv_create_aia(MemoryRegion *container,
-                             bool msimode, int aia_guests,
+DeviceState *riscv_create_aia(يادگيري_Region *container,
+                             bool msimode, صحيح aia_guests,
                              uint32_t m_imsic_stride,
                              uint32_t s_imsic_stride,
-                             uint16_t num_sources,
-                             const MemMapEntry *aplic_m,
-                             const MemMapEntry *aplic_s,
-                             const MemMapEntry *imsic_m,
-                             const MemMapEntry *imsic_s,
-                             int socket, int base_hartid, int hart_count,
-                             uint32_t num_msis, uint32_t num_prio_bits);
+                             uint16_t انگ_sources,
+                             ثابت Mem_Map_داخلا *aplic_m,
+                             ثابت Mem_Map_داخلا *aplic_s,
+                             ثابت Mem_Map_داخلا *imsic_m,
+                             ثابت Mem_Map_داخلا *imsic_s,
+                             صحيح socket, صحيح بنياد_hartid, صحيح hart_ڳڻپ,
+                             uint32_t انگ_msis, uint32_t انگ_prio_بٽ);
 
-#endif
+#جيڪڏهن_پورو
