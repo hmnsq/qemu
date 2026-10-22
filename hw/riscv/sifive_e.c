@@ -28,27 +28,27 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/cutils.h"
-#include "qemu/error-report.h"
-#include "qapi/error.h"
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/core/sysbus.h"
-#include "hw/misc/unimp.h"
-#include "target/riscv/cpu.h"
-#include "hw/riscv/riscv_hart.h"
-#include "hw/riscv/sifive_e.h"
-#include "hw/riscv/boot.h"
-#include "hw/char/sifive_uart.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/sifive_plic.h"
-#include "hw/misc/sifive_e_prci.h"
-#include "hw/misc/sifive_e_aon.h"
-#include "chardev/char.h"
-#include "system/system.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qemu/osdep.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qemu/cutils.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qemu/error-report.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qapi/error.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/core/boards.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/core/loader.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/core/sysbus.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/misc/unimp.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "target/riscv/cpu.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/riscv/riscv_hart.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/riscv/sifive_e.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/riscv/boot.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/char/sifive_uart.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/intc/riscv_aclint.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/intc/sifive_plic.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/misc/sifive_e_prci.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/misc/sifive_e_aon.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "chardev/char.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "system/system.h"
 
-static const MemMapEntry sifive_e_memmap[] = {
+ਸਥਿਰ ਅਚਲ Mem_Map_ਇੰਦਰਾਜ sifive_e_memmap[] = {
     [SIFIVE_E_DEV_DEBUG] =    {        0x0,     0x1000 },
     [SIFIVE_E_DEV_MROM] =     {     0x1000,     0x2000 },
     [SIFIVE_E_DEV_OTP] =      {    0x20000,     0x2000 },
@@ -70,37 +70,37 @@ static const MemMapEntry sifive_e_memmap[] = {
     [SIFIVE_E_DEV_DTIM] =     { 0x80000000,     0x4000 }
 };
 
-static void sifive_e_machine_init(MachineState *machine)
+ਸਥਿਰ ਖਾਲੀ sifive_e_machine_init(MachineState *machine)
 {
     MachineClass *mc = MACHINE_GET_CLASS(machine);
-    const MemMapEntry *memmap = sifive_e_memmap;
+    ਅਚਲ Mem_Map_ਇੰਦਰਾਜ *memmap = sifive_e_memmap;
 
     SiFiveEState *s = RISCV_E_MACHINE(machine);
-    MemoryRegion *sys_mem = get_system_memory();
-    int i;
+    ਸਮ੍ਰਿਤੀ_Region *sys_mem = get_system_ਸਮ੍ਰਿਤੀ();
+    ਪੂਰਨ i;
     RISCVBootInfo boot_info;
 
-    if (machine->ram_size != mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    ਜੇ (machine->ram_ਮਾਪ != mc->default_ram_ਮਾਪ) {
+        ਅੱਖਰ *sz = ਮਾਪ_ਮੰਜ਼ਿਲ_str(mc->default_ram_ਮਾਪ);
         error_report("Invalid RAM size, should be %s", sz);
         g_free(sz);
-        exit(EXIT_FAILURE);
+        ਬਾਹਰ_ਨਿਕਲੋ(EXIT_FAILURE);
     }
 
     /* Initialize SoC */
-    object_initialize_child(OBJECT(machine), "soc", &s->soc, TYPE_RISCV_E_SOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    object_initialize_ਬੱਚਾ(OBJECT(machine), "soc", &s->soc, TYPE_RISCV_E_SOC);
+    qdev_realize(DEVICE(&s->soc), ਨਿਰਾ, &error_fatal);
 
     /* Data Tightly Integrated Memory */
-    memory_region_add_subregion(sys_mem,
-        memmap[SIFIVE_E_DEV_DTIM].base, machine->ram);
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(sys_mem,
+        memmap[SIFIVE_E_DEV_DTIM].ਅਧਾਰ, machine->ram);
 
     /* Mask ROM reset vector */
     uint32_t reset_vec[4];
 
-    if (s->revb) {
+    ਜੇ (s->revb) {
         reset_vec[1] = 0x200102b7;  /* 0x1004: lui     t0,0x20010 */
-    } else {
+    } ਨਹੀਂਤਾਂ {
         reset_vec[1] = 0x204002b7;  /* 0x1004: lui     t0,0x20400 */
     }
     reset_vec[2] = 0x00028067;      /* 0x1008: jr      t0 */
@@ -108,42 +108,42 @@ static void sifive_e_machine_init(MachineState *machine)
     reset_vec[0] = reset_vec[3] = 0;
 
     /* copy in the reset vector in little_endian byte order */
-    for (i = 0; i < sizeof(reset_vec) >> 2; i++) {
-        reset_vec[i] = cpu_to_le32(reset_vec[i]);
+    ਲਈ (i = 0; i < ਆਕਾਰ(reset_vec) >> 2; i++) {
+        reset_vec[i] = cpu_ਮੰਜ਼ਿਲ_le32(reset_vec[i]);
     }
-    rom_add_blob_fixed_as("mrom.reset", reset_vec, sizeof(reset_vec),
-                          memmap[SIFIVE_E_DEV_MROM].base, &address_space_memory);
+    rom_ਜੋੜੋ_blob_fixed_as("mrom.reset", reset_vec, ਆਕਾਰ(reset_vec),
+                          memmap[SIFIVE_E_DEV_MROM].ਅਧਾਰ, &ਪਤਾ_space_ਸਮ੍ਰਿਤੀ);
 
     riscv_boot_info_init(&boot_info, &s->soc.cpus);
-    if (machine->kernel_filename) {
-        riscv_load_kernel(machine, &boot_info,
-                          memmap[SIFIVE_E_DEV_DTIM].base,
-                          false, NULL);
+    ਜੇ (machine->kernel_filename) {
+        riscv_ਲੱਦੋ_kernel(machine, &boot_info,
+                          memmap[SIFIVE_E_DEV_DTIM].ਅਧਾਰ,
+                          false, ਨਿਰਾ);
     }
 }
 
-static bool sifive_e_machine_get_revb(Object *obj, Error **errp)
+ਸਥਿਰ bool sifive_e_machine_get_revb(Object *obj, Error **errp)
 {
     SiFiveEState *s = RISCV_E_MACHINE(obj);
 
-    return s->revb;
+    ਵਾਪਸ s->revb;
 }
 
-static void sifive_e_machine_set_revb(Object *obj, bool value, Error **errp)
+ਸਥਿਰ ਖਾਲੀ sifive_e_machine_ਸੈੱਟ_revb(Object *obj, bool ਮੁੱਲ, Error **errp)
 {
     SiFiveEState *s = RISCV_E_MACHINE(obj);
 
-    s->revb = value;
+    s->revb = ਮੁੱਲ;
 }
 
-static void sifive_e_machine_instance_init(Object *obj)
+ਸਥਿਰ ਖਾਲੀ sifive_e_machine_instance_init(Object *obj)
 {
     SiFiveEState *s = RISCV_E_MACHINE(obj);
 
     s->revb = false;
 }
 
-static void sifive_e_machine_class_init(ObjectClass *oc, const void *data)
+ਸਥਿਰ ਖਾਲੀ sifive_e_machine_class_init(ObjectClass *oc, ਅਚਲ ਖਾਲੀ *ਅੰਕੜੇ)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -152,142 +152,142 @@ static void sifive_e_machine_class_init(ObjectClass *oc, const void *data)
     mc->max_cpus = 1;
     mc->default_cpu_type = SIFIVE_E_CPU;
     mc->default_ram_id = "riscv.sifive.e.ram";
-    mc->default_ram_size = sifive_e_memmap[SIFIVE_E_DEV_DTIM].size;
+    mc->default_ram_ਮਾਪ = sifive_e_memmap[SIFIVE_E_DEV_DTIM].ਮਾਪ;
 
-    object_class_property_add_bool(oc, "revb", sifive_e_machine_get_revb,
-                                   sifive_e_machine_set_revb);
-    object_class_property_set_description(oc, "revb",
+    object_class_property_ਜੋੜੋ_bool(oc, "revb", sifive_e_machine_get_revb,
+                                   sifive_e_machine_ਸੈੱਟ_revb);
+    object_class_property_ਸੈੱਟ_description(oc, "revb",
                                           "Set on to tell QEMU that it should model "
                                           "the revB HiFive1 board");
 }
 
-static const TypeInfo sifive_e_machine_typeinfo = {
+ਸਥਿਰ ਅਚਲ TypeInfo sifive_e_machine_typeinfo = {
     .name       = MACHINE_TYPE_NAME("sifive_e"),
-    .parent     = TYPE_MACHINE,
+    .ਮਾਪਾ     = TYPE_MACHINE,
     .class_init = sifive_e_machine_class_init,
     .instance_init = sifive_e_machine_instance_init,
-    .instance_size = sizeof(SiFiveEState),
+    .instance_ਮਾਪ = ਆਕਾਰ(SiFiveEState),
 };
 
-static void sifive_e_machine_init_register_types(void)
+ਸਥਿਰ ਖਾਲੀ sifive_e_machine_init_ਰਜਿਸਟਰ_types(ਖਾਲੀ)
 {
-    type_register_static(&sifive_e_machine_typeinfo);
+    type_ਰਜਿਸਟਰ_static(&sifive_e_machine_typeinfo);
 }
 
-type_init(sifive_e_machine_init_register_types)
+type_init(sifive_e_machine_init_ਰਜਿਸਟਰ_types)
 
-static void sifive_e_soc_init(Object *obj)
+ਸਥਿਰ ਖਾਲੀ sifive_e_soc_init(Object *obj)
 {
     SiFiveESoCState *s = RISCV_E_SOC(obj);
 
-    object_initialize_child(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
+    object_initialize_ਬੱਚਾ(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
     /*
      * Set the `num-harts` property later as the machine is potentially not
      * created yet.
      */
-    object_property_set_int(OBJECT(&s->cpus), "resetvec", 0x1004, &error_abort);
-    object_initialize_child(obj, "riscv.sifive.e.gpio0", &s->gpio,
+    object_property_ਸੈੱਟ_int(OBJECT(&s->cpus), "resetvec", 0x1004, &error_abort);
+    object_initialize_ਬੱਚਾ(obj, "riscv.sifive.e.gpio0", &s->gpio,
                             TYPE_SIFIVE_GPIO);
-    object_initialize_child(obj, "riscv.sifive.e.aon", &s->aon,
+    object_initialize_ਬੱਚਾ(obj, "riscv.sifive.e.aon", &s->aon,
                             TYPE_SIFIVE_E_AON);
 }
 
-static void sifive_e_soc_realize(DeviceState *dev, Error **errp)
+ਸਥਿਰ ਖਾਲੀ sifive_e_soc_realize(DeviceState *dev, Error **errp)
 {
     MachineState *ms = MACHINE(qdev_get_machine());
-    const MemMapEntry *memmap = sifive_e_memmap;
+    ਅਚਲ Mem_Map_ਇੰਦਰਾਜ *memmap = sifive_e_memmap;
     SiFiveESoCState *s = RISCV_E_SOC(dev);
-    MemoryRegion *sys_mem = get_system_memory();
+    ਸਮ੍ਰਿਤੀ_Region *sys_mem = get_system_ਸਮ੍ਰਿਤੀ();
 
-    object_property_set_str(OBJECT(&s->cpus), "cpu-type", ms->cpu_type,
+    object_property_ਸੈੱਟ_str(OBJECT(&s->cpus), "cpu-type", ms->cpu_type,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "num-harts", ms->smp.cpus,
+    object_property_ਸੈੱਟ_int(OBJECT(&s->cpus), "num-harts", ms->smp.cpus,
                             &error_abort);
     sysbus_realize(SYS_BUS_DEVICE(&s->cpus), &error_fatal);
 
     /* Mask ROM */
-    memory_region_init_rom(&s->mask_rom, OBJECT(dev), "riscv.sifive.e.mrom",
-                           memmap[SIFIVE_E_DEV_MROM].size, &error_fatal);
-    memory_region_add_subregion(sys_mem,
-        memmap[SIFIVE_E_DEV_MROM].base, &s->mask_rom);
+    ਸਮ੍ਰਿਤੀ_region_init_rom(&s->ਨਕਾਬ_rom, OBJECT(dev), "riscv.sifive.e.mrom",
+                           memmap[SIFIVE_E_DEV_MROM].ਮਾਪ, &error_fatal);
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(sys_mem,
+        memmap[SIFIVE_E_DEV_MROM].ਅਧਾਰ, &s->ਨਕਾਬ_rom);
 
     /* MMIO */
-    s->plic = sifive_plic_create(sys_mem, memmap[SIFIVE_E_DEV_PLIC].base,
-        (char *)SIFIVE_E_PLIC_HART_CONFIG, ms->smp.cpus, 0,
-        SIFIVE_E_PLIC_NUM_SOURCES,
-        SIFIVE_E_PLIC_NUM_PRIORITIES,
-        SIFIVE_E_PLIC_PRIORITY_BASE,
-        SIFIVE_E_PLIC_PENDING_BASE,
-        SIFIVE_E_PLIC_ENABLE_BASE,
+    s->plic = sifive_plic_create(sys_mem, memmap[SIFIVE_E_DEV_PLIC].ਅਧਾਰ,
+        (ਅੱਖਰ *)SIFIVE_E_PLIC_HART_CONFIG, ms->smp.cpus, 0,
+        SIFIVE_E_PLIC_ਅੰਕ_SOURCES,
+        SIFIVE_E_PLIC_ਅੰਕ_PRIORITIES,
+        SIFIVE_E_PLIC_ਤਰਜੀਹ_ਅਧਾਰ,
+        SIFIVE_E_PLIC_PENDING_ਅਧਾਰ,
+        SIFIVE_E_PLIC_ENABLE_ਅਧਾਰ,
         SIFIVE_E_PLIC_ENABLE_STRIDE,
-        SIFIVE_E_PLIC_CONTEXT_BASE,
+        SIFIVE_E_PLIC_CONTEXT_ਅਧਾਰ,
         SIFIVE_E_PLIC_CONTEXT_STRIDE,
-        memmap[SIFIVE_E_DEV_PLIC].size);
-    riscv_aclint_swi_create(sys_mem, memmap[SIFIVE_E_DEV_CLINT].base,
+        memmap[SIFIVE_E_DEV_PLIC].ਮਾਪ);
+    riscv_aclint_swi_create(sys_mem, memmap[SIFIVE_E_DEV_CLINT].ਅਧਾਰ,
         0, ms->smp.cpus, false);
-    riscv_aclint_mtimer_create(sys_mem, memmap[SIFIVE_E_DEV_CLINT].base +
-            RISCV_ACLINT_SWI_SIZE,
-        RISCV_ACLINT_DEFAULT_MTIMER_SIZE, 0, ms->smp.cpus,
+    riscv_aclint_mtimer_create(sys_mem, memmap[SIFIVE_E_DEV_CLINT].ਅਧਾਰ +
+            RISCV_ACLINT_SWI_ਮਾਪ,
+        RISCV_ACLINT_DEFAULT_MTIMER_ਮਾਪ, 0, ms->smp.cpus,
         RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
         SIFIVE_E_LFCLK_DEFAULT_FREQ, false);
-    sifive_e_prci_create(memmap[SIFIVE_E_DEV_PRCI].base);
+    sifive_e_prci_create(memmap[SIFIVE_E_DEV_PRCI].ਅਧਾਰ);
 
     /* AON */
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->aon), errp)) {
-        return;
+    ਜੇ (!sysbus_realize(SYS_BUS_DEVICE(&s->aon), errp)) {
+        ਵਾਪਸ;
     }
 
     /* Map AON registers */
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->aon), 0, memmap[SIFIVE_E_DEV_AON].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->aon), 0, memmap[SIFIVE_E_DEV_AON].ਅਧਾਰ);
 
     /* GPIO */
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gpio), errp)) {
-        return;
+    ਜੇ (!sysbus_realize(SYS_BUS_DEVICE(&s->gpio), errp)) {
+        ਵਾਪਸ;
     }
 
     /* Map GPIO registers */
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gpio), 0, memmap[SIFIVE_E_DEV_GPIO0].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gpio), 0, memmap[SIFIVE_E_DEV_GPIO0].ਅਧਾਰ);
 
     /* Pass all GPIOs to the SOC layer so they are available to the board */
-    qdev_pass_gpios(DEVICE(&s->gpio), dev, NULL);
+    qdev_pass_gpios(DEVICE(&s->gpio), dev, ਨਿਰਾ);
 
     /* Connect GPIO interrupts to the PLIC */
-    for (int i = 0; i < 32; i++) {
+    ਲਈ (ਪੂਰਨ i = 0; i < 32; i++) {
         sysbus_connect_irq(SYS_BUS_DEVICE(&s->gpio), i,
-                           qdev_get_gpio_in(DEVICE(s->plic),
+                           qdev_get_gpio_ਵਿੱਚ(DEVICE(s->plic),
                                             SIFIVE_E_GPIO0_IRQ0 + i));
     }
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->aon), 0,
-                       qdev_get_gpio_in(DEVICE(s->plic),
+                       qdev_get_gpio_ਵਿੱਚ(DEVICE(s->plic),
                                         SIFIVE_E_AON_WDT_IRQ));
 
-    sifive_uart_create(sys_mem, memmap[SIFIVE_E_DEV_UART0].base,
-        serial_hd(0), qdev_get_gpio_in(DEVICE(s->plic), SIFIVE_E_UART0_IRQ));
+    sifive_uart_create(sys_mem, memmap[SIFIVE_E_DEV_UART0].ਅਧਾਰ,
+        serial_hd(0), qdev_get_gpio_ਵਿੱਚ(DEVICE(s->plic), SIFIVE_E_UART0_IRQ));
     create_unimplemented_device("riscv.sifive.e.qspi0",
-        memmap[SIFIVE_E_DEV_QSPI0].base, memmap[SIFIVE_E_DEV_QSPI0].size);
+        memmap[SIFIVE_E_DEV_QSPI0].ਅਧਾਰ, memmap[SIFIVE_E_DEV_QSPI0].ਮਾਪ);
     create_unimplemented_device("riscv.sifive.e.pwm0",
-        memmap[SIFIVE_E_DEV_PWM0].base, memmap[SIFIVE_E_DEV_PWM0].size);
-    sifive_uart_create(sys_mem, memmap[SIFIVE_E_DEV_UART1].base,
-        serial_hd(1), qdev_get_gpio_in(DEVICE(s->plic), SIFIVE_E_UART1_IRQ));
+        memmap[SIFIVE_E_DEV_PWM0].ਅਧਾਰ, memmap[SIFIVE_E_DEV_PWM0].ਮਾਪ);
+    sifive_uart_create(sys_mem, memmap[SIFIVE_E_DEV_UART1].ਅਧਾਰ,
+        serial_hd(1), qdev_get_gpio_ਵਿੱਚ(DEVICE(s->plic), SIFIVE_E_UART1_IRQ));
     create_unimplemented_device("riscv.sifive.e.qspi1",
-        memmap[SIFIVE_E_DEV_QSPI1].base, memmap[SIFIVE_E_DEV_QSPI1].size);
+        memmap[SIFIVE_E_DEV_QSPI1].ਅਧਾਰ, memmap[SIFIVE_E_DEV_QSPI1].ਮਾਪ);
     create_unimplemented_device("riscv.sifive.e.pwm1",
-        memmap[SIFIVE_E_DEV_PWM1].base, memmap[SIFIVE_E_DEV_PWM1].size);
+        memmap[SIFIVE_E_DEV_PWM1].ਅਧਾਰ, memmap[SIFIVE_E_DEV_PWM1].ਮਾਪ);
     create_unimplemented_device("riscv.sifive.e.qspi2",
-        memmap[SIFIVE_E_DEV_QSPI2].base, memmap[SIFIVE_E_DEV_QSPI2].size);
+        memmap[SIFIVE_E_DEV_QSPI2].ਅਧਾਰ, memmap[SIFIVE_E_DEV_QSPI2].ਮਾਪ);
     create_unimplemented_device("riscv.sifive.e.pwm2",
-        memmap[SIFIVE_E_DEV_PWM2].base, memmap[SIFIVE_E_DEV_PWM2].size);
+        memmap[SIFIVE_E_DEV_PWM2].ਅਧਾਰ, memmap[SIFIVE_E_DEV_PWM2].ਮਾਪ);
 
     /* Flash memory */
-    memory_region_init_rom(&s->xip_mem, OBJECT(dev), "riscv.sifive.e.xip",
-                           memmap[SIFIVE_E_DEV_XIP].size, &error_fatal);
-    memory_region_add_subregion(sys_mem, memmap[SIFIVE_E_DEV_XIP].base,
+    ਸਮ੍ਰਿਤੀ_region_init_rom(&s->xip_mem, OBJECT(dev), "riscv.sifive.e.xip",
+                           memmap[SIFIVE_E_DEV_XIP].ਮਾਪ, &error_fatal);
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(sys_mem, memmap[SIFIVE_E_DEV_XIP].ਅਧਾਰ,
         &s->xip_mem);
 }
 
-static void sifive_e_soc_class_init(ObjectClass *oc, const void *data)
+ਸਥਿਰ ਖਾਲੀ sifive_e_soc_class_init(ObjectClass *oc, ਅਚਲ ਖਾਲੀ *ਅੰਕੜੇ)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
@@ -296,17 +296,17 @@ static void sifive_e_soc_class_init(ObjectClass *oc, const void *data)
     dc->user_creatable = false;
 }
 
-static const TypeInfo sifive_e_soc_type_info = {
+ਸਥਿਰ ਅਚਲ TypeInfo sifive_e_soc_type_info = {
     .name = TYPE_RISCV_E_SOC,
-    .parent = TYPE_DEVICE,
-    .instance_size = sizeof(SiFiveESoCState),
+    .ਮਾਪਾ = TYPE_DEVICE,
+    .instance_ਮਾਪ = ਆਕਾਰ(SiFiveESoCState),
     .instance_init = sifive_e_soc_init,
     .class_init = sifive_e_soc_class_init,
 };
 
-static void sifive_e_soc_register_types(void)
+ਸਥਿਰ ਖਾਲੀ sifive_e_soc_ਰਜਿਸਟਰ_types(ਖਾਲੀ)
 {
-    type_register_static(&sifive_e_soc_type_info);
+    type_ਰਜਿਸਟਰ_static(&sifive_e_soc_type_info);
 }
 
-type_init(sifive_e_soc_register_types)
+type_init(sifive_e_soc_ਰਜਿਸਟਰ_types)

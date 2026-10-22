@@ -16,240 +16,240 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "hw/core/irq.h"
-#include "hw/pci/pci_bus.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/core/sysbus.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "qemu/host-utils.h"
-#include "qemu/module.h"
-#include "qom/object.h"
-#include "target/riscv/cpu_bits.h"
-#include "trace.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qemu/osdep.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/core/irq.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/pci/pci_bus.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/core/qdev-properties.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/core/sysbus.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qapi/error.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qemu/error-report.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qemu/host-utils.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qemu/module.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qom/object.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "target/riscv/cpu_bits.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "trace.h"
 
-#include "riscv-iommu.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "riscv-iommu.h"
 
-#define RISCV_IOMMU_SYSDEV_ICVEC_VECTORS 0x3333
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ RISCV_IOMMU_SYSDEV_ICVEC_VECTORS 0x3333
 
-#define RISCV_IOMMU_PCI_MSIX_VECTORS 5
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ RISCV_IOMMU_PCI_MSIX_VECTORS 5
 
 /* RISC-V IOMMU System Platform Device Emulation */
 
-struct RISCVIOMMUStateSys {
-    SysBusDevice     parent;
+ਬਣਤਰ RISCVIOMMUStateSys {
+    SysBusDevice     ਮਾਪਾ;
     uint64_t         addr;
-    uint32_t         base_irq;
+    uint32_t         ਅਧਾਰ_irq;
     DeviceState      *irqchip;
     RISCVIOMMUState  iommu;
 
     /* Wired int support */
-    qemu_irq         irqs[RISCV_IOMMU_INTR_COUNT];
+    qemu_irq         irqs[RISCV_IOMMU_INTR_ਗਿਣਤੀ];
 
     /* Memory Regions for MSIX table and pending bit entries. */
-    MemoryRegion msix_table_mmio;
-    MemoryRegion msix_pba_mmio;
-    uint8_t *msix_table;
+    ਸਮ੍ਰਿਤੀ_Region msix_ਸਾਰਣੀ_mmio;
+    ਸਮ੍ਰਿਤੀ_Region msix_pba_mmio;
+    uint8_t *msix_ਸਾਰਣੀ;
     uint8_t *msix_pba;
 };
 
-static uint64_t msix_table_mmio_read(void *opaque, hwaddr addr,
-                                     unsigned size)
+ਸਥਿਰ uint64_t msix_ਸਾਰਣੀ_mmio_read(ਖਾਲੀ *opaque, hwaddr addr,
+                                     ਬਿਨਾਨਿਸ਼ਾਨੀ ਮਾਪ)
 {
     RISCVIOMMUStateSys *s = opaque;
 
-    g_assert(addr + size <= RISCV_IOMMU_PCI_MSIX_VECTORS * PCI_MSIX_ENTRY_SIZE);
-    return pci_get_long(s->msix_table + addr);
+    g_assert(addr + ਮਾਪ <= RISCV_IOMMU_PCI_MSIX_VECTORS * PCI_MSIX_ਇੰਦਰਾਜ_ਮਾਪ);
+    ਵਾਪਸ pci_get_long(s->msix_ਸਾਰਣੀ + addr);
 }
 
-static void msix_table_mmio_write(void *opaque, hwaddr addr,
-                                  uint64_t val, unsigned size)
+ਸਥਿਰ ਖਾਲੀ msix_ਸਾਰਣੀ_mmio_write(ਖਾਲੀ *opaque, hwaddr addr,
+                                  uint64_t val, ਬਿਨਾਨਿਸ਼ਾਨੀ ਮਾਪ)
 {
     RISCVIOMMUStateSys *s = opaque;
 
-    g_assert(addr + size <= RISCV_IOMMU_PCI_MSIX_VECTORS * PCI_MSIX_ENTRY_SIZE);
-    pci_set_long(s->msix_table + addr, val);
+    g_assert(addr + ਮਾਪ <= RISCV_IOMMU_PCI_MSIX_VECTORS * PCI_MSIX_ਇੰਦਰਾਜ_ਮਾਪ);
+    pci_ਸੈੱਟ_long(s->msix_ਸਾਰਣੀ + addr, val);
 }
 
-static const MemoryRegionOps msix_table_mmio_ops = {
-    .read = msix_table_mmio_read,
-    .write = msix_table_mmio_write,
+ਸਥਿਰ ਅਚਲ ਸਮ੍ਰਿਤੀ_Region_Ops msix_ਸਾਰਣੀ_mmio_ops = {
+    .ਪਠ = msix_ਸਾਰਣੀ_mmio_read,
+    .ਲਿਖ = msix_ਸਾਰਣੀ_mmio_write,
     .endianness = DEVICE_LITTLE_ENDIAN,
     .valid = {
-        .min_access_size = 4,
-        .max_access_size = 8,
+        .min_access_ਮਾਪ = 4,
+        .max_access_ਮਾਪ = 8,
     },
     .impl = {
-        .max_access_size = 4,
+        .max_access_ਮਾਪ = 4,
     },
 };
 
-static uint64_t msix_pba_mmio_read(void *opaque, hwaddr addr,
-                                   unsigned size)
+ਸਥਿਰ uint64_t msix_pba_mmio_read(ਖਾਲੀ *opaque, hwaddr addr,
+                                   ਬਿਨਾਨਿਸ਼ਾਨੀ ਮਾਪ)
 {
     RISCVIOMMUStateSys *s = opaque;
 
-    return pci_get_long(s->msix_pba + addr);
+    ਵਾਪਸ pci_get_long(s->msix_pba + addr);
 }
 
-static void msix_pba_mmio_write(void *opaque, hwaddr addr,
-                                uint64_t val, unsigned size)
+ਸਥਿਰ ਖਾਲੀ msix_pba_mmio_write(ਖਾਲੀ *opaque, hwaddr addr,
+                                uint64_t val, ਬਿਨਾਨਿਸ਼ਾਨੀ ਮਾਪ)
 {
 }
 
-static const MemoryRegionOps msix_pba_mmio_ops = {
-    .read = msix_pba_mmio_read,
-    .write = msix_pba_mmio_write,
+ਸਥਿਰ ਅਚਲ ਸਮ੍ਰਿਤੀ_Region_Ops msix_pba_mmio_ops = {
+    .ਪਠ = msix_pba_mmio_read,
+    .ਲਿਖ = msix_pba_mmio_write,
     .endianness = DEVICE_LITTLE_ENDIAN,
     .valid = {
-        .min_access_size = 4,
-        .max_access_size = 8,
+        .min_access_ਮਾਪ = 4,
+        .max_access_ਮਾਪ = 8,
     },
     .impl = {
-        .max_access_size = 4,
+        .max_access_ਮਾਪ = 4,
     },
 };
 
-static void riscv_iommu_sysdev_init_msi(RISCVIOMMUStateSys *s,
+ਸਥਿਰ ਖਾਲੀ riscv_iommu_sysdev_init_msi(RISCVIOMMUStateSys *s,
                                         uint32_t n_vectors)
 {
     RISCVIOMMUState *iommu = &s->iommu;
-    uint32_t table_size = n_vectors * PCI_MSIX_ENTRY_SIZE;
-    uint32_t table_offset = RISCV_IOMMU_REG_MSI_CONFIG;
-    uint32_t pba_size = QEMU_ALIGN_UP(n_vectors, 64) / 8;
-    uint32_t pba_offset = RISCV_IOMMU_REG_MSI_CONFIG + 256;
+    uint32_t ਸਾਰਣੀ_ਮਾਪ = n_vectors * PCI_MSIX_ਇੰਦਰਾਜ_ਮਾਪ;
+    uint32_t ਸਾਰਣੀ_ਵਿੱਥ = RISCV_IOMMU_REG_MSI_CONFIG;
+    uint32_t pba_ਮਾਪ = QEMU_ALIGN_ਉੱਪਰ(n_vectors, 64) / 8;
+    uint32_t pba_ਵਿੱਥ = RISCV_IOMMU_REG_MSI_CONFIG + 256;
 
-    s->msix_table = g_malloc0(table_size);
-    s->msix_pba = g_malloc0(pba_size);
+    s->msix_ਸਾਰਣੀ = g_malloc0(ਸਾਰਣੀ_ਮਾਪ);
+    s->msix_pba = g_malloc0(pba_ਮਾਪ);
 
-    memory_region_init_io(&s->msix_table_mmio, OBJECT(s), &msix_table_mmio_ops,
-                          s, "msix-table", table_size);
-    memory_region_add_subregion(&iommu->regs_mr, table_offset,
-                                &s->msix_table_mmio);
+    ਸਮ੍ਰਿਤੀ_region_init_io(&s->msix_ਸਾਰਣੀ_mmio, OBJECT(s), &msix_ਸਾਰਣੀ_mmio_ops,
+                          s, "msix-table", ਸਾਰਣੀ_ਮਾਪ);
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(&iommu->regs_mr, ਸਾਰਣੀ_ਵਿੱਥ,
+                                &s->msix_ਸਾਰਣੀ_mmio);
 
-    memory_region_init_io(&s->msix_pba_mmio, OBJECT(s), &msix_pba_mmio_ops, s,
-                          "msix-pba", pba_size);
-    memory_region_add_subregion(&iommu->regs_mr, pba_offset,
+    ਸਮ੍ਰਿਤੀ_region_init_io(&s->msix_pba_mmio, OBJECT(s), &msix_pba_mmio_ops, s,
+                          "msix-pba", pba_ਮਾਪ);
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(&iommu->regs_mr, pba_ਵਿੱਥ,
                                 &s->msix_pba_mmio);
 }
 
-static void riscv_iommu_sysdev_send_MSI(RISCVIOMMUStateSys *s,
-                                        uint32_t vector)
+ਸਥਿਰ ਖਾਲੀ riscv_iommu_sysdev_send_MSI(RISCVIOMMUStateSys *s,
+                                        uint32_t ਸਦਿਸ਼)
 {
-    uint8_t *table_entry = s->msix_table + vector * PCI_MSIX_ENTRY_SIZE;
-    uint64_t msi_addr = pci_get_quad(table_entry + PCI_MSIX_ENTRY_LOWER_ADDR);
-    uint32_t msi_data = pci_get_long(table_entry + PCI_MSIX_ENTRY_DATA);
-    MemTxResult result;
+    uint8_t *ਸਾਰਣੀ_ਇੰਦਰਾਜ = s->msix_ਸਾਰਣੀ + ਸਦਿਸ਼ * PCI_MSIX_ਇੰਦਰਾਜ_ਮਾਪ;
+    uint64_t msi_addr = pci_get_quad(ਸਾਰਣੀ_ਇੰਦਰਾਜ + PCI_MSIX_ਇੰਦਰਾਜ_ਹੇਠਲਾ_ADDR);
+    uint32_t msi_ਅੰਕੜੇ = pci_get_long(ਸਾਰਣੀ_ਇੰਦਰਾਜ + PCI_MSIX_ਇੰਦਰਾਜ_ਅੰਕੜੇ);
+    Mem_Tx_ਨਤੀਜਾ ਨਤੀਜਾ;
 
-    address_space_stl_le(&address_space_memory, msi_addr,
-                         msi_data, MEMTXATTRS_UNSPECIFIED, &result);
+    ਪਤਾ_space_stl_le(&ਪਤਾ_space_ਸਮ੍ਰਿਤੀ, msi_addr,
+                         msi_ਅੰਕੜੇ, MEMTXATTRS_UNSPECIFIED, &ਨਤੀਜਾ);
 
-    if (result == MEMTX_OK) {
-        trace_riscv_iommu_sys_msi_sent(vector, msi_addr, msi_data, result);
-    } else {
+    ਜੇ (ਨਤੀਜਾ == MEMTX_OK) {
+        trace_riscv_iommu_sys_msi_ਭੇਜਿਆ(ਸਦਿਸ਼, msi_addr, msi_ਅੰਕੜੇ, ਨਤੀਜਾ);
+    } ਨਹੀਂਤਾਂ {
         /* Record an access fault error in the fault queue */
-        struct riscv_iommu_fq_record ev = { 0 };
+        ਬਣਤਰ riscv_iommu_fq_ਰਿਕਾਰਡ ev = { 0 };
         RISCVIOMMUState *iommu = &s->iommu;
 
-        ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_CAUSE,
+        ev.hdr = ਸੈੱਟ_ਖੇਤਰ(ev.hdr, RISCV_IOMMU_FQ_HDR_CAUSE,
                            RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT);
-        ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_TTYPE,
+        ev.hdr = ਸੈੱਟ_ਖੇਤਰ(ev.hdr, RISCV_IOMMU_FQ_HDR_TTYPE,
                            RISCV_IOMMU_FQ_TTYPE_UADDR_WR);
         riscv_iommu_fault(iommu, &ev);
     }
 }
 
-static void riscv_iommu_sysdev_notify(RISCVIOMMUState *iommu,
-                                      unsigned vector)
+ਸਥਿਰ ਖਾਲੀ riscv_iommu_sysdev_notify(RISCVIOMMUState *iommu,
+                                      ਬਿਨਾਨਿਸ਼ਾਨੀ ਸਦਿਸ਼)
 {
-    RISCVIOMMUStateSys *s = container_of(iommu, RISCVIOMMUStateSys, iommu);
+    RISCVIOMMUStateSys *s = container_ਦਾ(iommu, RISCVIOMMUStateSys, iommu);
     uint32_t fctl =  riscv_iommu_reg_get32(iommu, RISCV_IOMMU_REG_FCTL);
 
-    if (fctl & RISCV_IOMMU_FCTL_WSI) {
-        qemu_irq_pulse(s->irqs[vector]);
-        trace_riscv_iommu_sys_irq_sent(vector);
-        return;
+    ਜੇ (fctl & RISCV_IOMMU_FCTL_WSI) {
+        qemu_irq_pulse(s->irqs[ਸਦਿਸ਼]);
+        trace_riscv_iommu_sys_irq_ਭੇਜਿਆ(ਸਦਿਸ਼);
+        ਵਾਪਸ;
     }
 
-    riscv_iommu_sysdev_send_MSI(s, vector);
+    riscv_iommu_sysdev_send_MSI(s, ਸਦਿਸ਼);
 }
 
-static void riscv_iommu_sys_realize(DeviceState *dev, Error **errp)
+ਸਥਿਰ ਖਾਲੀ riscv_iommu_sys_realize(DeviceState *dev, Error **errp)
 {
     RISCVIOMMUStateSys *s = RISCV_IOMMU_SYS(dev);
     SysBusDevice *sysdev = SYS_BUS_DEVICE(s);
     PCIBus *pci_bus;
     qemu_irq irq;
 
-    qdev_realize(DEVICE(&s->iommu), NULL, errp);
+    qdev_realize(DEVICE(&s->iommu), ਨਿਰਾ, errp);
     sysbus_init_mmio(SYS_BUS_DEVICE(dev), &s->iommu.regs_mr);
-    if (s->addr) {
+    ਜੇ (s->addr) {
         sysbus_mmio_map(SYS_BUS_DEVICE(s), 0, s->addr);
     }
 
-    pci_bus = (PCIBus *) object_resolve_path_type("", TYPE_PCI_BUS, NULL);
-    if (pci_bus) {
-        riscv_iommu_pci_setup_iommu(&s->iommu, pci_bus, errp);
+    pci_bus = (PCIBus *) object_resolve_ਰਸਤਾ_type("", TYPE_PCI_BUS, ਨਿਰਾ);
+    ਜੇ (pci_bus) {
+        riscv_iommu_pci_ਤਿਆਰੀ_iommu(&s->iommu, pci_bus, errp);
     }
 
     s->iommu.notify = riscv_iommu_sysdev_notify;
 
     /* 4 IRQs are defined starting from s->base_irq */
-    for (int i = 0; i < RISCV_IOMMU_INTR_COUNT; i++) {
+    ਲਈ (ਪੂਰਨ i = 0; i < RISCV_IOMMU_INTR_ਗਿਣਤੀ; i++) {
         sysbus_init_irq(sysdev, &s->irqs[i]);
-        irq = qdev_get_gpio_in(s->irqchip, s->base_irq + i);
+        irq = qdev_get_gpio_ਵਿੱਚ(s->irqchip, s->ਅਧਾਰ_irq + i);
         sysbus_connect_irq(sysdev, i, irq);
     }
 
     riscv_iommu_sysdev_init_msi(s, RISCV_IOMMU_PCI_MSIX_VECTORS);
 }
 
-static void riscv_iommu_sys_init(Object *obj)
+ਸਥਿਰ ਖਾਲੀ riscv_iommu_sys_init(Object *obj)
 {
     RISCVIOMMUStateSys *s = RISCV_IOMMU_SYS(obj);
     RISCVIOMMUState *iommu = &s->iommu;
 
-    object_initialize_child(obj, "iommu", iommu, TYPE_RISCV_IOMMU);
+    object_initialize_ਬੱਚਾ(obj, "iommu", iommu, TYPE_RISCV_IOMMU);
     qdev_alias_all_properties(DEVICE(iommu), obj);
 
     iommu->icvec_avail_vectors = RISCV_IOMMU_SYSDEV_ICVEC_VECTORS;
-    riscv_iommu_set_cap_igs(iommu, RISCV_IOMMU_CAP_IGS_BOTH);
+    riscv_iommu_ਸੈੱਟ_cap_igs(iommu, RISCV_IOMMU_CAP_IGS_BOTH);
 }
 
 DeviceState *riscv_create_iommu_sys(DeviceState *mmio_irqchip,
-                                    hwaddr addr, int base_irq,
-                                    bool is_32_bit)
+                                    hwaddr addr, ਪੂਰਨ ਅਧਾਰ_irq,
+                                    bool is_32_ਦੋਆਧਾਰੀ_ਅੰਕ)
 {
     DeviceState *iommu_sys = qdev_new(TYPE_RISCV_IOMMU_SYS);
 
-    object_property_set_uint(OBJECT(iommu_sys), "addr", addr, &error_fatal);
-    object_property_set_uint(OBJECT(iommu_sys), "base-irq",
-                             base_irq, &error_fatal);
-    object_property_set_link(OBJECT(iommu_sys), "irqchip",
+    object_property_ਸੈੱਟ_uint(OBJECT(iommu_sys), "addr", addr, &error_fatal);
+    object_property_ਸੈੱਟ_uint(OBJECT(iommu_sys), "base-irq",
+                             ਅਧਾਰ_irq, &error_fatal);
+    object_property_ਸੈੱਟ_link(OBJECT(iommu_sys), "irqchip",
                              OBJECT(mmio_irqchip),
                              &error_fatal);
     /*
      * For riscv64 use a physical address size of 56 bits (44 bit PPN),
      * and for riscv32 use 34 bits (22 bit PPN).
      */
-    object_property_set_uint(OBJECT(iommu_sys), "pas-bits",
-                             is_32_bit ? 34 : 56,
+    object_property_ਸੈੱਟ_uint(OBJECT(iommu_sys), "pas-bits",
+                             is_32_ਦੋਆਧਾਰੀ_ਅੰਕ ? 34 : 56,
                              &error_fatal);
 
     sysbus_realize_and_unref(SYS_BUS_DEVICE(iommu_sys), &error_fatal);
 
-    return iommu_sys;
+    ਵਾਪਸ iommu_sys;
 }
 
-static const Property riscv_iommu_sys_properties[] = {
+ਸਥਿਰ ਅਚਲ Property riscv_iommu_sys_properties[] = {
     DEFINE_PROP_UINT64("addr", RISCVIOMMUStateSys, addr, 0),
-    DEFINE_PROP_UINT32("base-irq", RISCVIOMMUStateSys, base_irq, 0),
+    DEFINE_PROP_UINT32("base-irq", RISCVIOMMUStateSys, ਅਧਾਰ_irq, 0),
     DEFINE_PROP_LINK("irqchip", RISCVIOMMUStateSys, irqchip,
                      TYPE_DEVICE, DeviceState *),
 };
 
-static void riscv_iommu_sys_reset_hold(Object *obj, ResetType type)
+ਸਥਿਰ ਖਾਲੀ riscv_iommu_sys_reset_hold(Object *obj, ResetType type)
 {
     RISCVIOMMUStateSys *sys = RISCV_IOMMU_SYS(obj);
     RISCVIOMMUState *iommu = &sys->iommu;
@@ -259,7 +259,7 @@ static void riscv_iommu_sys_reset_hold(Object *obj, ResetType type)
     trace_riscv_iommu_sys_reset_hold(type);
 }
 
-static void riscv_iommu_sys_class_init(ObjectClass *klass, const void *data)
+ਸਥਿਰ ਖਾਲੀ riscv_iommu_sys_class_init(ObjectClass *klass, ਅਚਲ ਖਾਲੀ *ਅੰਕੜੇ)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
     ResettableClass *rc = RESETTABLE_CLASS(klass);
@@ -267,21 +267,21 @@ static void riscv_iommu_sys_class_init(ObjectClass *klass, const void *data)
     rc->phases.hold = riscv_iommu_sys_reset_hold;
 
     dc->realize = riscv_iommu_sys_realize;
-    set_bit(DEVICE_CATEGORY_MISC, dc->categories);
-    device_class_set_props(dc, riscv_iommu_sys_properties);
+    ਸੈੱਟ_ਦੋਆਧਾਰੀ_ਅੰਕ(DEVICE_CATEGORY_MISC, dc->categories);
+    device_class_ਸੈੱਟ_props(dc, riscv_iommu_sys_properties);
 }
 
-static const TypeInfo riscv_iommu_sys = {
+ਸਥਿਰ ਅਚਲ TypeInfo riscv_iommu_sys = {
     .name          = TYPE_RISCV_IOMMU_SYS,
-    .parent        = TYPE_SYS_BUS_DEVICE,
+    .ਮਾਪਾ        = TYPE_SYS_BUS_DEVICE,
     .class_init    = riscv_iommu_sys_class_init,
     .instance_init = riscv_iommu_sys_init,
-    .instance_size = sizeof(RISCVIOMMUStateSys),
+    .instance_ਮਾਪ = ਆਕਾਰ(RISCVIOMMUStateSys),
 };
 
-static void riscv_iommu_register_sys(void)
+ਸਥਿਰ ਖਾਲੀ riscv_iommu_ਰਜਿਸਟਰ_sys(ਖਾਲੀ)
 {
-    type_register_static(&riscv_iommu_sys);
+    type_ਰਜਿਸਟਰ_static(&riscv_iommu_sys);
 }
 
-type_init(riscv_iommu_register_sys)
+type_init(riscv_iommu_ਰਜਿਸਟਰ_sys)

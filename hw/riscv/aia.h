@@ -6,23 +6,23 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#ifndef HW_RISCV_AIA_H
-#define HW_RISCV_AIA_H
+#ਜੇ_ਅਪਰਿਭਾਸ਼ਿਤ HW_RISCV_AIA_H
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ HW_RISCV_AIA_H
 
-#include "exec/hwaddr.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "exec/hwaddr.h"
 
-uint32_t imsic_num_bits(uint32_t count);
+uint32_t imsic_ਅੰਕ_ਬਿੱਟ(uint32_t ਗਿਣਤੀ_2);
 
-DeviceState *riscv_create_aia(MemoryRegion *container,
-                             bool msimode, int aia_guests,
+DeviceState *riscv_create_aia(ਸਮ੍ਰਿਤੀ_Region *container,
+                             bool msimode, ਪੂਰਨ aia_guests,
                              uint32_t m_imsic_stride,
                              uint32_t s_imsic_stride,
-                             uint16_t num_sources,
-                             const MemMapEntry *aplic_m,
-                             const MemMapEntry *aplic_s,
-                             const MemMapEntry *imsic_m,
-                             const MemMapEntry *imsic_s,
-                             int socket, int base_hartid, int hart_count,
-                             uint32_t num_msis, uint32_t num_prio_bits);
+                             uint16_t ਅੰਕ_sources,
+                             ਅਚਲ Mem_Map_ਇੰਦਰਾਜ *aplic_m,
+                             ਅਚਲ Mem_Map_ਇੰਦਰਾਜ *aplic_s,
+                             ਅਚਲ Mem_Map_ਇੰਦਰਾਜ *imsic_m,
+                             ਅਚਲ Mem_Map_ਇੰਦਰਾਜ *imsic_s,
+                             ਪੂਰਨ socket, ਪੂਰਨ ਅਧਾਰ_hartid, ਪੂਰਨ hart_ਗਿਣਤੀ,
+                             uint32_t ਅੰਕ_msis, uint32_t ਅੰਕ_prio_ਬਿੱਟ);
 
-#endif
+#ਜੇ_ਅੰਤ

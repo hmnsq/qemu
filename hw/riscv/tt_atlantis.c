@@ -6,52 +6,52 @@
  * Copyright 2025 Tenstorrent, Joel Stanley <joel@jms.id.au>
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "qemu/cutils.h"
-#include "qemu/error-report.h"
-#include "qemu/guest-random.h"
-#include "qemu/units.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qemu/osdep.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qapi/error.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qemu/cutils.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qemu/error-report.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qemu/guest-random.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "qemu/units.h"
 
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/core/sysbus.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/core/boards.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/core/loader.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/core/qdev-properties.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/core/sysbus.h"
 
-#include "target/riscv/cpu.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "target/riscv/cpu.h"
 
-#include "hw/riscv/boot.h"
-#include "hw/riscv/fdt-common.h"
-#include "hw/riscv/riscv_hart.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/riscv/boot.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/riscv/fdt-common.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/riscv/riscv_hart.h"
 
-#include "hw/char/serial-mm.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/misc/unimp.h"
-#include "hw/misc/tt_atlantis_prcm.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/char/serial-mm.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/intc/riscv_aclint.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/misc/unimp.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/misc/tt_atlantis_prcm.h"
 
-#include "system/system.h"
-#include "system/device_tree.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "system/system.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "system/device_tree.h"
 
-#include "hw/riscv/tt_atlantis.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "hw/riscv/tt_atlantis.h"
 
-#include "aia.h"
+#ਅਨ੍ਤਰ੍ਭਾਵ "aia.h"
 
-#define TT_IRQCHIP_NUM_MSIS       255
-#define TT_IRQCHIP_NUM_SOURCES    128
-#define TT_IRQCHIP_NUM_PRIO_BITS  3
-#define TT_IMSIC_GUESTS           5
-#define TT_IMSIC_STRIDE           0x40000 /* Same stride for M and S */
-#define TT_IMSIC_GUEST_BITS       6
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ TT_IRQCHIP_ਅੰਕ_MSIS       255
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ TT_IRQCHIP_ਅੰਕ_SOURCES    128
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ TT_IRQCHIP_ਅੰਕ_PRIO_ਬਿੱਟ  3
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ TT_IMSIC_GUESTS           5
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ TT_IMSIC_STRIDE           0x40000 /* Same stride for M and S */
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ TT_IMSIC_GUEST_ਬਿੱਟ       6
 
 /* Stride is fixed by hardware, check it's consistent with guest bits. */
-QEMU_BUILD_BUG_ON(TT_IMSIC_STRIDE != (0x1000 << TT_IMSIC_GUEST_BITS));
+QEMU_BUILD_BUG_ON(TT_IMSIC_STRIDE != (0x1000 << TT_IMSIC_GUEST_ਬਿੱਟ));
 
-#define TT_ACLINT_MTIME_SIZE    0x8050
-#define TT_ACLINT_MTIME         0x0
-#define TT_ACLINT_MTIMECMP      0x8000
-#define TT_ACLINT_TIMEBASE_FREQ 1000000000
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ TT_ACLINT_MTIME_ਮਾਪ    0x8050
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ TT_ACLINT_MTIME         0x0
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ TT_ACLINT_MTIMECMP      0x8000
+#ਪਰਿਭਾਸ਼ਿਤ_ਕਰੋ TT_ACLINT_TIMEBASE_FREQ 1000000000
 
-static const MemMapEntry tt_atlantis_memmap[] = {
+ਸਥਿਰ ਅਚਲ Mem_Map_ਇੰਦਰਾਜ tt_atlantis_memmap[] = {
     /* Keep sorted with :'<,'>!sort -g -k 4 */
     [TT_ATL_DDR_LO] =           { 0x00000000,    0x80000000 },
     [TT_ATL_BOOTROM] =          { 0x80000000,        0x2000 },
@@ -73,64 +73,64 @@ static const MemMapEntry tt_atlantis_memmap[] = {
     [TT_ATL_DDR_HI] =          { 0x100000000,  0x1000000000 },
 };
 
-static I2CBus *i2c_get_bus(TTAtlantisSoCState *s, unsigned busnr)
+ਸਥਿਰ I2CBus *i2c_get_bus(TTAtlantisSoCState *s, ਬਿਨਾਨਿਸ਼ਾਨੀ busnr)
 {
-    assert(busnr < TT_ATL_NUM_I2C);
+    ਪ੍ਰਤਿਜ੍ਞਾ(busnr < TT_ATL_ਅੰਕ_I2_C);
 
-    return s->i2c[busnr].bus;
+    ਵਾਪਸ s->i2c[busnr].bus;
 }
 
-static uint32_t fdt_phandle = 1;
-static uint32_t next_phandle(void)
+ਸਥਿਰ uint32_t fdt_phandle = 1;
+ਸਥਿਰ uint32_t ਅਗਲਾ_phandle(ਖਾਲੀ)
 {
-    return fdt_phandle++;
+    ਵਾਪਸ fdt_phandle++;
 }
 
-static void create_fdt_memory(void *fdt, TTAtlantisSoCState *s)
+ਸਥਿਰ ਖਾਲੀ create_fdt_ਸਮ੍ਰਿਤੀ(ਖਾਲੀ *fdt, TTAtlantisSoCState *s)
 {
-    hwaddr ram_size = memory_region_size(s->dram);
-    hwaddr size_lo = ram_size;
-    hwaddr size_hi = 0;
+    hwaddr ram_ਮਾਪ = ਸਮ੍ਰਿਤੀ_region_ਮਾਪ(s->dram);
+    hwaddr ਮਾਪ_lo = ram_ਮਾਪ;
+    hwaddr ਮਾਪ_hi = 0;
 
-    if (size_lo > s->memmap[TT_ATL_DDR_LO].size) {
-        size_lo = s->memmap[TT_ATL_DDR_LO].size;
-        size_hi = ram_size - size_lo;
+    ਜੇ (ਮਾਪ_lo > s->memmap[TT_ATL_DDR_LO].ਮਾਪ) {
+        ਮਾਪ_lo = s->memmap[TT_ATL_DDR_LO].ਮਾਪ;
+        ਮਾਪ_hi = ram_ਮਾਪ - ਮਾਪ_lo;
     }
 
-    riscv_create_fdt_socket_memory(fdt, s->memmap[TT_ATL_DDR_LO].base,
-                                   size_lo, 0, false);
-    if (size_hi) {
+    riscv_create_fdt_socket_ਸਮ੍ਰਿਤੀ(fdt, s->memmap[TT_ATL_DDR_LO].ਅਧਾਰ,
+                                   ਮਾਪ_lo, 0, false);
+    ਜੇ (ਮਾਪ_hi) {
         /*
          * The first part of the HI address is aliased at the LO address
          * so do not include that as usable memory. Is there any way
          * (or good reason) to describe that aliasing 2GB with DT?
          */
-        riscv_create_fdt_socket_memory(fdt,
-                                       s->memmap[TT_ATL_DDR_HI].base + size_lo,
-                                       size_hi, 0, false);
+        riscv_create_fdt_socket_ਸਮ੍ਰਿਤੀ(fdt,
+                                       s->memmap[TT_ATL_DDR_HI].ਅਧਾਰ + ਮਾਪ_lo,
+                                       ਮਾਪ_hi, 0, false);
     }
 }
 
-static void create_fdt_aclint(void *fdt, TTAtlantisSoCState *s,
+ਸਥਿਰ ਖਾਲੀ create_fdt_aclint(ਖਾਲੀ *fdt, TTAtlantisSoCState *s,
                               uint32_t *intc_phandles)
 {
-    g_autofree char *name = NULL;
-    g_autofree uint32_t *aclint_mtimer_cells = NULL;
-    uint32_t aclint_cells_size;
+    g_autofree ਅੱਖਰ *name = ਨਿਰਾ;
+    g_autofree uint32_t *aclint_mtimer_cells = ਨਿਰਾ;
+    uint32_t aclint_cells_ਮਾਪ;
     hwaddr addr;
 
-    aclint_mtimer_cells = g_new0(uint32_t, s->cpus.num_harts * 2);
+    aclint_mtimer_cells = g_new0(uint32_t, s->cpus.ਅੰਕ_harts * 2);
 
-    for (int cpu = 0; cpu < s->cpus.num_harts; cpu++) {
-        aclint_mtimer_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aclint_mtimer_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_M_TIMER);
+    ਲਈ (ਪੂਰਨ cpu = 0; cpu < s->cpus.ਅੰਕ_harts; cpu++) {
+        aclint_mtimer_cells[cpu * 2 + 0] = cpu_ਮੰਜ਼ਿਲ_be32(intc_phandles[cpu]);
+        aclint_mtimer_cells[cpu * 2 + 1] = cpu_ਮੰਜ਼ਿਲ_be32(IRQ_M_TIMER);
     }
-    aclint_cells_size = s->cpus.num_harts * sizeof(uint32_t) * 2;
+    aclint_cells_ਮਾਪ = s->cpus.ਅੰਕ_harts * ਆਕਾਰ(uint32_t) * 2;
 
-    addr = s->memmap[TT_ATL_ACLINT].base;
+    addr = s->memmap[TT_ATL_ACLINT].ਅਧਾਰ;
 
     name = g_strdup_printf("/soc/mtimer@%"HWADDR_PRIX, addr);
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ਜੋੜੋ_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,aclint-mtimer");
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
                                  2, addr + TT_ACLINT_MTIME,
@@ -138,145 +138,145 @@ static void create_fdt_aclint(void *fdt, TTAtlantisSoCState *s,
                                  2, addr + TT_ACLINT_MTIMECMP,
                                  2, 0x1000);
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     aclint_mtimer_cells, aclint_cells_size);
+                     aclint_mtimer_cells, aclint_cells_ਮਾਪ);
 }
 
-static void create_fdt_one_imsic(void *fdt, const MemMapEntry *mem, int cpus,
+ਸਥਿਰ ਖਾਲੀ create_fdt_one_imsic(ਖਾਲੀ *fdt, ਅਚਲ Mem_Map_ਇੰਦਰਾਜ *mem, ਪੂਰਨ cpus,
                                  uint32_t *intc_phandles, uint32_t msi_phandle,
-                                 int irq_line, uint32_t imsic_guest_bits)
+                                 ਪੂਰਨ irq_ਸਤਰ, uint32_t imsic_guest_ਬਿੱਟ)
 {
-    g_autofree char *name = NULL;
+    g_autofree ਅੱਖਰ *name = ਨਿਰਾ;
     g_autofree uint32_t *imsic_cells = g_new0(uint32_t, cpus * 2);
 
-    for (int cpu = 0; cpu < cpus; cpu++) {
-        imsic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        imsic_cells[cpu * 2 + 1] = cpu_to_be32(irq_line);
+    ਲਈ (ਪੂਰਨ cpu = 0; cpu < cpus; cpu++) {
+        imsic_cells[cpu * 2 + 0] = cpu_ਮੰਜ਼ਿਲ_be32(intc_phandles[cpu]);
+        imsic_cells[cpu * 2 + 1] = cpu_ਮੰਜ਼ਿਲ_be32(irq_ਸਤਰ);
     }
 
-    name = g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->base);
-    qemu_fdt_add_subnode(fdt, name);
+    name = g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->ਅਧਾਰ);
+    qemu_fdt_ਜੋੜੋ_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,imsics");
 
     qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 0);
-    qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
-    qemu_fdt_setprop(fdt, name, "msi-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, name, "interrupt-controller", ਨਿਰਾ, 0);
+    qemu_fdt_setprop(fdt, name, "msi-controller", ਨਿਰਾ, 0);
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     imsic_cells, sizeof(uint32_t) * cpus * 2);
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
-    qemu_fdt_setprop_cell(fdt, name, "riscv,num-ids", TT_IRQCHIP_NUM_MSIS);
+                     imsic_cells, ਆਕਾਰ(uint32_t) * cpus * 2);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->ਅਧਾਰ, 2, mem->ਮਾਪ);
+    qemu_fdt_setprop_cell(fdt, name, "riscv,num-ids", TT_IRQCHIP_ਅੰਕ_MSIS);
 
-    if (imsic_guest_bits) {
+    ਜੇ (imsic_guest_ਬਿੱਟ) {
         qemu_fdt_setprop_cell(fdt, name, "riscv,guest-index-bits",
-                              imsic_guest_bits);
+                              imsic_guest_ਬਿੱਟ);
     }
     qemu_fdt_setprop_cell(fdt, name, "phandle", msi_phandle);
 }
 
-static void create_fdt_one_aplic(void *fdt,
-                                 const MemMapEntry *mem,
+ਸਥਿਰ ਖਾਲੀ create_fdt_one_aplic(ਖਾਲੀ *fdt,
+                                 ਅਚਲ Mem_Map_ਇੰਦਰਾਜ *mem,
                                  uint32_t msi_phandle,
                                  uint32_t *intc_phandles,
                                  uint32_t aplic_phandle,
-                                 uint32_t aplic_child_phandle,
-                                 int irq_line, int num_harts)
+                                 uint32_t aplic_ਬੱਚਾ_phandle,
+                                 ਪੂਰਨ irq_ਸਤਰ, ਪੂਰਨ ਅੰਕ_harts)
 {
-    g_autofree char *name =
-        g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->base);
-    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, num_harts * 2);
+    g_autofree ਅੱਖਰ *name =
+        g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->ਅਧਾਰ);
+    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, ਅੰਕ_harts * 2);
 
-    for (int cpu = 0; cpu < num_harts; cpu++) {
-        aplic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aplic_cells[cpu * 2 + 1] = cpu_to_be32(irq_line);
+    ਲਈ (ਪੂਰਨ cpu = 0; cpu < ਅੰਕ_harts; cpu++) {
+        aplic_cells[cpu * 2 + 0] = cpu_ਮੰਜ਼ਿਲ_be32(intc_phandles[cpu]);
+        aplic_cells[cpu * 2 + 1] = cpu_ਮੰਜ਼ਿਲ_be32(irq_ਸਤਰ);
     }
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ਜੋੜੋ_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,aplic");
     qemu_fdt_setprop_cell(fdt, name, "#address-cells", 0);
     qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 2);
-    qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, name, "interrupt-controller", ਨਿਰਾ, 0);
 
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     aplic_cells, num_harts * sizeof(uint32_t) * 2);
+                     aplic_cells, ਅੰਕ_harts * ਆਕਾਰ(uint32_t) * 2);
     qemu_fdt_setprop_cell(fdt, name, "msi-parent", msi_phandle);
 
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->ਅਧਾਰ, 2, mem->ਮਾਪ);
     qemu_fdt_setprop_cell(fdt, name, "riscv,num-sources",
-                          TT_IRQCHIP_NUM_SOURCES);
+                          TT_IRQCHIP_ਅੰਕ_SOURCES);
 
-    if (aplic_child_phandle) {
+    ਜੇ (aplic_ਬੱਚਾ_phandle) {
         qemu_fdt_setprop_cell(fdt, name, "riscv,children",
-                              aplic_child_phandle);
+                              aplic_ਬੱਚਾ_phandle);
         qemu_fdt_setprop_cells(fdt, name, "riscv,delegation",
-                               aplic_child_phandle, 1, TT_IRQCHIP_NUM_SOURCES);
+                               aplic_ਬੱਚਾ_phandle, 1, TT_IRQCHIP_ਅੰਕ_SOURCES);
     }
 
     qemu_fdt_setprop_cell(fdt, name, "phandle", aplic_phandle);
 }
 
-static void create_fdt_pmu(void *fdt, TTAtlantisSoCState *s)
+ਸਥਿਰ ਖਾਲੀ create_fdt_pmu(ਖਾਲੀ *fdt, TTAtlantisSoCState *s)
 {
-    char pmu_name[] = "/pmu";
+    ਅੱਖਰ pmu_name[] = "/pmu";
     RISCVCPU *hart = &s->cpus.harts[0];
 
-    qemu_fdt_add_subnode(fdt, pmu_name);
+    qemu_fdt_ਜੋੜੋ_subnode(fdt, pmu_name);
     qemu_fdt_setprop_string(fdt, pmu_name, "compatible", "riscv,pmu");
-    riscv_pmu_generate_fdt_node(fdt, hart->pmu_avail_ctrs, pmu_name);
+    riscv_pmu_generate_fdt_ਗੰਢ(fdt, hart->pmu_avail_ctrs, pmu_name);
 }
 
-static void create_fdt_cpu(void *fdt, TTAtlantisSoCState *s,
+ਸਥਿਰ ਖਾਲੀ create_fdt_cpu(ਖਾਲੀ *fdt, TTAtlantisSoCState *s,
                            uint32_t aplic_s_phandle,
                            uint32_t imsic_s_phandle)
 {
-    g_autofree uint32_t *intc_phandles = g_new0(uint32_t, s->cpus.num_harts);
-    int num_harts = s->cpus.num_harts;
+    g_autofree uint32_t *intc_phandles = g_new0(uint32_t, s->cpus.ਅੰਕ_harts);
+    ਪੂਰਨ ਅੰਕ_harts = s->cpus.ਅੰਕ_harts;
 
     riscv_fdt_create_cpu_socket_subnode(fdt, TT_ACLINT_TIMEBASE_FREQ);
 
-    riscv_create_fdt_socket_cpus(fdt, s->cpus.harts, 0, num_harts,
-                                 s->cpus.hartid_base, &fdt_phandle,
+    riscv_create_fdt_socket_cpus(fdt, s->cpus.harts, 0, ਅੰਕ_harts,
+                                 s->cpus.hartid_ਅਧਾਰ, &fdt_phandle,
                                  intc_phandles, false, false);
 
     create_fdt_aclint(fdt, s, intc_phandles);
 
     /* M-level IMSIC node */
-    uint32_t msi_m_phandle = next_phandle();
-    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_MIMSIC], num_harts,
+    uint32_t msi_m_phandle = ਅਗਲਾ_phandle();
+    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_MIMSIC], ਅੰਕ_harts,
                          intc_phandles, msi_m_phandle,
-                         IRQ_M_EXT, TT_IMSIC_GUEST_BITS);
+                         IRQ_M_EXT, TT_IMSIC_GUEST_ਬਿੱਟ);
 
     /* S-level IMSIC node */
-    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_SIMSIC], num_harts,
+    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_SIMSIC], ਅੰਕ_harts,
                          intc_phandles, imsic_s_phandle,
-                         IRQ_S_EXT, TT_IMSIC_GUEST_BITS);
+                         IRQ_S_EXT, TT_IMSIC_GUEST_ਬਿੱਟ);
 
-    uint32_t aplic_m_phandle = next_phandle();
+    uint32_t aplic_m_phandle = ਅਗਲਾ_phandle();
 
     /* M-level APLIC node */
     create_fdt_one_aplic(fdt, &s->memmap[TT_ATL_MAPLIC],
                          msi_m_phandle, intc_phandles,
                          aplic_m_phandle, aplic_s_phandle,
-                         IRQ_M_EXT, num_harts);
+                         IRQ_M_EXT, ਅੰਕ_harts);
 
     /* S-level APLIC node */
     create_fdt_one_aplic(fdt, &s->memmap[TT_ATL_SAPLIC],
                          imsic_s_phandle, intc_phandles,
                          aplic_s_phandle, 0,
-                         IRQ_S_EXT, num_harts);
+                         IRQ_S_EXT, ਅੰਕ_harts);
 }
 
-static void create_fdt_uart(void *fdt, const MemMapEntry *mem, int irq,
-                            int irqchip_phandle, uint32_t clk_parent_phandle,
+ਸਥਿਰ ਖਾਲੀ create_fdt_uart(ਖਾਲੀ *fdt, ਅਚਲ Mem_Map_ਇੰਦਰਾਜ *mem, ਪੂਰਨ irq,
+                            ਪੂਰਨ irqchip_phandle, uint32_t clk_ਮਾਪਾ_phandle,
                             uint32_t clk_phandle)
 {
-    g_autofree char *name = g_strdup_printf("/soc/serial@%"HWADDR_PRIX,
-                                            mem->base);
+    g_autofree ਅੱਖਰ *name = g_strdup_printf("/soc/serial@%"HWADDR_PRIX,
+                                            mem->ਅਧਾਰ);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ਜੋੜੋ_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "ns16550a");
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->ਅਧਾਰ, 2, mem->ਮਾਪ);
     qemu_fdt_setprop_cell(fdt, name, "reg-shift", 2);
     qemu_fdt_setprop_cell(fdt, name, "reg-io-width", 4);
-    qemu_fdt_setprop_cells(fdt, name, "clocks", clk_parent_phandle,
+    qemu_fdt_setprop_cells(fdt, name, "clocks", clk_ਮਾਪਾ_phandle,
                            clk_phandle);
     qemu_fdt_setprop_cell(fdt, name, "clock-frequency", 3686400);
     qemu_fdt_setprop_cell(fdt, name, "interrupt-parent", irqchip_phandle);
@@ -286,20 +286,20 @@ static void create_fdt_uart(void *fdt, const MemMapEntry *mem, int irq,
     qemu_fdt_setprop_string(fdt, "/aliases", "serial0", name);
 }
 
-static void create_fdt_rng(void *fdt)
+ਸਥਿਰ ਖਾਲੀ create_fdt_rng(ਖਾਲੀ *fdt)
 {
-    uint8_t rng_seed[32];
+    uint8_t rng_ਬੀਜ[32];
 
-    qemu_guest_getrandom_nofail(rng_seed, sizeof(rng_seed));
-    qemu_fdt_setprop(fdt, "/chosen", "rng-seed", rng_seed, sizeof(rng_seed));
+    qemu_guest_getrandom_nofail(rng_ਬੀਜ, ਆਕਾਰ(rng_ਬੀਜ));
+    qemu_fdt_setprop(fdt, "/chosen", "rng-seed", rng_ਬੀਜ, ਆਕਾਰ(rng_ਬੀਜ));
 }
 
-static void create_fdt_clk(void *fdt, const char *clock_name,
+ਸਥਿਰ ਖਾਲੀ create_fdt_clk(ਖਾਲੀ *fdt, ਅਚਲ ਅੱਖਰ *clock_name,
                            uint32_t freq, uint32_t phandle)
 {
-    g_autofree char *name = g_strdup_printf("/clocks/%s", clock_name);
+    g_autofree ਅੱਖਰ *name = g_strdup_printf("/clocks/%s", clock_name);
 
-    qemu_fdt_add_path(fdt, name);
+    qemu_fdt_ਜੋੜੋ_ਰਸਤਾ(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "fixed-clock");
     qemu_fdt_setprop_string(fdt, name, "clock-output-names", clock_name);
     qemu_fdt_setprop_cell(fdt, name, "#clock-cells", 0);
@@ -307,68 +307,68 @@ static void create_fdt_clk(void *fdt, const char *clock_name,
     qemu_fdt_setprop_cell(fdt, name, "phandle", phandle);
 }
 
-static void create_fdt_i2c(void *fdt, const MemMapEntry *mem, uint32_t irq,
+ਸਥਿਰ ਖਾਲੀ create_fdt_i2c(ਖਾਲੀ *fdt, ਅਚਲ Mem_Map_ਇੰਦਰਾਜ *mem, uint32_t irq,
                            uint32_t irqchip_phandle,
-                           uint32_t clk_parent_phandle,
+                           uint32_t clk_ਮਾਪਾ_phandle,
                            uint32_t clk_phandle)
 {
-    g_autofree char *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX, mem->base);
+    g_autofree ਅੱਖਰ *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX, mem->ਅਧਾਰ);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ਜੋੜੋ_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "snps,designware-i2c");
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->ਅਧਾਰ, 2, mem->ਮਾਪ);
     qemu_fdt_setprop_cell(fdt, name, "interrupt-parent", irqchip_phandle);
     qemu_fdt_setprop_cells(fdt, name, "interrupts", irq, 0x4);
-    qemu_fdt_setprop_cells(fdt, name, "clocks", clk_parent_phandle,
+    qemu_fdt_setprop_cells(fdt, name, "clocks", clk_ਮਾਪਾ_phandle,
                            clk_phandle);
     qemu_fdt_setprop_cell(fdt, name, "clock-frequency", 100000);
     qemu_fdt_setprop_cell(fdt, name, "#address-cells", 1);
     qemu_fdt_setprop_cell(fdt, name, "#size-cells", 0);
 }
 
-static void create_fdt_i2c_device(void *fdt, TTAtlantisSoCState *s, int bus,
-                                  const char *compat, int addr)
+ਸਥਿਰ ਖਾਲੀ create_fdt_i2c_device(ਖਾਲੀ *fdt, TTAtlantisSoCState *s, ਪੂਰਨ bus,
+                                  ਅਚਲ ਅੱਖਰ *compat, ਪੂਰਨ addr)
 {
-    hwaddr base = s->memmap[TT_ATL_I2C0 + bus].base;
-    g_autofree char *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX"/sensor@%x",
-                                            base, addr);
+    hwaddr ਅਧਾਰ = s->memmap[TT_ATL_I2C0 + bus].ਅਧਾਰ;
+    g_autofree ਅੱਖਰ *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX"/sensor@%x",
+                                            ਅਧਾਰ, addr);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ਜੋੜੋ_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", compat);
     qemu_fdt_setprop_cell(fdt, name, "reg", addr);
 }
 
-static char *create_fdt_prcm(void *fdt, const MemMapEntry *mem,
-                             const char *prcm_name)
+ਸਥਿਰ ਅੱਖਰ *create_fdt_prcm(ਖਾਲੀ *fdt, ਅਚਲ Mem_Map_ਇੰਦਰਾਜ *mem,
+                             ਅਚਲ ਅੱਖਰ *prcm_name)
 {
-    hwaddr base = mem->base;
-    hwaddr size = mem->size;
-    char *name = g_strdup_printf("/soc/clock-controller@%" PRIx64,
-                                 base);
-    g_autofree char *compatible =
+    hwaddr ਅਧਾਰ = mem->ਅਧਾਰ;
+    hwaddr ਮਾਪ = mem->ਮਾਪ;
+    ਅੱਖਰ *name = g_strdup_printf("/soc/clock-controller@%" PRIx64,
+                                 ਅਧਾਰ);
+    g_autofree ਅੱਖਰ *compatible =
         g_strdup_printf("tenstorrent,atlantis-prcm-%s", prcm_name);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ਜੋੜੋ_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", compatible);
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, base, 2, size);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, ਅਧਾਰ, 2, ਮਾਪ);
     qemu_fdt_setprop_cell(fdt, name, "#clock-cells", 1);
     qemu_fdt_setprop_cell(fdt, name, "#reset-cells", 1);
-    qemu_fdt_setprop_cell(fdt, name, "phandle", next_phandle());
+    qemu_fdt_setprop_cell(fdt, name, "phandle", ਅਗਲਾ_phandle());
 
-    return name;
+    ਵਾਪਸ name;
 }
 
-static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
+ਸਥਿਰ ਖਾਲੀ finalize_fdt(ਖਾਲੀ *fdt, TTAtlantisSoCState *s)
 {
-    uint32_t aplic_s_phandle = next_phandle();
-    uint32_t imsic_s_phandle = next_phandle();
-    uint32_t osc_24m_phandle = next_phandle();
+    uint32_t aplic_s_phandle = ਅਗਲਾ_phandle();
+    uint32_t imsic_s_phandle = ਅਗਲਾ_phandle();
+    uint32_t osc_24m_phandle = ਅਗਲਾ_phandle();
     uint32_t prcm_rcpu_phandle;
-    g_autofree char *rcpu_name, *hsio_name, *pcie_name, *mm_name;
+    g_autofree ਅੱਖਰ *rcpu_name, *hsio_name, *pcie_name, *mm_name;
 
     create_fdt_cpu(fdt, s, aplic_s_phandle, imsic_s_phandle);
 
-    create_fdt_memory(fdt, s);
+    create_fdt_ਸਮ੍ਰਿਤੀ(fdt, s);
 
     /*
      * We want to do this, but the Linux aplic driver was broken before v6.16
@@ -383,7 +383,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     prcm_rcpu_phandle = qemu_fdt_get_phandle(fdt, rcpu_name);
     qemu_fdt_setprop_cells(fdt, rcpu_name, "clocks", osc_24m_phandle);
     qemu_fdt_setprop_cells(fdt, rcpu_name, "assigned-clocks",
-                           prcm_rcpu_phandle, TT_ATL_CLK_RCPU_ROOT,
+                           prcm_rcpu_phandle, TT_ATL_CLK_RCPU_ਜੜ੍ਹ,
                            prcm_rcpu_phandle, TT_ATL_CLK_NOCC_CLK);
     qemu_fdt_setprop_cells(fdt, rcpu_name, "assigned-clock-parents",
                            prcm_rcpu_phandle, TT_ATL_CLK_RCPU_PLL,
@@ -405,7 +405,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     create_fdt_uart(fdt, &s->memmap[TT_ATL_UART1], TT_ATL_UART1_IRQ,
                     aplic_s_phandle, prcm_rcpu_phandle, TT_ATL_CLK_UART1_PCLK);
 
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    ਲਈ (ਪੂਰਨ i = 0; i < TT_ATL_ਅੰਕ_I2_C; i++) {
         create_fdt_i2c(fdt,
                        &s->memmap[TT_ATL_I2C0 + i],
                        TT_ATL_I2C0_IRQ + i,
@@ -418,206 +418,206 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     create_fdt_i2c_device(fdt, s, 4, "ti,tmp105", 0x48);
 }
 
-static void create_fdt(TTAtlantisState *ams)
+ਸਥਿਰ ਖਾਲੀ create_fdt(TTAtlantisState *ams)
 {
     MachineState *ms = MACHINE(ams);
-    int fdt_size = 0;
+    ਪੂਰਨ fdt_ਮਾਪ = 0;
 
-    ms->fdt = riscv_create_board_device_tree("Tenstorrent Atlantis RISC-V Machine",
-                                             "tenstorrent,atlantis", &fdt_size);
+    ms->fdt = riscv_create_board_device_ਰੁੱਖ("Tenstorrent Atlantis RISC-V Machine",
+                                             "tenstorrent,atlantis", &fdt_ਮਾਪ);
 
-    qemu_fdt_add_subnode(ms->fdt, "/chosen");
+    qemu_fdt_ਜੋੜੋ_subnode(ms->fdt, "/chosen");
 
     create_fdt_rng(ms->fdt);
 
-    qemu_fdt_add_subnode(ms->fdt, "/aliases");
+    qemu_fdt_ਜੋੜੋ_subnode(ms->fdt, "/aliases");
 
     create_fdt_pmu(ms->fdt, &ams->soc);
 }
 
-static void load_fdt(TTAtlantisState *ams)
+ਸਥਿਰ ਖਾਲੀ ਲੱਦੋ_fdt(TTAtlantisState *ams)
 {
     MachineState *ms = MACHINE(ams);
-    char **node_path;
-    Error *err = NULL;
-    int fdt_size = 0;
+    ਅੱਖਰ **ਗੰਢ_ਰਸਤਾ;
+    Error *err = ਨਿਰਾ;
+    ਪੂਰਨ fdt_ਮਾਪ = 0;
 
-    ms->fdt = load_device_tree(ms->dtb, &fdt_size);
-    if (!ms->fdt) {
+    ms->fdt = ਲੱਦੋ_device_ਰੁੱਖ(ms->dtb, &fdt_ਮਾਪ);
+    ਜੇ (!ms->fdt) {
         error_report("load_device_tree() failed");
-        exit(1);
+        ਬਾਹਰ_ਨਿਕਲੋ(1);
     }
 
-    qemu_fdt_add_path(ms->fdt, "/chosen");
+    qemu_fdt_ਜੋੜੋ_ਰਸਤਾ(ms->fdt, "/chosen");
 
     /* Clear memory nodes and update with the specified RAM size */
-    node_path = qemu_fdt_node_unit_path(ms->fdt, "memory", &err);
-    if (err) {
+    ਗੰਢ_ਰਸਤਾ = qemu_fdt_ਗੰਢ_unit_ਰਸਤਾ(ms->fdt, "memory", &err);
+    ਜੇ (err) {
         warn_report_err(err);
-    } else {
-        for (int i = 0; node_path[i]; i++) {
+    } ਨਹੀਂਤਾਂ {
+        ਲਈ (ਪੂਰਨ i = 0; ਗੰਢ_ਰਸਤਾ[i]; i++) {
             warn_report("Replacing device tree %s with the requested RAM size",
-                        node_path[i]);
-            qemu_fdt_nop_node(ms->fdt, node_path[i]);
+                        ਗੰਢ_ਰਸਤਾ[i]);
+            qemu_fdt_nop_ਗੰਢ(ms->fdt, ਗੰਢ_ਰਸਤਾ[i]);
         }
-        g_strfreev(node_path);
+        g_strfreev(ਗੰਢ_ਰਸਤਾ);
     }
 
-    create_fdt_memory(ms->fdt, &ams->soc);
+    create_fdt_ਸਮ੍ਰਿਤੀ(ms->fdt, &ams->soc);
 }
 
-static void mmio_map_unimplemented(MemoryRegion *memory, SysBusDevice *dev,
-                                   const char *name, hwaddr addr, uint64_t size)
+ਸਥਿਰ ਖਾਲੀ mmio_map_unimplemented(ਸਮ੍ਰਿਤੀ_Region *ਸਮ੍ਰਿਤੀ, SysBusDevice *dev,
+                                   ਅਚਲ ਅੱਖਰ *name, hwaddr addr, uint64_t ਮਾਪ)
 {
-    qdev_prop_set_string(DEVICE(dev), "name", name);
-    qdev_prop_set_uint64(DEVICE(dev), "size", size);
+    qdev_prop_ਸੈੱਟ_string(DEVICE(dev), "name", name);
+    qdev_prop_ਸੈੱਟ_uint64(DEVICE(dev), "size", ਮਾਪ);
     sysbus_realize(dev, &error_abort);
 
-    memory_region_add_subregion_overlap(memory, addr,
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion_overlap(ਸਮ੍ਰਿਤੀ, addr,
                                         sysbus_mmio_get_region(dev, 0), -1000);
 }
 
-static void tt_atlantis_machine_done(Notifier *n, void *data)
+ਸਥਿਰ ਖਾਲੀ tt_atlantis_machine_ਪੂਰਾ(Notifier *n, ਖਾਲੀ *ਅੰਕੜੇ)
 {
-    TTAtlantisState *ams = container_of(n, TTAtlantisState, machine_done);
+    TTAtlantisState *ams = container_ਦਾ(n, TTAtlantisState, machine_ਪੂਰਾ);
     TTAtlantisSoCState *s = &ams->soc;
     MachineState *machine = MACHINE(ams);
-    hwaddr start_addr = s->memmap[TT_ATL_DDR_LO].base;
-    hwaddr mem_size;
-    target_ulong firmware_end_addr, kernel_start_addr;
-    const char *firmware_name = riscv_default_firmware_name(&s->cpus);
-    uint64_t fdt_load_addr;
-    uint64_t kernel_entry;
+    hwaddr ਸ਼ੁਰੂ_addr = s->memmap[TT_ATL_DDR_LO].ਅਧਾਰ;
+    hwaddr mem_ਮਾਪ;
+    ਨਿਸ਼ਾਨਾ_ulong firmware_ਸਿਰਾ_addr, kernel_ਸ਼ੁਰੂ_addr;
+    ਅਚਲ ਅੱਖਰ *firmware_name = riscv_default_firmware_name(&s->cpus);
+    uint64_t fdt_ਲੱਦੋ_addr;
+    uint64_t kernel_ਇੰਦਰਾਜ;
     RISCVBootInfo boot_info;
 
     /*
      * A user provided dtb must include everything, including
      * dynamic sysbus devices. Our FDT needs to be finalized.
      */
-    if (machine->dtb == NULL) {
+    ਜੇ (machine->dtb == ਨਿਰਾ) {
         finalize_fdt(machine->fdt, s);
     }
 
-    mem_size = machine->ram_size;
-    if (mem_size > s->memmap[TT_ATL_DDR_LO].size) {
-        mem_size = s->memmap[TT_ATL_DDR_LO].size;
+    mem_ਮਾਪ = machine->ram_ਮਾਪ;
+    ਜੇ (mem_ਮਾਪ > s->memmap[TT_ATL_DDR_LO].ਮਾਪ) {
+        mem_ਮਾਪ = s->memmap[TT_ATL_DDR_LO].ਮਾਪ;
     }
     riscv_boot_info_init_discontig_mem(&boot_info, &s->cpus,
-                                       s->memmap[TT_ATL_DDR_LO].base,
-                                       mem_size);
+                                       s->memmap[TT_ATL_DDR_LO].ਅਧਾਰ,
+                                       mem_ਮਾਪ);
 
-    firmware_end_addr = riscv_find_and_load_firmware(machine, &boot_info,
+    firmware_ਸਿਰਾ_addr = riscv_ਲੱਭੋ_and_ਲੱਦੋ_firmware(machine, &boot_info,
                                                      firmware_name,
-                                                     &start_addr, NULL);
+                                                     &ਸ਼ੁਰੂ_addr, ਨਿਰਾ);
 
-    kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
-                                                     firmware_end_addr);
-    if (machine->kernel_filename) {
-        riscv_load_kernel(machine, &boot_info, kernel_start_addr,
-                          true, NULL);
-        kernel_entry = boot_info.image_low_addr;
-    } else {
+    kernel_ਸ਼ੁਰੂ_addr = riscv_calc_kernel_ਸ਼ੁਰੂ_addr(&boot_info,
+                                                     firmware_ਸਿਰਾ_addr);
+    ਜੇ (machine->kernel_filename) {
+        riscv_ਲੱਦੋ_kernel(machine, &boot_info, kernel_ਸ਼ੁਰੂ_addr,
+                          true, ਨਿਰਾ);
+        kernel_ਇੰਦਰਾਜ = boot_info.image_ਨੀਵਾਂ_addr;
+    } ਨਹੀਂਤਾਂ {
         /* If we aren't loading a payload, OpenSBI thinks we are trying to boot
          * address 0, which fails `sbi_domain_check_addr()` as that is where
          * OpenSBI is running. Instead point OpenSBI to the end of the region
          * where it was loaded, which avoids the early hang, allowing the
          * system to proceed with the OpenSBI boot output.
          */
-        kernel_entry = kernel_start_addr;
+        kernel_ਇੰਦਰਾਜ = kernel_ਸ਼ੁਰੂ_addr;
     }
 
-    fdt_load_addr = riscv_compute_fdt_addr(s->memmap[TT_ATL_DDR_LO].base,
-                                           s->memmap[TT_ATL_DDR_LO].size,
+    fdt_ਲੱਦੋ_addr = riscv_compute_fdt_addr(s->memmap[TT_ATL_DDR_LO].ਅਧਾਰ,
+                                           s->memmap[TT_ATL_DDR_LO].ਮਾਪ,
                                            machine, &boot_info);
-    riscv_load_fdt(fdt_load_addr, machine->fdt);
+    riscv_ਲੱਦੋ_fdt(fdt_ਲੱਦੋ_addr, machine->fdt);
 
     /* load the reset vector */
-    riscv_setup_rom_reset_vec(machine, &s->cpus, start_addr,
-                              s->memmap[TT_ATL_BOOTROM].base,
-                              s->memmap[TT_ATL_BOOTROM].size,
-                              kernel_entry,
-                              fdt_load_addr);
+    riscv_ਤਿਆਰੀ_rom_reset_vec(machine, &s->cpus, ਸ਼ੁਰੂ_addr,
+                              s->memmap[TT_ATL_BOOTROM].ਅਧਾਰ,
+                              s->memmap[TT_ATL_BOOTROM].ਮਾਪ,
+                              kernel_ਇੰਦਰਾਜ,
+                              fdt_ਲੱਦੋ_addr);
 }
 
-static void tt_atlantis_soc_init(Object *obj)
+ਸਥਿਰ ਖਾਲੀ tt_atlantis_soc_init(Object *obj)
 {
     TTAtlantisSoCState *s = TT_ATLANTIS_SOC(obj);
 
-    object_initialize_child(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
+    object_initialize_ਬੱਚਾ(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
 
-    object_initialize_child(obj, "uart1", &s->uart1,
+    object_initialize_ਬੱਚਾ(obj, "uart1", &s->uart1,
                             TYPE_UNIMPLEMENTED_DEVICE);
 
-    object_initialize_child(obj, "prcm-rcpu",
+    object_initialize_ਬੱਚਾ(obj, "prcm-rcpu",
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU],
                             TYPE_TT_ATLANTIS_PRCM_RCPU);
-    object_initialize_child(obj, "prcm-hsio",
+    object_initialize_ਬੱਚਾ(obj, "prcm-hsio",
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO],
                             TYPE_TT_ATLANTIS_PRCM_HSIO);
-    object_initialize_child(obj, "prcm-pcie",
+    object_initialize_ਬੱਚਾ(obj, "prcm-pcie",
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE],
                             TYPE_TT_ATLANTIS_PRCM_PCIE);
-    object_initialize_child(obj, "prcm-mm",
+    object_initialize_ਬੱਚਾ(obj, "prcm-mm",
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM],
                             TYPE_TT_ATLANTIS_PRCM_MM);
 
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
-        object_initialize_child(obj, "i2c[*]", &s->i2c[i],
+    ਲਈ (ਪੂਰਨ i = 0; i < TT_ATL_ਅੰਕ_I2_C; i++) {
+        object_initialize_ਬੱਚਾ(obj, "i2c[*]", &s->i2c[i],
                                 TYPE_DESIGNWARE_I2C);
     }
 }
 
-static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
+ਸਥਿਰ ਖਾਲੀ tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
 {
     TTAtlantisSoCState *s = TT_ATLANTIS_SOC(dev);
-    ram_addr_t lo_ram_size, ram_size;
-    int hart_count = s->num_harts;
+    ram_addr_t lo_ram_ਮਾਪ, ram_ਮਾਪ;
+    ਪੂਰਨ hart_ਗਿਣਤੀ = s->ਅੰਕ_harts;
 
-    if (!s->memory) {
+    ਜੇ (!s->ਸਮ੍ਰਿਤੀ) {
         error_setg(errp, "'memory' link is not set");
-        return;
+        ਵਾਪਸ;
     }
-    if (!s->dram) {
+    ਜੇ (!s->dram) {
         error_setg(errp, "'dram' link is not set");
-        return;
+        ਵਾਪਸ;
     }
-    ram_size = memory_region_size(s->dram);
+    ram_ਮਾਪ = ਸਮ੍ਰਿਤੀ_region_ਮਾਪ(s->dram);
 
     s->memmap = tt_atlantis_memmap;
 
     /* CPUs */
-    object_property_set_str(OBJECT(&s->cpus), "cpu-type", s->cpu_type,
+    object_property_ਸੈੱਟ_str(OBJECT(&s->cpus), "cpu-type", s->cpu_type,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "hartid-base", 0,
+    object_property_ਸੈੱਟ_int(OBJECT(&s->cpus), "hartid-base", 0,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "num-harts", hart_count,
+    object_property_ਸੈੱਟ_int(OBJECT(&s->cpus), "num-harts", hart_ਗਿਣਤੀ,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "resetvec",
-                            s->memmap[TT_ATL_BOOTROM].base,
+    object_property_ਸੈੱਟ_int(OBJECT(&s->cpus), "resetvec",
+                            s->memmap[TT_ATL_BOOTROM].ਅਧਾਰ,
                             &error_abort);
-    object_property_set_link(OBJECT(&s->cpus), "memory", OBJECT(s->memory),
+    object_property_ਸੈੱਟ_link(OBJECT(&s->cpus), "memory", OBJECT(s->ਸਮ੍ਰਿਤੀ),
                              &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
-        return;
+    ਜੇ (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
+        ਵਾਪਸ;
     }
 
-    s->irqchip = riscv_create_aia(s->memory,
+    s->irqchip = riscv_create_aia(s->ਸਮ੍ਰਿਤੀ,
                                   true, TT_IMSIC_GUESTS,
                                   TT_IMSIC_STRIDE,
                                   TT_IMSIC_STRIDE,
-                                  TT_IRQCHIP_NUM_SOURCES,
+                                  TT_IRQCHIP_ਅੰਕ_SOURCES,
                                   &s->memmap[TT_ATL_MAPLIC],
                                   &s->memmap[TT_ATL_SAPLIC],
                                   &s->memmap[TT_ATL_MIMSIC],
                                   &s->memmap[TT_ATL_SIMSIC],
-                                  0, 0, hart_count,
-                                  TT_IRQCHIP_NUM_MSIS,
-                                  TT_IRQCHIP_NUM_PRIO_BITS);
+                                  0, 0, hart_ਗਿਣਤੀ,
+                                  TT_IRQCHIP_ਅੰਕ_MSIS,
+                                  TT_IRQCHIP_ਅੰਕ_PRIO_ਬਿੱਟ);
 
-    riscv_aclint_mtimer_create(s->memory,
-            s->memmap[TT_ATL_ACLINT].base,
-            TT_ACLINT_MTIME_SIZE,
-            0, hart_count,
+    riscv_aclint_mtimer_create(s->ਸਮ੍ਰਿਤੀ,
+            s->memmap[TT_ATL_ACLINT].ਅਧਾਰ,
+            TT_ACLINT_MTIME_ਮਾਪ,
+            0, hart_ਗਿਣਤੀ,
             TT_ACLINT_MTIMECMP,
             TT_ACLINT_MTIME,
             TT_ACLINT_TIMEBASE_FREQ, true);
@@ -628,70 +628,70 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
      * The high address is where RAM lives. It is always present and may be
      * up to 64GB. The low address is an alias of the first 2GB of that RAM.
      */
-    if (ram_size > s->memmap[TT_ATL_DDR_HI].size) {
-        g_autofree char *sz = size_to_str(s->memmap[TT_ATL_DDR_HI].size);
+    ਜੇ (ram_ਮਾਪ > s->memmap[TT_ATL_DDR_HI].ਮਾਪ) {
+        g_autofree ਅੱਖਰ *sz = ਮਾਪ_ਮੰਜ਼ਿਲ_str(s->memmap[TT_ATL_DDR_HI].ਮਾਪ);
         error_setg(errp, "RAM size is too large, maximum is %s", sz);
-        return;
+        ਵਾਪਸ;
     }
 
-    memory_region_init_alias(&s->ram_hi, OBJECT(s), "ram.high", s->dram,
-                             0, ram_size);
-    memory_region_add_subregion(s->memory,
-                                s->memmap[TT_ATL_DDR_HI].base, &s->ram_hi);
+    ਸਮ੍ਰਿਤੀ_region_init_alias(&s->ram_hi, OBJECT(s), "ram.high", s->dram,
+                             0, ram_ਮਾਪ);
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(s->ਸਮ੍ਰਿਤੀ,
+                                s->memmap[TT_ATL_DDR_HI].ਅਧਾਰ, &s->ram_hi);
 
-    lo_ram_size = MIN(ram_size, s->memmap[TT_ATL_DDR_LO].size);
-    memory_region_init_alias(&s->ram_lo, OBJECT(s), "ram.low", s->dram,
-                             0, lo_ram_size);
-    memory_region_add_subregion(s->memory,
-                                s->memmap[TT_ATL_DDR_LO].base, &s->ram_lo);
+    lo_ram_ਮਾਪ = MIN(ram_ਮਾਪ, s->memmap[TT_ATL_DDR_LO].ਮਾਪ);
+    ਸਮ੍ਰਿਤੀ_region_init_alias(&s->ram_lo, OBJECT(s), "ram.low", s->dram,
+                             0, lo_ram_ਮਾਪ);
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(s->ਸਮ੍ਰਿਤੀ,
+                                s->memmap[TT_ATL_DDR_LO].ਅਧਾਰ, &s->ram_lo);
 
     /* Boot ROM */
-    if (!memory_region_init_rom(&s->bootrom, OBJECT(s), "tt-atlantis.bootrom",
-                                s->memmap[TT_ATL_BOOTROM].size, errp)) {
-        return;
+    ਜੇ (!ਸਮ੍ਰਿਤੀ_region_init_rom(&s->bootrom, OBJECT(s), "tt-atlantis.bootrom",
+                                s->memmap[TT_ATL_BOOTROM].ਮਾਪ, errp)) {
+        ਵਾਪਸ;
     }
-    memory_region_add_subregion(s->memory, s->memmap[TT_ATL_BOOTROM].base,
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(s->ਸਮ੍ਰਿਤੀ, s->memmap[TT_ATL_BOOTROM].ਅਧਾਰ,
                                 &s->bootrom);
 
     /* UART1, the soc console (UART0 is for the boot microcontroller) */
-    serial_mm_init(s->memory, s->memmap[TT_ATL_UART1].base, 2,
-                   qdev_get_gpio_in(s->irqchip, TT_ATL_UART1_IRQ),
+    serial_mm_init(s->ਸਮ੍ਰਿਤੀ, s->memmap[TT_ATL_UART1].ਅਧਾਰ, 2,
+                   qdev_get_gpio_ਵਿੱਚ(s->irqchip, TT_ATL_UART1_IRQ),
                    115200, serial_hd(0), DEVICE_LITTLE_ENDIAN);
 
     /* 4 PRCM blocks */
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]),
+    ਜੇ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]),
                         errp)) {
-        return;
+        ਵਾਪਸ;
     }
-    memory_region_add_subregion(
-        s->memory, s->memmap[TT_ATL_PRCM_RCPU].base,
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(
+        s->ਸਮ੍ਰਿਤੀ, s->memmap[TT_ATL_PRCM_RCPU].ਅਧਾਰ,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]),
+    ਜੇ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]),
                         errp)) {
-        return;
+        ਵਾਪਸ;
     }
-    memory_region_add_subregion(
-        s->memory, s->memmap[TT_ATL_PRCM_HSIO].base,
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(
+        s->ਸਮ੍ਰਿਤੀ, s->memmap[TT_ATL_PRCM_HSIO].ਅਧਾਰ,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]),
+    ਜੇ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]),
                         errp)) {
-        return;
+        ਵਾਪਸ;
     }
-    memory_region_add_subregion(
-        s->memory, s->memmap[TT_ATL_PRCM_PCIE].base,
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(
+        s->ਸਮ੍ਰਿਤੀ, s->memmap[TT_ATL_PRCM_PCIE].ਅਧਾਰ,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]),
+    ਜੇ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]),
                         errp)) {
-        return;
+        ਵਾਪਸ;
     }
-    memory_region_add_subregion(
-        s->memory, s->memmap[TT_ATL_PRCM_MM].base,
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(
+        s->ਸਮ੍ਰਿਤੀ, s->memmap[TT_ATL_PRCM_MM].ਅਧਾਰ,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]), 0));
 
@@ -704,83 +704,83 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
      * Create an unimplemented device region so writes don't fault
      * and reads return zero, which keeps Linux happy.
      */
-    mmio_map_unimplemented(s->memory, SYS_BUS_DEVICE(&s->uart1),
-                           "tt-atlantis.uart1", s->memmap[TT_ATL_UART1].base,
-                           s->memmap[TT_ATL_UART1].size);
+    mmio_map_unimplemented(s->ਸਮ੍ਰਿਤੀ, SYS_BUS_DEVICE(&s->uart1),
+                           "tt-atlantis.uart1", s->memmap[TT_ATL_UART1].ਅਧਾਰ,
+                           s->memmap[TT_ATL_UART1].ਮਾਪ);
 
     /* I2C */
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    ਲਈ (ਪੂਰਨ i = 0; i < TT_ATL_ਅੰਕ_I2_C; i++) {
         SysBusDevice *sbd = SYS_BUS_DEVICE(&s->i2c[i]);
 
-        if (!sysbus_realize(sbd, errp)) {
-            return;
+        ਜੇ (!sysbus_realize(sbd, errp)) {
+            ਵਾਪਸ;
         }
-        memory_region_add_subregion(s->memory,
-                                    s->memmap[TT_ATL_I2C0 + i].base,
+        ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(s->ਸਮ੍ਰਿਤੀ,
+                                    s->memmap[TT_ATL_I2C0 + i].ਅਧਾਰ,
                                     sysbus_mmio_get_region(sbd, 0));
         sysbus_connect_irq(sbd, 0,
-                           qdev_get_gpio_in(s->irqchip, TT_ATL_I2C0_IRQ + i));
+                           qdev_get_gpio_ਵਿੱਚ(s->irqchip, TT_ATL_I2C0_IRQ + i));
     }
 }
 
-static const Property tt_atlantis_soc_props[] = {
+ਸਥਿਰ ਅਚਲ Property tt_atlantis_soc_props[] = {
     DEFINE_PROP_STRING("cpu-type", TTAtlantisSoCState, cpu_type),
-    DEFINE_PROP_UINT32("num-harts", TTAtlantisSoCState, num_harts, 8),
-    DEFINE_PROP_LINK("memory", TTAtlantisSoCState, memory,
-                     TYPE_MEMORY_REGION, MemoryRegion *),
+    DEFINE_PROP_UINT32("num-harts", TTAtlantisSoCState, ਅੰਕ_harts, 8),
+    DEFINE_PROP_LINK("memory", TTAtlantisSoCState, ਸਮ੍ਰਿਤੀ,
+                     TYPE_ਸਮ੍ਰਿਤੀ_REGION, ਸਮ੍ਰਿਤੀ_Region *),
     DEFINE_PROP_LINK("dram", TTAtlantisSoCState, dram,
-                     TYPE_MEMORY_REGION, MemoryRegion *),
+                     TYPE_ਸਮ੍ਰਿਤੀ_REGION, ਸਮ੍ਰਿਤੀ_Region *),
 };
 
-static void tt_atlantis_soc_class_init(ObjectClass *oc, const void *data)
+ਸਥਿਰ ਖਾਲੀ tt_atlantis_soc_class_init(ObjectClass *oc, ਅਚਲ ਖਾਲੀ *ਅੰਕੜੇ)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
     dc->realize = tt_atlantis_soc_realize;
-    device_class_set_props(dc, tt_atlantis_soc_props);
+    device_class_ਸੈੱਟ_props(dc, tt_atlantis_soc_props);
     /* The SoC can only be instantiated from the machine */
     dc->user_creatable = false;
 }
 
-static void tt_atlantis_machine_init(MachineState *machine)
+ਸਥਿਰ ਖਾਲੀ tt_atlantis_machine_init(MachineState *machine)
 {
     TTAtlantisState *ams = TT_ATLANTIS_MACHINE(machine);
     TTAtlantisSoCState *s = &ams->soc;
 
-    memory_region_init(&ams->soc_memory, OBJECT(machine),
+    ਸਮ੍ਰਿਤੀ_region_init(&ams->soc_ਸਮ੍ਰਿਤੀ, OBJECT(machine),
                        "tt-atlantis.soc-memory", UINT64_MAX);
-    memory_region_add_subregion(get_system_memory(), 0, &ams->soc_memory);
+    ਸਮ੍ਰਿਤੀ_region_ਜੋੜੋ_subregion(get_system_ਸਮ੍ਰਿਤੀ(), 0, &ams->soc_ਸਮ੍ਰਿਤੀ);
 
-    object_initialize_child(OBJECT(machine), "soc", &ams->soc,
+    object_initialize_ਬੱਚਾ(OBJECT(machine), "soc", &ams->soc,
                             TYPE_TT_ATLANTIS_SOC);
-    object_property_set_str(OBJECT(&ams->soc), "cpu-type", machine->cpu_type,
+    object_property_ਸੈੱਟ_str(OBJECT(&ams->soc), "cpu-type", machine->cpu_type,
                             &error_abort);
-    object_property_set_int(OBJECT(&ams->soc), "num-harts", machine->smp.cpus,
+    object_property_ਸੈੱਟ_int(OBJECT(&ams->soc), "num-harts", machine->smp.cpus,
                             &error_abort);
 
-    object_property_set_link(OBJECT(&ams->soc), "memory",
-                             OBJECT(&ams->soc_memory), &error_abort);
-    object_property_set_link(OBJECT(&ams->soc), "dram", OBJECT(machine->ram),
+    object_property_ਸੈੱਟ_link(OBJECT(&ams->soc), "memory",
+                             OBJECT(&ams->soc_ਸਮ੍ਰਿਤੀ), &error_abort);
+    object_property_ਸੈੱਟ_link(OBJECT(&ams->soc), "dram", OBJECT(machine->ram),
                              &error_abort);
 
-    qdev_realize(DEVICE(&ams->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&ams->soc), ਨਿਰਾ, &error_fatal);
 
     /* I2C peripherals: qemu specific */
     i2c_slave_create_simple(i2c_get_bus(s, 0), "ds1338", 0x6f);
     i2c_slave_create_simple(i2c_get_bus(s, 4), "tmp105", 0x48);
 
     /* Load or create device tree */
-    if (machine->dtb) {
-        load_fdt(ams);
-    } else {
+    ਜੇ (machine->dtb) {
+        ਲੱਦੋ_fdt(ams);
+    } ਨਹੀਂਤਾਂ {
         create_fdt(ams);
     }
 
-    ams->machine_done.notify = tt_atlantis_machine_done;
-    qemu_add_machine_init_done_notifier(&ams->machine_done);
+    ams->machine_ਪੂਰਾ.notify = tt_atlantis_machine_ਪੂਰਾ;
+    qemu_ਜੋੜੋ_machine_init_ਪੂਰਾ_notifier(&ams->machine_ਪੂਰਾ);
 }
 
-static void tt_atlantis_machine_class_init(ObjectClass *oc, const void *data)
+ਸਥਿਰ ਖਾਲੀ tt_atlantis_machine_class_init(ObjectClass *oc, ਅਚਲ ਖਾਲੀ *ਅੰਕੜੇ)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -788,25 +788,25 @@ static void tt_atlantis_machine_class_init(ObjectClass *oc, const void *data)
     mc->init = tt_atlantis_machine_init;
     mc->max_cpus = 8;
     mc->default_cpus = 8;
-    mc->default_ram_size = 4 * GiB;
+    mc->default_ram_ਮਾਪ = 4 * GiB;
     mc->default_cpu_type = TYPE_RISCV_CPU_TT_ASCALON;
-    mc->block_default_type = IF_VIRTIO;
+    mc->ਖੰਡ_default_type = IF_VIRTIO;
     mc->no_cdrom = 1;
     mc->default_ram_id = "tt_atlantis.ram";
 }
 
-static const TypeInfo tt_atlantis_types[] = {
+ਸਥਿਰ ਅਚਲ TypeInfo tt_atlantis_types[] = {
     {
         .name       = TYPE_TT_ATLANTIS_SOC,
-        .parent     = TYPE_DEVICE,
-        .instance_size = sizeof(TTAtlantisSoCState),
+        .ਮਾਪਾ     = TYPE_DEVICE,
+        .instance_ਮਾਪ = ਆਕਾਰ(TTAtlantisSoCState),
         .instance_init = tt_atlantis_soc_init,
         .class_init = tt_atlantis_soc_class_init,
     }, {
         .name       = MACHINE_TYPE_NAME("tt-atlantis"),
-        .parent     = TYPE_MACHINE,
+        .ਮਾਪਾ     = TYPE_MACHINE,
         .class_init = tt_atlantis_machine_class_init,
-        .instance_size = sizeof(TTAtlantisState),
+        .instance_ਮਾਪ = ਆਕਾਰ(TTAtlantisState),
     },
 };
 
