@@ -9,36 +9,36 @@
  *
  */
 
-#include "qemu/osdep.h"
-#include "qemu/units.h"
+#अन्तर्भाव "qemu/osdep.h"
+#अन्तर्भाव "qemu/units.h"
 
-#include "hw/core/boards.h"
-#include "hw/char/serial-mm.h"
-#include "hw/ide/pci.h"
-#include "hw/ide/ahci-pci.h"
-#include "hw/core/loader.h"
-#include "hw/riscv/cps.h"
-#include "hw/pci-host/xilinx-pcie.h"
-#include "hw/core/qdev-properties.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "qemu/log.h"
-#include "chardev/char.h"
-#include "system/address-spaces.h"
-#include "system/device_tree.h"
-#include "system/system.h"
-#include "system/qtest.h"
-#include "system/runstate.h"
+#अन्तर्भाव "hw/core/boards.h"
+#अन्तर्भाव "hw/char/serial-mm.h"
+#अन्तर्भाव "hw/ide/pci.h"
+#अन्तर्भाव "hw/ide/ahci-pci.h"
+#अन्तर्भाव "hw/core/loader.h"
+#अन्तर्भाव "hw/riscv/cps.h"
+#अन्तर्भाव "hw/pci-host/xilinx-pcie.h"
+#अन्तर्भाव "hw/core/qdev-properties.h"
+#अन्तर्भाव "qapi/error.h"
+#अन्तर्भाव "qemu/error-report.h"
+#अन्तर्भाव "qemu/log.h"
+#अन्तर्भाव "chardev/char.h"
+#अन्तर्भाव "system/address-spaces.h"
+#अन्तर्भाव "system/device_tree.h"
+#अन्तर्भाव "system/system.h"
+#अन्तर्भाव "system/qtest.h"
+#अन्तर्भाव "system/runstate.h"
 
-#include <libfdt.h>
-#include "qom/object.h"
+#अन्तर्भाव <libfdt.h>
+#अन्तर्भाव "qom/object.h"
 
 #define TYPE_MIPS_BOSTON_AIA "mips-boston-aia"
-typedef struct BostonState BostonState;
+प्रकारनिर्देश संरचना BostonState BostonState;
 DECLARE_INSTANCE_CHECKER(BostonState, BOSTON,
                          TYPE_MIPS_BOSTON_AIA)
 
-enum {
+गणना {
     BOSTON_PCIE2,
     BOSTON_PCIE2_MMIO,
     BOSTON_PLATREG,
@@ -48,7 +48,7 @@ enum {
     BOSTON_HIGHDDR,
 };
 
-static const MemMapEntry boston_memmap[] = {
+स्थिर ध्रुव MemMapEntry boston_memmap[] = {
     [BOSTON_PCIE2] =      { 0x14000000,     0x2000000 },
     [BOSTON_PCIE2_MMIO] = { 0x16000000,      0x100000 },
     [BOSTON_PLATREG] =    { 0x17ffd000,        0x1000 },
@@ -62,7 +62,7 @@ static const MemMapEntry boston_memmap[] = {
 #define UART_INT 4
 #define PCIE2_INT 7
 
-struct BostonState {
+संरचना BostonState {
     SysBusDevice parent_obj;
 
     MachineState *mach;
@@ -70,11 +70,11 @@ struct BostonState {
     SerialMM *uart;
 
     CharFrontend lcd_display;
-    char lcd_content[8];
+    वर्ण lcd_content[8];
     bool lcd_inited;
 };
 
-enum boston_plat_reg {
+गणना boston_plat_reg {
     PLAT_FPGA_BUILD     = 0x00,
     PLAT_CORE_CL        = 0x04,
     PLAT_WRAPPER_CL     = 0x08,
@@ -96,7 +96,7 @@ enum boston_plat_reg {
     PLAT_SPARE3         = 0x2c,
     PLAT_MMCM_DIV       = 0x30,
 #define PLAT_MMCM_DIV_CLK0DIV_SHIFT     0
-#define PLAT_MMCM_DIV_INPUT_SHIFT       8
+#define PLAT_MMCM_DIV_आदान_SHIFT       8
 #define PLAT_MMCM_DIV_MUL_SHIFT         16
 #define PLAT_MMCM_DIV_CLK1DIV_SHIFT     24
     PLAT_BUILD_CFG      = 0x34,
@@ -113,149 +113,149 @@ enum boston_plat_reg {
     PLAT_SYS_CTL        = 0x48,
 };
 
-static void boston_lcd_event(void *opaque, QEMUChrEvent event)
+स्थिर शून्य boston_lcd_event(शून्य *opaque, QEMUChrEvent event)
 {
     BostonState *s = opaque;
-    if (event == CHR_EVENT_OPENED && !s->lcd_inited) {
+    यदि (event == CHR_EVENT_OPENED && !s->lcd_inited) {
         qemu_chr_fe_printf(&s->lcd_display, "        ");
         s->lcd_inited = true;
     }
 }
 
-static uint64_t boston_lcd_read(void *opaque, hwaddr addr,
+स्थिर uint64_t boston_lcd_read(शून्य *opaque, hwaddr addr,
                                 unsigned size)
 {
     BostonState *s = opaque;
     uint64_t val = 0;
 
-    switch (size) {
-    case 8:
+    विकल्प (size) {
+    पक्ष 8:
         val |= (uint64_t)s->lcd_content[(addr + 7) & 0x7] << 56;
         val |= (uint64_t)s->lcd_content[(addr + 6) & 0x7] << 48;
         val |= (uint64_t)s->lcd_content[(addr + 5) & 0x7] << 40;
         val |= (uint64_t)s->lcd_content[(addr + 4) & 0x7] << 32;
         /* fall through */
-    case 4:
+    पक्ष 4:
         val |= (uint64_t)s->lcd_content[(addr + 3) & 0x7] << 24;
         val |= (uint64_t)s->lcd_content[(addr + 2) & 0x7] << 16;
         /* fall through */
-    case 2:
+    पक्ष 2:
         val |= (uint64_t)s->lcd_content[(addr + 1) & 0x7] << 8;
         /* fall through */
-    case 1:
+    पक्ष 1:
         val |= (uint64_t)s->lcd_content[(addr + 0) & 0x7];
-        break;
+        भङ्ग;
     }
 
-    return val;
+    प्रत्यागम val;
 }
 
-static void boston_lcd_write(void *opaque, hwaddr addr,
+स्थिर शून्य boston_lcd_write(शून्य *opaque, hwaddr addr,
                              uint64_t val, unsigned size)
 {
     BostonState *s = opaque;
 
-    switch (size) {
-    case 8:
+    विकल्प (size) {
+    पक्ष 8:
         s->lcd_content[(addr + 7) & 0x7] = val >> 56;
         s->lcd_content[(addr + 6) & 0x7] = val >> 48;
         s->lcd_content[(addr + 5) & 0x7] = val >> 40;
         s->lcd_content[(addr + 4) & 0x7] = val >> 32;
         /* fall through */
-    case 4:
+    पक्ष 4:
         s->lcd_content[(addr + 3) & 0x7] = val >> 24;
         s->lcd_content[(addr + 2) & 0x7] = val >> 16;
         /* fall through */
-    case 2:
+    पक्ष 2:
         s->lcd_content[(addr + 1) & 0x7] = val >> 8;
         /* fall through */
-    case 1:
+    पक्ष 1:
         s->lcd_content[(addr + 0) & 0x7] = val;
-        break;
+        भङ्ग;
     }
 
     qemu_chr_fe_printf(&s->lcd_display,
                        "\r%-8.8s", s->lcd_content);
 }
 
-static const MemoryRegionOps boston_lcd_ops = {
-    .read = boston_lcd_read,
-    .write = boston_lcd_write,
+स्थिर ध्रुव MemoryRegionOps boston_lcd_ops = {
+    .पठ = boston_lcd_read,
+    .लिख = boston_lcd_write,
     .endianness = DEVICE_LITTLE_ENDIAN,
 };
 
-static uint64_t boston_platreg_read(void *opaque, hwaddr addr,
+स्थिर uint64_t boston_platreg_read(शून्य *opaque, hwaddr addr,
                                     unsigned size)
 {
     BostonState *s = opaque;
     uint32_t gic_freq, val;
 
-    switch (addr & 0xffff) {
-    case PLAT_FPGA_BUILD:
-    case PLAT_CORE_CL:
-    case PLAT_WRAPPER_CL:
-        return 0;
-    case PLAT_DDR3_STATUS:
-        return PLAT_DDR3_STATUS_LOCKED | PLAT_DDR3_STATUS_CALIBRATED
+    विकल्प (addr & 0xffff) {
+    पक्ष PLAT_FPGA_BUILD:
+    पक्ष PLAT_CORE_CL:
+    पक्ष PLAT_WRAPPER_CL:
+        प्रत्यागम 0;
+    पक्ष PLAT_DDR3_STATUS:
+        प्रत्यागम PLAT_DDR3_STATUS_LOCKED | PLAT_DDR3_STATUS_CALIBRATED
                | PLAT_DDR3_INTERFACE_RESET;
-    case PLAT_MMCM_DIV:
+    पक्ष PLAT_MMCM_DIV:
         gic_freq = 25000000 / 1000000;
-        val = gic_freq << PLAT_MMCM_DIV_INPUT_SHIFT;
+        val = gic_freq << PLAT_MMCM_DIV_आदान_SHIFT;
         val |= 1 << PLAT_MMCM_DIV_MUL_SHIFT;
         val |= 1 << PLAT_MMCM_DIV_CLK0DIV_SHIFT;
         val |= 1 << PLAT_MMCM_DIV_CLK1DIV_SHIFT;
-        return val;
-    case PLAT_BUILD_CFG:
+        प्रत्यागम val;
+    पक्ष PLAT_BUILD_CFG:
         val = PLAT_BUILD_CFG_PCIE0_EN;
         val |= PLAT_BUILD_CFG_PCIE1_EN;
         val |= PLAT_BUILD_CFG_PCIE2_EN;
-        return val;
-    case PLAT_DDR_CFG:
+        प्रत्यागम val;
+    पक्ष PLAT_DDR_CFG:
         val = s->mach->ram_size / GiB;
-        assert(!(val & ~PLAT_DDR_CFG_SIZE));
+        प्रतिज्ञा(!(val & ~PLAT_DDR_CFG_SIZE));
         val |= PLAT_DDR_CFG_MHZ;
-        return val;
-    default:
+        प्रत्यागम val;
+    स्वभाव:
         qemu_log_mask(LOG_UNIMP, "Read platform register 0x%" HWADDR_PRIx "\n",
                       addr & 0xffff);
-        return 0;
+        प्रत्यागम 0;
     }
 }
 
-static void boston_platreg_write(void *opaque, hwaddr addr,
+स्थिर शून्य boston_platreg_write(शून्य *opaque, hwaddr addr,
                                  uint64_t val, unsigned size)
 {
-    if (size != 4) {
+    यदि (size != 4) {
         qemu_log_mask(LOG_UNIMP, "%uB platform register write\n", size);
-        return;
+        प्रत्यागम;
     }
 
-    switch (addr & 0xffff) {
-    case PLAT_FPGA_BUILD:
-    case PLAT_CORE_CL:
-    case PLAT_WRAPPER_CL:
-    case PLAT_DDR3_STATUS:
-    case PLAT_PCIE_STATUS:
-    case PLAT_MMCM_DIV:
-    case PLAT_BUILD_CFG:
-    case PLAT_DDR_CFG:
+    विकल्प (addr & 0xffff) {
+    पक्ष PLAT_FPGA_BUILD:
+    पक्ष PLAT_CORE_CL:
+    पक्ष PLAT_WRAPPER_CL:
+    पक्ष PLAT_DDR3_STATUS:
+    पक्ष PLAT_PCIE_STATUS:
+    पक्ष PLAT_MMCM_DIV:
+    पक्ष PLAT_BUILD_CFG:
+    पक्ष PLAT_DDR_CFG:
         /* read only */
-        break;
-    case PLAT_SOFTRST_CTL:
-        if (val & PLAT_SOFTRST_CTL_SYSRESET) {
+        भङ्ग;
+    पक्ष PLAT_SOFTRST_CTL:
+        यदि (val & PLAT_SOFTRST_CTL_SYSRESET) {
             qemu_system_reset_request(SHUTDOWN_CAUSE_GUEST_RESET);
         }
-        break;
-    default:
+        भङ्ग;
+    स्वभाव:
         qemu_log_mask(LOG_UNIMP, "Write platform register 0x%" HWADDR_PRIx
                       " = 0x%" PRIx64 "\n", addr & 0xffff, val);
-        break;
+        भङ्ग;
     }
 }
 
-static const MemoryRegionOps boston_platreg_ops = {
-    .read = boston_platreg_read,
-    .write = boston_platreg_write,
+स्थिर ध्रुव MemoryRegionOps boston_platreg_ops = {
+    .पठ = boston_platreg_read,
+    .लिख = boston_platreg_write,
     .endianness = DEVICE_LITTLE_ENDIAN,
     .impl = {
         .min_access_size = 4,
@@ -263,23 +263,23 @@ static const MemoryRegionOps boston_platreg_ops = {
     },
 };
 
-static const TypeInfo boston_device = {
+स्थिर ध्रुव TypeInfo boston_device = {
     .name          = TYPE_MIPS_BOSTON_AIA,
     .parent        = TYPE_SYS_BUS_DEVICE,
-    .instance_size = sizeof(BostonState),
+    .instance_size = परिमाण(BostonState),
 };
 
-static void boston_register_types(void)
+स्थिर शून्य boston_register_types(शून्य)
 {
     type_register_static(&boston_device);
 }
 type_init(boston_register_types)
 
-#define NUM_INSNS 6
-static void gen_firmware(uint32_t *p)
+#define अंक_INSNS 6
+स्थिर शून्य gen_firmware(uint32_t *p)
 {
-    int i;
-    uint32_t reset_vec[NUM_INSNS] = {
+    पूर्णाङ्क i;
+    uint32_t reset_vec[अंक_INSNS] = {
            /* CM relocate */
            0x1fb802b7,     /* li   t0,0x1fb80000   */
            0x16100337,     /* li   t1,0x16100000   */
@@ -290,12 +290,12 @@ static void gen_firmware(uint32_t *p)
            0x00028067      /* jr   t0              */
     };
 
-    for (i = 0; i < NUM_INSNS; i++) {
+    प्रति (i = 0; i < अंक_INSNS; i++) {
         *p++ = reset_vec[i];
     }
 }
 
-static inline XilinxPCIEHost *
+स्थिर अन्तःस्थ XilinxPCIEHost *
 xilinx_pcie_init(MemoryRegion *sys_mem, uint32_t bus_nr,
                  hwaddr cfg_base, uint64_t cfg_size,
                  hwaddr mmio_base, uint64_t mmio_size,
@@ -322,29 +322,29 @@ xilinx_pcie_init(MemoryRegion *sys_mem, uint32_t bus_nr,
 
     qdev_connect_gpio_out_named(dev, "interrupt_out", 0, irq);
 
-    return XILINX_PCIE_HOST(dev);
+    प्रत्यागम XILINX_PCIE_HOST(dev);
 }
 
-static void boston_mach_init(MachineState *machine)
+स्थिर शून्य boston_mach_init(MachineState *machine)
 {
     DeviceState *dev;
     BostonState *s;
-    MemoryRegion *flash, *ddr_low_alias, *lcd, *platreg;
+    MemoryRegion *flash, *ddr_खालचा_alias, *lcd, *platreg;
     MemoryRegion *sys_mem = get_system_memory();
     XilinxPCIEHost *pcie2;
     PCIDevice *pdev;
     AHCIPCIState *ich9;
     DriveInfo *hd[6];
     Chardev *chr;
-    int fw_size;
+    पूर्णाङ्क fw_size;
 
-    if ((machine->ram_size % GiB) ||
+    यदि ((machine->ram_size % GiB) ||
         (machine->ram_size > (4 * GiB))) {
         error_report("Memory size must be 1GB, 2GB, 3GB, or 4GB");
         exit(1);
     }
 
-    if (machine->smp.cpus / machine->smp.cores / machine->smp.threads > 1) {
+    यदि (machine->smp.cpus / machine->smp.cores / machine->smp.threads > 1) {
         error_report(
             "Invalid -smp x,cores=y,threads=z. The max number of clusters "
             "supported is 1");
@@ -373,7 +373,7 @@ static void boston_mach_init(MachineState *machine)
     sysbus_mmio_map_overlap(SYS_BUS_DEVICE(&s->cps), 0, 0, 1);
 
     flash =  g_new(MemoryRegion, 1);
-    memory_region_init_rom(flash, NULL, "boston.flash",
+    memory_region_init_rom(flash, रिक्त, "boston.flash",
                            boston_memmap[BOSTON_FLASH].size, &error_fatal);
     memory_region_add_subregion_overlap(sys_mem,
                                         boston_memmap[BOSTON_FLASH].base,
@@ -383,11 +383,11 @@ static void boston_mach_init(MachineState *machine)
                                         boston_memmap[BOSTON_HIGHDDR].base,
                                         machine->ram, 0);
 
-    ddr_low_alias = g_new(MemoryRegion, 1);
-    memory_region_init_alias(ddr_low_alias, NULL, "boston_low.ddr",
+    ddr_खालचा_alias = g_new(MemoryRegion, 1);
+    memory_region_init_alias(ddr_खालचा_alias, रिक्त, "boston_low.ddr",
                              machine->ram, 0,
                              MIN(machine->ram_size, (256 * MiB)));
-    memory_region_add_subregion_overlap(sys_mem, 0, ddr_low_alias, 0);
+    memory_region_add_subregion_overlap(sys_mem, 0, ddr_खालचा_alias, 0);
 
     pcie2 = xilinx_pcie_init(sys_mem, 2,
                              boston_memmap[BOSTON_PCIE2].base,
@@ -397,7 +397,7 @@ static void boston_mach_init(MachineState *machine)
                              qdev_get_gpio_in(s->cps.aplic, PCIE2_INT));
 
     platreg = g_new(MemoryRegion, 1);
-    memory_region_init_io(platreg, NULL, &boston_platreg_ops, s,
+    memory_region_init_io(platreg, रिक्त, &boston_platreg_ops, s,
                           "boston-platregs",
                           boston_memmap[BOSTON_PLATREG].size);
     memory_region_add_subregion_overlap(sys_mem,
@@ -408,16 +408,16 @@ static void boston_mach_init(MachineState *machine)
                              serial_hd(0), DEVICE_LITTLE_ENDIAN);
 
     lcd = g_new(MemoryRegion, 1);
-    memory_region_init_io(lcd, NULL, &boston_lcd_ops, s, "boston-lcd", 0x8);
+    memory_region_init_io(lcd, रिक्त, &boston_lcd_ops, s, "boston-lcd", 0x8);
     memory_region_add_subregion_overlap(sys_mem,
                                         boston_memmap[BOSTON_LCD].base, lcd, 0);
 
-    chr = qemu_chr_new("lcd", "vc:320x240", NULL);
-    qemu_chr_fe_init(&s->lcd_display, chr, NULL);
-    qemu_chr_fe_set_handlers(&s->lcd_display, NULL, NULL,
-                             boston_lcd_event, NULL, s, NULL, true);
+    chr = qemu_chr_new("lcd", "vc:320x240", रिक्त);
+    qemu_chr_fe_init(&s->lcd_display, chr, रिक्त);
+    qemu_chr_fe_set_handlers(&s->lcd_display, रिक्त, रिक्त,
+                             boston_lcd_event, रिक्त, s, रिक्त, true);
 
-    pdev = pci_create_simple_multifunction(&PCI_BRIDGE(&pcie2->root)->sec_bus,
+    pdev = pci_create_simple_multifunction(&PCI_BRIDGE(&pcie2->मूळ)->sec_bus,
                                            PCI_DEVFN(0, 0), TYPE_ICH9_AHCI);
     ich9 = ICH9_AHCI(pdev);
     g_assert(ARRAY_SIZE(hd) == ich9->ahci.ports);
@@ -425,44 +425,44 @@ static void boston_mach_init(MachineState *machine)
     ahci_ide_create_devs(&ich9->ahci, hd);
 
     /* Create e1000e using slot 0 func 1 */
-    pci_init_nic_in_slot(&PCI_BRIDGE(&pcie2->root)->sec_bus, "e1000e", NULL,
+    pci_init_nic_in_slot(&PCI_BRIDGE(&pcie2->मूळ)->sec_bus, "e1000e", रिक्त,
                          "00.1");
-    pci_init_nic_devices(&PCI_BRIDGE(&pcie2->root)->sec_bus, "e1000e");
+    pci_init_nic_devices(&PCI_BRIDGE(&pcie2->मूळ)->sec_bus, "e1000e");
 
-    if (machine->firmware) {
+    यदि (machine->firmware) {
         fw_size = load_image_targphys(machine->firmware,
-                                      0x1fc00000, 4 * MiB, NULL);
-        if (fw_size == -1) {
+                                      0x1fc00000, 4 * MiB, रिक्त);
+        यदि (fw_size == -1) {
             error_report("unable to load firmware image '%s'",
                           machine->firmware);
             exit(1);
         }
-        if (machine->kernel_filename) {
+        यदि (machine->kernel_filename) {
                 fw_size = load_image_targphys(machine->kernel_filename,
-                                              0x80000000, 64 * MiB, NULL);
-                if (fw_size == -1) {
+                                              0x80000000, 64 * MiB, रिक्त);
+                यदि (fw_size == -1) {
                     error_report("unable to load kernel image '%s'",
                                   machine->kernel_filename);
                     exit(1);
                 }
         }
-    } else if (machine->kernel_filename) {
+    } अन्यथा यदि (machine->kernel_filename) {
         fw_size = load_image_targphys(machine->kernel_filename,
-                                      0x80000000, 64 * MiB, NULL);
-        if (fw_size == -1) {
+                                      0x80000000, 64 * MiB, रिक्त);
+        यदि (fw_size == -1) {
             error_report("unable to load kernel image '%s'",
                           machine->kernel_filename);
             exit(1);
         }
 
         gen_firmware(memory_region_get_ram_ptr(flash) + 0x7c00000);
-    } else if (!qtest_enabled()) {
+    } अन्यथा यदि (!qtest_enabled()) {
         error_report("Please provide either a -kernel or -bios argument");
         exit(1);
     }
 }
 
-static void boston_mach_class_init(MachineClass *mc)
+स्थिर शून्य boston_mach_class_init(MachineClass *mc)
 {
     mc->desc = "MIPS Boston-aia";
     mc->init = boston_mach_init;
