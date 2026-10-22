@@ -84,7 +84,7 @@ static void opentitan_machine_init(MachineState *machine)
     MemoryRegion *sys_mem = get_system_memory();
     RISCVBootInfo boot_info;
 
-    if (machine->ram_size != mc->default_ram_size) {
+    ако (machine->ram_size != mc->default_ram_size) {
         char *sz = size_to_str(mc->default_ram_size);
         error_report("Invalid RAM size, should be %s", sz);
         g_free(sz);
@@ -101,13 +101,13 @@ static void opentitan_machine_init(MachineState *machine)
 
     riscv_boot_info_init(&boot_info, &s->soc.cpus);
 
-    if (machine->firmware) {
+    ако (machine->firmware) {
         hwaddr firmware_load_addr = memmap[IBEX_DEV_RAM].base;
         riscv_load_firmware(machine, &boot_info, machine->firmware,
                             &firmware_load_addr, NULL);
     }
 
-    if (machine->kernel_filename) {
+    ако (machine->kernel_filename) {
         riscv_load_kernel(machine, &boot_info,
                           memmap[IBEX_DEV_RAM].base,
                           false, NULL);
@@ -138,7 +138,7 @@ static void lowrisc_ibex_soc_init(Object *obj)
 
     object_initialize_child(obj, "timer", &s->timer, TYPE_IBEX_TIMER);
 
-    for (int i = 0; i < OPENTITAN_NUM_SPI_HOSTS; i++) {
+    за (цяло i = 0; i < OPENTITAN_NUM_SPI_HOSTS; i++) {
         object_initialize_child(obj, "spi_host[*]", &s->spi_host[i],
                                 TYPE_IBEX_SPI_HOST);
     }
@@ -152,7 +152,7 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
     MachineState *ms = MACHINE(qdev_get_machine());
     LowRISCIbexSoCState *s = RISCV_IBEX_SOC(dev_soc);
     MemoryRegion *sys_mem = get_system_memory();
-    int i;
+    цяло i;
 
     object_property_set_str(OBJECT(&s->cpus), "cpu-type", ms->cpu_type,
                             &error_abort);
@@ -190,12 +190,12 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
     qdev_prop_set_uint32(DEVICE(&s->plic), "context-stride", 8);
     qdev_prop_set_uint32(DEVICE(&s->plic), "aperture-size", memmap[IBEX_DEV_PLIC].size);
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->plic), errp)) {
-        return;
+    ако (!sysbus_realize(SYS_BUS_DEVICE(&s->plic), errp)) {
+        върни;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->plic), 0, memmap[IBEX_DEV_PLIC].base);
 
-    for (i = 0; i < ms->smp.cpus; i++) {
+    за (i = 0; i < ms->smp.cpus; i++) {
         CPUState *cpu = qemu_get_cpu(i);
 
         qdev_connect_gpio_out(DEVICE(&s->plic), ms->smp.cpus + i,
@@ -204,8 +204,8 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
 
     /* UART */
     qdev_prop_set_chr(DEVICE(&(s->uart)), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
-        return;
+    ако (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
+        върни;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->uart), 0, memmap[IBEX_DEV_UART].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->uart),
@@ -221,8 +221,8 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
                        3, qdev_get_gpio_in(DEVICE(&s->plic),
                        IBEX_UART0_RX_OVERFLOW_IRQ));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->timer), errp)) {
-        return;
+    ако (!sysbus_realize(SYS_BUS_DEVICE(&s->timer), errp)) {
+        върни;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->timer), 0, memmap[IBEX_DEV_TIMER].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->timer),
@@ -233,10 +233,10 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
                                            IRQ_M_TIMER));
 
     /* SPI-Hosts */
-    for (i = 0; i < OPENTITAN_NUM_SPI_HOSTS; ++i) {
+    за (i = 0; i < OPENTITAN_NUM_SPI_HOSTS; ++i) {
         dev = DEVICE(&(s->spi_host[i]));
-        if (!sysbus_realize(SYS_BUS_DEVICE(&s->spi_host[i]), errp)) {
-            return;
+        ако (!sysbus_realize(SYS_BUS_DEVICE(&s->spi_host[i]), errp)) {
+            върни;
         }
         busdev = SYS_BUS_DEVICE(dev);
         sysbus_mmio_map(busdev, 0, memmap[IBEX_DEV_SPI_HOST0 + i].base);

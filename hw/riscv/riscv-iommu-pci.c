@@ -73,7 +73,7 @@ static void riscv_iommu_pci_notify(RISCVIOMMUState *iommu, unsigned vector)
 {
     RISCVIOMMUStatePci *s = container_of(iommu, RISCVIOMMUStatePci, iommu);
 
-    if (msix_enabled(&(s->pci))) {
+    ако (msix_enabled(&(s->pci))) {
         msix_notify(&(s->pci), vector);
     }
 }
@@ -105,22 +105,22 @@ static void riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
     pci_register_bar(dev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY |
                      PCI_BASE_ADDRESS_MEM_TYPE_64, &s->bar0);
 
-    int ret = msix_init(dev, RISCV_IOMMU_PCI_MSIX_VECTORS,
+    цяло ret = msix_init(dev, RISCV_IOMMU_PCI_MSIX_VECTORS,
                         &s->bar0, 0, RISCV_IOMMU_REG_MSI_CONFIG,
                         &s->bar0, 0, RISCV_IOMMU_REG_MSI_CONFIG + 256, 0, &err);
 
-    if (ret == -ENOTSUP) {
+    ако (ret == -ENOTSUP) {
         /*
          * MSI-x is not supported by the platform.
          * Driver should use timer/polling based notification handlers.
          */
         warn_report_err(err);
-    } else if (ret < 0) {
+    } иначе ако (ret < 0) {
         error_propagate(errp, err);
-        return;
-    } else {
+        върни;
+    } иначе {
         /* Mark all ICVEC MSIx vectors as used */
-        for (int i = 0; i < RISCV_IOMMU_PCI_MSIX_VECTORS; i++) {
+        за (цяло i = 0; i < RISCV_IOMMU_PCI_MSIX_VECTORS; i++) {
             msix_vector_use(dev, i);
         }
 
@@ -128,11 +128,11 @@ static void riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
     }
 
     PCIBus *bus = pci_device_root_bus(dev);
-    if (!bus) {
+    ако (!bus) {
         error_setg(errp, "can't find PCIe root port for %02x:%02x.%x",
             pci_bus_num(pci_get_bus(dev)), PCI_SLOT(dev->devfn),
             PCI_FUNC(dev->devfn));
-        return;
+        върни;
     }
 
     riscv_iommu_pci_setup_iommu(iommu, bus, errp);

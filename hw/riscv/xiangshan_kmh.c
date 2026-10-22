@@ -56,14 +56,14 @@ static const MemMapEntry xiangshan_kmh_memmap[] = {
 
 static DeviceState *xiangshan_kmh_create_aia(uint32_t num_harts)
 {
-    int i;
+    цяло i;
     const MemMapEntry *memmap = xiangshan_kmh_memmap;
     hwaddr addr = 0;
     DeviceState *aplic_m = NULL;
 
     /* M-level IMSICs */
     addr = memmap[XIANGSHAN_KMH_IMSIC_M].base;
-    for (i = 0; i < num_harts; i++) {
+    за (i = 0; i < num_harts; i++) {
         riscv_imsic_create(get_system_memory(),
                            addr + i * IMSIC_HART_SIZE(0), i, true,
                            1, XIANGSHAN_KMH_IMSIC_NUM_IDS);
@@ -71,7 +71,7 @@ static DeviceState *xiangshan_kmh_create_aia(uint32_t num_harts)
 
     /* S-level IMSICs */
     addr = memmap[XIANGSHAN_KMH_IMSIC_S].base;
-    for (i = 0; i < num_harts; i++) {
+    за (i = 0; i < num_harts; i++) {
         riscv_imsic_create(get_system_memory(), addr +
                            i * IMSIC_HART_SIZE(XIANGSHAN_KMH_IMSIC_GUEST_BITS),
                            i, false, 1 + XIANGSHAN_KMH_IMSIC_GUEST_BITS,
@@ -92,7 +92,7 @@ static DeviceState *xiangshan_kmh_create_aia(uint32_t num_harts)
                        0, 0, XIANGSHAN_KMH_APLIC_NUM_SOURCES,
                        1, true, false, aplic_m);
 
-    return aplic_m;
+    върни aplic_m;
 }
 
 static void xiangshan_kmh_soc_realize(DeviceState *dev, Error **errp)
@@ -190,7 +190,7 @@ static void xiangshan_kmh_machine_init(MachineState *machine)
                               start_addr,
                               memmap[XIANGSHAN_KMH_ROM].base,
                               memmap[XIANGSHAN_KMH_ROM].size, 0, 0);
-    if (machine->firmware) {
+    ако (machine->firmware) {
         riscv_load_firmware(machine, &boot_info, machine->firmware,
                             &start_addr, NULL);
     }
