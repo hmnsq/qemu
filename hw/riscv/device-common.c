@@ -6,27 +6,27 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#include "qemu/osdep.h"
+#അന്തര്ഭാവ "qemu/osdep.h"
 
-#include "hw/riscv/device-common.h"
+#അന്തര്ഭാവ "hw/riscv/device-common.h"
 
-#include "hw/block/flash.h"
-#include "hw/core/platform-bus.h"
-#include "hw/core/qdev.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/core/sysbus.h"
-#include "hw/pci/pci.h"
-#include "hw/pci-host/gpex.h"
-#include "qapi/error.h"
-#include "qom/object.h"
-#include "system/address-spaces.h"
-#include "system/memory.h"
+#അന്തര്ഭാവ "hw/block/flash.h"
+#അന്തര്ഭാവ "hw/core/platform-bus.h"
+#അന്തര്ഭാവ "hw/core/qdev.h"
+#അന്തര്ഭാവ "hw/core/qdev-properties.h"
+#അന്തര്ഭാവ "hw/core/sysbus.h"
+#അന്തര്ഭാവ "hw/pci/pci.h"
+#അന്തര്ഭാവ "hw/pci-host/gpex.h"
+#അന്തര്ഭാവ "qapi/error.h"
+#അന്തര്ഭാവ "qom/object.h"
+#അന്തര്ഭാവ "system/address-spaces.h"
+#അന്തര്ഭാവ "system/memory.h"
 
 
 DeviceState *riscv_create_platform_bus(DeviceState *irqchip,
-                                       const MemMapEntry *platform_bus_mem,
-                                       int platform_bus_base_irq,
-                                       int platform_bus_num_irqs)
+                                       സ്ഥിരം MemMapEntry *platform_bus_mem,
+                                       പൂർണ്ണസംഖ്യ platform_bus_base_irq,
+                                       പൂർണ്ണസംഖ്യ platform_bus_അക്കം_irqs)
 {
     MemoryRegion *sysmem = get_system_memory();
     DeviceState *dev;
@@ -34,13 +34,13 @@ DeviceState *riscv_create_platform_bus(DeviceState *irqchip,
 
     dev = qdev_new(TYPE_PLATFORM_BUS_DEVICE);
     dev->id = g_strdup(TYPE_PLATFORM_BUS_DEVICE);
-    qdev_prop_set_uint32(dev, "num_irqs", platform_bus_num_irqs);
+    qdev_prop_set_uint32(dev, "num_irqs", platform_bus_അക്കം_irqs);
     qdev_prop_set_uint32(dev, "mmio_size", platform_bus_mem->size);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
     sysbus = SYS_BUS_DEVICE(dev);
-    for (int i = 0; i < platform_bus_num_irqs; i++) {
-        int irq = platform_bus_base_irq + i;
+    വേണ്ടി (പൂർണ്ണസംഖ്യ i = 0; i < platform_bus_അക്കം_irqs; i++) {
+        പൂർണ്ണസംഖ്യ irq = platform_bus_base_irq + i;
         sysbus_connect_irq(sysbus, i, qdev_get_gpio_in(irqchip, irq));
     }
 
@@ -48,12 +48,12 @@ DeviceState *riscv_create_platform_bus(DeviceState *irqchip,
                                 platform_bus_mem->base,
                                 sysbus_mmio_get_region(sysbus, 0));
 
-    return dev;
+    തിരികെ dev;
 }
 
-PFlashCFI01 *riscv_flash_create(Object *parent, const char *name,
-                                const char *alias_prop_name,
-                                int flash_sector_size)
+PFlashCFI01 *riscv_flash_create(Object *parent, സ്ഥിരം അക്ഷരം *name,
+                                സ്ഥിരം അക്ഷരം *alias_prop_name,
+                                പൂർണ്ണസംഖ്യ flash_sector_size)
 {
     /*
      * Create a single flash device.  We use the same parameters as
@@ -75,16 +75,16 @@ PFlashCFI01 *riscv_flash_create(Object *parent, const char *name,
     object_property_add_alias(parent, alias_prop_name,
                               OBJECT(dev), "drive");
 
-    return PFLASH_CFI01(dev);
+    തിരികെ PFLASH_CFI01(dev);
 }
 
-void riscv_init_flash_map(PFlashCFI01 *flash, hwaddr base, hwaddr size,
-                          MemoryRegion *sysmem, int flash_sector_size)
+ശൂന്യം riscv_init_flash_map(PFlashCFI01 *flash, hwaddr base, hwaddr size,
+                          MemoryRegion *sysmem, പൂർണ്ണസംഖ്യ flash_sector_size)
 {
     DeviceState *dev = DEVICE(flash);
 
-    assert(QEMU_IS_ALIGNED(size, flash_sector_size));
-    assert(size / flash_sector_size <= UINT32_MAX);
+    പ്രതിജ്ഞാ(QEMU_IS_ALIGNED(size, flash_sector_size));
+    പ്രതിജ്ഞാ(size / flash_sector_size <= UINT32_MAX);
 
     qdev_prop_set_uint32(dev, "num-blocks", size / flash_sector_size);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
@@ -95,21 +95,21 @@ void riscv_init_flash_map(PFlashCFI01 *flash, hwaddr base, hwaddr size,
 
 DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
                                   DeviceState *irqchip,
-                                  const MemMapEntry *pcie_ecam_mem,
-                                  const MemMapEntry *pcie_mmio_mem,
-                                  const MemMapEntry *high_pcie_mmio_mem,
-                                  const MemMapEntry *pcie_pio_mem,
-                                  int pcie_irq)
+                                  സ്ഥിരം MemMapEntry *pcie_ecam_mem,
+                                  സ്ഥിരം MemMapEntry *pcie_mmio_mem,
+                                  സ്ഥിരം MemMapEntry *മുകളിലെ_pcie_mmio_mem,
+                                  സ്ഥിരം MemMapEntry *pcie_pio_mem,
+                                  പൂർണ്ണസംഖ്യ pcie_irq)
 {
     DeviceState *dev;
     MemoryRegion *ecam_alias, *ecam_reg;
-    MemoryRegion *mmio_alias, *high_mmio_alias, *mmio_reg;
+    MemoryRegion *mmio_alias, *മുകളിലെ_mmio_alias, *mmio_reg;
     hwaddr ecam_base = pcie_ecam_mem->base;
     hwaddr ecam_size = pcie_ecam_mem->size;
     hwaddr mmio_base = pcie_mmio_mem->base;
     hwaddr mmio_size = pcie_mmio_mem->size;
-    hwaddr high_mmio_base = high_pcie_mmio_mem->base;
-    hwaddr high_mmio_size = high_pcie_mmio_mem->size;
+    hwaddr മുകളിലെ_mmio_base = മുകളിലെ_pcie_mmio_mem->base;
+    hwaddr മുകളിലെ_mmio_size = മുകളിലെ_pcie_mmio_mem->size;
     hwaddr pio_base = pcie_pio_mem->base;
     hwaddr pio_size = pcie_pio_mem->size;
 
@@ -117,21 +117,21 @@ DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
 
     /* Set GPEX object properties for the virt machine */
     object_property_set_uint(OBJECT(dev), PCI_HOST_ECAM_BASE,
-                            ecam_base, NULL);
+                            ecam_base, ശൂന്യ);
     object_property_set_int(OBJECT(dev), PCI_HOST_ECAM_SIZE,
-                            ecam_size, NULL);
+                            ecam_size, ശൂന്യ);
     object_property_set_uint(OBJECT(dev), PCI_HOST_BELOW_4G_MMIO_BASE,
-                             mmio_base, NULL);
+                             mmio_base, ശൂന്യ);
     object_property_set_int(OBJECT(dev), PCI_HOST_BELOW_4G_MMIO_SIZE,
-                            mmio_size, NULL);
+                            mmio_size, ശൂന്യ);
     object_property_set_uint(OBJECT(dev), PCI_HOST_ABOVE_4G_MMIO_BASE,
-                             high_mmio_base, NULL);
+                             മുകളിലെ_mmio_base, ശൂന്യ);
     object_property_set_int(OBJECT(dev), PCI_HOST_ABOVE_4G_MMIO_SIZE,
-                            high_mmio_size, NULL);
+                            മുകളിലെ_mmio_size, ശൂന്യ);
     object_property_set_uint(OBJECT(dev), PCI_HOST_PIO_BASE,
-                            pio_base, NULL);
+                            pio_base, ശൂന്യ);
     object_property_set_int(OBJECT(dev), PCI_HOST_PIO_SIZE,
-                            pio_size, NULL);
+                            pio_size, ശൂന്യ);
 
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
@@ -148,21 +148,21 @@ DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
     memory_region_add_subregion(get_system_memory(), mmio_base, mmio_alias);
 
     /* Map high MMIO space */
-    high_mmio_alias = g_new0(MemoryRegion, 1);
-    memory_region_init_alias(high_mmio_alias, OBJECT(dev), "pcie-mmio-high",
-                             mmio_reg, high_mmio_base, high_mmio_size);
-    memory_region_add_subregion(get_system_memory(), high_mmio_base,
-                                high_mmio_alias);
+    മുകളിലെ_mmio_alias = g_new0(MemoryRegion, 1);
+    memory_region_init_alias(മുകളിലെ_mmio_alias, OBJECT(dev), "pcie-mmio-high",
+                             mmio_reg, മുകളിലെ_mmio_base, മുകളിലെ_mmio_size);
+    memory_region_add_subregion(get_system_memory(), മുകളിലെ_mmio_base,
+                                മുകളിലെ_mmio_alias);
 
     sysbus_mmio_map(SYS_BUS_DEVICE(dev), 2, pio_base);
 
-    for (int i = 0; i < PCI_NUM_PINS; i++) {
+    വേണ്ടി (പൂർണ്ണസംഖ്യ i = 0; i < PCI_അക്കം_PINS; i++) {
         qemu_irq irq = qdev_get_gpio_in(irqchip, pcie_irq + i);
 
         sysbus_connect_irq(SYS_BUS_DEVICE(dev), i, irq);
-        gpex_set_irq_num(GPEX_HOST(dev), i, pcie_irq + i);
+        gpex_set_irq_അക്കം(GPEX_HOST(dev), i, pcie_irq + i);
     }
 
     GPEX_HOST(dev)->gpex_cfg.bus = PCI_HOST_BRIDGE(dev)->bus;
-    return dev;
+    തിരികെ dev;
 }

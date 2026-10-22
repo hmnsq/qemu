@@ -16,23 +16,23 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "exec/target_page.h"
-#include "hw/pci/msi.h"
-#include "hw/pci/msix.h"
-#include "hw/pci/pci_bus.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/riscv/riscv_hart.h"
-#include "migration/vmstate.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "qemu/host-utils.h"
-#include "qom/object.h"
+#അന്തര്ഭാവ "qemu/osdep.h"
+#അന്തര്ഭാവ "exec/target_page.h"
+#അന്തര്ഭാവ "hw/pci/msi.h"
+#അന്തര്ഭാവ "hw/pci/msix.h"
+#അന്തര്ഭാവ "hw/pci/pci_bus.h"
+#അന്തര്ഭാവ "hw/core/qdev-properties.h"
+#അന്തര്ഭാവ "hw/riscv/riscv_hart.h"
+#അന്തര്ഭാവ "migration/vmstate.h"
+#അന്തര്ഭാവ "qapi/error.h"
+#അന്തര്ഭാവ "qemu/error-report.h"
+#അന്തര്ഭാവ "qemu/host-utils.h"
+#അന്തര്ഭാവ "qom/object.h"
 
-#include "cpu_bits.h"
-#include "riscv-iommu.h"
-#include "riscv-iommu-bits.h"
-#include "trace.h"
+#അന്തര്ഭാവ "cpu_bits.h"
+#അന്തര്ഭാവ "riscv-iommu.h"
+#അന്തര്ഭാവ "riscv-iommu-bits.h"
+#അന്തര്ഭാവ "trace.h"
 
 /* RISC-V IOMMU PCI Device Emulation */
 #define RISCV_PCI_CLASS_SYSTEM_IOMMU     0x0806
@@ -59,7 +59,7 @@
  */
 #define RISCV_IOMMU_PCI_ICVEC_VECTORS 0x3333
 
-typedef struct RISCVIOMMUStatePci {
+തരനിർവചനം ഘടന RISCVIOMMUStatePci {
     PCIDevice        pci;     /* Parent PCIe device state */
     uint16_t         vendor_id;
     uint16_t         device_id;
@@ -69,21 +69,21 @@ typedef struct RISCVIOMMUStatePci {
 } RISCVIOMMUStatePci;
 
 /* interrupt delivery callback */
-static void riscv_iommu_pci_notify(RISCVIOMMUState *iommu, unsigned vector)
+സ്ഥിതം ശൂന്യം riscv_iommu_pci_notify(RISCVIOMMUState *iommu, unsigned vector)
 {
     RISCVIOMMUStatePci *s = container_of(iommu, RISCVIOMMUStatePci, iommu);
 
-    if (msix_enabled(&(s->pci))) {
+    എങ്കിൽ (msix_enabled(&(s->pci))) {
         msix_notify(&(s->pci), vector);
     }
 }
 
-static void riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
+സ്ഥിതം ശൂന്യം riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
 {
     RISCVIOMMUStatePci *s = DO_UPCAST(RISCVIOMMUStatePci, pci, dev);
     RISCVIOMMUState *iommu = &s->iommu;
     uint8_t *pci_conf = dev->config;
-    Error *err = NULL;
+    Error *err = ശൂന്യ;
 
     pci_set_word(pci_conf + PCI_VENDOR_ID, s->vendor_id);
     pci_set_word(pci_conf + PCI_SUBSYSTEM_VENDOR_ID, s->vendor_id);
@@ -93,8 +93,8 @@ static void riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
 
     /* Set device id for trace / debug */
     DEVICE(iommu)->id = g_strdup_printf("%02x:%02x.%01x",
-        pci_dev_bus_num(dev), PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn));
-    qdev_realize(DEVICE(iommu), NULL, errp);
+        pci_dev_bus_അക്കം(dev), PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn));
+    qdev_realize(DEVICE(iommu), ശൂന്യ, errp);
 
     memory_region_init(&s->bar0, OBJECT(s), "riscv-iommu-bar0",
         QEMU_ALIGN_UP(memory_region_size(&iommu->regs_mr), TARGET_PAGE_SIZE));
@@ -105,50 +105,50 @@ static void riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
     pci_register_bar(dev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY |
                      PCI_BASE_ADDRESS_MEM_TYPE_64, &s->bar0);
 
-    int ret = msix_init(dev, RISCV_IOMMU_PCI_MSIX_VECTORS,
+    പൂർണ്ണസംഖ്യ ret = msix_init(dev, RISCV_IOMMU_PCI_MSIX_VECTORS,
                         &s->bar0, 0, RISCV_IOMMU_REG_MSI_CONFIG,
                         &s->bar0, 0, RISCV_IOMMU_REG_MSI_CONFIG + 256, 0, &err);
 
-    if (ret == -ENOTSUP) {
+    എങ്കിൽ (ret == -ENOTSUP) {
         /*
          * MSI-x is not supported by the platform.
          * Driver should use timer/polling based notification handlers.
          */
         warn_report_err(err);
-    } else if (ret < 0) {
+    } അല്ലെങ്കിൽ എങ്കിൽ (ret < 0) {
         error_propagate(errp, err);
-        return;
-    } else {
+        തിരികെ;
+    } അല്ലെങ്കിൽ {
         /* Mark all ICVEC MSIx vectors as used */
-        for (int i = 0; i < RISCV_IOMMU_PCI_MSIX_VECTORS; i++) {
+        വേണ്ടി (പൂർണ്ണസംഖ്യ i = 0; i < RISCV_IOMMU_PCI_MSIX_VECTORS; i++) {
             msix_vector_use(dev, i);
         }
 
         iommu->notify = riscv_iommu_pci_notify;
     }
 
-    PCIBus *bus = pci_device_root_bus(dev);
-    if (!bus) {
+    PCIBus *bus = pci_device_വേര്_bus(dev);
+    എങ്കിൽ (!bus) {
         error_setg(errp, "can't find PCIe root port for %02x:%02x.%x",
-            pci_bus_num(pci_get_bus(dev)), PCI_SLOT(dev->devfn),
+            pci_bus_അക്കം(pci_get_bus(dev)), PCI_SLOT(dev->devfn),
             PCI_FUNC(dev->devfn));
-        return;
+        തിരികെ;
     }
 
     riscv_iommu_pci_setup_iommu(iommu, bus, errp);
 }
 
-static void riscv_iommu_pci_exit(PCIDevice *pci_dev)
+സ്ഥിതം ശൂന്യം riscv_iommu_pci_exit(PCIDevice *pci_dev)
 {
-    pci_setup_iommu(pci_device_root_bus(pci_dev), NULL, NULL);
+    pci_setup_iommu(pci_device_വേര്_bus(pci_dev), ശൂന്യ, ശൂന്യ);
 }
 
-static const VMStateDescription riscv_iommu_vmstate = {
+സ്ഥിതം സ്ഥിരം VMStateDescription riscv_iommu_vmstate = {
     .name = "riscv-iommu",
     .unmigratable = 1
 };
 
-static void riscv_iommu_pci_init(Object *obj)
+സ്ഥിതം ശൂന്യം riscv_iommu_pci_init(Object *obj)
 {
     RISCVIOMMUStatePci *s = RISCV_IOMMU_PCI(obj);
     RISCVIOMMUState *iommu = &s->iommu;
@@ -163,7 +163,7 @@ static void riscv_iommu_pci_init(Object *obj)
     iommu->pas_bits = 56;
 }
 
-static const Property riscv_iommu_pci_properties[] = {
+സ്ഥിതം സ്ഥിരം Property riscv_iommu_pci_properties[] = {
     DEFINE_PROP_UINT16("vendor-id", RISCVIOMMUStatePci, vendor_id,
                        PCI_VENDOR_ID_REDHAT),
     DEFINE_PROP_UINT16("device-id", RISCVIOMMUStatePci, device_id,
@@ -171,7 +171,7 @@ static const Property riscv_iommu_pci_properties[] = {
     DEFINE_PROP_UINT8("revision", RISCVIOMMUStatePci, revision, 0x01),
 };
 
-static void riscv_iommu_pci_reset_hold(Object *obj, ResetType type)
+സ്ഥിതം ശൂന്യം riscv_iommu_pci_reset_hold(Object *obj, ResetType type)
 {
     RISCVIOMMUStatePci *pci = RISCV_IOMMU_PCI(obj);
     RISCVIOMMUState *iommu = &pci->iommu;
@@ -181,7 +181,7 @@ static void riscv_iommu_pci_reset_hold(Object *obj, ResetType type)
     trace_riscv_iommu_pci_reset_hold(type);
 }
 
-static void riscv_iommu_pci_class_init(ObjectClass *klass, const void *data)
+സ്ഥിതം ശൂന്യം riscv_iommu_pci_class_init(ObjectClass *klass, സ്ഥിരം ശൂന്യം *data)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
     PCIDeviceClass *k = PCI_DEVICE_CLASS(klass);
@@ -200,19 +200,19 @@ static void riscv_iommu_pci_class_init(ObjectClass *klass, const void *data)
     device_class_set_props(dc, riscv_iommu_pci_properties);
 }
 
-static const TypeInfo riscv_iommu_pci = {
+സ്ഥിതം സ്ഥിരം TypeInfo riscv_iommu_pci = {
     .name = TYPE_RISCV_IOMMU_PCI,
     .parent = TYPE_PCI_DEVICE,
     .class_init = riscv_iommu_pci_class_init,
     .instance_init = riscv_iommu_pci_init,
-    .instance_size = sizeof(RISCVIOMMUStatePci),
-    .interfaces = (const InterfaceInfo[]) {
+    .instance_size = വലുപ്പം(RISCVIOMMUStatePci),
+    .interfaces = (സ്ഥിരം InterfaceInfo[]) {
         { INTERFACE_PCIE_DEVICE },
         { },
     },
 };
 
-static void riscv_iommu_register_pci_types(void)
+സ്ഥിതം ശൂന്യം riscv_iommu_register_pci_types(ശൂന്യം)
 {
     type_register_static(&riscv_iommu_pci);
 }

@@ -16,168 +16,168 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/units.h"
-#include "qemu/error-report.h"
-#include "qapi/error.h"
-#include "hw/core/boards.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/riscv/numa.h"
-#include "system/device_tree.h"
+#അന്തര്ഭാവ "qemu/osdep.h"
+#അന്തര്ഭാവ "qemu/units.h"
+#അന്തര്ഭാവ "qemu/error-report.h"
+#അന്തര്ഭാവ "qapi/error.h"
+#അന്തര്ഭാവ "hw/core/boards.h"
+#അന്തര്ഭാവ "hw/core/qdev-properties.h"
+#അന്തര്ഭാവ "hw/riscv/numa.h"
+#അന്തര്ഭാവ "system/device_tree.h"
 
-bool riscv_numa_enabled(const MachineState *ms)
+bool riscv_numa_enabled(സ്ഥിരം MachineState *ms)
 {
-    return (ms->numa_state && ms->numa_state->num_nodes) ? true : false;
+    തിരികെ (ms->numa_state && ms->numa_state->അക്കം_nodes) ? true : false;
 }
 
-int riscv_socket_count(const MachineState *ms)
+പൂർണ്ണസംഖ്യ riscv_socket_എണ്ണം(സ്ഥിരം MachineState *ms)
 {
-    return (riscv_numa_enabled(ms)) ? ms->numa_state->num_nodes : 1;
+    തിരികെ (riscv_numa_enabled(ms)) ? ms->numa_state->അക്കം_nodes : 1;
 }
 
-int riscv_socket_first_hartid(const MachineState *ms, int socket_id)
+പൂർണ്ണസംഖ്യ riscv_socket_first_hartid(സ്ഥിരം MachineState *ms, പൂർണ്ണസംഖ്യ socket_id)
 {
-    int i, first_hartid = ms->smp.cpus;
+    പൂർണ്ണസംഖ്യ i, first_hartid = ms->smp.cpus;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? 0 : -1;
+    എങ്കിൽ (!riscv_numa_enabled(ms)) {
+        തിരികെ (!socket_id) ? 0 : -1;
     }
 
-    for (i = 0; i < ms->smp.cpus; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
-            continue;
+    വേണ്ടി (i = 0; i < ms->smp.cpus; i++) {
+        എങ്കിൽ (ms->possible_cpus->cpus[i].props.കണ്ണി_id != socket_id) {
+            തുടരുക;
         }
-        if (i < first_hartid) {
+        എങ്കിൽ (i < first_hartid) {
             first_hartid = i;
         }
     }
 
-    return (first_hartid < ms->smp.cpus) ? first_hartid : -1;
+    തിരികെ (first_hartid < ms->smp.cpus) ? first_hartid : -1;
 }
 
-int riscv_socket_last_hartid(const MachineState *ms, int socket_id)
+പൂർണ്ണസംഖ്യ riscv_socket_last_hartid(സ്ഥിരം MachineState *ms, പൂർണ്ണസംഖ്യ socket_id)
 {
-    int i, last_hartid = -1;
+    പൂർണ്ണസംഖ്യ i, last_hartid = -1;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->smp.cpus - 1 : -1;
+    എങ്കിൽ (!riscv_numa_enabled(ms)) {
+        തിരികെ (!socket_id) ? ms->smp.cpus - 1 : -1;
     }
 
-    for (i = 0; i < ms->smp.cpus; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
-            continue;
+    വേണ്ടി (i = 0; i < ms->smp.cpus; i++) {
+        എങ്കിൽ (ms->possible_cpus->cpus[i].props.കണ്ണി_id != socket_id) {
+            തുടരുക;
         }
-        if (i > last_hartid) {
+        എങ്കിൽ (i > last_hartid) {
             last_hartid = i;
         }
     }
 
-    return (last_hartid < ms->smp.cpus) ? last_hartid : -1;
+    തിരികെ (last_hartid < ms->smp.cpus) ? last_hartid : -1;
 }
 
-int riscv_socket_hart_count(const MachineState *ms, int socket_id)
+പൂർണ്ണസംഖ്യ riscv_socket_hart_എണ്ണം(സ്ഥിരം MachineState *ms, പൂർണ്ണസംഖ്യ socket_id)
 {
-    int first_hartid, last_hartid;
+    പൂർണ്ണസംഖ്യ first_hartid, last_hartid;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->smp.cpus : -1;
+    എങ്കിൽ (!riscv_numa_enabled(ms)) {
+        തിരികെ (!socket_id) ? ms->smp.cpus : -1;
     }
 
     first_hartid = riscv_socket_first_hartid(ms, socket_id);
-    if (first_hartid < 0) {
-        return -1;
+    എങ്കിൽ (first_hartid < 0) {
+        തിരികെ -1;
     }
 
     last_hartid = riscv_socket_last_hartid(ms, socket_id);
-    if (last_hartid < 0) {
-        return -1;
+    എങ്കിൽ (last_hartid < 0) {
+        തിരികെ -1;
     }
 
-    if (first_hartid > last_hartid) {
-        return -1;
+    എങ്കിൽ (first_hartid > last_hartid) {
+        തിരികെ -1;
     }
 
-    return last_hartid - first_hartid + 1;
+    തിരികെ last_hartid - first_hartid + 1;
 }
 
-bool riscv_socket_check_hartids(const MachineState *ms, int socket_id)
+bool riscv_socket_check_hartids(സ്ഥിരം MachineState *ms, പൂർണ്ണസംഖ്യ socket_id)
 {
-    int i, first_hartid, last_hartid;
+    പൂർണ്ണസംഖ്യ i, first_hartid, last_hartid;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? true : false;
+    എങ്കിൽ (!riscv_numa_enabled(ms)) {
+        തിരികെ (!socket_id) ? true : false;
     }
 
     first_hartid = riscv_socket_first_hartid(ms, socket_id);
-    if (first_hartid < 0) {
-        return false;
+    എങ്കിൽ (first_hartid < 0) {
+        തിരികെ false;
     }
 
     last_hartid = riscv_socket_last_hartid(ms, socket_id);
-    if (last_hartid < 0) {
-        return false;
+    എങ്കിൽ (last_hartid < 0) {
+        തിരികെ false;
     }
 
-    for (i = first_hartid; i <= last_hartid; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
-            return false;
+    വേണ്ടി (i = first_hartid; i <= last_hartid; i++) {
+        എങ്കിൽ (ms->possible_cpus->cpus[i].props.കണ്ണി_id != socket_id) {
+            തിരികെ false;
         }
     }
 
-    return true;
+    തിരികെ true;
 }
 
-uint64_t riscv_socket_mem_offset(const MachineState *ms, int socket_id)
+uint64_t riscv_socket_mem_offset(സ്ഥിരം MachineState *ms, പൂർണ്ണസംഖ്യ socket_id)
 {
-    int i;
+    പൂർണ്ണസംഖ്യ i;
     uint64_t mem_offset = 0;
 
-    if (!riscv_numa_enabled(ms)) {
-        return 0;
+    എങ്കിൽ (!riscv_numa_enabled(ms)) {
+        തിരികെ 0;
     }
 
-    for (i = 0; i < ms->numa_state->num_nodes; i++) {
-        if (i == socket_id) {
-            break;
+    വേണ്ടി (i = 0; i < ms->numa_state->അക്കം_nodes; i++) {
+        എങ്കിൽ (i == socket_id) {
+            നിർത്തുക;
         }
-        mem_offset += ms->numa_state->nodes[i].node_mem;
+        mem_offset += ms->numa_state->nodes[i].കണ്ണി_mem;
     }
 
-    return (i == socket_id) ? mem_offset : 0;
+    തിരികെ (i == socket_id) ? mem_offset : 0;
 }
 
-uint64_t riscv_socket_mem_size(const MachineState *ms, int socket_id)
+uint64_t riscv_socket_mem_size(സ്ഥിരം MachineState *ms, പൂർണ്ണസംഖ്യ socket_id)
 {
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->ram_size : 0;
+    എങ്കിൽ (!riscv_numa_enabled(ms)) {
+        തിരികെ (!socket_id) ? ms->ram_size : 0;
     }
 
-    return (socket_id < ms->numa_state->num_nodes) ?
-            ms->numa_state->nodes[socket_id].node_mem : 0;
+    തിരികെ (socket_id < ms->numa_state->അക്കം_nodes) ?
+            ms->numa_state->nodes[socket_id].കണ്ണി_mem : 0;
 }
 
-void riscv_socket_fdt_write_id(const MachineState *ms, const char *node_name,
-                               int socket_id)
+ശൂന്യം riscv_socket_fdt_write_id(സ്ഥിരം MachineState *ms, സ്ഥിരം അക്ഷരം *കണ്ണി_name,
+                               പൂർണ്ണസംഖ്യ socket_id)
 {
-    if (riscv_numa_enabled(ms)) {
-        qemu_fdt_setprop_cell(ms->fdt, node_name, "numa-node-id", socket_id);
+    എങ്കിൽ (riscv_numa_enabled(ms)) {
+        qemu_fdt_setprop_cell(ms->fdt, കണ്ണി_name, "numa-node-id", socket_id);
     }
 }
 
-void riscv_socket_fdt_write_distance_matrix(const MachineState *ms)
+ശൂന്യം riscv_socket_fdt_write_distance_matrix(സ്ഥിരം MachineState *ms)
 {
-    int i, j, idx;
-    g_autofree uint32_t *dist_matrix = NULL;
+    പൂർണ്ണസംഖ്യ i, j, idx;
+    g_autofree uint32_t *dist_matrix = ശൂന്യ;
     uint32_t dist_matrix_size;
 
-    if (riscv_numa_enabled(ms) && ms->numa_state->have_numa_distance) {
-        dist_matrix_size = riscv_socket_count(ms) * riscv_socket_count(ms);
-        dist_matrix_size *= (3 * sizeof(uint32_t));
+    എങ്കിൽ (riscv_numa_enabled(ms) && ms->numa_state->have_numa_distance) {
+        dist_matrix_size = riscv_socket_എണ്ണം(ms) * riscv_socket_എണ്ണം(ms);
+        dist_matrix_size *= (3 * വലുപ്പം(uint32_t));
         dist_matrix = g_malloc0(dist_matrix_size);
 
-        for (i = 0; i < riscv_socket_count(ms); i++) {
-            for (j = 0; j < riscv_socket_count(ms); j++) {
-                idx = (i * riscv_socket_count(ms) + j) * 3;
+        വേണ്ടി (i = 0; i < riscv_socket_എണ്ണം(ms); i++) {
+            വേണ്ടി (j = 0; j < riscv_socket_എണ്ണം(ms); j++) {
+                idx = (i * riscv_socket_എണ്ണം(ms) + j) * 3;
                 dist_matrix[idx + 0] = cpu_to_be32(i);
                 dist_matrix[idx + 1] = cpu_to_be32(j);
                 dist_matrix[idx + 2] =
@@ -197,46 +197,46 @@ CpuInstanceProperties
 riscv_numa_cpu_index_to_props(MachineState *ms, unsigned cpu_index)
 {
     MachineClass *mc = MACHINE_GET_CLASS(ms);
-    const CPUArchIdList *possible_cpus = mc->possible_cpu_arch_ids(ms);
+    സ്ഥിരം CPUArchIdList *possible_cpus = mc->possible_cpu_arch_ids(ms);
 
-    assert(cpu_index < possible_cpus->len);
-    return possible_cpus->cpus[cpu_index].props;
+    പ്രതിജ്ഞാ(cpu_index < possible_cpus->len);
+    തിരികെ possible_cpus->cpus[cpu_index].props;
 }
 
-int64_t riscv_numa_get_default_cpu_node_id(const MachineState *ms, int idx)
+int64_t riscv_numa_get_default_cpu_കണ്ണി_id(സ്ഥിരം MachineState *ms, പൂർണ്ണസംഖ്യ idx)
 {
     int64_t nidx = 0;
 
-    if (ms->numa_state->num_nodes > ms->smp.cpus) {
+    എങ്കിൽ (ms->numa_state->അക്കം_nodes > ms->smp.cpus) {
         error_report("Number of NUMA nodes (%d)"
                      " cannot exceed the number of available CPUs (%u).",
-                     ms->numa_state->num_nodes, ms->smp.cpus);
+                     ms->numa_state->അക്കം_nodes, ms->smp.cpus);
         exit(EXIT_FAILURE);
     }
-    if (ms->numa_state->num_nodes) {
-        nidx = idx / (ms->smp.cpus / ms->numa_state->num_nodes);
-        if (ms->numa_state->num_nodes <= nidx) {
-            nidx = ms->numa_state->num_nodes - 1;
+    എങ്കിൽ (ms->numa_state->അക്കം_nodes) {
+        nidx = idx / (ms->smp.cpus / ms->numa_state->അക്കം_nodes);
+        എങ്കിൽ (ms->numa_state->അക്കം_nodes <= nidx) {
+            nidx = ms->numa_state->അക്കം_nodes - 1;
         }
     }
 
-    return nidx;
+    തിരികെ nidx;
 }
 
-const CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
+സ്ഥിരം CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
 {
-    int n;
-    unsigned int max_cpus = ms->smp.max_cpus;
+    പൂർണ്ണസംഖ്യ n;
+    unsigned പൂർണ്ണസംഖ്യ max_cpus = ms->smp.max_cpus;
 
-    if (ms->possible_cpus) {
-        assert(ms->possible_cpus->len == max_cpus);
-        return ms->possible_cpus;
+    എങ്കിൽ (ms->possible_cpus) {
+        പ്രതിജ്ഞാ(ms->possible_cpus->len == max_cpus);
+        തിരികെ ms->possible_cpus;
     }
 
-    ms->possible_cpus = g_malloc0(sizeof(CPUArchIdList) +
-                                  sizeof(CPUArchId) * max_cpus);
+    ms->possible_cpus = g_malloc0(വലുപ്പം(CPUArchIdList) +
+                                  വലുപ്പം(CPUArchId) * max_cpus);
     ms->possible_cpus->len = max_cpus;
-    for (n = 0; n < ms->possible_cpus->len; n++) {
+    വേണ്ടി (n = 0; n < ms->possible_cpus->len; n++) {
         ms->possible_cpus->cpus[n].type = ms->cpu_type;
         ms->possible_cpus->cpus[n].arch_id = n;
         ms->possible_cpus->cpus[n].props.has_socket_id = true;
@@ -253,5 +253,5 @@ const CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
             n % ms->smp.threads;
     }
 
-    return ms->possible_cpus;
+    തിരികെ ms->possible_cpus;
 }

@@ -18,17 +18,17 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/cutils.h"
-#include "hw/riscv/opentitan.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "hw/core/boards.h"
-#include "hw/misc/unimp.h"
-#include "hw/riscv/boot.h"
-#include "qemu/units.h"
-#include "system/system.h"
-#include "system/address-spaces.h"
+#അന്തര്ഭാവ "qemu/osdep.h"
+#അന്തര്ഭാവ "qemu/cutils.h"
+#അന്തര്ഭാവ "hw/riscv/opentitan.h"
+#അന്തര്ഭാവ "qapi/error.h"
+#അന്തര്ഭാവ "qemu/error-report.h"
+#അന്തര്ഭാവ "hw/core/boards.h"
+#അന്തര്ഭാവ "hw/misc/unimp.h"
+#അന്തര്ഭാവ "hw/riscv/boot.h"
+#അന്തര്ഭാവ "qemu/units.h"
+#അന്തര്ഭാവ "system/system.h"
+#അന്തര്ഭാവ "system/address-spaces.h"
 
 /*
  * This version of the OpenTitan machine currently supports
@@ -38,7 +38,7 @@
  * MMIO mapping as per (specified commit):
  * lowRISC/opentitan: hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h
  */
-static const MemMapEntry ibex_memmap[] = {
+സ്ഥിതം സ്ഥിരം MemMapEntry ibex_memmap[] = {
     [IBEX_DEV_ROM] =            {  0x00008000,  0x8000      },
     [IBEX_DEV_RAM] =            {  0x10000000,  0x20000     },
     [IBEX_DEV_FLASH] =          {  0x20000000,  0x100000    },
@@ -76,16 +76,16 @@ static const MemMapEntry ibex_memmap[] = {
     [IBEX_DEV_FLASH_VIRTUAL] =  {  0x80000000,  0x80000     },
 };
 
-static void opentitan_machine_init(MachineState *machine)
+സ്ഥിതം ശൂന്യം opentitan_machine_init(MachineState *machine)
 {
     MachineClass *mc = MACHINE_GET_CLASS(machine);
     OpenTitanState *s = OPENTITAN_MACHINE(machine);
-    const MemMapEntry *memmap = ibex_memmap;
+    സ്ഥിരം MemMapEntry *memmap = ibex_memmap;
     MemoryRegion *sys_mem = get_system_memory();
     RISCVBootInfo boot_info;
 
-    if (machine->ram_size != mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    എങ്കിൽ (machine->ram_size != mc->default_ram_size) {
+        അക്ഷരം *sz = size_to_str(mc->default_ram_size);
         error_report("Invalid RAM size, should be %s", sz);
         g_free(sz);
         exit(EXIT_FAILURE);
@@ -94,27 +94,27 @@ static void opentitan_machine_init(MachineState *machine)
     /* Initialize SoC */
     object_initialize_child(OBJECT(machine), "soc", &s->soc,
                             TYPE_RISCV_IBEX_SOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&s->soc), ശൂന്യ, &error_fatal);
 
     memory_region_add_subregion(sys_mem,
         memmap[IBEX_DEV_RAM].base, machine->ram);
 
     riscv_boot_info_init(&boot_info, &s->soc.cpus);
 
-    if (machine->firmware) {
+    എങ്കിൽ (machine->firmware) {
         hwaddr firmware_load_addr = memmap[IBEX_DEV_RAM].base;
         riscv_load_firmware(machine, &boot_info, machine->firmware,
-                            &firmware_load_addr, NULL);
+                            &firmware_load_addr, ശൂന്യ);
     }
 
-    if (machine->kernel_filename) {
+    എങ്കിൽ (machine->kernel_filename) {
         riscv_load_kernel(machine, &boot_info,
                           memmap[IBEX_DEV_RAM].base,
-                          false, NULL);
+                          false, ശൂന്യ);
     }
 }
 
-static void opentitan_machine_class_init(ObjectClass *oc, const void *data)
+സ്ഥിതം ശൂന്യം opentitan_machine_class_init(ObjectClass *oc, സ്ഥിരം ശൂന്യം *data)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -126,9 +126,9 @@ static void opentitan_machine_class_init(ObjectClass *oc, const void *data)
     mc->default_ram_size = ibex_memmap[IBEX_DEV_RAM].size;
 }
 
-static void lowrisc_ibex_soc_init(Object *obj)
+സ്ഥിതം ശൂന്യം lowrisc_ibex_soc_init(Object *obj)
 {
-    LowRISCIbexSoCState *s = RISCV_IBEX_SOC(obj);
+    താഴെയുള്ള_RISCIbex_So_CState *s = RISCV_IBEX_SOC(obj);
 
     object_initialize_child(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
 
@@ -138,21 +138,21 @@ static void lowrisc_ibex_soc_init(Object *obj)
 
     object_initialize_child(obj, "timer", &s->timer, TYPE_IBEX_TIMER);
 
-    for (int i = 0; i < OPENTITAN_NUM_SPI_HOSTS; i++) {
+    വേണ്ടി (പൂർണ്ണസംഖ്യ i = 0; i < OPENTITAN_അക്കം_SPI_HOSTS; i++) {
         object_initialize_child(obj, "spi_host[*]", &s->spi_host[i],
                                 TYPE_IBEX_SPI_HOST);
     }
 }
 
-static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
+സ്ഥിതം ശൂന്യം lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
 {
-    const MemMapEntry *memmap = ibex_memmap;
+    സ്ഥിരം MemMapEntry *memmap = ibex_memmap;
     DeviceState *dev;
     SysBusDevice *busdev;
     MachineState *ms = MACHINE(qdev_get_machine());
-    LowRISCIbexSoCState *s = RISCV_IBEX_SOC(dev_soc);
+    താഴെയുള്ള_RISCIbex_So_CState *s = RISCV_IBEX_SOC(dev_soc);
     MemoryRegion *sys_mem = get_system_memory();
-    int i;
+    പൂർണ്ണസംഖ്യ i;
 
     object_property_set_str(OBJECT(&s->cpus), "cpu-type", ms->cpu_type,
                             &error_abort);
@@ -190,12 +190,12 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
     qdev_prop_set_uint32(DEVICE(&s->plic), "context-stride", 8);
     qdev_prop_set_uint32(DEVICE(&s->plic), "aperture-size", memmap[IBEX_DEV_PLIC].size);
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->plic), errp)) {
-        return;
+    എങ്കിൽ (!sysbus_realize(SYS_BUS_DEVICE(&s->plic), errp)) {
+        തിരികെ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->plic), 0, memmap[IBEX_DEV_PLIC].base);
 
-    for (i = 0; i < ms->smp.cpus; i++) {
+    വേണ്ടി (i = 0; i < ms->smp.cpus; i++) {
         CPUState *cpu = qemu_get_cpu(i);
 
         qdev_connect_gpio_out(DEVICE(&s->plic), ms->smp.cpus + i,
@@ -204,8 +204,8 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
 
     /* UART */
     qdev_prop_set_chr(DEVICE(&(s->uart)), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
-        return;
+    എങ്കിൽ (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
+        തിരികെ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->uart), 0, memmap[IBEX_DEV_UART].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->uart),
@@ -221,8 +221,8 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
                        3, qdev_get_gpio_in(DEVICE(&s->plic),
                        IBEX_UART0_RX_OVERFLOW_IRQ));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->timer), errp)) {
-        return;
+    എങ്കിൽ (!sysbus_realize(SYS_BUS_DEVICE(&s->timer), errp)) {
+        തിരികെ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->timer), 0, memmap[IBEX_DEV_TIMER].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->timer),
@@ -233,27 +233,27 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
                                            IRQ_M_TIMER));
 
     /* SPI-Hosts */
-    for (i = 0; i < OPENTITAN_NUM_SPI_HOSTS; ++i) {
+    വേണ്ടി (i = 0; i < OPENTITAN_അക്കം_SPI_HOSTS; ++i) {
         dev = DEVICE(&(s->spi_host[i]));
-        if (!sysbus_realize(SYS_BUS_DEVICE(&s->spi_host[i]), errp)) {
-            return;
+        എങ്കിൽ (!sysbus_realize(SYS_BUS_DEVICE(&s->spi_host[i]), errp)) {
+            തിരികെ;
         }
         busdev = SYS_BUS_DEVICE(dev);
         sysbus_mmio_map(busdev, 0, memmap[IBEX_DEV_SPI_HOST0 + i].base);
 
-        switch (i) {
-        case OPENTITAN_SPI_HOST0:
+        തിരഞ്ഞെടുപ്പ് (i) {
+        അവസ്ഥ OPENTITAN_SPI_HOST0:
             sysbus_connect_irq(busdev, 0, qdev_get_gpio_in(DEVICE(&s->plic),
                                 IBEX_SPI_HOST0_ERR_IRQ));
             sysbus_connect_irq(busdev, 1, qdev_get_gpio_in(DEVICE(&s->plic),
                                 IBEX_SPI_HOST0_SPI_EVENT_IRQ));
-            break;
-        case OPENTITAN_SPI_HOST1:
+            നിർത്തുക;
+        അവസ്ഥ OPENTITAN_SPI_HOST1:
             sysbus_connect_irq(busdev, 0, qdev_get_gpio_in(DEVICE(&s->plic),
                                 IBEX_SPI_HOST1_ERR_IRQ));
             sysbus_connect_irq(busdev, 1, qdev_get_gpio_in(DEVICE(&s->plic),
                                 IBEX_SPI_HOST1_SPI_EVENT_IRQ));
-            break;
+            നിർത്തുക;
         }
     }
 
@@ -311,11 +311,11 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
         memmap[IBEX_DEV_IBEX_CFG].base, memmap[IBEX_DEV_IBEX_CFG].size);
 }
 
-static const Property lowrisc_ibex_soc_props[] = {
-    DEFINE_PROP_UINT32("resetvec", LowRISCIbexSoCState, resetvec, 0x20000400),
+സ്ഥിതം സ്ഥിരം Property lowrisc_ibex_soc_props[] = {
+    DEFINE_PROP_UINT32("resetvec", താഴെയുള്ള_RISCIbex_So_CState, resetvec, 0x20000400),
 };
 
-static void lowrisc_ibex_soc_class_init(ObjectClass *oc, const void *data)
+സ്ഥിതം ശൂന്യം lowrisc_ibex_soc_class_init(ObjectClass *oc, സ്ഥിരം ശൂന്യം *data)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
@@ -325,17 +325,17 @@ static void lowrisc_ibex_soc_class_init(ObjectClass *oc, const void *data)
     dc->user_creatable = false;
 }
 
-static const TypeInfo open_titan_types[] = {
+സ്ഥിതം സ്ഥിരം TypeInfo open_titan_types[] = {
     {
         .name           = TYPE_RISCV_IBEX_SOC,
         .parent         = TYPE_DEVICE,
-        .instance_size  = sizeof(LowRISCIbexSoCState),
+        .instance_size  = വലുപ്പം(താഴെയുള്ള_RISCIbex_So_CState),
         .instance_init  = lowrisc_ibex_soc_init,
         .class_init     = lowrisc_ibex_soc_class_init,
     }, {
         .name           = TYPE_OPENTITAN_MACHINE,
         .parent         = TYPE_MACHINE,
-        .instance_size  = sizeof(OpenTitanState),
+        .instance_size  = വലുപ്പം(OpenTitanState),
         .class_init     = opentitan_machine_class_init,
     }
 };

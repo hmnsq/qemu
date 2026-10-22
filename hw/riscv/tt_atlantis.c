@@ -6,39 +6,39 @@
  * Copyright 2025 Tenstorrent, Joel Stanley <joel@jms.id.au>
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "qemu/cutils.h"
-#include "qemu/error-report.h"
-#include "qemu/guest-random.h"
-#include "qemu/units.h"
+#അന്തര്ഭാവ "qemu/osdep.h"
+#അന്തര്ഭാവ "qapi/error.h"
+#അന്തര്ഭാവ "qemu/cutils.h"
+#അന്തര്ഭാവ "qemu/error-report.h"
+#അന്തര്ഭാവ "qemu/guest-random.h"
+#അന്തര്ഭാവ "qemu/units.h"
 
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/core/sysbus.h"
+#അന്തര്ഭാവ "hw/core/boards.h"
+#അന്തര്ഭാവ "hw/core/loader.h"
+#അന്തര്ഭാവ "hw/core/qdev-properties.h"
+#അന്തര്ഭാവ "hw/core/sysbus.h"
 
-#include "target/riscv/cpu.h"
+#അന്തര്ഭാവ "target/riscv/cpu.h"
 
-#include "hw/riscv/boot.h"
-#include "hw/riscv/fdt-common.h"
-#include "hw/riscv/riscv_hart.h"
+#അന്തര്ഭാവ "hw/riscv/boot.h"
+#അന്തര്ഭാവ "hw/riscv/fdt-common.h"
+#അന്തര്ഭാവ "hw/riscv/riscv_hart.h"
 
-#include "hw/char/serial-mm.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/misc/unimp.h"
-#include "hw/misc/tt_atlantis_prcm.h"
+#അന്തര്ഭാവ "hw/char/serial-mm.h"
+#അന്തര്ഭാവ "hw/intc/riscv_aclint.h"
+#അന്തര്ഭാവ "hw/misc/unimp.h"
+#അന്തര്ഭാവ "hw/misc/tt_atlantis_prcm.h"
 
-#include "system/system.h"
-#include "system/device_tree.h"
+#അന്തര്ഭാവ "system/system.h"
+#അന്തര്ഭാവ "system/device_tree.h"
 
-#include "hw/riscv/tt_atlantis.h"
+#അന്തര്ഭാവ "hw/riscv/tt_atlantis.h"
 
-#include "aia.h"
+#അന്തര്ഭാവ "aia.h"
 
-#define TT_IRQCHIP_NUM_MSIS       255
-#define TT_IRQCHIP_NUM_SOURCES    128
-#define TT_IRQCHIP_NUM_PRIO_BITS  3
+#define TT_IRQCHIP_അക്കം_MSIS       255
+#define TT_IRQCHIP_അക്കം_SOURCES    128
+#define TT_IRQCHIP_അക്കം_PRIO_BITS  3
 #define TT_IMSIC_GUESTS           5
 #define TT_IMSIC_STRIDE           0x40000 /* Same stride for M and S */
 #define TT_IMSIC_GUEST_BITS       6
@@ -51,7 +51,7 @@ QEMU_BUILD_BUG_ON(TT_IMSIC_STRIDE != (0x1000 << TT_IMSIC_GUEST_BITS));
 #define TT_ACLINT_MTIMECMP      0x8000
 #define TT_ACLINT_TIMEBASE_FREQ 1000000000
 
-static const MemMapEntry tt_atlantis_memmap[] = {
+സ്ഥിതം സ്ഥിരം MemMapEntry tt_atlantis_memmap[] = {
     /* Keep sorted with :'<,'>!sort -g -k 4 */
     [TT_ATL_DDR_LO] =           { 0x00000000,    0x80000000 },
     [TT_ATL_BOOTROM] =          { 0x80000000,        0x2000 },
@@ -73,33 +73,33 @@ static const MemMapEntry tt_atlantis_memmap[] = {
     [TT_ATL_DDR_HI] =          { 0x100000000,  0x1000000000 },
 };
 
-static I2CBus *i2c_get_bus(TTAtlantisSoCState *s, unsigned busnr)
+സ്ഥിതം I2CBus *i2c_get_bus(TTAtlantisSoCState *s, unsigned busnr)
 {
-    assert(busnr < TT_ATL_NUM_I2C);
+    പ്രതിജ്ഞാ(busnr < TT_ATL_അക്കം_I2_C);
 
-    return s->i2c[busnr].bus;
+    തിരികെ s->i2c[busnr].bus;
 }
 
-static uint32_t fdt_phandle = 1;
-static uint32_t next_phandle(void)
+സ്ഥിതം uint32_t fdt_phandle = 1;
+സ്ഥിതം uint32_t next_phandle(ശൂന്യം)
 {
-    return fdt_phandle++;
+    തിരികെ fdt_phandle++;
 }
 
-static void create_fdt_memory(void *fdt, TTAtlantisSoCState *s)
+സ്ഥിതം ശൂന്യം create_fdt_memory(ശൂന്യം *fdt, TTAtlantisSoCState *s)
 {
     hwaddr ram_size = memory_region_size(s->dram);
     hwaddr size_lo = ram_size;
     hwaddr size_hi = 0;
 
-    if (size_lo > s->memmap[TT_ATL_DDR_LO].size) {
+    എങ്കിൽ (size_lo > s->memmap[TT_ATL_DDR_LO].size) {
         size_lo = s->memmap[TT_ATL_DDR_LO].size;
         size_hi = ram_size - size_lo;
     }
 
     riscv_create_fdt_socket_memory(fdt, s->memmap[TT_ATL_DDR_LO].base,
                                    size_lo, 0, false);
-    if (size_hi) {
+    എങ്കിൽ (size_hi) {
         /*
          * The first part of the HI address is aliased at the LO address
          * so do not include that as usable memory. Is there any way
@@ -111,21 +111,21 @@ static void create_fdt_memory(void *fdt, TTAtlantisSoCState *s)
     }
 }
 
-static void create_fdt_aclint(void *fdt, TTAtlantisSoCState *s,
+സ്ഥിതം ശൂന്യം create_fdt_aclint(ശൂന്യം *fdt, TTAtlantisSoCState *s,
                               uint32_t *intc_phandles)
 {
-    g_autofree char *name = NULL;
-    g_autofree uint32_t *aclint_mtimer_cells = NULL;
+    g_autofree അക്ഷരം *name = ശൂന്യ;
+    g_autofree uint32_t *aclint_mtimer_cells = ശൂന്യ;
     uint32_t aclint_cells_size;
     hwaddr addr;
 
-    aclint_mtimer_cells = g_new0(uint32_t, s->cpus.num_harts * 2);
+    aclint_mtimer_cells = g_new0(uint32_t, s->cpus.അക്കം_harts * 2);
 
-    for (int cpu = 0; cpu < s->cpus.num_harts; cpu++) {
+    വേണ്ടി (പൂർണ്ണസംഖ്യ cpu = 0; cpu < s->cpus.അക്കം_harts; cpu++) {
         aclint_mtimer_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         aclint_mtimer_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_M_TIMER);
     }
-    aclint_cells_size = s->cpus.num_harts * sizeof(uint32_t) * 2;
+    aclint_cells_size = s->cpus.അക്കം_harts * വലുപ്പം(uint32_t) * 2;
 
     addr = s->memmap[TT_ATL_ACLINT].base;
 
@@ -141,16 +141,16 @@ static void create_fdt_aclint(void *fdt, TTAtlantisSoCState *s,
                      aclint_mtimer_cells, aclint_cells_size);
 }
 
-static void create_fdt_one_imsic(void *fdt, const MemMapEntry *mem, int cpus,
+സ്ഥിതം ശൂന്യം create_fdt_one_imsic(ശൂന്യം *fdt, സ്ഥിരം MemMapEntry *mem, പൂർണ്ണസംഖ്യ cpus,
                                  uint32_t *intc_phandles, uint32_t msi_phandle,
-                                 int irq_line, uint32_t imsic_guest_bits)
+                                 പൂർണ്ണസംഖ്യ irq_വരി, uint32_t imsic_guest_bits)
 {
-    g_autofree char *name = NULL;
+    g_autofree അക്ഷരം *name = ശൂന്യ;
     g_autofree uint32_t *imsic_cells = g_new0(uint32_t, cpus * 2);
 
-    for (int cpu = 0; cpu < cpus; cpu++) {
+    വേണ്ടി (പൂർണ്ണസംഖ്യ cpu = 0; cpu < cpus; cpu++) {
         imsic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        imsic_cells[cpu * 2 + 1] = cpu_to_be32(irq_line);
+        imsic_cells[cpu * 2 + 1] = cpu_to_be32(irq_വരി);
     }
 
     name = g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->base);
@@ -158,81 +158,81 @@ static void create_fdt_one_imsic(void *fdt, const MemMapEntry *mem, int cpus,
     qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,imsics");
 
     qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 0);
-    qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
-    qemu_fdt_setprop(fdt, name, "msi-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, name, "interrupt-controller", ശൂന്യ, 0);
+    qemu_fdt_setprop(fdt, name, "msi-controller", ശൂന്യ, 0);
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     imsic_cells, sizeof(uint32_t) * cpus * 2);
+                     imsic_cells, വലുപ്പം(uint32_t) * cpus * 2);
     qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
-    qemu_fdt_setprop_cell(fdt, name, "riscv,num-ids", TT_IRQCHIP_NUM_MSIS);
+    qemu_fdt_setprop_cell(fdt, name, "riscv,num-ids", TT_IRQCHIP_അക്കം_MSIS);
 
-    if (imsic_guest_bits) {
+    എങ്കിൽ (imsic_guest_bits) {
         qemu_fdt_setprop_cell(fdt, name, "riscv,guest-index-bits",
                               imsic_guest_bits);
     }
     qemu_fdt_setprop_cell(fdt, name, "phandle", msi_phandle);
 }
 
-static void create_fdt_one_aplic(void *fdt,
-                                 const MemMapEntry *mem,
+സ്ഥിതം ശൂന്യം create_fdt_one_aplic(ശൂന്യം *fdt,
+                                 സ്ഥിരം MemMapEntry *mem,
                                  uint32_t msi_phandle,
                                  uint32_t *intc_phandles,
                                  uint32_t aplic_phandle,
                                  uint32_t aplic_child_phandle,
-                                 int irq_line, int num_harts)
+                                 പൂർണ്ണസംഖ്യ irq_വരി, പൂർണ്ണസംഖ്യ അക്കം_harts)
 {
-    g_autofree char *name =
+    g_autofree അക്ഷരം *name =
         g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->base);
-    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, num_harts * 2);
+    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, അക്കം_harts * 2);
 
-    for (int cpu = 0; cpu < num_harts; cpu++) {
+    വേണ്ടി (പൂർണ്ണസംഖ്യ cpu = 0; cpu < അക്കം_harts; cpu++) {
         aplic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aplic_cells[cpu * 2 + 1] = cpu_to_be32(irq_line);
+        aplic_cells[cpu * 2 + 1] = cpu_to_be32(irq_വരി);
     }
 
     qemu_fdt_add_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,aplic");
     qemu_fdt_setprop_cell(fdt, name, "#address-cells", 0);
     qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 2);
-    qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, name, "interrupt-controller", ശൂന്യ, 0);
 
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     aplic_cells, num_harts * sizeof(uint32_t) * 2);
+                     aplic_cells, അക്കം_harts * വലുപ്പം(uint32_t) * 2);
     qemu_fdt_setprop_cell(fdt, name, "msi-parent", msi_phandle);
 
     qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
     qemu_fdt_setprop_cell(fdt, name, "riscv,num-sources",
-                          TT_IRQCHIP_NUM_SOURCES);
+                          TT_IRQCHIP_അക്കം_SOURCES);
 
-    if (aplic_child_phandle) {
+    എങ്കിൽ (aplic_child_phandle) {
         qemu_fdt_setprop_cell(fdt, name, "riscv,children",
                               aplic_child_phandle);
         qemu_fdt_setprop_cells(fdt, name, "riscv,delegation",
-                               aplic_child_phandle, 1, TT_IRQCHIP_NUM_SOURCES);
+                               aplic_child_phandle, 1, TT_IRQCHIP_അക്കം_SOURCES);
     }
 
     qemu_fdt_setprop_cell(fdt, name, "phandle", aplic_phandle);
 }
 
-static void create_fdt_pmu(void *fdt, TTAtlantisSoCState *s)
+സ്ഥിതം ശൂന്യം create_fdt_pmu(ശൂന്യം *fdt, TTAtlantisSoCState *s)
 {
-    char pmu_name[] = "/pmu";
+    അക്ഷരം pmu_name[] = "/pmu";
     RISCVCPU *hart = &s->cpus.harts[0];
 
     qemu_fdt_add_subnode(fdt, pmu_name);
     qemu_fdt_setprop_string(fdt, pmu_name, "compatible", "riscv,pmu");
-    riscv_pmu_generate_fdt_node(fdt, hart->pmu_avail_ctrs, pmu_name);
+    riscv_pmu_generate_fdt_കണ്ണി(fdt, hart->pmu_avail_ctrs, pmu_name);
 }
 
-static void create_fdt_cpu(void *fdt, TTAtlantisSoCState *s,
+സ്ഥിതം ശൂന്യം create_fdt_cpu(ശൂന്യം *fdt, TTAtlantisSoCState *s,
                            uint32_t aplic_s_phandle,
                            uint32_t imsic_s_phandle)
 {
-    g_autofree uint32_t *intc_phandles = g_new0(uint32_t, s->cpus.num_harts);
-    int num_harts = s->cpus.num_harts;
+    g_autofree uint32_t *intc_phandles = g_new0(uint32_t, s->cpus.അക്കം_harts);
+    പൂർണ്ണസംഖ്യ അക്കം_harts = s->cpus.അക്കം_harts;
 
     riscv_fdt_create_cpu_socket_subnode(fdt, TT_ACLINT_TIMEBASE_FREQ);
 
-    riscv_create_fdt_socket_cpus(fdt, s->cpus.harts, 0, num_harts,
+    riscv_create_fdt_socket_cpus(fdt, s->cpus.harts, 0, അക്കം_harts,
                                  s->cpus.hartid_base, &fdt_phandle,
                                  intc_phandles, false, false);
 
@@ -240,12 +240,12 @@ static void create_fdt_cpu(void *fdt, TTAtlantisSoCState *s,
 
     /* M-level IMSIC node */
     uint32_t msi_m_phandle = next_phandle();
-    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_MIMSIC], num_harts,
+    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_MIMSIC], അക്കം_harts,
                          intc_phandles, msi_m_phandle,
                          IRQ_M_EXT, TT_IMSIC_GUEST_BITS);
 
     /* S-level IMSIC node */
-    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_SIMSIC], num_harts,
+    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_SIMSIC], അക്കം_harts,
                          intc_phandles, imsic_s_phandle,
                          IRQ_S_EXT, TT_IMSIC_GUEST_BITS);
 
@@ -255,20 +255,20 @@ static void create_fdt_cpu(void *fdt, TTAtlantisSoCState *s,
     create_fdt_one_aplic(fdt, &s->memmap[TT_ATL_MAPLIC],
                          msi_m_phandle, intc_phandles,
                          aplic_m_phandle, aplic_s_phandle,
-                         IRQ_M_EXT, num_harts);
+                         IRQ_M_EXT, അക്കം_harts);
 
     /* S-level APLIC node */
     create_fdt_one_aplic(fdt, &s->memmap[TT_ATL_SAPLIC],
                          imsic_s_phandle, intc_phandles,
                          aplic_s_phandle, 0,
-                         IRQ_S_EXT, num_harts);
+                         IRQ_S_EXT, അക്കം_harts);
 }
 
-static void create_fdt_uart(void *fdt, const MemMapEntry *mem, int irq,
-                            int irqchip_phandle, uint32_t clk_parent_phandle,
+സ്ഥിതം ശൂന്യം create_fdt_uart(ശൂന്യം *fdt, സ്ഥിരം MemMapEntry *mem, പൂർണ്ണസംഖ്യ irq,
+                            പൂർണ്ണസംഖ്യ irqchip_phandle, uint32_t clk_parent_phandle,
                             uint32_t clk_phandle)
 {
-    g_autofree char *name = g_strdup_printf("/soc/serial@%"HWADDR_PRIX,
+    g_autofree അക്ഷരം *name = g_strdup_printf("/soc/serial@%"HWADDR_PRIX,
                                             mem->base);
 
     qemu_fdt_add_subnode(fdt, name);
@@ -286,18 +286,18 @@ static void create_fdt_uart(void *fdt, const MemMapEntry *mem, int irq,
     qemu_fdt_setprop_string(fdt, "/aliases", "serial0", name);
 }
 
-static void create_fdt_rng(void *fdt)
+സ്ഥിതം ശൂന്യം create_fdt_rng(ശൂന്യം *fdt)
 {
     uint8_t rng_seed[32];
 
-    qemu_guest_getrandom_nofail(rng_seed, sizeof(rng_seed));
-    qemu_fdt_setprop(fdt, "/chosen", "rng-seed", rng_seed, sizeof(rng_seed));
+    qemu_guest_getrandom_nofail(rng_seed, വലുപ്പം(rng_seed));
+    qemu_fdt_setprop(fdt, "/chosen", "rng-seed", rng_seed, വലുപ്പം(rng_seed));
 }
 
-static void create_fdt_clk(void *fdt, const char *clock_name,
+സ്ഥിതം ശൂന്യം create_fdt_clk(ശൂന്യം *fdt, സ്ഥിരം അക്ഷരം *clock_name,
                            uint32_t freq, uint32_t phandle)
 {
-    g_autofree char *name = g_strdup_printf("/clocks/%s", clock_name);
+    g_autofree അക്ഷരം *name = g_strdup_printf("/clocks/%s", clock_name);
 
     qemu_fdt_add_path(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "fixed-clock");
@@ -307,12 +307,12 @@ static void create_fdt_clk(void *fdt, const char *clock_name,
     qemu_fdt_setprop_cell(fdt, name, "phandle", phandle);
 }
 
-static void create_fdt_i2c(void *fdt, const MemMapEntry *mem, uint32_t irq,
+സ്ഥിതം ശൂന്യം create_fdt_i2c(ശൂന്യം *fdt, സ്ഥിരം MemMapEntry *mem, uint32_t irq,
                            uint32_t irqchip_phandle,
                            uint32_t clk_parent_phandle,
                            uint32_t clk_phandle)
 {
-    g_autofree char *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX, mem->base);
+    g_autofree അക്ഷരം *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX, mem->base);
 
     qemu_fdt_add_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "snps,designware-i2c");
@@ -326,11 +326,11 @@ static void create_fdt_i2c(void *fdt, const MemMapEntry *mem, uint32_t irq,
     qemu_fdt_setprop_cell(fdt, name, "#size-cells", 0);
 }
 
-static void create_fdt_i2c_device(void *fdt, TTAtlantisSoCState *s, int bus,
-                                  const char *compat, int addr)
+സ്ഥിതം ശൂന്യം create_fdt_i2c_device(ശൂന്യം *fdt, TTAtlantisSoCState *s, പൂർണ്ണസംഖ്യ bus,
+                                  സ്ഥിരം അക്ഷരം *compat, പൂർണ്ണസംഖ്യ addr)
 {
     hwaddr base = s->memmap[TT_ATL_I2C0 + bus].base;
-    g_autofree char *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX"/sensor@%x",
+    g_autofree അക്ഷരം *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX"/sensor@%x",
                                             base, addr);
 
     qemu_fdt_add_subnode(fdt, name);
@@ -338,14 +338,14 @@ static void create_fdt_i2c_device(void *fdt, TTAtlantisSoCState *s, int bus,
     qemu_fdt_setprop_cell(fdt, name, "reg", addr);
 }
 
-static char *create_fdt_prcm(void *fdt, const MemMapEntry *mem,
-                             const char *prcm_name)
+സ്ഥിതം അക്ഷരം *create_fdt_prcm(ശൂന്യം *fdt, സ്ഥിരം MemMapEntry *mem,
+                             സ്ഥിരം അക്ഷരം *prcm_name)
 {
     hwaddr base = mem->base;
     hwaddr size = mem->size;
-    char *name = g_strdup_printf("/soc/clock-controller@%" PRIx64,
+    അക്ഷരം *name = g_strdup_printf("/soc/clock-controller@%" PRIx64,
                                  base);
-    g_autofree char *compatible =
+    g_autofree അക്ഷരം *compatible =
         g_strdup_printf("tenstorrent,atlantis-prcm-%s", prcm_name);
 
     qemu_fdt_add_subnode(fdt, name);
@@ -355,16 +355,16 @@ static char *create_fdt_prcm(void *fdt, const MemMapEntry *mem,
     qemu_fdt_setprop_cell(fdt, name, "#reset-cells", 1);
     qemu_fdt_setprop_cell(fdt, name, "phandle", next_phandle());
 
-    return name;
+    തിരികെ name;
 }
 
-static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
+സ്ഥിതം ശൂന്യം finalize_fdt(ശൂന്യം *fdt, TTAtlantisSoCState *s)
 {
     uint32_t aplic_s_phandle = next_phandle();
     uint32_t imsic_s_phandle = next_phandle();
     uint32_t osc_24m_phandle = next_phandle();
     uint32_t prcm_rcpu_phandle;
-    g_autofree char *rcpu_name, *hsio_name, *pcie_name, *mm_name;
+    g_autofree അക്ഷരം *rcpu_name, *hsio_name, *pcie_name, *mm_name;
 
     create_fdt_cpu(fdt, s, aplic_s_phandle, imsic_s_phandle);
 
@@ -383,7 +383,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     prcm_rcpu_phandle = qemu_fdt_get_phandle(fdt, rcpu_name);
     qemu_fdt_setprop_cells(fdt, rcpu_name, "clocks", osc_24m_phandle);
     qemu_fdt_setprop_cells(fdt, rcpu_name, "assigned-clocks",
-                           prcm_rcpu_phandle, TT_ATL_CLK_RCPU_ROOT,
+                           prcm_rcpu_phandle, TT_ATL_CLK_RCPU_വേര്,
                            prcm_rcpu_phandle, TT_ATL_CLK_NOCC_CLK);
     qemu_fdt_setprop_cells(fdt, rcpu_name, "assigned-clock-parents",
                            prcm_rcpu_phandle, TT_ATL_CLK_RCPU_PLL,
@@ -405,7 +405,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     create_fdt_uart(fdt, &s->memmap[TT_ATL_UART1], TT_ATL_UART1_IRQ,
                     aplic_s_phandle, prcm_rcpu_phandle, TT_ATL_CLK_UART1_PCLK);
 
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    വേണ്ടി (പൂർണ്ണസംഖ്യ i = 0; i < TT_ATL_അക്കം_I2_C; i++) {
         create_fdt_i2c(fdt,
                        &s->memmap[TT_ATL_I2C0 + i],
                        TT_ATL_I2C0_IRQ + i,
@@ -418,12 +418,12 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     create_fdt_i2c_device(fdt, s, 4, "ti,tmp105", 0x48);
 }
 
-static void create_fdt(TTAtlantisState *ams)
+സ്ഥിതം ശൂന്യം create_fdt(TTAtlantisState *ams)
 {
     MachineState *ms = MACHINE(ams);
-    int fdt_size = 0;
+    പൂർണ്ണസംഖ്യ fdt_size = 0;
 
-    ms->fdt = riscv_create_board_device_tree("Tenstorrent Atlantis RISC-V Machine",
+    ms->fdt = riscv_create_board_device_വൃക്ഷം("Tenstorrent Atlantis RISC-V Machine",
                                              "tenstorrent,atlantis", &fdt_size);
 
     qemu_fdt_add_subnode(ms->fdt, "/chosen");
@@ -435,15 +435,15 @@ static void create_fdt(TTAtlantisState *ams)
     create_fdt_pmu(ms->fdt, &ams->soc);
 }
 
-static void load_fdt(TTAtlantisState *ams)
+സ്ഥിതം ശൂന്യം load_fdt(TTAtlantisState *ams)
 {
     MachineState *ms = MACHINE(ams);
-    char **node_path;
-    Error *err = NULL;
-    int fdt_size = 0;
+    അക്ഷരം **കണ്ണി_path;
+    Error *err = ശൂന്യ;
+    പൂർണ്ണസംഖ്യ fdt_size = 0;
 
-    ms->fdt = load_device_tree(ms->dtb, &fdt_size);
-    if (!ms->fdt) {
+    ms->fdt = load_device_വൃക്ഷം(ms->dtb, &fdt_size);
+    എങ്കിൽ (!ms->fdt) {
         error_report("load_device_tree() failed");
         exit(1);
     }
@@ -451,23 +451,23 @@ static void load_fdt(TTAtlantisState *ams)
     qemu_fdt_add_path(ms->fdt, "/chosen");
 
     /* Clear memory nodes and update with the specified RAM size */
-    node_path = qemu_fdt_node_unit_path(ms->fdt, "memory", &err);
-    if (err) {
+    കണ്ണി_path = qemu_fdt_കണ്ണി_unit_path(ms->fdt, "memory", &err);
+    എങ്കിൽ (err) {
         warn_report_err(err);
-    } else {
-        for (int i = 0; node_path[i]; i++) {
+    } അല്ലെങ്കിൽ {
+        വേണ്ടി (പൂർണ്ണസംഖ്യ i = 0; കണ്ണി_path[i]; i++) {
             warn_report("Replacing device tree %s with the requested RAM size",
-                        node_path[i]);
-            qemu_fdt_nop_node(ms->fdt, node_path[i]);
+                        കണ്ണി_path[i]);
+            qemu_fdt_nop_കണ്ണി(ms->fdt, കണ്ണി_path[i]);
         }
-        g_strfreev(node_path);
+        g_strfreev(കണ്ണി_path);
     }
 
     create_fdt_memory(ms->fdt, &ams->soc);
 }
 
-static void mmio_map_unimplemented(MemoryRegion *memory, SysBusDevice *dev,
-                                   const char *name, hwaddr addr, uint64_t size)
+സ്ഥിതം ശൂന്യം mmio_map_unimplemented(MemoryRegion *memory, SysBusDevice *dev,
+                                   സ്ഥിരം അക്ഷരം *name, hwaddr addr, uint64_t size)
 {
     qdev_prop_set_string(DEVICE(dev), "name", name);
     qdev_prop_set_uint64(DEVICE(dev), "size", size);
@@ -477,7 +477,7 @@ static void mmio_map_unimplemented(MemoryRegion *memory, SysBusDevice *dev,
                                         sysbus_mmio_get_region(dev, 0), -1000);
 }
 
-static void tt_atlantis_machine_done(Notifier *n, void *data)
+സ്ഥിതം ശൂന്യം tt_atlantis_machine_done(Notifier *n, ശൂന്യം *data)
 {
     TTAtlantisState *ams = container_of(n, TTAtlantisState, machine_done);
     TTAtlantisSoCState *s = &ams->soc;
@@ -485,7 +485,7 @@ static void tt_atlantis_machine_done(Notifier *n, void *data)
     hwaddr start_addr = s->memmap[TT_ATL_DDR_LO].base;
     hwaddr mem_size;
     target_ulong firmware_end_addr, kernel_start_addr;
-    const char *firmware_name = riscv_default_firmware_name(&s->cpus);
+    സ്ഥിരം അക്ഷരം *firmware_name = riscv_default_firmware_name(&s->cpus);
     uint64_t fdt_load_addr;
     uint64_t kernel_entry;
     RISCVBootInfo boot_info;
@@ -494,12 +494,12 @@ static void tt_atlantis_machine_done(Notifier *n, void *data)
      * A user provided dtb must include everything, including
      * dynamic sysbus devices. Our FDT needs to be finalized.
      */
-    if (machine->dtb == NULL) {
+    എങ്കിൽ (machine->dtb == ശൂന്യ) {
         finalize_fdt(machine->fdt, s);
     }
 
     mem_size = machine->ram_size;
-    if (mem_size > s->memmap[TT_ATL_DDR_LO].size) {
+    എങ്കിൽ (mem_size > s->memmap[TT_ATL_DDR_LO].size) {
         mem_size = s->memmap[TT_ATL_DDR_LO].size;
     }
     riscv_boot_info_init_discontig_mem(&boot_info, &s->cpus,
@@ -508,15 +508,15 @@ static void tt_atlantis_machine_done(Notifier *n, void *data)
 
     firmware_end_addr = riscv_find_and_load_firmware(machine, &boot_info,
                                                      firmware_name,
-                                                     &start_addr, NULL);
+                                                     &start_addr, ശൂന്യ);
 
     kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                      firmware_end_addr);
-    if (machine->kernel_filename) {
+    എങ്കിൽ (machine->kernel_filename) {
         riscv_load_kernel(machine, &boot_info, kernel_start_addr,
-                          true, NULL);
-        kernel_entry = boot_info.image_low_addr;
-    } else {
+                          true, ശൂന്യ);
+        kernel_entry = boot_info.image_താഴെയുള്ള_addr;
+    } അല്ലെങ്കിൽ {
         /* If we aren't loading a payload, OpenSBI thinks we are trying to boot
          * address 0, which fails `sbi_domain_check_addr()` as that is where
          * OpenSBI is running. Instead point OpenSBI to the end of the region
@@ -539,7 +539,7 @@ static void tt_atlantis_machine_done(Notifier *n, void *data)
                               fdt_load_addr);
 }
 
-static void tt_atlantis_soc_init(Object *obj)
+സ്ഥിതം ശൂന്യം tt_atlantis_soc_init(Object *obj)
 {
     TTAtlantisSoCState *s = TT_ATLANTIS_SOC(obj);
 
@@ -561,25 +561,25 @@ static void tt_atlantis_soc_init(Object *obj)
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM],
                             TYPE_TT_ATLANTIS_PRCM_MM);
 
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    വേണ്ടി (പൂർണ്ണസംഖ്യ i = 0; i < TT_ATL_അക്കം_I2_C; i++) {
         object_initialize_child(obj, "i2c[*]", &s->i2c[i],
                                 TYPE_DESIGNWARE_I2C);
     }
 }
 
-static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
+സ്ഥിതം ശൂന്യം tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
 {
     TTAtlantisSoCState *s = TT_ATLANTIS_SOC(dev);
     ram_addr_t lo_ram_size, ram_size;
-    int hart_count = s->num_harts;
+    പൂർണ്ണസംഖ്യ hart_എണ്ണം = s->അക്കം_harts;
 
-    if (!s->memory) {
+    എങ്കിൽ (!s->memory) {
         error_setg(errp, "'memory' link is not set");
-        return;
+        തിരികെ;
     }
-    if (!s->dram) {
+    എങ്കിൽ (!s->dram) {
         error_setg(errp, "'dram' link is not set");
-        return;
+        തിരികെ;
     }
     ram_size = memory_region_size(s->dram);
 
@@ -590,34 +590,34 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
                             &error_abort);
     object_property_set_int(OBJECT(&s->cpus), "hartid-base", 0,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "num-harts", hart_count,
+    object_property_set_int(OBJECT(&s->cpus), "num-harts", hart_എണ്ണം,
                             &error_abort);
     object_property_set_int(OBJECT(&s->cpus), "resetvec",
                             s->memmap[TT_ATL_BOOTROM].base,
                             &error_abort);
     object_property_set_link(OBJECT(&s->cpus), "memory", OBJECT(s->memory),
                              &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
-        return;
+    എങ്കിൽ (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
+        തിരികെ;
     }
 
     s->irqchip = riscv_create_aia(s->memory,
                                   true, TT_IMSIC_GUESTS,
                                   TT_IMSIC_STRIDE,
                                   TT_IMSIC_STRIDE,
-                                  TT_IRQCHIP_NUM_SOURCES,
+                                  TT_IRQCHIP_അക്കം_SOURCES,
                                   &s->memmap[TT_ATL_MAPLIC],
                                   &s->memmap[TT_ATL_SAPLIC],
                                   &s->memmap[TT_ATL_MIMSIC],
                                   &s->memmap[TT_ATL_SIMSIC],
-                                  0, 0, hart_count,
-                                  TT_IRQCHIP_NUM_MSIS,
-                                  TT_IRQCHIP_NUM_PRIO_BITS);
+                                  0, 0, hart_എണ്ണം,
+                                  TT_IRQCHIP_അക്കം_MSIS,
+                                  TT_IRQCHIP_അക്കം_PRIO_BITS);
 
     riscv_aclint_mtimer_create(s->memory,
             s->memmap[TT_ATL_ACLINT].base,
             TT_ACLINT_MTIME_SIZE,
-            0, hart_count,
+            0, hart_എണ്ണം,
             TT_ACLINT_MTIMECMP,
             TT_ACLINT_MTIME,
             TT_ACLINT_TIMEBASE_FREQ, true);
@@ -628,10 +628,10 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
      * The high address is where RAM lives. It is always present and may be
      * up to 64GB. The low address is an alias of the first 2GB of that RAM.
      */
-    if (ram_size > s->memmap[TT_ATL_DDR_HI].size) {
-        g_autofree char *sz = size_to_str(s->memmap[TT_ATL_DDR_HI].size);
+    എങ്കിൽ (ram_size > s->memmap[TT_ATL_DDR_HI].size) {
+        g_autofree അക്ഷരം *sz = size_to_str(s->memmap[TT_ATL_DDR_HI].size);
         error_setg(errp, "RAM size is too large, maximum is %s", sz);
-        return;
+        തിരികെ;
     }
 
     memory_region_init_alias(&s->ram_hi, OBJECT(s), "ram.high", s->dram,
@@ -646,9 +646,9 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
                                 s->memmap[TT_ATL_DDR_LO].base, &s->ram_lo);
 
     /* Boot ROM */
-    if (!memory_region_init_rom(&s->bootrom, OBJECT(s), "tt-atlantis.bootrom",
+    എങ്കിൽ (!memory_region_init_rom(&s->bootrom, OBJECT(s), "tt-atlantis.bootrom",
                                 s->memmap[TT_ATL_BOOTROM].size, errp)) {
-        return;
+        തിരികെ;
     }
     memory_region_add_subregion(s->memory, s->memmap[TT_ATL_BOOTROM].base,
                                 &s->bootrom);
@@ -659,36 +659,36 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
                    115200, serial_hd(0), DEVICE_LITTLE_ENDIAN);
 
     /* 4 PRCM blocks */
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]),
+    എങ്കിൽ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]),
                         errp)) {
-        return;
+        തിരികെ;
     }
     memory_region_add_subregion(
         s->memory, s->memmap[TT_ATL_PRCM_RCPU].base,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]),
+    എങ്കിൽ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]),
                         errp)) {
-        return;
+        തിരികെ;
     }
     memory_region_add_subregion(
         s->memory, s->memmap[TT_ATL_PRCM_HSIO].base,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]),
+    എങ്കിൽ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]),
                         errp)) {
-        return;
+        തിരികെ;
     }
     memory_region_add_subregion(
         s->memory, s->memmap[TT_ATL_PRCM_PCIE].base,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]),
+    എങ്കിൽ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]),
                         errp)) {
-        return;
+        തിരികെ;
     }
     memory_region_add_subregion(
         s->memory, s->memmap[TT_ATL_PRCM_MM].base,
@@ -709,11 +709,11 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
                            s->memmap[TT_ATL_UART1].size);
 
     /* I2C */
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    വേണ്ടി (പൂർണ്ണസംഖ്യ i = 0; i < TT_ATL_അക്കം_I2_C; i++) {
         SysBusDevice *sbd = SYS_BUS_DEVICE(&s->i2c[i]);
 
-        if (!sysbus_realize(sbd, errp)) {
-            return;
+        എങ്കിൽ (!sysbus_realize(sbd, errp)) {
+            തിരികെ;
         }
         memory_region_add_subregion(s->memory,
                                     s->memmap[TT_ATL_I2C0 + i].base,
@@ -723,16 +723,16 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
     }
 }
 
-static const Property tt_atlantis_soc_props[] = {
+സ്ഥിതം സ്ഥിരം Property tt_atlantis_soc_props[] = {
     DEFINE_PROP_STRING("cpu-type", TTAtlantisSoCState, cpu_type),
-    DEFINE_PROP_UINT32("num-harts", TTAtlantisSoCState, num_harts, 8),
+    DEFINE_PROP_UINT32("num-harts", TTAtlantisSoCState, അക്കം_harts, 8),
     DEFINE_PROP_LINK("memory", TTAtlantisSoCState, memory,
                      TYPE_MEMORY_REGION, MemoryRegion *),
     DEFINE_PROP_LINK("dram", TTAtlantisSoCState, dram,
                      TYPE_MEMORY_REGION, MemoryRegion *),
 };
 
-static void tt_atlantis_soc_class_init(ObjectClass *oc, const void *data)
+സ്ഥിതം ശൂന്യം tt_atlantis_soc_class_init(ObjectClass *oc, സ്ഥിരം ശൂന്യം *data)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
@@ -742,7 +742,7 @@ static void tt_atlantis_soc_class_init(ObjectClass *oc, const void *data)
     dc->user_creatable = false;
 }
 
-static void tt_atlantis_machine_init(MachineState *machine)
+സ്ഥിതം ശൂന്യം tt_atlantis_machine_init(MachineState *machine)
 {
     TTAtlantisState *ams = TT_ATLANTIS_MACHINE(machine);
     TTAtlantisSoCState *s = &ams->soc;
@@ -763,16 +763,16 @@ static void tt_atlantis_machine_init(MachineState *machine)
     object_property_set_link(OBJECT(&ams->soc), "dram", OBJECT(machine->ram),
                              &error_abort);
 
-    qdev_realize(DEVICE(&ams->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&ams->soc), ശൂന്യ, &error_fatal);
 
     /* I2C peripherals: qemu specific */
     i2c_slave_create_simple(i2c_get_bus(s, 0), "ds1338", 0x6f);
     i2c_slave_create_simple(i2c_get_bus(s, 4), "tmp105", 0x48);
 
     /* Load or create device tree */
-    if (machine->dtb) {
+    എങ്കിൽ (machine->dtb) {
         load_fdt(ams);
-    } else {
+    } അല്ലെങ്കിൽ {
         create_fdt(ams);
     }
 
@@ -780,7 +780,7 @@ static void tt_atlantis_machine_init(MachineState *machine)
     qemu_add_machine_init_done_notifier(&ams->machine_done);
 }
 
-static void tt_atlantis_machine_class_init(ObjectClass *oc, const void *data)
+സ്ഥിതം ശൂന്യം tt_atlantis_machine_class_init(ObjectClass *oc, സ്ഥിരം ശൂന്യം *data)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -795,18 +795,18 @@ static void tt_atlantis_machine_class_init(ObjectClass *oc, const void *data)
     mc->default_ram_id = "tt_atlantis.ram";
 }
 
-static const TypeInfo tt_atlantis_types[] = {
+സ്ഥിതം സ്ഥിരം TypeInfo tt_atlantis_types[] = {
     {
         .name       = TYPE_TT_ATLANTIS_SOC,
         .parent     = TYPE_DEVICE,
-        .instance_size = sizeof(TTAtlantisSoCState),
+        .instance_size = വലുപ്പം(TTAtlantisSoCState),
         .instance_init = tt_atlantis_soc_init,
         .class_init = tt_atlantis_soc_class_init,
     }, {
         .name       = MACHINE_TYPE_NAME("tt-atlantis"),
         .parent     = TYPE_MACHINE,
         .class_init = tt_atlantis_machine_class_init,
-        .instance_size = sizeof(TTAtlantisState),
+        .instance_size = വലുപ്പം(TTAtlantisState),
     },
 };
 
