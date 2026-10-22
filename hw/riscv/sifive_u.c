@@ -98,14 +98,14 @@ static void create_fdt(SiFiveUState *s, const MemMapEntry *memmap,
 {
     MachineState *ms = MACHINE(s);
     void *fdt;
-    int cpu;
+    ကိန်းပြည့် cpu;
     uint32_t *cells, cells_length;
-    char *nodename;
+    var_na *nodename;
     uint32_t plic_phandle, prci_phandle, gpio_phandle, phandle = 1;
     uint32_t hfclk_phandle, rtcclk_phandle, phy_phandle;
-    static const char * const ethclk_names[2] = { "pclk", "hclk" };
+    static const var_na * const ethclk_names[2] = { "pclk", "hclk" };
     g_autofree uint32_t *intc_phandles = g_new0(uint32_t, ms->smp.cpus);
-    g_autofree char *clust_name = NULL;
+    g_autofree var_na *clust_name = NULL;
 
     fdt = ms->fdt = riscv_create_board_device_tree(
         "SiFive HiFive Unleashed A00",
@@ -142,19 +142,19 @@ static void create_fdt(SiFiveUState *s, const MemMapEntry *memmap,
     clust_name = g_strdup_printf("/cpus/cpu-map/cluster%d", 0);
     qemu_fdt_add_subnode(fdt, clust_name);
 
-    for (cpu = ms->smp.cpus - 1; cpu >= 0; cpu--) {
+    အတွက် (cpu = ms->smp.cpus - 1; cpu >= 0; cpu--) {
         nodename = g_strdup_printf("/cpus/cpu@%d", cpu);
         qemu_fdt_add_subnode(fdt, nodename);
 
         /* cpu 0 is the management hart that does not have mmu */
-        if (cpu != 0) {
-            if (is_32_bit) {
+        အကယ်၍ (cpu != 0) {
+            အကယ်၍ (is_32_bit) {
                 qemu_fdt_setprop_string(fdt, nodename, "mmu-type", "riscv,sv32");
-            } else {
+            } မဟုတ်ပါက {
                 qemu_fdt_setprop_string(fdt, nodename, "mmu-type", "riscv,sv39");
             }
             riscv_isa_write_fdt(&s->soc.u_cpus.harts[cpu - 1], fdt, nodename);
-        } else {
+        } မဟုတ်ပါက {
             riscv_isa_write_fdt(&s->soc.e_cpus.harts[0], fdt, nodename);
         }
 
@@ -197,12 +197,12 @@ static void create_fdt(SiFiveUState *s, const MemMapEntry *memmap,
     plic_phandle = phandle++;
     cells_length = ms->smp.cpus * 4 - 2;
     cells =  g_new0(uint32_t, cells_length);
-    for (cpu = 0; cpu < ms->smp.cpus; cpu++) {
+    အတွက် (cpu = 0; cpu < ms->smp.cpus; cpu++) {
         /* cpu 0 is the management hart that does not have S-mode */
-        if (cpu == 0) {
+        အကယ်၍ (cpu == 0) {
             cells[0] = cpu_to_be32(intc_phandles[cpu]);
             cells[1] = cpu_to_be32(IRQ_M_EXT);
-        } else {
+        } မဟုတ်ပါက {
             cells[cpu * 4 - 2] = cpu_to_be32(intc_phandles[cpu]);
             cells[cpu * 4 - 1] = cpu_to_be32(IRQ_M_EXT);
             cells[cpu * 4 + 0] = cpu_to_be32(intc_phandles[cpu]);
@@ -214,7 +214,7 @@ static void create_fdt(SiFiveUState *s, const MemMapEntry *memmap,
                           memmap[SIFIVE_U_DEV_PLIC].size,
                           plic_phandle, SIFIVE_U_PLIC_INT_CELLS,
                           SIFIVE_U_PLIC_ADDR_CELLS, cells,
-                          cells_length * sizeof(uint32_t),
+                          cells_length * parimaa_na(uint32_t),
                           SIFIVE_U_PLIC_NUM_SOURCES - 1, false, 0);
     g_free(cells);
 
@@ -352,7 +352,7 @@ static void create_fdt(SiFiveUState *s, const MemMapEntry *memmap,
     qemu_fdt_setprop_cells(fdt, nodename, "clocks",
         prci_phandle, PRCI_CLK_GEMGXLPLL, prci_phandle, PRCI_CLK_GEMGXLPLL);
     qemu_fdt_setprop_string_array(fdt, nodename, "clock-names",
-        (char **)&ethclk_names, ARRAY_SIZE(ethclk_names));
+        (var_na **)&ethclk_names, ARRAY_SIZE(ethclk_names));
     qemu_fdt_setprop(fdt, nodename, "local-mac-address",
         s->soc.gem.conf.macaddr.a, ETH_ALEN);
     qemu_fdt_setprop_cell(fdt, nodename, "#address-cells", 1);
@@ -436,10 +436,10 @@ static void create_fdt(SiFiveUState *s, const MemMapEntry *memmap,
     g_free(nodename);
 }
 
-static void sifive_u_machine_reset(void *opaque, int n, int level)
+static void sifive_u_machine_reset(void *opaque, ကိန်းပြည့် n, ကိန်းပြည့် level)
 {
     /* gpio pin active low triggers reset */
-    if (!level) {
+    အကယ်၍ (!level) {
         qemu_system_reset_request(SHUTDOWN_CAUSE_GUEST_RESET);
     }
 }
@@ -453,10 +453,10 @@ static void sifive_u_machine_init(MachineState *machine)
     hwaddr start_addr = memmap[SIFIVE_U_DEV_DRAM].base;
     hwaddr firmware_end_addr;
     vaddr kernel_start_addr;
-    const char *firmware_name;
+    const var_na *firmware_name;
     uint32_t start_addr_hi32 = 0x00000000;
     uint32_t fdt_load_addr_hi32 = 0x00000000;
-    int i;
+    ကိန်းပြည့် i;
     uint64_t fdt_load_addr;
     uint64_t kernel_entry;
     DriveInfo *dinfo;
@@ -488,17 +488,17 @@ static void sifive_u_machine_init(MachineState *machine)
                           qemu_allocate_irq(sifive_u_machine_reset, NULL, 0));
 
     /* load/create device tree */
-    if (machine->dtb) {
+    အကယ်၍ (machine->dtb) {
         machine->fdt = load_device_tree(machine->dtb, &s->fdt_size);
-        if (!machine->fdt) {
+        အကယ်၍ (!machine->fdt) {
             error_report("load_device_tree() failed");
             exit(1);
         }
-    } else {
+    } မဟုတ်ပါက {
         create_fdt(s, memmap, riscv_is_32bit(&s->soc.u_cpus));
     }
 
-    if (s->start_in_flash) {
+    အကယ်၍ (s->start_in_flash) {
         /*
          * If start_in_flash property is given, assign s->msel to a value
          * that representing booting from QSPI0 memory-mapped flash.
@@ -513,16 +513,16 @@ static void sifive_u_machine_init(MachineState *machine)
     }
 
     switch (s->msel) {
-    case MSEL_MEMMAP_QSPI0_FLASH:
+    pak_sa MSEL_MEMMAP_QSPI0_FLASH:
         start_addr = memmap[SIFIVE_U_DEV_FLASH0].base;
-        break;
-    case MSEL_L2LIM_QSPI0_FLASH:
-    case MSEL_L2LIM_QSPI2_SD:
+        bha_nga;
+    pak_sa MSEL_L2LIM_QSPI0_FLASH:
+    pak_sa MSEL_L2LIM_QSPI2_SD:
         start_addr = memmap[SIFIVE_U_DEV_L2LIM].base;
-        break;
+        bha_nga;
     default:
         start_addr = memmap[SIFIVE_U_DEV_DRAM].base;
-        break;
+        bha_nga;
     }
 
     riscv_boot_info_init(&boot_info, &s->soc.u_cpus);
@@ -532,13 +532,13 @@ static void sifive_u_machine_init(MachineState *machine)
                                                      firmware_name,
                                                      &start_addr, NULL);
 
-    if (machine->kernel_filename) {
+    အကယ်၍ (machine->kernel_filename) {
         kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                          firmware_end_addr);
         riscv_load_kernel(machine, &boot_info, kernel_start_addr,
                           true, NULL);
         kernel_entry = boot_info.image_low_addr;
-    } else {
+    } မဟုတ်ပါက {
        /*
         * If dynamic firmware is used, it doesn't know where is the next mode
         * if kernel argument is not set.
@@ -551,7 +551,7 @@ static void sifive_u_machine_init(MachineState *machine)
                                            machine, &boot_info);
     riscv_load_fdt(fdt_load_addr, machine->fdt);
 
-    if (!riscv_is_32bit(&s->soc.u_cpus)) {
+    အကယ်၍ (!riscv_is_32bit(&s->soc.u_cpus)) {
         start_addr_hi32 = (uint64_t)start_addr >> 32;
         fdt_load_addr_hi32 = fdt_load_addr >> 32;
     }
@@ -573,31 +573,31 @@ static void sifive_u_machine_init(MachineState *machine)
                                        /* fw_dyn: */
     };
 
-    if (riscv_is_32bit(&s->soc.u_cpus)) {
+    အကယ်၍ (riscv_is_32bit(&s->soc.u_cpus)) {
         reset_vec[4] = 0x0242a583;     /*     lw     a1, 36(t0) */
         reset_vec[5] = 0x01c2a283;     /*     lw     t0, 28(t0) */
-    } else {
+    } မဟုတ်ပါက {
         reset_vec[4] = 0x0242b583;     /*     ld     a1, 36(t0) */
         reset_vec[5] = 0x01c2b283;     /*     ld     t0, 28(t0) */
     }
 
 
     /* copy in the reset vector in little_endian byte order */
-    for (i = 0; i < ARRAY_SIZE(reset_vec); i++) {
+    အတွက် (i = 0; i < ARRAY_SIZE(reset_vec); i++) {
         reset_vec[i] = cpu_to_le32(reset_vec[i]);
     }
-    rom_add_blob_fixed_as("mrom.reset", reset_vec, sizeof(reset_vec),
+    rom_add_blob_fixed_as("mrom.reset", reset_vec, parimaa_na(reset_vec),
                           memmap[SIFIVE_U_DEV_MROM].base, &address_space_memory);
 
     riscv_rom_copy_firmware_info(machine, &s->soc.u_cpus,
                                  memmap[SIFIVE_U_DEV_MROM].base,
                                  memmap[SIFIVE_U_DEV_MROM].size,
-                                 sizeof(reset_vec), kernel_entry);
+                                 parimaa_na(reset_vec), kernel_entry);
 
     /* Connect an SPI flash to SPI0 */
     flash_dev = qdev_new("is25wp256");
     dinfo = drive_get(IF_MTD, 0, 0);
-    if (dinfo) {
+    အကယ်၍ (dinfo) {
         qdev_prop_set_drive_err(flash_dev, "drive",
                                 blk_by_legacy_dinfo(dinfo),
                                 &error_fatal);
@@ -626,7 +626,7 @@ static bool sifive_u_machine_get_start_in_flash(Object *obj, Error **errp)
 {
     SiFiveUState *s = RISCV_U_MACHINE(obj);
 
-    return s->start_in_flash;
+    ပြန်ပေး s->start_in_flash;
 }
 
 static void sifive_u_machine_set_start_in_flash(Object *obj, bool value, Error **errp)
@@ -680,7 +680,7 @@ static const TypeInfo sifive_u_machine_typeinfo = {
     .parent     = TYPE_MACHINE,
     .class_init = sifive_u_machine_class_init,
     .instance_init = sifive_u_machine_instance_init,
-    .instance_size = sizeof(SiFiveUState),
+    .instance_size = parimaa_na(SiFiveUState),
 };
 
 static void sifive_u_machine_init_register_types(void)
@@ -729,8 +729,8 @@ static void sifive_u_soc_realize(DeviceState *dev, Error **errp)
     MemoryRegion *system_memory = get_system_memory();
     MemoryRegion *mask_rom = g_new(MemoryRegion, 1);
     MemoryRegion *l2lim_mem = g_new(MemoryRegion, 1);
-    char *plic_hart_config;
-    int i, j;
+    var_na *plic_hart_config;
+    ကိန်းပြည့် i, j;
 
     qdev_prop_set_uint32(DEVICE(&s->u_cpus), "num-harts", ms->smp.cpus - 1);
     qdev_prop_set_uint32(DEVICE(&s->u_cpus), "hartid-base", 1);
@@ -798,14 +798,14 @@ static void sifive_u_soc_realize(DeviceState *dev, Error **errp)
         RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
         CLINT_TIMEBASE_FREQ, false);
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prci), errp)) {
-        return;
+    အကယ်၍ (!sysbus_realize(SYS_BUS_DEVICE(&s->prci), errp)) {
+        ပြန်ပေး;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->prci), 0, memmap[SIFIVE_U_DEV_PRCI].base);
 
     qdev_prop_set_uint32(DEVICE(&s->gpio), "ngpio", 16);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gpio), errp)) {
-        return;
+    အကယ်၍ (!sysbus_realize(SYS_BUS_DEVICE(&s->gpio), errp)) {
+        ပြန်ပေး;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->gpio), 0, memmap[SIFIVE_U_DEV_GPIO].base);
 
@@ -813,7 +813,7 @@ static void sifive_u_soc_realize(DeviceState *dev, Error **errp)
     qdev_pass_gpios(DEVICE(&s->gpio), dev, NULL);
 
     /* Connect GPIO interrupts to the PLIC */
-    for (i = 0; i < 16; i++) {
+    အတွက် (i = 0; i < 16; i++) {
         sysbus_connect_irq(SYS_BUS_DEVICE(&s->gpio), i,
                            qdev_get_gpio_in(DEVICE(s->plic),
                                             SIFIVE_U_GPIO_IRQ0 + i));
@@ -824,38 +824,38 @@ static void sifive_u_soc_realize(DeviceState *dev, Error **errp)
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->dma), 0, memmap[SIFIVE_U_DEV_PDMA].base);
 
     /* Connect PDMA interrupts to the PLIC */
-    for (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
+    အတွက် (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
         sysbus_connect_irq(SYS_BUS_DEVICE(&s->dma), i,
                            qdev_get_gpio_in(DEVICE(s->plic),
                                             SIFIVE_U_PDMA_IRQ0 + i));
     }
 
     qdev_prop_set_uint32(DEVICE(&s->otp), "serial", s->serial);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->otp), errp)) {
-        return;
+    အကယ်၍ (!sysbus_realize(SYS_BUS_DEVICE(&s->otp), errp)) {
+        ပြန်ပေး;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->otp), 0, memmap[SIFIVE_U_DEV_OTP].base);
 
     qemu_configure_nic_device(DEVICE(&s->gem), true, NULL);
     object_property_set_int(OBJECT(&s->gem), "revision", GEM_REVISION,
                             &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gem), errp)) {
-        return;
+    အကယ်၍ (!sysbus_realize(SYS_BUS_DEVICE(&s->gem), errp)) {
+        ပြန်ပေး;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->gem), 0, memmap[SIFIVE_U_DEV_GEM].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->gem), 0,
                        qdev_get_gpio_in(DEVICE(s->plic), SIFIVE_U_GEM_IRQ));
 
     /* PWM */
-    for (i = 0; i < 2; i++) {
-        if (!sysbus_realize(SYS_BUS_DEVICE(&s->pwm[i]), errp)) {
-            return;
+    အတွက် (i = 0; i < 2; i++) {
+        အကယ်၍ (!sysbus_realize(SYS_BUS_DEVICE(&s->pwm[i]), errp)) {
+            ပြန်ပေး;
         }
         sysbus_mmio_map(SYS_BUS_DEVICE(&s->pwm[i]), 0,
                                 memmap[SIFIVE_U_DEV_PWM0].base + (0x1000 * i));
 
         /* Connect PWM interrupts to the PLIC */
-        for (j = 0; j < SIFIVE_PWM_IRQS; j++) {
+        အတွက် (j = 0; j < SIFIVE_PWM_IRQS; j++) {
             sysbus_connect_irq(SYS_BUS_DEVICE(&s->pwm[i]), j,
                                qdev_get_gpio_in(DEVICE(s->plic),
                                         SIFIVE_U_PWM0_IRQ0 + (i * 4) + j));
@@ -901,7 +901,7 @@ static void sifive_u_soc_class_init(ObjectClass *oc, const void *data)
 static const TypeInfo sifive_u_soc_type_info = {
     .name = TYPE_RISCV_U_SOC,
     .parent = TYPE_DEVICE,
-    .instance_size = sizeof(SiFiveUSoCState),
+    .instance_size = parimaa_na(SiFiveUSoCState),
     .instance_init = sifive_u_soc_instance_init,
     .class_init = sifive_u_soc_class_init,
 };

@@ -14,7 +14,7 @@
 uint32_t imsic_num_bits(uint32_t count);
 
 DeviceState *riscv_create_aia(MemoryRegion *container,
-                             bool msimode, int aia_guests,
+                             bool msimode, ကိန်းပြည့် aia_guests,
                              uint32_t m_imsic_stride,
                              uint32_t s_imsic_stride,
                              uint16_t num_sources,
@@ -22,7 +22,7 @@ DeviceState *riscv_create_aia(MemoryRegion *container,
                              const MemMapEntry *aplic_s,
                              const MemMapEntry *imsic_m,
                              const MemMapEntry *imsic_s,
-                             int socket, int base_hartid, int hart_count,
+                             ကိန်းပြည့် socket, ကိန်းပြည့် base_hartid, ကိန်းပြည့် hart_count,
                              uint32_t num_msis, uint32_t num_prio_bits);
 
 #endif
