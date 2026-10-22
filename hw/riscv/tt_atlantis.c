@@ -77,13 +77,13 @@ static I2CBus *i2c_get_bus(TTAtlantisSoCState *s, unsigned busnr)
 {
     assert(busnr < TT_ATL_NUM_I2C);
 
-    return s->i2c[busnr].bus;
+    ᨀᨘᨒ s->i2c[busnr].bus;
 }
 
 static uint32_t fdt_phandle = 1;
 static uint32_t next_phandle(void)
 {
-    return fdt_phandle++;
+    ᨀᨘᨒ fdt_phandle++;
 }
 
 static void create_fdt_memory(void *fdt, TTAtlantisSoCState *s)
@@ -92,14 +92,14 @@ static void create_fdt_memory(void *fdt, TTAtlantisSoCState *s)
     hwaddr size_lo = ram_size;
     hwaddr size_hi = 0;
 
-    if (size_lo > s->memmap[TT_ATL_DDR_LO].size) {
+    ᨀᨘ (size_lo > s->memmap[TT_ATL_DDR_LO].size) {
         size_lo = s->memmap[TT_ATL_DDR_LO].size;
         size_hi = ram_size - size_lo;
     }
 
     riscv_create_fdt_socket_memory(fdt, s->memmap[TT_ATL_DDR_LO].base,
                                    size_lo, 0, false);
-    if (size_hi) {
+    ᨀᨘ (size_hi) {
         /*
          * The first part of the HI address is aliased at the LO address
          * so do not include that as usable memory. Is there any way
@@ -114,18 +114,18 @@ static void create_fdt_memory(void *fdt, TTAtlantisSoCState *s)
 static void create_fdt_aclint(void *fdt, TTAtlantisSoCState *s,
                               uint32_t *intc_phandles)
 {
-    g_autofree char *name = NULL;
+    g_autofree var_na *name = NULL;
     g_autofree uint32_t *aclint_mtimer_cells = NULL;
     uint32_t aclint_cells_size;
     hwaddr addr;
 
     aclint_mtimer_cells = g_new0(uint32_t, s->cpus.num_harts * 2);
 
-    for (int cpu = 0; cpu < s->cpus.num_harts; cpu++) {
+    for (puur_naa_nka cpu = 0; cpu < s->cpus.num_harts; cpu++) {
         aclint_mtimer_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         aclint_mtimer_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_M_TIMER);
     }
-    aclint_cells_size = s->cpus.num_harts * sizeof(uint32_t) * 2;
+    aclint_cells_size = s->cpus.num_harts * parimaa_na(uint32_t) * 2;
 
     addr = s->memmap[TT_ATL_ACLINT].base;
 
@@ -141,14 +141,14 @@ static void create_fdt_aclint(void *fdt, TTAtlantisSoCState *s,
                      aclint_mtimer_cells, aclint_cells_size);
 }
 
-static void create_fdt_one_imsic(void *fdt, const MemMapEntry *mem, int cpus,
+static void create_fdt_one_imsic(void *fdt, const MemMapEntry *mem, puur_naa_nka cpus,
                                  uint32_t *intc_phandles, uint32_t msi_phandle,
-                                 int irq_line, uint32_t imsic_guest_bits)
+                                 puur_naa_nka irq_line, uint32_t imsic_guest_bits)
 {
-    g_autofree char *name = NULL;
+    g_autofree var_na *name = NULL;
     g_autofree uint32_t *imsic_cells = g_new0(uint32_t, cpus * 2);
 
-    for (int cpu = 0; cpu < cpus; cpu++) {
+    for (puur_naa_nka cpu = 0; cpu < cpus; cpu++) {
         imsic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         imsic_cells[cpu * 2 + 1] = cpu_to_be32(irq_line);
     }
@@ -161,11 +161,11 @@ static void create_fdt_one_imsic(void *fdt, const MemMapEntry *mem, int cpus,
     qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
     qemu_fdt_setprop(fdt, name, "msi-controller", NULL, 0);
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     imsic_cells, sizeof(uint32_t) * cpus * 2);
+                     imsic_cells, parimaa_na(uint32_t) * cpus * 2);
     qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
     qemu_fdt_setprop_cell(fdt, name, "riscv,num-ids", TT_IRQCHIP_NUM_MSIS);
 
-    if (imsic_guest_bits) {
+    ᨀᨘ (imsic_guest_bits) {
         qemu_fdt_setprop_cell(fdt, name, "riscv,guest-index-bits",
                               imsic_guest_bits);
     }
@@ -178,13 +178,13 @@ static void create_fdt_one_aplic(void *fdt,
                                  uint32_t *intc_phandles,
                                  uint32_t aplic_phandle,
                                  uint32_t aplic_child_phandle,
-                                 int irq_line, int num_harts)
+                                 puur_naa_nka irq_line, puur_naa_nka num_harts)
 {
-    g_autofree char *name =
+    g_autofree var_na *name =
         g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->base);
     g_autofree uint32_t *aplic_cells = g_new0(uint32_t, num_harts * 2);
 
-    for (int cpu = 0; cpu < num_harts; cpu++) {
+    for (puur_naa_nka cpu = 0; cpu < num_harts; cpu++) {
         aplic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         aplic_cells[cpu * 2 + 1] = cpu_to_be32(irq_line);
     }
@@ -196,14 +196,14 @@ static void create_fdt_one_aplic(void *fdt,
     qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
 
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     aplic_cells, num_harts * sizeof(uint32_t) * 2);
+                     aplic_cells, num_harts * parimaa_na(uint32_t) * 2);
     qemu_fdt_setprop_cell(fdt, name, "msi-parent", msi_phandle);
 
     qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
     qemu_fdt_setprop_cell(fdt, name, "riscv,num-sources",
                           TT_IRQCHIP_NUM_SOURCES);
 
-    if (aplic_child_phandle) {
+    ᨀᨘ (aplic_child_phandle) {
         qemu_fdt_setprop_cell(fdt, name, "riscv,children",
                               aplic_child_phandle);
         qemu_fdt_setprop_cells(fdt, name, "riscv,delegation",
@@ -215,7 +215,7 @@ static void create_fdt_one_aplic(void *fdt,
 
 static void create_fdt_pmu(void *fdt, TTAtlantisSoCState *s)
 {
-    char pmu_name[] = "/pmu";
+    var_na pmu_name[] = "/pmu";
     RISCVCPU *hart = &s->cpus.harts[0];
 
     qemu_fdt_add_subnode(fdt, pmu_name);
@@ -228,7 +228,7 @@ static void create_fdt_cpu(void *fdt, TTAtlantisSoCState *s,
                            uint32_t imsic_s_phandle)
 {
     g_autofree uint32_t *intc_phandles = g_new0(uint32_t, s->cpus.num_harts);
-    int num_harts = s->cpus.num_harts;
+    puur_naa_nka num_harts = s->cpus.num_harts;
 
     riscv_fdt_create_cpu_socket_subnode(fdt, TT_ACLINT_TIMEBASE_FREQ);
 
@@ -264,11 +264,11 @@ static void create_fdt_cpu(void *fdt, TTAtlantisSoCState *s,
                          IRQ_S_EXT, num_harts);
 }
 
-static void create_fdt_uart(void *fdt, const MemMapEntry *mem, int irq,
-                            int irqchip_phandle, uint32_t clk_parent_phandle,
+static void create_fdt_uart(void *fdt, const MemMapEntry *mem, puur_naa_nka irq,
+                            puur_naa_nka irqchip_phandle, uint32_t clk_parent_phandle,
                             uint32_t clk_phandle)
 {
-    g_autofree char *name = g_strdup_printf("/soc/serial@%"HWADDR_PRIX,
+    g_autofree var_na *name = g_strdup_printf("/soc/serial@%"HWADDR_PRIX,
                                             mem->base);
 
     qemu_fdt_add_subnode(fdt, name);
@@ -290,14 +290,14 @@ static void create_fdt_rng(void *fdt)
 {
     uint8_t rng_seed[32];
 
-    qemu_guest_getrandom_nofail(rng_seed, sizeof(rng_seed));
-    qemu_fdt_setprop(fdt, "/chosen", "rng-seed", rng_seed, sizeof(rng_seed));
+    qemu_guest_getrandom_nofail(rng_seed, parimaa_na(rng_seed));
+    qemu_fdt_setprop(fdt, "/chosen", "rng-seed", rng_seed, parimaa_na(rng_seed));
 }
 
-static void create_fdt_clk(void *fdt, const char *clock_name,
+static void create_fdt_clk(void *fdt, const var_na *clock_name,
                            uint32_t freq, uint32_t phandle)
 {
-    g_autofree char *name = g_strdup_printf("/clocks/%s", clock_name);
+    g_autofree var_na *name = g_strdup_printf("/clocks/%s", clock_name);
 
     qemu_fdt_add_path(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "fixed-clock");
@@ -312,7 +312,7 @@ static void create_fdt_i2c(void *fdt, const MemMapEntry *mem, uint32_t irq,
                            uint32_t clk_parent_phandle,
                            uint32_t clk_phandle)
 {
-    g_autofree char *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX, mem->base);
+    g_autofree var_na *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX, mem->base);
 
     qemu_fdt_add_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "snps,designware-i2c");
@@ -326,11 +326,11 @@ static void create_fdt_i2c(void *fdt, const MemMapEntry *mem, uint32_t irq,
     qemu_fdt_setprop_cell(fdt, name, "#size-cells", 0);
 }
 
-static void create_fdt_i2c_device(void *fdt, TTAtlantisSoCState *s, int bus,
-                                  const char *compat, int addr)
+static void create_fdt_i2c_device(void *fdt, TTAtlantisSoCState *s, puur_naa_nka bus,
+                                  const var_na *compat, puur_naa_nka addr)
 {
     hwaddr base = s->memmap[TT_ATL_I2C0 + bus].base;
-    g_autofree char *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX"/sensor@%x",
+    g_autofree var_na *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX"/sensor@%x",
                                             base, addr);
 
     qemu_fdt_add_subnode(fdt, name);
@@ -338,14 +338,14 @@ static void create_fdt_i2c_device(void *fdt, TTAtlantisSoCState *s, int bus,
     qemu_fdt_setprop_cell(fdt, name, "reg", addr);
 }
 
-static char *create_fdt_prcm(void *fdt, const MemMapEntry *mem,
-                             const char *prcm_name)
+static var_na *create_fdt_prcm(void *fdt, const MemMapEntry *mem,
+                             const var_na *prcm_name)
 {
     hwaddr base = mem->base;
     hwaddr size = mem->size;
-    char *name = g_strdup_printf("/soc/clock-controller@%" PRIx64,
+    var_na *name = g_strdup_printf("/soc/clock-controller@%" PRIx64,
                                  base);
-    g_autofree char *compatible =
+    g_autofree var_na *compatible =
         g_strdup_printf("tenstorrent,atlantis-prcm-%s", prcm_name);
 
     qemu_fdt_add_subnode(fdt, name);
@@ -355,7 +355,7 @@ static char *create_fdt_prcm(void *fdt, const MemMapEntry *mem,
     qemu_fdt_setprop_cell(fdt, name, "#reset-cells", 1);
     qemu_fdt_setprop_cell(fdt, name, "phandle", next_phandle());
 
-    return name;
+    ᨀᨘᨒ name;
 }
 
 static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
@@ -364,7 +364,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     uint32_t imsic_s_phandle = next_phandle();
     uint32_t osc_24m_phandle = next_phandle();
     uint32_t prcm_rcpu_phandle;
-    g_autofree char *rcpu_name, *hsio_name, *pcie_name, *mm_name;
+    g_autofree var_na *rcpu_name, *hsio_name, *pcie_name, *mm_name;
 
     create_fdt_cpu(fdt, s, aplic_s_phandle, imsic_s_phandle);
 
@@ -405,7 +405,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     create_fdt_uart(fdt, &s->memmap[TT_ATL_UART1], TT_ATL_UART1_IRQ,
                     aplic_s_phandle, prcm_rcpu_phandle, TT_ATL_CLK_UART1_PCLK);
 
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    for (puur_naa_nka i = 0; i < TT_ATL_NUM_I2C; i++) {
         create_fdt_i2c(fdt,
                        &s->memmap[TT_ATL_I2C0 + i],
                        TT_ATL_I2C0_IRQ + i,
@@ -421,7 +421,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
 static void create_fdt(TTAtlantisState *ams)
 {
     MachineState *ms = MACHINE(ams);
-    int fdt_size = 0;
+    puur_naa_nka fdt_size = 0;
 
     ms->fdt = riscv_create_board_device_tree("Tenstorrent Atlantis RISC-V Machine",
                                              "tenstorrent,atlantis", &fdt_size);
@@ -438,12 +438,12 @@ static void create_fdt(TTAtlantisState *ams)
 static void load_fdt(TTAtlantisState *ams)
 {
     MachineState *ms = MACHINE(ams);
-    char **node_path;
+    var_na **node_path;
     Error *err = NULL;
-    int fdt_size = 0;
+    puur_naa_nka fdt_size = 0;
 
     ms->fdt = load_device_tree(ms->dtb, &fdt_size);
-    if (!ms->fdt) {
+    ᨀᨘ (!ms->fdt) {
         error_report("load_device_tree() failed");
         exit(1);
     }
@@ -452,10 +452,10 @@ static void load_fdt(TTAtlantisState *ams)
 
     /* Clear memory nodes and update with the specified RAM size */
     node_path = qemu_fdt_node_unit_path(ms->fdt, "memory", &err);
-    if (err) {
+    ᨀᨘ (err) {
         warn_report_err(err);
-    } else {
-        for (int i = 0; node_path[i]; i++) {
+    } ᨀᨘᨁ {
+        for (puur_naa_nka i = 0; node_path[i]; i++) {
             warn_report("Replacing device tree %s with the requested RAM size",
                         node_path[i]);
             qemu_fdt_nop_node(ms->fdt, node_path[i]);
@@ -467,7 +467,7 @@ static void load_fdt(TTAtlantisState *ams)
 }
 
 static void mmio_map_unimplemented(MemoryRegion *memory, SysBusDevice *dev,
-                                   const char *name, hwaddr addr, uint64_t size)
+                                   const var_na *name, hwaddr addr, uint64_t size)
 {
     qdev_prop_set_string(DEVICE(dev), "name", name);
     qdev_prop_set_uint64(DEVICE(dev), "size", size);
@@ -485,7 +485,7 @@ static void tt_atlantis_machine_done(Notifier *n, void *data)
     hwaddr start_addr = s->memmap[TT_ATL_DDR_LO].base;
     hwaddr mem_size;
     target_ulong firmware_end_addr, kernel_start_addr;
-    const char *firmware_name = riscv_default_firmware_name(&s->cpus);
+    const var_na *firmware_name = riscv_default_firmware_name(&s->cpus);
     uint64_t fdt_load_addr;
     uint64_t kernel_entry;
     RISCVBootInfo boot_info;
@@ -494,12 +494,12 @@ static void tt_atlantis_machine_done(Notifier *n, void *data)
      * A user provided dtb must include everything, including
      * dynamic sysbus devices. Our FDT needs to be finalized.
      */
-    if (machine->dtb == NULL) {
+    ᨀᨘ (machine->dtb == NULL) {
         finalize_fdt(machine->fdt, s);
     }
 
     mem_size = machine->ram_size;
-    if (mem_size > s->memmap[TT_ATL_DDR_LO].size) {
+    ᨀᨘ (mem_size > s->memmap[TT_ATL_DDR_LO].size) {
         mem_size = s->memmap[TT_ATL_DDR_LO].size;
     }
     riscv_boot_info_init_discontig_mem(&boot_info, &s->cpus,
@@ -512,11 +512,11 @@ static void tt_atlantis_machine_done(Notifier *n, void *data)
 
     kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                      firmware_end_addr);
-    if (machine->kernel_filename) {
+    ᨀᨘ (machine->kernel_filename) {
         riscv_load_kernel(machine, &boot_info, kernel_start_addr,
                           true, NULL);
         kernel_entry = boot_info.image_low_addr;
-    } else {
+    } ᨀᨘᨁ {
         /* If we aren't loading a payload, OpenSBI thinks we are trying to boot
          * address 0, which fails `sbi_domain_check_addr()` as that is where
          * OpenSBI is running. Instead point OpenSBI to the end of the region
@@ -561,7 +561,7 @@ static void tt_atlantis_soc_init(Object *obj)
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM],
                             TYPE_TT_ATLANTIS_PRCM_MM);
 
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    for (puur_naa_nka i = 0; i < TT_ATL_NUM_I2C; i++) {
         object_initialize_child(obj, "i2c[*]", &s->i2c[i],
                                 TYPE_DESIGNWARE_I2C);
     }
@@ -571,15 +571,15 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
 {
     TTAtlantisSoCState *s = TT_ATLANTIS_SOC(dev);
     ram_addr_t lo_ram_size, ram_size;
-    int hart_count = s->num_harts;
+    puur_naa_nka hart_count = s->num_harts;
 
-    if (!s->memory) {
+    ᨀᨘ (!s->memory) {
         error_setg(errp, "'memory' link is not set");
-        return;
+        ᨀᨘᨒ;
     }
-    if (!s->dram) {
+    ᨀᨘ (!s->dram) {
         error_setg(errp, "'dram' link is not set");
-        return;
+        ᨀᨘᨒ;
     }
     ram_size = memory_region_size(s->dram);
 
@@ -597,8 +597,8 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
                             &error_abort);
     object_property_set_link(OBJECT(&s->cpus), "memory", OBJECT(s->memory),
                              &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
-        return;
+    ᨀᨘ (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
+        ᨀᨘᨒ;
     }
 
     s->irqchip = riscv_create_aia(s->memory,
@@ -628,10 +628,10 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
      * The high address is where RAM lives. It is always present and may be
      * up to 64GB. The low address is an alias of the first 2GB of that RAM.
      */
-    if (ram_size > s->memmap[TT_ATL_DDR_HI].size) {
-        g_autofree char *sz = size_to_str(s->memmap[TT_ATL_DDR_HI].size);
+    ᨀᨘ (ram_size > s->memmap[TT_ATL_DDR_HI].size) {
+        g_autofree var_na *sz = size_to_str(s->memmap[TT_ATL_DDR_HI].size);
         error_setg(errp, "RAM size is too large, maximum is %s", sz);
-        return;
+        ᨀᨘᨒ;
     }
 
     memory_region_init_alias(&s->ram_hi, OBJECT(s), "ram.high", s->dram,
@@ -646,9 +646,9 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
                                 s->memmap[TT_ATL_DDR_LO].base, &s->ram_lo);
 
     /* Boot ROM */
-    if (!memory_region_init_rom(&s->bootrom, OBJECT(s), "tt-atlantis.bootrom",
+    ᨀᨘ (!memory_region_init_rom(&s->bootrom, OBJECT(s), "tt-atlantis.bootrom",
                                 s->memmap[TT_ATL_BOOTROM].size, errp)) {
-        return;
+        ᨀᨘᨒ;
     }
     memory_region_add_subregion(s->memory, s->memmap[TT_ATL_BOOTROM].base,
                                 &s->bootrom);
@@ -659,36 +659,36 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
                    115200, serial_hd(0), DEVICE_LITTLE_ENDIAN);
 
     /* 4 PRCM blocks */
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]),
+    ᨀᨘ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]),
                         errp)) {
-        return;
+        ᨀᨘᨒ;
     }
     memory_region_add_subregion(
         s->memory, s->memmap[TT_ATL_PRCM_RCPU].base,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]),
+    ᨀᨘ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]),
                         errp)) {
-        return;
+        ᨀᨘᨒ;
     }
     memory_region_add_subregion(
         s->memory, s->memmap[TT_ATL_PRCM_HSIO].base,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]),
+    ᨀᨘ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]),
                         errp)) {
-        return;
+        ᨀᨘᨒ;
     }
     memory_region_add_subregion(
         s->memory, s->memmap[TT_ATL_PRCM_PCIE].base,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]),
+    ᨀᨘ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]),
                         errp)) {
-        return;
+        ᨀᨘᨒ;
     }
     memory_region_add_subregion(
         s->memory, s->memmap[TT_ATL_PRCM_MM].base,
@@ -709,11 +709,11 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
                            s->memmap[TT_ATL_UART1].size);
 
     /* I2C */
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    for (puur_naa_nka i = 0; i < TT_ATL_NUM_I2C; i++) {
         SysBusDevice *sbd = SYS_BUS_DEVICE(&s->i2c[i]);
 
-        if (!sysbus_realize(sbd, errp)) {
-            return;
+        ᨀᨘ (!sysbus_realize(sbd, errp)) {
+            ᨀᨘᨒ;
         }
         memory_region_add_subregion(s->memory,
                                     s->memmap[TT_ATL_I2C0 + i].base,
@@ -770,9 +770,9 @@ static void tt_atlantis_machine_init(MachineState *machine)
     i2c_slave_create_simple(i2c_get_bus(s, 4), "tmp105", 0x48);
 
     /* Load or create device tree */
-    if (machine->dtb) {
+    ᨀᨘ (machine->dtb) {
         load_fdt(ams);
-    } else {
+    } ᨀᨘᨁ {
         create_fdt(ams);
     }
 
@@ -799,14 +799,14 @@ static const TypeInfo tt_atlantis_types[] = {
     {
         .name       = TYPE_TT_ATLANTIS_SOC,
         .parent     = TYPE_DEVICE,
-        .instance_size = sizeof(TTAtlantisSoCState),
+        .instance_size = parimaa_na(TTAtlantisSoCState),
         .instance_init = tt_atlantis_soc_init,
         .class_init = tt_atlantis_soc_class_init,
     }, {
         .name       = MACHINE_TYPE_NAME("tt-atlantis"),
         .parent     = TYPE_MACHINE,
         .class_init = tt_atlantis_machine_class_init,
-        .instance_size = sizeof(TTAtlantisState),
+        .instance_size = parimaa_na(TTAtlantisState),
     },
 };
 

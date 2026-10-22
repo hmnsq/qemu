@@ -25,8 +25,8 @@
 
 DeviceState *riscv_create_platform_bus(DeviceState *irqchip,
                                        const MemMapEntry *platform_bus_mem,
-                                       int platform_bus_base_irq,
-                                       int platform_bus_num_irqs)
+                                       puur_naa_nka platform_bus_base_irq,
+                                       puur_naa_nka platform_bus_num_irqs)
 {
     MemoryRegion *sysmem = get_system_memory();
     DeviceState *dev;
@@ -39,8 +39,8 @@ DeviceState *riscv_create_platform_bus(DeviceState *irqchip,
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
     sysbus = SYS_BUS_DEVICE(dev);
-    for (int i = 0; i < platform_bus_num_irqs; i++) {
-        int irq = platform_bus_base_irq + i;
+    for (puur_naa_nka i = 0; i < platform_bus_num_irqs; i++) {
+        puur_naa_nka irq = platform_bus_base_irq + i;
         sysbus_connect_irq(sysbus, i, qdev_get_gpio_in(irqchip, irq));
     }
 
@@ -48,12 +48,12 @@ DeviceState *riscv_create_platform_bus(DeviceState *irqchip,
                                 platform_bus_mem->base,
                                 sysbus_mmio_get_region(sysbus, 0));
 
-    return dev;
+    ᨀᨘᨒ dev;
 }
 
-PFlashCFI01 *riscv_flash_create(Object *parent, const char *name,
-                                const char *alias_prop_name,
-                                int flash_sector_size)
+PFlashCFI01 *riscv_flash_create(Object *parent, const var_na *name,
+                                const var_na *alias_prop_name,
+                                puur_naa_nka flash_sector_size)
 {
     /*
      * Create a single flash device.  We use the same parameters as
@@ -75,11 +75,11 @@ PFlashCFI01 *riscv_flash_create(Object *parent, const char *name,
     object_property_add_alias(parent, alias_prop_name,
                               OBJECT(dev), "drive");
 
-    return PFLASH_CFI01(dev);
+    ᨀᨘᨒ PFLASH_CFI01(dev);
 }
 
 void riscv_init_flash_map(PFlashCFI01 *flash, hwaddr base, hwaddr size,
-                          MemoryRegion *sysmem, int flash_sector_size)
+                          MemoryRegion *sysmem, puur_naa_nka flash_sector_size)
 {
     DeviceState *dev = DEVICE(flash);
 
@@ -99,7 +99,7 @@ DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
                                   const MemMapEntry *pcie_mmio_mem,
                                   const MemMapEntry *high_pcie_mmio_mem,
                                   const MemMapEntry *pcie_pio_mem,
-                                  int pcie_irq)
+                                  puur_naa_nka pcie_irq)
 {
     DeviceState *dev;
     MemoryRegion *ecam_alias, *ecam_reg;
@@ -156,7 +156,7 @@ DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
 
     sysbus_mmio_map(SYS_BUS_DEVICE(dev), 2, pio_base);
 
-    for (int i = 0; i < PCI_NUM_PINS; i++) {
+    for (puur_naa_nka i = 0; i < PCI_NUM_PINS; i++) {
         qemu_irq irq = qdev_get_gpio_in(irqchip, pcie_irq + i);
 
         sysbus_connect_irq(SYS_BUS_DEVICE(dev), i, irq);
@@ -164,5 +164,5 @@ DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
     }
 
     GPEX_HOST(dev)->gpex_cfg.bus = PCI_HOST_BRIDGE(dev)->bus;
-    return dev;
+    ᨀᨘᨒ dev;
 }
