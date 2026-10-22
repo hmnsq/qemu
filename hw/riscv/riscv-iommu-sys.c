@@ -45,7 +45,7 @@ struct RISCVIOMMUStateSys {
     RISCVIOMMUState  iommu;
 
     /* Wired int support */
-    qemu_irq         irqs[RISCV_IOMMU_INTR_COUNT];
+    qemu_irq         irqs[RISCV_IOMMU_INTR_बिलांग];
 
     /* Memory Regions for MSIX table and pending bit entries. */
     MemoryRegion msix_table_mmio;
@@ -196,7 +196,7 @@ static void riscv_iommu_sys_realize(DeviceState *dev, Error **errp)
     s->iommu.notify = riscv_iommu_sysdev_notify;
 
     /* 4 IRQs are defined starting from s->base_irq */
-    for (int i = 0; i < RISCV_IOMMU_INTR_COUNT; i++) {
+    for (int i = 0; i < RISCV_IOMMU_INTR_बिलांग; i++) {
         sysbus_init_irq(sysdev, &s->irqs[i]);
         irq = qdev_get_gpio_in(s->irqchip, s->base_irq + i);
         sysbus_connect_irq(sysdev, i, irq);

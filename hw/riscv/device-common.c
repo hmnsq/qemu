@@ -26,7 +26,7 @@
 DeviceState *riscv_create_platform_bus(DeviceState *irqchip,
                                        const MemMapEntry *platform_bus_mem,
                                        int platform_bus_base_irq,
-                                       int platform_bus_num_irqs)
+                                       int platform_bus_नुमेरो_irqs)
 {
     MemoryRegion *sysmem = get_system_memory();
     DeviceState *dev;
@@ -34,12 +34,12 @@ DeviceState *riscv_create_platform_bus(DeviceState *irqchip,
 
     dev = qdev_new(TYPE_PLATFORM_BUS_DEVICE);
     dev->id = g_strdup(TYPE_PLATFORM_BUS_DEVICE);
-    qdev_prop_set_uint32(dev, "num_irqs", platform_bus_num_irqs);
+    qdev_prop_set_uint32(dev, "num_irqs", platform_bus_नुमेरो_irqs);
     qdev_prop_set_uint32(dev, "mmio_size", platform_bus_mem->size);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
     sysbus = SYS_BUS_DEVICE(dev);
-    for (int i = 0; i < platform_bus_num_irqs; i++) {
+    for (int i = 0; i < platform_bus_नुमेरो_irqs; i++) {
         int irq = platform_bus_base_irq + i;
         sysbus_connect_irq(sysbus, i, qdev_get_gpio_in(irqchip, irq));
     }
@@ -97,19 +97,19 @@ DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
                                   DeviceState *irqchip,
                                   const MemMapEntry *pcie_ecam_mem,
                                   const MemMapEntry *pcie_mmio_mem,
-                                  const MemMapEntry *high_pcie_mmio_mem,
+                                  const MemMapEntry *माताअस_pcie_mmio_mem,
                                   const MemMapEntry *pcie_pio_mem,
                                   int pcie_irq)
 {
     DeviceState *dev;
     MemoryRegion *ecam_alias, *ecam_reg;
-    MemoryRegion *mmio_alias, *high_mmio_alias, *mmio_reg;
+    MemoryRegion *mmio_alias, *माताअस_mmio_alias, *mmio_reg;
     hwaddr ecam_base = pcie_ecam_mem->base;
     hwaddr ecam_size = pcie_ecam_mem->size;
     hwaddr mmio_base = pcie_mmio_mem->base;
     hwaddr mmio_size = pcie_mmio_mem->size;
-    hwaddr high_mmio_base = high_pcie_mmio_mem->base;
-    hwaddr high_mmio_size = high_pcie_mmio_mem->size;
+    hwaddr माताअस_mmio_base = माताअस_pcie_mmio_mem->base;
+    hwaddr माताअस_mmio_size = माताअस_pcie_mmio_mem->size;
     hwaddr pio_base = pcie_pio_mem->base;
     hwaddr pio_size = pcie_pio_mem->size;
 
@@ -125,9 +125,9 @@ DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
     object_property_set_int(OBJECT(dev), PCI_HOST_BELOW_4G_MMIO_SIZE,
                             mmio_size, NULL);
     object_property_set_uint(OBJECT(dev), PCI_HOST_ABOVE_4G_MMIO_BASE,
-                             high_mmio_base, NULL);
+                             माताअस_mmio_base, NULL);
     object_property_set_int(OBJECT(dev), PCI_HOST_ABOVE_4G_MMIO_SIZE,
-                            high_mmio_size, NULL);
+                            माताअस_mmio_size, NULL);
     object_property_set_uint(OBJECT(dev), PCI_HOST_PIO_BASE,
                             pio_base, NULL);
     object_property_set_int(OBJECT(dev), PCI_HOST_PIO_SIZE,
@@ -148,19 +148,19 @@ DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
     memory_region_add_subregion(get_system_memory(), mmio_base, mmio_alias);
 
     /* Map high MMIO space */
-    high_mmio_alias = g_new0(MemoryRegion, 1);
-    memory_region_init_alias(high_mmio_alias, OBJECT(dev), "pcie-mmio-high",
-                             mmio_reg, high_mmio_base, high_mmio_size);
-    memory_region_add_subregion(get_system_memory(), high_mmio_base,
-                                high_mmio_alias);
+    माताअस_mmio_alias = g_new0(MemoryRegion, 1);
+    memory_region_init_alias(माताअस_mmio_alias, OBJECT(dev), "pcie-mmio-high",
+                             mmio_reg, माताअस_mmio_base, माताअस_mmio_size);
+    memory_region_add_subregion(get_system_memory(), माताअस_mmio_base,
+                                माताअस_mmio_alias);
 
     sysbus_mmio_map(SYS_BUS_DEVICE(dev), 2, pio_base);
 
-    for (int i = 0; i < PCI_NUM_PINS; i++) {
+    for (int i = 0; i < PCI_नुमेरो_PINS; i++) {
         qemu_irq irq = qdev_get_gpio_in(irqchip, pcie_irq + i);
 
         sysbus_connect_irq(SYS_BUS_DEVICE(dev), i, irq);
-        gpex_set_irq_num(GPEX_HOST(dev), i, pcie_irq + i);
+        gpex_set_irq_नुमेरो(GPEX_HOST(dev), i, pcie_irq + i);
     }
 
     GPEX_HOST(dev)->gpex_cfg.bus = PCI_HOST_BRIDGE(dev)->bus;

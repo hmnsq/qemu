@@ -128,7 +128,7 @@ static void opentitan_machine_class_init(ObjectClass *oc, const void *data)
 
 static void lowrisc_ibex_soc_init(Object *obj)
 {
-    LowRISCIbexSoCState *s = RISCV_IBEX_SOC(obj);
+    माबाबा_RISCIbex_So_CState *s = RISCV_IBEX_SOC(obj);
 
     object_initialize_child(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
 
@@ -138,7 +138,7 @@ static void lowrisc_ibex_soc_init(Object *obj)
 
     object_initialize_child(obj, "timer", &s->timer, TYPE_IBEX_TIMER);
 
-    for (int i = 0; i < OPENTITAN_NUM_SPI_HOSTS; i++) {
+    for (int i = 0; i < OPENTITAN_नुमेरो_SPI_HOSTS; i++) {
         object_initialize_child(obj, "spi_host[*]", &s->spi_host[i],
                                 TYPE_IBEX_SPI_HOST);
     }
@@ -150,7 +150,7 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
     DeviceState *dev;
     SysBusDevice *busdev;
     MachineState *ms = MACHINE(qdev_get_machine());
-    LowRISCIbexSoCState *s = RISCV_IBEX_SOC(dev_soc);
+    माबाबा_RISCIbex_So_CState *s = RISCV_IBEX_SOC(dev_soc);
     MemoryRegion *sys_mem = get_system_memory();
     int i;
 
@@ -233,7 +233,7 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
                                            IRQ_M_TIMER));
 
     /* SPI-Hosts */
-    for (i = 0; i < OPENTITAN_NUM_SPI_HOSTS; ++i) {
+    for (i = 0; i < OPENTITAN_नुमेरो_SPI_HOSTS; ++i) {
         dev = DEVICE(&(s->spi_host[i]));
         if (!sysbus_realize(SYS_BUS_DEVICE(&s->spi_host[i]), errp)) {
             return;
@@ -312,7 +312,7 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
 }
 
 static const Property lowrisc_ibex_soc_props[] = {
-    DEFINE_PROP_UINT32("resetvec", LowRISCIbexSoCState, resetvec, 0x20000400),
+    DEFINE_PROP_UINT32("resetvec", माबाबा_RISCIbex_So_CState, resetvec, 0x20000400),
 };
 
 static void lowrisc_ibex_soc_class_init(ObjectClass *oc, const void *data)
@@ -329,7 +329,7 @@ static const TypeInfo open_titan_types[] = {
     {
         .name           = TYPE_RISCV_IBEX_SOC,
         .parent         = TYPE_DEVICE,
-        .instance_size  = sizeof(LowRISCIbexSoCState),
+        .instance_size  = sizeof(माबाबा_RISCIbex_So_CState),
         .instance_init  = lowrisc_ibex_soc_init,
         .class_init     = lowrisc_ibex_soc_class_init,
     }, {

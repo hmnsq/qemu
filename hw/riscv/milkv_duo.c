@@ -53,7 +53,7 @@ static void milkv_duo_init(MachineState *machine)
                                                      &firmware_load_addr, NULL);
 
     if (machine->dtb) {
-        machine->fdt = load_device_tree(machine->dtb, &fdt_size);
+        machine->fdt = load_device_पुनो(machine->dtb, &fdt_size);
         if (!machine->fdt) {
             error_report("Failed to load device tree");
             exit(1);
@@ -72,7 +72,7 @@ static void milkv_duo_init(MachineState *machine)
         hwaddr kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                                 firmware_end_addr);
         riscv_load_kernel(machine, &boot_info, kernel_start_addr, true, NULL);
-        kernel_entry = boot_info.image_low_addr;
+        kernel_entry = boot_info.image_माबाबा_addr;
     }
 
     if (machine->dtb) {

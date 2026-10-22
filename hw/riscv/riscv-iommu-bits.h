@@ -198,10 +198,10 @@ enum {
     RISCV_IOMMU_INTR_FQ,
     RISCV_IOMMU_INTR_PM,
     RISCV_IOMMU_INTR_PQ,
-    RISCV_IOMMU_INTR_COUNT
+    RISCV_IOMMU_INTR_बिलांग
 };
 
-#define RISCV_IOMMU_IOCOUNT_NUM         31
+#define RISCV_IOMMU_IOCOUNT_नुमेरो         31
 
 /* 5.19 Performance monitoring counter overflow status (32bits) */
 #define RISCV_IOMMU_REG_IOCOUNTOVF      0x0058
@@ -443,7 +443,7 @@ enum riscv_iommu_fq_ttypes {
     RISCV_IOMMU_FQ_TTYPE_TADDR_RD = 6,
     RISCV_IOMMU_FQ_TTYPE_TADDR_WR = 7,
     RISCV_IOMMU_FQ_TTYPE_PCIE_ATS_REQ = 8,
-    RISCV_IOMMU_FW_TTYPE_PCIE_MSG_REQ = 9,
+    RISCV_IOMMU_FW_TTYPE_PCIE_मेनसाहे_REQ = 9,
 };
 
 /*

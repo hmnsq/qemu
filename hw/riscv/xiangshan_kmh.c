@@ -54,7 +54,7 @@ static const MemMapEntry xiangshan_kmh_memmap[] = {
     [XIANGSHAN_KMH_DRAM] =         { 0x80000000,           0x0 },
 };
 
-static DeviceState *xiangshan_kmh_create_aia(uint32_t num_harts)
+static DeviceState *xiangshan_kmh_create_aia(uint32_t नुमेरो_harts)
 {
     int i;
     const MemMapEntry *memmap = xiangshan_kmh_memmap;
@@ -63,33 +63,33 @@ static DeviceState *xiangshan_kmh_create_aia(uint32_t num_harts)
 
     /* M-level IMSICs */
     addr = memmap[XIANGSHAN_KMH_IMSIC_M].base;
-    for (i = 0; i < num_harts; i++) {
+    for (i = 0; i < नुमेरो_harts; i++) {
         riscv_imsic_create(get_system_memory(),
                            addr + i * IMSIC_HART_SIZE(0), i, true,
-                           1, XIANGSHAN_KMH_IMSIC_NUM_IDS);
+                           1, XIANGSHAN_KMH_IMSIC_नुमेरो_IDS);
     }
 
     /* S-level IMSICs */
     addr = memmap[XIANGSHAN_KMH_IMSIC_S].base;
-    for (i = 0; i < num_harts; i++) {
+    for (i = 0; i < नुमेरो_harts; i++) {
         riscv_imsic_create(get_system_memory(), addr +
                            i * IMSIC_HART_SIZE(XIANGSHAN_KMH_IMSIC_GUEST_BITS),
                            i, false, 1 + XIANGSHAN_KMH_IMSIC_GUEST_BITS,
-                           XIANGSHAN_KMH_IMSIC_NUM_IDS);
+                           XIANGSHAN_KMH_IMSIC_नुमेरो_IDS);
     }
 
     /* M-level APLIC */
     aplic_m = riscv_aplic_create(get_system_memory(),
                                  memmap[XIANGSHAN_KMH_APLIC_M].base,
                                  memmap[XIANGSHAN_KMH_APLIC_M].size,
-                                 0, 0, XIANGSHAN_KMH_APLIC_NUM_SOURCES,
+                                 0, 0, XIANGSHAN_KMH_APLIC_नुमेरो_SOURCES,
                                  1, true, true, NULL);
 
     /* S-level APLIC */
     riscv_aplic_create(get_system_memory(),
                        memmap[XIANGSHAN_KMH_APLIC_S].base,
                        memmap[XIANGSHAN_KMH_APLIC_S].size,
-                       0, 0, XIANGSHAN_KMH_APLIC_NUM_SOURCES,
+                       0, 0, XIANGSHAN_KMH_APLIC_नुमेरो_SOURCES,
                        1, true, false, aplic_m);
 
     return aplic_m;
@@ -101,16 +101,16 @@ static void xiangshan_kmh_soc_realize(DeviceState *dev, Error **errp)
     XiangshanKmhSoCState *s = XIANGSHAN_KMH_SOC(dev);
     const MemMapEntry *memmap = xiangshan_kmh_memmap;
     MemoryRegion *system_memory = get_system_memory();
-    uint32_t num_harts = ms->smp.cpus;
+    uint32_t नुमेरो_harts = ms->smp.cpus;
 
-    qdev_prop_set_uint32(DEVICE(&s->cpus), "num-harts", num_harts);
+    qdev_prop_set_uint32(DEVICE(&s->cpus), "num-harts", नुमेरो_harts);
     qdev_prop_set_uint32(DEVICE(&s->cpus), "hartid-base", 0);
     qdev_prop_set_string(DEVICE(&s->cpus), "cpu-type",
                          TYPE_RISCV_CPU_XIANGSHAN_KMH);
     sysbus_realize(SYS_BUS_DEVICE(&s->cpus), &error_fatal);
 
     /* AIA */
-    s->irqchip = xiangshan_kmh_create_aia(num_harts);
+    s->irqchip = xiangshan_kmh_create_aia(नुमेरो_harts);
 
     /* UART */
     serial_mm_init(system_memory, memmap[XIANGSHAN_KMH_UART0].base, 2,
@@ -120,12 +120,12 @@ static void xiangshan_kmh_soc_realize(DeviceState *dev, Error **errp)
     /* CLINT */
     riscv_aclint_swi_create(system_memory,
                             memmap[XIANGSHAN_KMH_CLINT].base,
-                            0, num_harts, false);
+                            0, नुमेरो_harts, false);
     riscv_aclint_mtimer_create(system_memory,
                                memmap[XIANGSHAN_KMH_CLINT].base +
                                RISCV_ACLINT_SWI_SIZE,
                                RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                               0, num_harts, RISCV_ACLINT_DEFAULT_MTIMECMP,
+                               0, नुमेरो_harts, RISCV_ACLINT_DEFAULT_MTIMECMP,
                                RISCV_ACLINT_DEFAULT_MTIME,
                                XIANGSHAN_KMH_CLINT_TIMEBASE_FREQ, true);
 

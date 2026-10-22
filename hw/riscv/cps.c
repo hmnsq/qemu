@@ -47,22 +47,22 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
     int i;
 
     /* Validate num_vp */
-    if (s->num_vp == 0) {
+    if (s->नुमेरो_vp == 0) {
         error_setg(errp, "num-vp must be at least 1");
         return;
     }
-    if (s->num_vp > MAX_HARTS) {
+    if (s->नुमेरो_vp > MAX_HARTS) {
         error_setg(errp, "num-vp cannot exceed %d", MAX_HARTS);
         return;
     }
 
     /* Allocate CPU array */
-    s->cpus = g_new0(CPUState *, s->num_vp);
+    s->cpus = g_new0(CPUState *, s->नुमेरो_vp);
 
     /* Set up cpu_index and mhartid for avaiable CPUs. */
-    int harts_in_cluster = s->num_hart * s->num_core;
-    int num_of_clusters = s->num_vp / harts_in_cluster;
-    for (i = 0; i < s->num_vp; i++) {
+    int harts_in_cluster = s->नुमेरो_hart * s->नुमेरो_core;
+    int नुमेरो_of_clusters = s->नुमेरो_vp / harts_in_cluster;
+    for (i = 0; i < s->नुमेरो_vp; i++) {
         cpu = RISCV_CPU(object_new(s->cpu_type));
 
         /* All VPs are halted on reset. Leave powering up to CPC. */
@@ -78,8 +78,8 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
 
         /* Set up mhartid */
         int cluster_id = i / harts_in_cluster;
-        int hart_id = (i % harts_in_cluster) % s->num_hart;
-        int core_id = (i % harts_in_cluster) / s->num_hart;
+        int hart_id = (i % harts_in_cluster) % s->नुमेरो_hart;
+        int core_id = (i % harts_in_cluster) / s->नुमेरो_hart;
         int mhartid = (cluster_id << MHARTID_CLUSTER_SHIFT) +
                       (core_id << MHARTID_CORE_SHIFT) +
                       (hart_id << MHARTID_HART_SHIFT);
@@ -91,15 +91,15 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
     object_initialize_child(OBJECT(dev), "cpc", &s->cpc, TYPE_RISCV_CPC);
     object_property_set_uint(OBJECT(&s->cpc), "cluster-id", 0,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->cpc), "num-vp", s->num_vp,
+    object_property_set_uint(OBJECT(&s->cpc), "num-vp", s->नुमेरो_vp,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->cpc), "num-hart", s->num_hart,
+    object_property_set_uint(OBJECT(&s->cpc), "num-hart", s->नुमेरो_hart,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->cpc), "num-core", s->num_core,
+    object_property_set_uint(OBJECT(&s->cpc), "num-core", s->नुमेरो_core,
                             &error_abort);
 
     /* Pass CPUs to CPC using link properties */
-    for (i = 0; i < s->num_vp; i++) {
+    for (i = 0; i < s->नुमेरो_vp; i++) {
         char *propname = g_strdup_printf("cpu[%d]", i);
         object_property_set_link(OBJECT(&s->cpc), propname,
                                 OBJECT(s->cpus[i]), &error_abort);
@@ -117,7 +117,7 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
     object_initialize_child(OBJECT(dev), "gcr", &s->gcr, TYPE_RISCV_GCR);
     object_property_set_uint(OBJECT(&s->gcr), "cluster-id", 0,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->gcr), "num-vp", s->num_vp,
+    object_property_set_uint(OBJECT(&s->gcr), "num-vp", s->नुमेरो_vp,
                             &error_abort);
     object_property_set_int(OBJECT(&s->gcr), "gcr-rev", 0xa00,
                             &error_abort);
@@ -132,7 +132,7 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
     memory_region_add_subregion(&s->container, s->gcr_base,
                             sysbus_mmio_get_region(SYS_BUS_DEVICE(&s->gcr), 0));
 
-    for (i = 0; i < num_of_clusters; i++) {
+    for (i = 0; i < नुमेरो_of_clusters; i++) {
         uint64_t cm_base = GLOBAL_CM_BASE + (CM_SIZE * i);
         uint32_t hartid_base = i << MHARTID_CLUSTER_SHIFT;
         s->aplic = riscv_aplic_create(&s->container,
@@ -140,16 +140,16 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
                                       AIA_PLIC_M_SIZE,
                                       hartid_base, /* hartid_base */
                                       MAX_HARTS, /* num_harts */
-                                      APLIC_NUM_SOURCES,
-                                      APLIC_NUM_PRIO_BITS,
+                                      APLIC_नुमेरो_SOURCES,
+                                      APLIC_नुमेरो_PRIO_BITS,
                                       false, true, NULL);
         riscv_aplic_create(&s->container,
                            cm_base + AIA_PLIC_S_OFFSET,
                            AIA_PLIC_S_SIZE,
                            hartid_base, /* hartid_base */
                            MAX_HARTS, /* num_harts */
-                           APLIC_NUM_SOURCES,
-                           APLIC_NUM_PRIO_BITS,
+                           APLIC_नुमेरो_SOURCES,
+                           APLIC_नुमेरो_PRIO_BITS,
                            false, false, s->aplic);
         /* PLIC changes msi_nonbroken to ture. We revert the change. */
         msi_nonbroken = false;
@@ -169,9 +169,9 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
 }
 
 static const Property riscv_cps_properties[] = {
-    DEFINE_PROP_UINT32("num-vp", RISCVCPSState, num_vp, 1),
-    DEFINE_PROP_UINT32("num-hart", RISCVCPSState, num_hart, 1),
-    DEFINE_PROP_UINT32("num-core", RISCVCPSState, num_core, 1),
+    DEFINE_PROP_UINT32("num-vp", RISCVCPSState, नुमेरो_vp, 1),
+    DEFINE_PROP_UINT32("num-hart", RISCVCPSState, नुमेरो_hart, 1),
+    DEFINE_PROP_UINT32("num-core", RISCVCPSState, नुमेरो_core, 1),
     DEFINE_PROP_UINT64("gcr-base", RISCVCPSState, gcr_base, GCR_BASE_ADDR),
     DEFINE_PROP_STRING("cpu-type", RISCVCPSState, cpu_type),
 };

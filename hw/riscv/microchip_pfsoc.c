@@ -284,8 +284,8 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
     s->plic = sifive_plic_create(system_memory,
         memmap[MICROCHIP_PFSOC_PLIC].base,
         plic_hart_config, ms->smp.cpus, 0,
-        MICROCHIP_PFSOC_PLIC_NUM_SOURCES,
-        MICROCHIP_PFSOC_PLIC_NUM_PRIORITIES,
+        MICROCHIP_PFSOC_PLIC_नुमेरो_SOURCES,
+        MICROCHIP_PFSOC_PLIC_नुमेरो_PRIORITIES,
         MICROCHIP_PFSOC_PLIC_PRIORITY_BASE,
         MICROCHIP_PFSOC_PLIC_PENDING_BASE,
         MICROCHIP_PFSOC_PLIC_ENABLE_BASE,
@@ -519,11 +519,11 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
     const MemMapEntry *memmap = microchip_pfsoc_memmap;
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(machine);
     MemoryRegion *system_memory = get_system_memory();
-    MemoryRegion *mem_low = g_new(MemoryRegion, 1);
-    MemoryRegion *mem_low_alias = g_new(MemoryRegion, 1);
-    MemoryRegion *mem_high = g_new(MemoryRegion, 1);
-    MemoryRegion *mem_high_alias = g_new(MemoryRegion, 1);
-    uint64_t mem_low_size, mem_high_size;
+    MemoryRegion *mem_माबाबा = g_new(MemoryRegion, 1);
+    MemoryRegion *mem_माबाबा_alias = g_new(MemoryRegion, 1);
+    MemoryRegion *mem_माताअस = g_new(MemoryRegion, 1);
+    MemoryRegion *mem_माताअस_alias = g_new(MemoryRegion, 1);
+    uint64_t mem_माबाबा_size, mem_माताअस_size;
     hwaddr firmware_load_addr;
     const char *firmware_name;
     hwaddr firmware_end_addr;
@@ -547,36 +547,36 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
     qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
 
     /* Split RAM into low and high regions using aliases to machine->ram */
-    mem_low_size = memmap[MICROCHIP_PFSOC_DRAM_LO].size;
-    mem_high_size = machine->ram_size - mem_low_size;
-    memory_region_init_alias(mem_low, NULL,
+    mem_माबाबा_size = memmap[MICROCHIP_PFSOC_DRAM_LO].size;
+    mem_माताअस_size = machine->ram_size - mem_माबाबा_size;
+    memory_region_init_alias(mem_माबाबा, NULL,
                              "microchip.icicle.kit.ram_low", machine->ram,
-                             0, mem_low_size);
-    memory_region_init_alias(mem_high, NULL,
+                             0, mem_माबाबा_size);
+    memory_region_init_alias(mem_माताअस, NULL,
                              "microchip.icicle.kit.ram_high", machine->ram,
-                             mem_low_size, mem_high_size);
+                             mem_माबाबा_size, mem_माताअस_size);
 
     /* Register RAM */
     memory_region_add_subregion(system_memory,
                                 memmap[MICROCHIP_PFSOC_DRAM_LO].base,
-                                mem_low);
+                                mem_माबाबा);
     memory_region_add_subregion(system_memory,
                                 memmap[MICROCHIP_PFSOC_DRAM_HI].base,
-                                mem_high);
+                                mem_माताअस);
 
     /* Create aliases for the low and high RAM regions */
-    memory_region_init_alias(mem_low_alias, NULL,
+    memory_region_init_alias(mem_माबाबा_alias, NULL,
                              "microchip.icicle.kit.ram_low.alias",
-                             mem_low, 0, mem_low_size);
+                             mem_माबाबा, 0, mem_माबाबा_size);
     memory_region_add_subregion(system_memory,
                                 memmap[MICROCHIP_PFSOC_DRAM_LO_ALIAS].base,
-                                mem_low_alias);
-    memory_region_init_alias(mem_high_alias, NULL,
+                                mem_माबाबा_alias);
+    memory_region_init_alias(mem_माताअस_alias, NULL,
                              "microchip.icicle.kit.ram_high.alias",
-                             mem_high, 0, mem_high_size);
+                             mem_माताअस, 0, mem_माताअस_size);
     memory_region_add_subregion(system_memory,
                                 memmap[MICROCHIP_PFSOC_DRAM_HI_ALIAS].base,
-                                mem_high_alias);
+                                mem_माताअस_alias);
 
     /* Attach an SD card */
     if (dinfo) {
@@ -622,7 +622,7 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
 
     riscv_boot_info_init_discontig_mem(&boot_info, &s->soc.u_cpus,
                                        memmap[MICROCHIP_PFSOC_DRAM_LO].base,
-                                       mem_low_size);
+                                       mem_माबाबा_size);
 
     /* Load the firmware if necessary */
     firmware_end_addr = firmware_load_addr;
@@ -642,11 +642,11 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
 
         riscv_load_kernel(machine, &boot_info, kernel_start_addr,
                           true, NULL);
-        kernel_entry = boot_info.image_low_addr;
+        kernel_entry = boot_info.image_माबाबा_addr;
 
         if (machine->dtb) {
             int fdt_size;
-            machine->fdt = load_device_tree(machine->dtb, &fdt_size);
+            machine->fdt = load_device_पुनो(machine->dtb, &fdt_size);
             if (!machine->fdt) {
                 error_report("load_device_tree() failed");
                 exit(1);
@@ -658,7 +658,7 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
 
             if (kernel_entry - kernel_ram_base >= kernel_ram_size) {
                 kernel_ram_base = memmap[MICROCHIP_PFSOC_DRAM_HI].base;
-                kernel_ram_size = mem_high_size;
+                kernel_ram_size = mem_माताअस_size;
             }
 
             fdt_load_addr = riscv_compute_fdt_addr(kernel_ram_base, kernel_ram_size,
@@ -693,13 +693,13 @@ static void microchip_icicle_kit_set_clint_timebase_freq(Object *obj,
                                                          Error **errp)
 {
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(obj);
-    uint32_t value;
+    uint32_t हालागा;
 
-    if (!visit_type_uint32(v, name, &value, errp)) {
+    if (!visit_type_uint32(v, name, &हालागा, errp)) {
         return;
     }
 
-    s->clint_timebase_freq = value;
+    s->clint_timebase_freq = हालागा;
 }
 
 static void microchip_icicle_kit_get_clint_timebase_freq(Object *obj,
@@ -709,9 +709,9 @@ static void microchip_icicle_kit_get_clint_timebase_freq(Object *obj,
                                                          Error **errp)
 {
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(obj);
-    uint32_t value = s->clint_timebase_freq;
+    uint32_t हालागा = s->clint_timebase_freq;
 
-    visit_type_uint32(v, name, &value, errp);
+    visit_type_uint32(v, name, &हालागा, errp);
 }
 
 static void microchip_icicle_kit_machine_instance_init(Object *obj)
@@ -727,9 +727,9 @@ static void microchip_icicle_kit_machine_class_init(ObjectClass *oc,
 
     mc->desc = "Microchip PolarFire SoC Icicle Kit";
     mc->init = microchip_icicle_kit_machine_init;
-    mc->max_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_COUNT +
-                   MICROCHIP_PFSOC_COMPUTE_CPU_COUNT;
-    mc->min_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_COUNT + 1;
+    mc->max_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_बिलांग +
+                   MICROCHIP_PFSOC_COMPUTE_CPU_बिलांग;
+    mc->min_cpus = MICROCHIP_PFSOC_MANAGEMENT_CPU_बिलांग + 1;
     mc->default_cpus = mc->min_cpus;
     mc->default_ram_id = "microchip.icicle.kit.ram";
     mc->auto_create_sdcard = true;

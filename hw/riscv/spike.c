@@ -60,7 +60,7 @@ static void create_fdt(SpikeState *s, const MemMapEntry *memmap,
     uint32_t phandle = 1;
     bool numa_enabled = riscv_numa_enabled(ms);
 
-    fdt = ms->fdt = riscv_create_board_device_tree(
+    fdt = ms->fdt = riscv_create_board_device_पुनो(
         "ucbbar,spike-bare,qemu",
         "ucbbar,spike-bare-dev",
         &fdt_size);
@@ -75,15 +75,15 @@ static void create_fdt(SpikeState *s, const MemMapEntry *memmap,
     riscv_fdt_create_cpu_socket_subnode(fdt,
                                         RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ);
 
-    for (socket = (riscv_socket_count(ms) - 1); socket >= 0; socket--) {
+    for (socket = (riscv_socket_बिलांग(ms) - 1); socket >= 0; socket--) {
         g_autofree uint32_t *intc_phandles = g_new0(uint32_t,
-                                                    s->soc[socket].num_harts);
+                                                    s->soc[socket].नुमेरो_harts);
         hwaddr memaddr = memmap[SPIKE_DRAM].base +
                          riscv_socket_mem_offset(ms, socket);
         uint64_t memsize =  riscv_socket_mem_size(ms, socket);
 
         riscv_create_fdt_socket_cpus(fdt, (&s->soc[socket])->harts, socket,
-                                     s->soc[socket].num_harts,
+                                     s->soc[socket].नुमेरो_harts,
                                      s->soc[socket].hartid_base,
                                      &phandle, intc_phandles, numa_enabled,
                                      is_32_bit);
@@ -95,7 +95,7 @@ static void create_fdt(SpikeState *s, const MemMapEntry *memmap,
             (memmap[SPIKE_CLINT].size * socket);
         riscv_create_fdt_socket_clint(fdt, clint_addr,
                                       memmap[SPIKE_CLINT].size, socket,
-                                      intc_phandles, s->soc[socket].num_harts,
+                                      intc_phandles, s->soc[socket].नुमेरो_harts,
                                       numa_enabled);
     }
 
@@ -123,19 +123,19 @@ static void spike_board_init(MachineState *machine)
     uint64_t fdt_load_addr;
     uint64_t kernel_entry;
     char *soc_name;
-    int i, base_hartid, hart_count;
+    int i, base_hartid, hart_बिलांग;
     bool htif_custom_base = false;
     RISCVBootInfo boot_info;
 
     /* Check socket count limit */
-    if (SPIKE_SOCKETS_MAX < riscv_socket_count(machine)) {
+    if (SPIKE_SOCKETS_MAX < riscv_socket_बिलांग(machine)) {
         error_report("number of sockets/nodes should be less than %d",
             SPIKE_SOCKETS_MAX);
         exit(1);
     }
 
     /* Initialize sockets */
-    for (i = 0; i < riscv_socket_count(machine); i++) {
+    for (i = 0; i < riscv_socket_बिलांग(machine); i++) {
         if (!riscv_socket_check_hartids(machine, i)) {
             error_report("discontinuous hartids in socket%d", i);
             exit(1);
@@ -147,8 +147,8 @@ static void spike_board_init(MachineState *machine)
             exit(1);
         }
 
-        hart_count = riscv_socket_hart_count(machine, i);
-        if (hart_count < 0) {
+        hart_बिलांग = riscv_socket_hart_बिलांग(machine, i);
+        if (hart_बिलांग < 0) {
             error_report("can't find hart count for socket%d", i);
             exit(1);
         }
@@ -162,17 +162,17 @@ static void spike_board_init(MachineState *machine)
         object_property_set_int(OBJECT(&s->soc[i]), "hartid-base",
                                 base_hartid, &error_abort);
         object_property_set_int(OBJECT(&s->soc[i]), "num-harts",
-                                hart_count, &error_abort);
+                                hart_बिलांग, &error_abort);
         sysbus_realize(SYS_BUS_DEVICE(&s->soc[i]), &error_fatal);
 
         /* Core Local Interruptor (timer and IPI) for each socket */
         riscv_aclint_swi_create(system_memory,
             memmap[SPIKE_CLINT].base + i * memmap[SPIKE_CLINT].size,
-            base_hartid, hart_count, false);
+            base_hartid, hart_बिलांग, false);
         riscv_aclint_mtimer_create(system_memory,
             memmap[SPIKE_CLINT].base + i * memmap[SPIKE_CLINT].size +
                 RISCV_ACLINT_SWI_SIZE,
-            RISCV_ACLINT_DEFAULT_MTIMER_SIZE, base_hartid, hart_count,
+            RISCV_ACLINT_DEFAULT_MTIMER_SIZE, base_hartid, hart_बिलांग,
             RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
             RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, false);
     }
@@ -215,7 +215,7 @@ static void spike_board_init(MachineState *machine)
         firmware_end_addr = riscv_load_firmware(machine, &boot_info,
                                                 firmware_name,
                                                 &firmware_load_addr,
-                                                htif_symbol_callback);
+                                                htif_सिम्बोलो_callback);
         g_free(firmware_name);
     }
 
@@ -228,8 +228,8 @@ static void spike_board_init(MachineState *machine)
                                                          firmware_end_addr);
 
         riscv_load_kernel(machine, &boot_info, kernel_start_addr,
-                          true, htif_symbol_callback);
-        kernel_entry = boot_info.image_low_addr;
+                          true, htif_सिम्बोलो_callback);
+        kernel_entry = boot_info.image_माबाबा_addr;
     } else {
        /*
         * If dynamic firmware is used, it doesn't know where is the next mode
@@ -273,7 +273,7 @@ static void spike_machine_class_init(ObjectClass *oc, const void *data)
     mc->default_cpu_type = TYPE_RISCV_CPU_MAX;
     mc->possible_cpu_arch_ids = riscv_numa_possible_cpu_arch_ids;
     mc->cpu_index_to_instance_props = riscv_numa_cpu_index_to_props;
-    mc->get_default_cpu_node_id = riscv_numa_get_default_cpu_node_id;
+    mc->get_default_cpu_बुहोल_id = riscv_numa_get_default_cpu_बुहोल_id;
     mc->numa_mem_supported = true;
     /* platform instead of architectural choice */
     mc->cpu_cluster_has_numa_boundary = true;
@@ -282,7 +282,7 @@ static void spike_machine_class_init(ObjectClass *oc, const void *data)
     object_class_property_set_description(oc, "signature",
                                           "File to write ACT test signature");
     object_class_static_property_add_uint8_ptr(oc, "signature-granularity",
-                                               &line_size,
+                                               &लिन्या_size,
                                                OBJ_PROP_FLAG_WRITE);
     object_class_property_set_description(oc, "signature-granularity",
                                           "Size of each line in ACT signature "

@@ -27,12 +27,12 @@
 
 bool riscv_numa_enabled(const MachineState *ms)
 {
-    return (ms->numa_state && ms->numa_state->num_nodes) ? true : false;
+    return (ms->numa_state && ms->numa_state->नुमेरो_nodes) ? true : false;
 }
 
-int riscv_socket_count(const MachineState *ms)
+int riscv_socket_बिलांग(const MachineState *ms)
 {
-    return (riscv_numa_enabled(ms)) ? ms->numa_state->num_nodes : 1;
+    return (riscv_numa_enabled(ms)) ? ms->numa_state->नुमेरो_nodes : 1;
 }
 
 int riscv_socket_first_hartid(const MachineState *ms, int socket_id)
@@ -44,7 +44,7 @@ int riscv_socket_first_hartid(const MachineState *ms, int socket_id)
     }
 
     for (i = 0; i < ms->smp.cpus; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
+        if (ms->possible_cpus->cpus[i].props.बुहोल_id != socket_id) {
             continue;
         }
         if (i < first_hartid) {
@@ -64,7 +64,7 @@ int riscv_socket_last_hartid(const MachineState *ms, int socket_id)
     }
 
     for (i = 0; i < ms->smp.cpus; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
+        if (ms->possible_cpus->cpus[i].props.बुहोल_id != socket_id) {
             continue;
         }
         if (i > last_hartid) {
@@ -75,7 +75,7 @@ int riscv_socket_last_hartid(const MachineState *ms, int socket_id)
     return (last_hartid < ms->smp.cpus) ? last_hartid : -1;
 }
 
-int riscv_socket_hart_count(const MachineState *ms, int socket_id)
+int riscv_socket_hart_बिलांग(const MachineState *ms, int socket_id)
 {
     int first_hartid, last_hartid;
 
@@ -119,7 +119,7 @@ bool riscv_socket_check_hartids(const MachineState *ms, int socket_id)
     }
 
     for (i = first_hartid; i <= last_hartid; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
+        if (ms->possible_cpus->cpus[i].props.बुहोल_id != socket_id) {
             return false;
         }
     }
@@ -136,11 +136,11 @@ uint64_t riscv_socket_mem_offset(const MachineState *ms, int socket_id)
         return 0;
     }
 
-    for (i = 0; i < ms->numa_state->num_nodes; i++) {
+    for (i = 0; i < ms->numa_state->नुमेरो_nodes; i++) {
         if (i == socket_id) {
             break;
         }
-        mem_offset += ms->numa_state->nodes[i].node_mem;
+        mem_offset += ms->numa_state->nodes[i].बुहोल_mem;
     }
 
     return (i == socket_id) ? mem_offset : 0;
@@ -152,15 +152,15 @@ uint64_t riscv_socket_mem_size(const MachineState *ms, int socket_id)
         return (!socket_id) ? ms->ram_size : 0;
     }
 
-    return (socket_id < ms->numa_state->num_nodes) ?
-            ms->numa_state->nodes[socket_id].node_mem : 0;
+    return (socket_id < ms->numa_state->नुमेरो_nodes) ?
+            ms->numa_state->nodes[socket_id].बुहोल_mem : 0;
 }
 
-void riscv_socket_fdt_write_id(const MachineState *ms, const char *node_name,
+void riscv_socket_fdt_write_id(const MachineState *ms, const char *बुहोल_name,
                                int socket_id)
 {
     if (riscv_numa_enabled(ms)) {
-        qemu_fdt_setprop_cell(ms->fdt, node_name, "numa-node-id", socket_id);
+        qemu_fdt_setprop_cell(ms->fdt, बुहोल_name, "numa-node-id", socket_id);
     }
 }
 
@@ -171,13 +171,13 @@ void riscv_socket_fdt_write_distance_matrix(const MachineState *ms)
     uint32_t dist_matrix_size;
 
     if (riscv_numa_enabled(ms) && ms->numa_state->have_numa_distance) {
-        dist_matrix_size = riscv_socket_count(ms) * riscv_socket_count(ms);
+        dist_matrix_size = riscv_socket_बिलांग(ms) * riscv_socket_बिलांग(ms);
         dist_matrix_size *= (3 * sizeof(uint32_t));
         dist_matrix = g_malloc0(dist_matrix_size);
 
-        for (i = 0; i < riscv_socket_count(ms); i++) {
-            for (j = 0; j < riscv_socket_count(ms); j++) {
-                idx = (i * riscv_socket_count(ms) + j) * 3;
+        for (i = 0; i < riscv_socket_बिलांग(ms); i++) {
+            for (j = 0; j < riscv_socket_बिलांग(ms); j++) {
+                idx = (i * riscv_socket_बिलांग(ms) + j) * 3;
                 dist_matrix[idx + 0] = cpu_to_be32(i);
                 dist_matrix[idx + 1] = cpu_to_be32(j);
                 dist_matrix[idx + 2] =
@@ -203,20 +203,20 @@ riscv_numa_cpu_index_to_props(MachineState *ms, unsigned cpu_index)
     return possible_cpus->cpus[cpu_index].props;
 }
 
-int64_t riscv_numa_get_default_cpu_node_id(const MachineState *ms, int idx)
+int64_t riscv_numa_get_default_cpu_बुहोल_id(const MachineState *ms, int idx)
 {
     int64_t nidx = 0;
 
-    if (ms->numa_state->num_nodes > ms->smp.cpus) {
+    if (ms->numa_state->नुमेरो_nodes > ms->smp.cpus) {
         error_report("Number of NUMA nodes (%d)"
                      " cannot exceed the number of available CPUs (%u).",
-                     ms->numa_state->num_nodes, ms->smp.cpus);
+                     ms->numa_state->नुमेरो_nodes, ms->smp.cpus);
         exit(EXIT_FAILURE);
     }
-    if (ms->numa_state->num_nodes) {
-        nidx = idx / (ms->smp.cpus / ms->numa_state->num_nodes);
-        if (ms->numa_state->num_nodes <= nidx) {
-            nidx = ms->numa_state->num_nodes - 1;
+    if (ms->numa_state->नुमेरो_nodes) {
+        nidx = idx / (ms->smp.cpus / ms->numa_state->नुमेरो_nodes);
+        if (ms->numa_state->नुमेरो_nodes <= nidx) {
+            nidx = ms->numa_state->नुमेरो_nodes - 1;
         }
     }
 

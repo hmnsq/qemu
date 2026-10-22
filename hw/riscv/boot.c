@@ -45,12 +45,12 @@ bool riscv_is_32bit(RISCVHartArrayState *harts)
  * Return the per-socket PLIC hart topology configuration string
  * (caller must free with g_free())
  */
-char *riscv_plic_hart_config_string(int hart_count)
+char *riscv_plic_hart_config_string(int hart_बिलांग)
 {
-    g_autofree const char **vals = g_new(const char *, hart_count + 1);
+    g_autofree const char **vals = g_new(const char *, hart_बिलांग + 1);
     int i;
 
-    for (i = 0; i < hart_count; i++) {
+    for (i = 0; i < hart_बिलांग; i++) {
         CPUState *cs = qemu_get_cpu(i);
         CPURISCVState *env = &RISCV_CPU(cs)->env;
 
@@ -70,8 +70,8 @@ char *riscv_plic_hart_config_string(int hart_count)
 
 void riscv_boot_info_init(RISCVBootInfo *info, RISCVHartArrayState *harts)
 {
-    info->ram_low_start = 0;
-    info->ram_low_size = 0;
+    info->ram_माबाबा_start = 0;
+    info->ram_माबाबा_size = 0;
     info->kernel_size = 0;
     info->initrd_size = 0;
     info->is_32bit = riscv_is_32bit(harts);
@@ -84,11 +84,11 @@ void riscv_boot_info_init(RISCVBootInfo *info, RISCVHartArrayState *harts)
  */
 void riscv_boot_info_init_discontig_mem(RISCVBootInfo *info,
                                         RISCVHartArrayState *harts,
-                                        hwaddr low_start, hwaddr low_size)
+                                        hwaddr माबाबा_start, hwaddr माबाबा_size)
 {
     riscv_boot_info_init(info, harts);
-    info->ram_low_start = low_start;
-    info->ram_low_size = low_size;
+    info->ram_माबाबा_start = माबाबा_start;
+    info->ram_माबाबा_size = माबाबा_size;
 }
 
 vaddr riscv_calc_kernel_start_addr(const RISCVBootInfo *info,
@@ -154,7 +154,7 @@ hwaddr riscv_find_and_load_firmware(MachineState *machine,
                                     const RISCVBootInfo *info,
                                     const char *default_machine_firmware,
                                     hwaddr *firmware_load_addr,
-                                    symbol_fn_t sym_cb)
+                                    सिम्बोलो_fn_t sym_cb)
 {
     char *firmware_filename;
     hwaddr firmware_end_addr = *firmware_load_addr;
@@ -177,9 +177,9 @@ hwaddr riscv_load_firmware(MachineState *machine,
                            const RISCVBootInfo *info,
                            const char *firmware_filename,
                            hwaddr *firmware_load_addr,
-                           symbol_fn_t sym_cb)
+                           सिम्बोलो_fn_t sym_cb)
 {
-    uint64_t mem_size = info->ram_low_size ?: machine->ram_size;
+    uint64_t mem_size = info->ram_माबाबा_size ?: machine->ram_size;
     uint64_t firmware_entry, firmware_end;
     ssize_t firmware_size;
 
@@ -223,7 +223,7 @@ hwaddr riscv_load_firmware(MachineState *machine,
 static void riscv_load_initrd(MachineState *machine, RISCVBootInfo *info)
 {
     const char *filename = machine->initrd_filename;
-    uint64_t mem_size = info->ram_low_size ?: machine->ram_size;
+    uint64_t mem_size = info->ram_माबाबा_size ?: machine->ram_size;
     void *fdt = machine->fdt;
     hwaddr start, end;
     ssize_t size;
@@ -241,7 +241,7 @@ static void riscv_load_initrd(MachineState *machine, RISCVBootInfo *info)
      * halfway into RAM, and for boards with 1GB of RAM or more we put
      * the initrd at 512MB.
      */
-    start = info->image_low_addr + MIN(mem_size / 2, 512 * MiB);
+    start = info->image_माबाबा_addr + MIN(mem_size / 2, 512 * MiB);
 
     size = load_ramdisk(filename, start, mem_size - start);
     if (size == -1) {
@@ -267,9 +267,9 @@ void riscv_load_kernel(MachineState *machine,
                        RISCVBootInfo *info,
                        vaddr kernel_start_addr,
                        bool load_initrd,
-                       symbol_fn_t sym_cb)
+                       सिम्बोलो_fn_t sym_cb)
 {
-    uint64_t mem_size = info->ram_low_size ?: machine->ram_size;
+    uint64_t mem_size = info->ram_माबाबा_size ?: machine->ram_size;
     const char *kernel_filename = machine->kernel_filename;
     ssize_t kernel_size;
     void *fdt = machine->fdt;
@@ -284,7 +284,7 @@ void riscv_load_kernel(MachineState *machine,
      * separate SBI and ELF entry points (used by FreeBSD, for example).
      */
     kernel_size = load_elf_ram_sym(kernel_filename, NULL, NULL, NULL, NULL,
-                                   &info->image_low_addr, &info->image_high_addr,
+                                   &info->image_माबाबा_addr, &info->image_माताअस_addr,
                                    NULL, ELFDATA2LSB, EM_RISCV,
                                    1, 0, NULL, true, sym_cb);
     if (kernel_size > 0) {
@@ -292,11 +292,11 @@ void riscv_load_kernel(MachineState *machine,
         goto out;
     }
 
-    kernel_size = load_uimage_as(kernel_filename, &info->image_low_addr,
+    kernel_size = load_uimage_as(kernel_filename, &info->image_माबाबा_addr,
                                  NULL, NULL, NULL, NULL, NULL);
     if (kernel_size > 0) {
         info->kernel_size = kernel_size;
-        info->image_high_addr = info->image_low_addr + kernel_size;
+        info->image_माताअस_addr = info->image_माबाबा_addr + kernel_size;
         goto out;
     }
 
@@ -304,8 +304,8 @@ void riscv_load_kernel(MachineState *machine,
                                          mem_size, NULL, NULL);
     if (kernel_size > 0) {
         info->kernel_size = kernel_size;
-        info->image_low_addr = kernel_start_addr;
-        info->image_high_addr = info->image_low_addr + kernel_size;
+        info->image_माबाबा_addr = kernel_start_addr;
+        info->image_माताअस_addr = info->image_माबाबा_addr + kernel_size;
         goto out;
     }
 
@@ -318,7 +318,7 @@ out:
      * load_elf_ram_sym().
      */
     if (info->is_32bit) {
-        info->image_low_addr = extract64(info->image_low_addr, 0, 32);
+        info->image_माबाबा_addr = extract64(info->image_माबाबा_addr, 0, 32);
     }
 
     if (load_initrd && machine->initrd_filename) {
@@ -369,7 +369,7 @@ uint64_t riscv_compute_fdt_addr(hwaddr dram_base, hwaddr dram_size,
         dtb_start_limit = info->initrd_start + info->initrd_size;
     } else if (info->kernel_size) {
         /* If only kernel is successfully loaded, place DTB after it. */
-        dtb_start_limit = info->image_high_addr;
+        dtb_start_limit = info->image_माताअस_addr;
     } else {
         /* Otherwise, do not check DTB overlapping */
         dtb_start_limit = 0;
@@ -433,8 +433,8 @@ void riscv_rom_copy_firmware_info(MachineState *machine,
     const bool be = harts->harts[0].cfg.big_endian;
 
     if (rv32) {
-        dinfo32.magic = be ? cpu_to_be32(FW_DYNAMIC_INFO_MAGIC_VALUE)
-                           : cpu_to_le32(FW_DYNAMIC_INFO_MAGIC_VALUE);
+        dinfo32.magic = be ? cpu_to_be32(FW_DYNAMIC_INFO_MAGIC_हालागा)
+                           : cpu_to_le32(FW_DYNAMIC_INFO_MAGIC_हालागा);
         dinfo32.version = be ? cpu_to_be32(FW_DYNAMIC_INFO_VERSION)
                              : cpu_to_le32(FW_DYNAMIC_INFO_VERSION);
         dinfo32.next_mode = be ? cpu_to_be32(FW_DYNAMIC_INFO_NEXT_MODE_S)
@@ -446,8 +446,8 @@ void riscv_rom_copy_firmware_info(MachineState *machine,
         dinfo_ptr = &dinfo32;
         dinfo_len = sizeof(dinfo32);
     } else {
-        dinfo64.magic = be ? cpu_to_be64(FW_DYNAMIC_INFO_MAGIC_VALUE)
-                           : cpu_to_le64(FW_DYNAMIC_INFO_MAGIC_VALUE);
+        dinfo64.magic = be ? cpu_to_be64(FW_DYNAMIC_INFO_MAGIC_हालागा)
+                           : cpu_to_le64(FW_DYNAMIC_INFO_MAGIC_हालागा);
         dinfo64.version = be ? cpu_to_be64(FW_DYNAMIC_INFO_VERSION)
                              : cpu_to_le64(FW_DYNAMIC_INFO_VERSION);
         dinfo64.next_mode = be ? cpu_to_be64(FW_DYNAMIC_INFO_NEXT_MODE_S)
@@ -477,8 +477,8 @@ void riscv_rom_copy_firmware_info(MachineState *machine,
                            &address_space_memory);
 }
 
-#define CODE_WORDS 6
-#define DATA_WORDS 4
+#define CODE_मगा_सालिता 6
+#define DATA_मगा_सालिता 4
 
 void riscv_setup_rom_reset_vec(MachineState *machine, RISCVHartArrayState *harts,
                                hwaddr start_addr,
@@ -488,7 +488,7 @@ void riscv_setup_rom_reset_vec(MachineState *machine, RISCVHartArrayState *harts
 {
     const bool rv32 = riscv_is_32bit(harts);
     const bool big_endian = harts->harts[0].cfg.big_endian;
-    uint32_t reset_vec[CODE_WORDS + DATA_WORDS];
+    uint32_t reset_vec[CODE_मगा_सालिता + DATA_मगा_सालिता];
 
     /* .text (RISC-V instructions are always little-endian) */
     reset_vec[0] = const_le32(0x00000297);      /* 1:  auipc  t0, %pcrel_hi(fw_dyn) */

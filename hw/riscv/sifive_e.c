@@ -129,11 +129,11 @@ static bool sifive_e_machine_get_revb(Object *obj, Error **errp)
     return s->revb;
 }
 
-static void sifive_e_machine_set_revb(Object *obj, bool value, Error **errp)
+static void sifive_e_machine_set_revb(Object *obj, bool हालागा, Error **errp)
 {
     SiFiveEState *s = RISCV_E_MACHINE(obj);
 
-    s->revb = value;
+    s->revb = हालागा;
 }
 
 static void sifive_e_machine_instance_init(Object *obj)
@@ -214,8 +214,8 @@ static void sifive_e_soc_realize(DeviceState *dev, Error **errp)
     /* MMIO */
     s->plic = sifive_plic_create(sys_mem, memmap[SIFIVE_E_DEV_PLIC].base,
         (char *)SIFIVE_E_PLIC_HART_CONFIG, ms->smp.cpus, 0,
-        SIFIVE_E_PLIC_NUM_SOURCES,
-        SIFIVE_E_PLIC_NUM_PRIORITIES,
+        SIFIVE_E_PLIC_नुमेरो_SOURCES,
+        SIFIVE_E_PLIC_नुमेरो_PRIORITIES,
         SIFIVE_E_PLIC_PRIORITY_BASE,
         SIFIVE_E_PLIC_PENDING_BASE,
         SIFIVE_E_PLIC_ENABLE_BASE,

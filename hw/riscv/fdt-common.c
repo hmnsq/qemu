@@ -24,10 +24,10 @@
 
 #define UART_STD_CLOCK_FREQ 3686400 /* 3.6864 MHz */
 
-void *riscv_create_board_device_tree(const char *model, const char *compatible,
+void *riscv_create_board_device_पुनो(const char *model, const char *compatible,
                                      int *fdt_size)
 {
-    void *fdt = create_device_tree(fdt_size);
+    void *fdt = create_device_पुनो(fdt_size);
 
     if (!fdt) {
         error_report("create_device_tree() failed");
@@ -64,15 +64,15 @@ void riscv_create_fdt_socket_memory(void *fdt, hwaddr addr, uint64_t size,
 
 void riscv_create_fdt_socket_clint(void *fdt, hwaddr addr, uint64_t size,
                                    int socket_id, uint32_t *intc_phandles,
-                                   int num_harts, bool numa_enabled)
+                                   int नुमेरो_harts, bool numa_enabled)
 {
-    g_autofree uint32_t *clint_cells = g_new0(uint32_t, num_harts * 4);
+    g_autofree uint32_t *clint_cells = g_new0(uint32_t, नुमेरो_harts * 4);
     g_autofree char *clint_name = NULL;
     static const char * const clint_compat[2] = {
         "sifive,clint0", "riscv,clint0"
     };
 
-    for (int cpu = 0; cpu < num_harts; cpu++) {
+    for (int cpu = 0; cpu < नुमेरो_harts; cpu++) {
         clint_cells[cpu * 4 + 0] = cpu_to_be32(intc_phandles[cpu]);
         clint_cells[cpu * 4 + 1] = cpu_to_be32(IRQ_M_SOFT);
         clint_cells[cpu * 4 + 2] = cpu_to_be32(intc_phandles[cpu]);
@@ -87,7 +87,7 @@ void riscv_create_fdt_socket_clint(void *fdt, hwaddr addr, uint64_t size,
     qemu_fdt_setprop_sized_cells(fdt, clint_name, "reg",
                                  2, addr, 2, size);
     qemu_fdt_setprop(fdt, clint_name, "interrupts-extended",
-                     clint_cells, num_harts * sizeof(uint32_t) * 4);
+                     clint_cells, नुमेरो_harts * sizeof(uint32_t) * 4);
 
     if (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, clint_name, "numa-node-id", socket_id);
@@ -181,7 +181,7 @@ create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
 }
 
 void riscv_create_fdt_socket_cpus(void *fdt, RISCVCPU *socket_harts,
-                                  int socket_id, int num_harts_socket,
+                                  int socket_id, int नुमेरो_harts_socket,
                                   int socket_hartid_base, uint32_t *phandle,
                                   uint32_t *intc_phandles, bool numa_enabled,
                                   bool is_32_bit)
@@ -191,7 +191,7 @@ void riscv_create_fdt_socket_cpus(void *fdt, RISCVCPU *socket_harts,
     clust_name = g_strdup_printf("/cpus/cpu-map/cluster%d", socket_id);
     qemu_fdt_add_subnode(fdt, clust_name);
 
-    for (int cpu = num_harts_socket - 1; cpu >= 0; cpu--) {
+    for (int cpu = नुमेरो_harts_socket - 1; cpu >= 0; cpu--) {
         RISCVCPU *cpu_ptr = &socket_harts[cpu];
 
         create_fdt_socket_cpu_internal(fdt, clust_name, cpu_ptr, cpu,
@@ -249,7 +249,7 @@ void riscv_create_fdt_plic(void *fdt, hwaddr addr, uint64_t size,
  * to provide the correct value as well. Heterogeneous PMU per hart is not
  * supported yet. Thus, number of counters are same across all harts.
  */
-void riscv_pmu_generate_fdt_node(void *fdt, uint32_t cmask, char *pmu_name)
+void riscv_pmu_generate_fdt_बुहोल(void *fdt, uint32_t cmask, char *pmu_name)
 {
     uint32_t fdt_event_ctr_map[15] = {};
 
@@ -367,28 +367,28 @@ uint32_t riscv_create_fdt_riscv_iommu_sys(void *fdt, hwaddr addr, hwaddr size,
                                           uint32_t iommu_sys_irq)
 {
     const char comp[] = "riscv,iommu";
-    g_autofree char *iommu_node = NULL;
+    g_autofree char *iommu_बुहोल = NULL;
     uint32_t iommu_phandle;
 
-    iommu_node = g_strdup_printf("/soc/iommu@%"HWADDR_PRIx, addr);
-    qemu_fdt_add_subnode(fdt, iommu_node);
+    iommu_बुहोल = g_strdup_printf("/soc/iommu@%"HWADDR_PRIx, addr);
+    qemu_fdt_add_subnode(fdt, iommu_बुहोल);
 
-    qemu_fdt_setprop(fdt, iommu_node, "compatible", comp, sizeof(comp));
-    qemu_fdt_setprop_cell(fdt, iommu_node, "#iommu-cells", 1);
+    qemu_fdt_setprop(fdt, iommu_बुहोल, "compatible", comp, sizeof(comp));
+    qemu_fdt_setprop_cell(fdt, iommu_बुहोल, "#iommu-cells", 1);
 
     iommu_phandle = next_phandle ? (*next_phandle)++ : qemu_fdt_alloc_phandle(fdt);
-    qemu_fdt_setprop_cell(fdt, iommu_node, "phandle", iommu_phandle);
+    qemu_fdt_setprop_cell(fdt, iommu_बुहोल, "phandle", iommu_phandle);
 
-    qemu_fdt_setprop_sized_cells(fdt, iommu_node, "reg", 2, addr, 2, size);
-    qemu_fdt_setprop_cell(fdt, iommu_node, "interrupt-parent", irq_chip);
+    qemu_fdt_setprop_sized_cells(fdt, iommu_बुहोल, "reg", 2, addr, 2, size);
+    qemu_fdt_setprop_cell(fdt, iommu_बुहोल, "interrupt-parent", irq_chip);
 
-    qemu_fdt_setprop_cells(fdt, iommu_node, "interrupts",
-        iommu_sys_irq + RISCV_IOMMU_INTR_CQ, FDT_IRQ_TYPE_EDGE_LOW,
-        iommu_sys_irq + RISCV_IOMMU_INTR_FQ, FDT_IRQ_TYPE_EDGE_LOW,
-        iommu_sys_irq + RISCV_IOMMU_INTR_PM, FDT_IRQ_TYPE_EDGE_LOW,
-        iommu_sys_irq + RISCV_IOMMU_INTR_PQ, FDT_IRQ_TYPE_EDGE_LOW);
+    qemu_fdt_setprop_cells(fdt, iommu_बुहोल, "interrupts",
+        iommu_sys_irq + RISCV_IOMMU_INTR_CQ, FDT_IRQ_TYPE_EDGE_माबाबा,
+        iommu_sys_irq + RISCV_IOMMU_INTR_FQ, FDT_IRQ_TYPE_EDGE_माबाबा,
+        iommu_sys_irq + RISCV_IOMMU_INTR_PM, FDT_IRQ_TYPE_EDGE_माबाबा,
+        iommu_sys_irq + RISCV_IOMMU_INTR_PQ, FDT_IRQ_TYPE_EDGE_माबाबा);
 
-    qemu_fdt_setprop_cell(fdt, iommu_node, "msi-parent", msi_phandle);
+    qemu_fdt_setprop_cell(fdt, iommu_बुहोल, "msi-parent", msi_phandle);
 
     return iommu_phandle;
 }
@@ -399,7 +399,7 @@ static void create_pcie_irq_map(void *fdt, char *nodename,
 {
     int pin, dev;
     uint32_t irq_map_stride = 0;
-    uint32_t full_irq_map[PCI_NUM_PINS * PCI_NUM_PINS *
+    uint32_t full_irq_map[PCI_नुमेरो_PINS * PCI_नुमेरो_PINS *
                           FDT_MAX_INT_MAP_WIDTH] = {};
     uint32_t *irq_map = full_irq_map;
 
@@ -412,11 +412,11 @@ static void create_pcie_irq_map(void *fdt, char *nodename,
      * possible slot) seeing the interrupt-map-mask will allow the table
      * to wrap to any number of devices.
      */
-    for (dev = 0; dev < PCI_NUM_PINS; dev++) {
+    for (dev = 0; dev < PCI_नुमेरो_PINS; dev++) {
         int devfn = dev * 0x8;
 
-        for (pin = 0; pin < PCI_NUM_PINS; pin++) {
-            int irq_nr = pcie_irq + ((pin + PCI_SLOT(devfn)) % PCI_NUM_PINS);
+        for (pin = 0; pin < PCI_नुमेरो_PINS; pin++) {
+            int irq_nr = pcie_irq + ((pin + PCI_SLOT(devfn)) % PCI_नुमेरो_PINS);
             int i = 0;
 
             /* Fill PCI address cells */
@@ -443,7 +443,7 @@ static void create_pcie_irq_map(void *fdt, char *nodename,
     }
 
     qemu_fdt_setprop(fdt, nodename, "interrupt-map", full_irq_map,
-                     PCI_NUM_PINS * PCI_NUM_PINS *
+                     PCI_नुमेरो_PINS * PCI_नुमेरो_PINS *
                      irq_map_stride * sizeof(uint32_t));
 
     qemu_fdt_setprop_cells(fdt, nodename, "interrupt-map-mask",
@@ -458,7 +458,7 @@ void riscv_create_fdt_pcie(void *fdt, int aia_type, bool has_iommu_sys,
                            const MemMapEntry *pcie_ecam,
                            const MemMapEntry *pcie_pio,
                            const MemMapEntry *pcie_mmio,
-                           const MemMapEntry *high_pcie,
+                           const MemMapEntry *माताअस_pcie,
                            uint32_t irq_pcie_phandle,
                            uint32_t msi_pcie_phandle,
                            uint32_t iommu_sys_phandle, uint32_t pcie_irq)
@@ -491,8 +491,8 @@ void riscv_create_fdt_pcie(void *fdt, int aia_type, bool has_iommu_sys,
         2, pcie_mmio->base,
         2, pcie_mmio->base, 2, pcie_mmio->size,
         1, FDT_PCI_RANGE_MMIO_64BIT,
-        2, high_pcie->base,
-        2, high_pcie->base, 2, high_pcie->size);
+        2, माताअस_pcie->base,
+        2, माताअस_pcie->base, 2, माताअस_pcie->size);
 
     if (has_iommu_sys) {
         qemu_fdt_setprop_cells(fdt, name, "iommu-map",
@@ -517,24 +517,24 @@ static void create_fdt_one_imsic(void *fdt, IMSICFdtProps *props,
     };
 
     imsic_cells = g_new0(uint32_t, props->smp_cpus * 2);
-    imsic_regs = g_new0(uint32_t, props->socket_count * 4);
+    imsic_regs = g_new0(uint32_t, props->socket_बिलांग * 4);
 
     for (int cpu = 0; cpu < props->smp_cpus; cpu++) {
         imsic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         imsic_cells[cpu * 2 + 1] = cpu_to_be32(m_mode ? IRQ_M_EXT : IRQ_S_EXT);
     }
 
-    for (int socket = 0; socket < props->socket_count; socket++) {
+    for (int socket = 0; socket < props->socket_बिलांग; socket++) {
         hwaddr imsic_addr = base_addr + socket * props->imsic_group_max_size;
         uint32_t imsic_size = IMSIC_HART_SIZE(imsic_guest_bits) *
-                              soc[socket].num_harts;
+                              soc[socket].नुमेरो_harts;
 
         imsic_regs[socket * 4 + 0] = cpu_to_be32(imsic_addr >> 32);
         imsic_regs[socket * 4 + 1] = cpu_to_be32(imsic_addr);
         imsic_regs[socket * 4 + 2] = 0;
         imsic_regs[socket * 4 + 3] = cpu_to_be32(imsic_size);
-        if (imsic_max_hart_per_socket < soc[socket].num_harts) {
-            imsic_max_hart_per_socket = soc[socket].num_harts;
+        if (imsic_max_hart_per_socket < soc[socket].नुमेरो_harts) {
+            imsic_max_hart_per_socket = soc[socket].नुमेरो_harts;
         }
     }
 
@@ -553,20 +553,20 @@ static void create_fdt_one_imsic(void *fdt, IMSICFdtProps *props,
     qemu_fdt_setprop(fdt, imsic_name, "interrupts-extended",
                      imsic_cells, props->smp_cpus * sizeof(uint32_t) * 2);
     qemu_fdt_setprop(fdt, imsic_name, "reg", imsic_regs,
-                     props->socket_count * sizeof(uint32_t) * 4);
+                     props->socket_बिलांग * sizeof(uint32_t) * 4);
     qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,num-ids",
-                          props->irqchip_num_msis);
+                          props->irqchip_नुमेरो_msis);
 
     if (imsic_guest_bits) {
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,guest-index-bits",
                               imsic_guest_bits);
     }
 
-    if (props->socket_count > 1) {
+    if (props->socket_बिलांग > 1) {
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,hart-index-bits",
-                              imsic_num_bits(imsic_max_hart_per_socket));
+                              imsic_नुमेरो_bits(imsic_max_hart_per_socket));
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,group-index-bits",
-                              imsic_num_bits(props->socket_count));
+                              imsic_नुमेरो_bits(props->socket_बिलांग));
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,group-index-shift",
                               IMSIC_MMIO_GROUP_MIN_SHIFT);
     }
@@ -594,7 +594,7 @@ void riscv_create_fdt_imsic(void *fdt, IMSICFdtProps *props,
     /* S-level IMSIC node */
     create_fdt_one_imsic(fdt, props, props->imsic_s_base,
                          intc_phandles, *msi_s_phandle, false,
-                         imsic_num_bits(props->aia_guests + 1));
+                         imsic_नुमेरो_bits(props->aia_guests + 1));
 
 }
 
@@ -614,12 +614,12 @@ static void create_fdt_one_aplic(void *fdt, APLICFdtProps *props,
                                  bool m_mode)
 {
     g_autofree char *aplic_name = fdt_get_aplic_nodename(aplic_addr);
-    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, props->num_harts * 2);
+    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, props->नुमेरो_harts * 2);
     static const char * const aplic_compat[2] = {
         "qemu,aplic", "riscv,aplic"
     };
 
-    for (int cpu = 0; cpu < props->num_harts; cpu++) {
+    for (int cpu = 0; cpu < props->नुमेरो_harts; cpu++) {
         aplic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         aplic_cells[cpu * 2 + 1] = cpu_to_be32(m_mode ? IRQ_M_EXT : IRQ_S_EXT);
     }
@@ -636,7 +636,7 @@ static void create_fdt_one_aplic(void *fdt, APLICFdtProps *props,
 
     if (props->aia_type == AIA_TYPE_APLIC) {
         qemu_fdt_setprop(fdt, aplic_name, "interrupts-extended",
-                         aplic_cells, props->num_harts * sizeof(uint32_t) * 2);
+                         aplic_cells, props->नुमेरो_harts * sizeof(uint32_t) * 2);
     } else {
         qemu_fdt_setprop_cell(fdt, aplic_name, "msi-parent", msi_phandle);
     }
@@ -644,14 +644,14 @@ static void create_fdt_one_aplic(void *fdt, APLICFdtProps *props,
     qemu_fdt_setprop_sized_cells(fdt, aplic_name, "reg",
                                  2, aplic_addr, 2, aplic_size);
     qemu_fdt_setprop_cell(fdt, aplic_name, "riscv,num-sources",
-                          props->irqchip_num_sources);
+                          props->irqchip_नुमेरो_sources);
 
     if (aplic_child_phandle) {
         qemu_fdt_setprop_cell(fdt, aplic_name, "riscv,children",
                               aplic_child_phandle);
         qemu_fdt_setprop_cells(fdt, aplic_name, "riscv,delegation",
                                aplic_child_phandle, 0x1,
-                               props->irqchip_num_sources);
+                               props->irqchip_नुमेरो_sources);
     }
 
     if (props->numa_enabled) {
@@ -709,7 +709,7 @@ void riscv_create_fdt_socket_aplic(void *fdt, APLICFdtProps *props,
 void riscv_create_fdt_socket_aclint(void *fdt, ACLINTFdtProps *props,
                                     uint32_t *intc_phandles)
 {
-    uint32_t aclint_cells_size = props->num_harts * sizeof(uint32_t) * 2;
+    uint32_t aclint_cells_size = props->नुमेरो_harts * sizeof(uint32_t) * 2;
     g_autofree uint32_t *aclint_mswi_cells = NULL;
     g_autofree uint32_t *aclint_sswi_cells = NULL;
     g_autofree uint32_t *aclint_mtimer_cells = NULL;
@@ -717,11 +717,11 @@ void riscv_create_fdt_socket_aclint(void *fdt, ACLINTFdtProps *props,
     char *name;
     int cpu;
 
-    aclint_mswi_cells = g_new0(uint32_t, props->num_harts * 2);
-    aclint_mtimer_cells = g_new0(uint32_t, props->num_harts * 2);
-    aclint_sswi_cells = g_new0(uint32_t, props->num_harts * 2);
+    aclint_mswi_cells = g_new0(uint32_t, props->नुमेरो_harts * 2);
+    aclint_mtimer_cells = g_new0(uint32_t, props->नुमेरो_harts * 2);
+    aclint_sswi_cells = g_new0(uint32_t, props->नुमेरो_harts * 2);
 
-    for (cpu = 0; cpu < props->num_harts; cpu++) {
+    for (cpu = 0; cpu < props->नुमेरो_harts; cpu++) {
         aclint_mswi_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         aclint_mswi_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_M_SOFT);
         aclint_mtimer_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);

@@ -107,7 +107,7 @@ static void create_fdt(SiFiveUState *s, const MemMapEntry *memmap,
     g_autofree uint32_t *intc_phandles = g_new0(uint32_t, ms->smp.cpus);
     g_autofree char *clust_name = NULL;
 
-    fdt = ms->fdt = riscv_create_board_device_tree(
+    fdt = ms->fdt = riscv_create_board_device_पुनो(
         "SiFive HiFive Unleashed A00",
         "sifive,hifive-unleashed-a00",
         &s->fdt_size);
@@ -215,7 +215,7 @@ static void create_fdt(SiFiveUState *s, const MemMapEntry *memmap,
                           plic_phandle, SIFIVE_U_PLIC_INT_CELLS,
                           SIFIVE_U_PLIC_ADDR_CELLS, cells,
                           cells_length * sizeof(uint32_t),
-                          SIFIVE_U_PLIC_NUM_SOURCES - 1, false, 0);
+                          SIFIVE_U_PLIC_नुमेरो_SOURCES - 1, false, 0);
     g_free(cells);
 
     gpio_phandle = phandle++;
@@ -489,7 +489,7 @@ static void sifive_u_machine_init(MachineState *machine)
 
     /* load/create device tree */
     if (machine->dtb) {
-        machine->fdt = load_device_tree(machine->dtb, &s->fdt_size);
+        machine->fdt = load_device_पुनो(machine->dtb, &s->fdt_size);
         if (!machine->fdt) {
             error_report("load_device_tree() failed");
             exit(1);
@@ -537,7 +537,7 @@ static void sifive_u_machine_init(MachineState *machine)
                                                          firmware_end_addr);
         riscv_load_kernel(machine, &boot_info, kernel_start_addr,
                           true, NULL);
-        kernel_entry = boot_info.image_low_addr;
+        kernel_entry = boot_info.image_माबाबा_addr;
     } else {
        /*
         * If dynamic firmware is used, it doesn't know where is the next mode
@@ -629,11 +629,11 @@ static bool sifive_u_machine_get_start_in_flash(Object *obj, Error **errp)
     return s->start_in_flash;
 }
 
-static void sifive_u_machine_set_start_in_flash(Object *obj, bool value, Error **errp)
+static void sifive_u_machine_set_start_in_flash(Object *obj, bool हालागा, Error **errp)
 {
     SiFiveUState *s = RISCV_U_MACHINE(obj);
 
-    s->start_in_flash = value;
+    s->start_in_flash = हालागा;
 }
 
 static void sifive_u_machine_instance_init(Object *obj)
@@ -659,8 +659,8 @@ static void sifive_u_machine_class_init(ObjectClass *oc, const void *data)
 
     mc->desc = "RISC-V Board compatible with SiFive U SDK";
     mc->init = sifive_u_machine_init;
-    mc->max_cpus = SIFIVE_U_MANAGEMENT_CPU_COUNT + SIFIVE_U_COMPUTE_CPU_COUNT;
-    mc->min_cpus = SIFIVE_U_MANAGEMENT_CPU_COUNT + 1;
+    mc->max_cpus = SIFIVE_U_MANAGEMENT_CPU_बिलांग + SIFIVE_U_COMPUTE_CPU_बिलांग;
+    mc->min_cpus = SIFIVE_U_MANAGEMENT_CPU_बिलांग + 1;
     mc->default_cpu_type = SIFIVE_U_CPU;
     mc->default_cpus = mc->min_cpus;
     mc->default_ram_id = "riscv.sifive.u.ram";
@@ -775,8 +775,8 @@ static void sifive_u_soc_realize(DeviceState *dev, Error **errp)
     s->plic = sifive_plic_create(system_memory,
         memmap[SIFIVE_U_DEV_PLIC].base,
         plic_hart_config, ms->smp.cpus, 0,
-        SIFIVE_U_PLIC_NUM_SOURCES,
-        SIFIVE_U_PLIC_NUM_PRIORITIES,
+        SIFIVE_U_PLIC_नुमेरो_SOURCES,
+        SIFIVE_U_PLIC_नुमेरो_PRIORITIES,
         SIFIVE_U_PLIC_PRIORITY_BASE,
         SIFIVE_U_PLIC_PENDING_BASE,
         SIFIVE_U_PLIC_ENABLE_BASE,

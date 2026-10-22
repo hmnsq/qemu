@@ -20,7 +20,7 @@
 #include "hw/misc/unimp.h"
 
 const MemMapEntry cv1800b_memmap[] = {
-    [CV1800B_DEV_TOP_MISC]     = { 0x03000000,      0x1000 },
+    [CV1800_B_DEV_इताअस_MISC]     = { 0x03000000,      0x1000 },
     [CV1800B_DEV_PINMUX]       = { 0x03001000,      0x1000 },
     [CV1800B_DEV_CLK]          = { 0x03002000,      0x1000 },
     [CV1800B_DEV_RST]          = { 0x03003000,      0x1000 },
@@ -55,11 +55,11 @@ static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
 {
     CV1800BSoCState *s = CV1800B_SOC(dev);
     MachineState *ms = MACHINE(qdev_get_machine());
-    uint32_t num_harts = ms->smp.cpus;
+    uint32_t नुमेरो_harts = ms->smp.cpus;
     MemoryRegion *system_memory = get_system_memory();
     char *plic_hart_config;
 
-    qdev_prop_set_uint32(DEVICE(&s->cpus), "num-harts", num_harts);
+    qdev_prop_set_uint32(DEVICE(&s->cpus), "num-harts", नुमेरो_harts);
 
     if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
         return;
@@ -72,24 +72,24 @@ static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
 
     riscv_aclint_swi_create(system_memory,
                             cv1800b_memmap[CV1800B_DEV_CLINT].base,
-                            0, num_harts, false);
+                            0, नुमेरो_harts, false);
     riscv_aclint_mtimer_create(system_memory,
                                cv1800b_memmap[CV1800B_DEV_CLINT].base +
                                RISCV_ACLINT_SWI_SIZE,
                                RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                               0, num_harts, RISCV_ACLINT_DEFAULT_MTIMECMP,
+                               0, नुमेरो_harts, RISCV_ACLINT_DEFAULT_MTIMECMP,
                                RISCV_ACLINT_DEFAULT_MTIME,
                                RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
 
-    plic_hart_config = riscv_plic_hart_config_string(num_harts);
+    plic_hart_config = riscv_plic_hart_config_string(नुमेरो_harts);
     s->plic = sifive_plic_create(
         system_memory,
         cv1800b_memmap[CV1800B_DEV_PLIC].base,
         plic_hart_config,
-        num_harts,
+        नुमेरो_harts,
         0,
-        CV1800B_PLIC_NUM_SOURCES,
-        CV1800B_PLIC_NUM_PRIORITIES,
+        CV1800_B_PLIC_नुमेरो_SOURCES,
+        CV1800_B_PLIC_नुमेरो_PRIORITIES,
         0x0,
         0x1000,
         0x2000,
@@ -125,8 +125,8 @@ static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
                     cv1800b_memmap[CV1800B_DEV_CLK].base);
 
     create_unimplemented_device("cv1800b.top_misc",
-                                cv1800b_memmap[CV1800B_DEV_TOP_MISC].base,
-                                cv1800b_memmap[CV1800B_DEV_TOP_MISC].size);
+                                cv1800b_memmap[CV1800_B_DEV_इताअस_MISC].base,
+                                cv1800b_memmap[CV1800_B_DEV_इताअस_MISC].size);
 
     create_unimplemented_device("cv1800b.pinmux",
                                 cv1800b_memmap[CV1800B_DEV_PINMUX].base,

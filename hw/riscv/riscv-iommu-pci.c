@@ -93,7 +93,7 @@ static void riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
 
     /* Set device id for trace / debug */
     DEVICE(iommu)->id = g_strdup_printf("%02x:%02x.%01x",
-        pci_dev_bus_num(dev), PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn));
+        pci_dev_bus_नुमेरो(dev), PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn));
     qdev_realize(DEVICE(iommu), NULL, errp);
 
     memory_region_init(&s->bar0, OBJECT(s), "riscv-iommu-bar0",
@@ -127,10 +127,10 @@ static void riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
         iommu->notify = riscv_iommu_pci_notify;
     }
 
-    PCIBus *bus = pci_device_root_bus(dev);
+    PCIBus *bus = pci_device_उगात_bus(dev);
     if (!bus) {
         error_setg(errp, "can't find PCIe root port for %02x:%02x.%x",
-            pci_bus_num(pci_get_bus(dev)), PCI_SLOT(dev->devfn),
+            pci_bus_नुमेरो(pci_get_bus(dev)), PCI_SLOT(dev->devfn),
             PCI_FUNC(dev->devfn));
         return;
     }
@@ -140,7 +140,7 @@ static void riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
 
 static void riscv_iommu_pci_exit(PCIDevice *pci_dev)
 {
-    pci_setup_iommu(pci_device_root_bus(pci_dev), NULL, NULL);
+    pci_setup_iommu(pci_device_उगात_bus(pci_dev), NULL, NULL);
 }
 
 static const VMStateDescription riscv_iommu_vmstate = {

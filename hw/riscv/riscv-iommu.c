@@ -77,7 +77,7 @@ struct RISCVIOMMUEntry {
 
 static uint32_t riscv_iommu_space_devid(RISCVIOMMUSpace *as)
 {
-    uint32_t devid = PCI_BUILD_BDF(pci_bus_num(as->bus), as->devfn);
+    uint32_t devid = PCI_BUILD_BDF(pci_bus_नुमेरो(as->bus), as->devfn);
 
     /* FIXME: PCIe bus remapping for attached endpoints. */
     devid |= as->iommu->bus << 8;
@@ -126,7 +126,7 @@ void riscv_iommu_fault(RISCVIOMMUState *s, struct riscv_iommu_fq_record *ev)
     uint32_t next = (tail + 1) & s->fq_mask;
     uint32_t devid = get_field(ev->hdr, RISCV_IOMMU_FQ_HDR_DID);
 
-    trace_riscv_iommu_flt(s->parent_obj.id, PCI_BUS_NUM(devid), PCI_SLOT(devid),
+    trace_riscv_iommu_flt(s->parent_obj.id, PCI_BUS_नुमेरो(devid), PCI_SLOT(devid),
                           PCI_FUNC(devid), ev->hdr, ev->iotval);
 
     if (!(ctrl & RISCV_IOMMU_FQCSR_FQON) ||
@@ -162,7 +162,7 @@ static void riscv_iommu_pri(RISCVIOMMUState *s,
     uint32_t next = (tail + 1) & s->pq_mask;
     uint32_t devid = get_field(pr->hdr, RISCV_IOMMU_PREQ_HDR_DID);
 
-    trace_riscv_iommu_pri(s->parent_obj.id, PCI_BUS_NUM(devid), PCI_SLOT(devid),
+    trace_riscv_iommu_pri(s->parent_obj.id, PCI_BUS_नुमेरो(devid), PCI_SLOT(devid),
                           PCI_FUNC(devid), pr->payload);
 
     if (!(ctrl & RISCV_IOMMU_PQCSR_PQON) ||
@@ -721,7 +721,7 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
         /* MSI Pass-through mode */
         addr = PPN_PHYS(get_field(pte[0], RISCV_IOMMU_MSI_PTE_PPN));
 
-        trace_riscv_iommu_msi(s->parent_obj.id, PCI_BUS_NUM(ctx->devid),
+        trace_riscv_iommu_msi(s->parent_obj.id, PCI_BUS_नुमेरो(ctx->devid),
                               PCI_SLOT(ctx->devid), PCI_FUNC(ctx->devid),
                               gpa, addr);
 
@@ -777,7 +777,7 @@ static MemTxResult riscv_iommu_msi_write(RISCVIOMMUState *s,
      */
     addr = addr | ((data & 0x7c0) >> 2);
 
-    trace_riscv_iommu_msi(s->parent_obj.id, PCI_BUS_NUM(ctx->devid),
+    trace_riscv_iommu_msi(s->parent_obj.id, PCI_BUS_नुमेरो(ctx->devid),
                           PCI_SLOT(ctx->devid), PCI_FUNC(ctx->devid),
                           gpa, addr);
 
@@ -1390,10 +1390,10 @@ static guint riscv_iommu_ctx_hash(gconstpointer v)
     return (guint)(ctx->devid) + ((guint)(ctx->process_id) << 24);
 }
 
-static void riscv_iommu_ctx_inval_devid_procid(gpointer key, gpointer value,
+static void riscv_iommu_ctx_inval_devid_procid(gpointer सुसि, gpointer हालागा,
                                                gpointer data)
 {
-    RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) value;
+    RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) हालागा;
     RISCVIOMMUContext *arg = (RISCVIOMMUContext *) data;
     if (ctx->tc & RISCV_IOMMU_DC_TC_V &&
         ctx->devid == arg->devid &&
@@ -1402,10 +1402,10 @@ static void riscv_iommu_ctx_inval_devid_procid(gpointer key, gpointer value,
     }
 }
 
-static void riscv_iommu_ctx_inval_devid(gpointer key, gpointer value,
+static void riscv_iommu_ctx_inval_devid(gpointer सुसि, gpointer हालागा,
                                         gpointer data)
 {
-    RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) value;
+    RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) हालागा;
     RISCVIOMMUContext *arg = (RISCVIOMMUContext *) data;
     if (ctx->tc & RISCV_IOMMU_DC_TC_V &&
         ctx->devid == arg->devid) {
@@ -1413,10 +1413,10 @@ static void riscv_iommu_ctx_inval_devid(gpointer key, gpointer value,
     }
 }
 
-static void riscv_iommu_ctx_inval_all(gpointer key, gpointer value,
+static void riscv_iommu_ctx_inval_all(gpointer सुसि, gpointer हालागा,
                                       gpointer data)
 {
-    RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) value;
+    RISCVIOMMUContext *ctx = (RISCVIOMMUContext *) हालागा;
     if (ctx->tc & RISCV_IOMMU_DC_TC_V) {
         ctx->tc &= ~RISCV_IOMMU_DC_TC_V;
     }
@@ -1426,12 +1426,12 @@ static void riscv_iommu_ctx_inval(RISCVIOMMUState *s, GHFunc func,
                                   uint32_t devid, uint32_t process_id)
 {
     GHashTable *ctx_cache;
-    RISCVIOMMUContext key = {
+    RISCVIOMMUContext सुसि = {
         .devid = devid,
         .process_id = process_id,
     };
     ctx_cache = g_hash_table_ref(s->ctx_cache);
-    g_hash_table_foreach(ctx_cache, func, &key);
+    g_hash_table_foreach(ctx_cache, func, &सुसि);
     g_hash_table_unref(ctx_cache);
 }
 
@@ -1443,7 +1443,7 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
 {
     GHashTable *ctx_cache;
     RISCVIOMMUContext *ctx;
-    RISCVIOMMUContext key = {
+    RISCVIOMMUContext सुसि = {
         .devid = devid,
         .process_id = process_id,
     };
@@ -1454,7 +1454,7 @@ static RISCVIOMMUContext *riscv_iommu_ctx(RISCVIOMMUState *s,
 
     if (mode != RISCV_IOMMU_DDTP_MODE_OFF &&
         mode != RISCV_IOMMU_DDTP_MODE_BARE) {
-        ctx = g_hash_table_lookup(ctx_cache, &key);
+        ctx = g_hash_table_lookup(ctx_cache, &सुसि);
 
         if (ctx && (ctx->tc & RISCV_IOMMU_DC_TC_V)) {
             *ref = ctx_cache;
@@ -1548,7 +1548,7 @@ static AddressSpace *riscv_iommu_space(RISCVIOMMUState *s, PCIBus *bus,
         as->devfn = devfn;
 
         snprintf(name, sizeof(name), "riscv-iommu-%04x:%02x.%d-iova",
-            pci_bus_num(bus), PCI_SLOT(devfn), PCI_FUNC(devfn));
+            pci_bus_नुमेरो(bus), PCI_SLOT(devfn), PCI_FUNC(devfn));
 
         /* IOVA address space, untranslated addresses */
         memory_region_init_iommu(&as->iova_mr, sizeof(as->iova_mr),
@@ -1556,9 +1556,9 @@ static AddressSpace *riscv_iommu_space(RISCVIOMMUState *s, PCIBus *bus,
             OBJECT(s), "riscv_iommu", UINT64_MAX);
         address_space_init(&as->iova_as, MEMORY_REGION(&as->iova_mr), name);
 
-        QLIST_INSERT_HEAD(&s->spaces, as, list);
+        QLIST_इसिंगित_HEAD(&s->spaces, as, list);
 
-        trace_riscv_iommu_new(s->parent_obj.id, pci_bus_num(bus),
+        trace_riscv_iommu_new(s->parent_obj.id, pci_bus_नुमेरो(bus),
                 PCI_SLOT(devfn), PCI_FUNC(devfn));
     }
     return &as->iova_as;
@@ -1582,9 +1582,9 @@ static guint riscv_iommu_iot_hash(gconstpointer v)
 /* GV: 0 AV: 0 PSCV: 0 GVMA: 0 */
 /* GV: 0 AV: 0 GVMA: 1 */
 static
-void riscv_iommu_iot_inval_all(gpointer key, gpointer value, gpointer data)
+void riscv_iommu_iot_inval_all(gpointer सुसि, gpointer हालागा, gpointer data)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) हालागा;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
     if (iot->tag == arg->tag) {
         iot->perm = IOMMU_NONE;
@@ -1593,9 +1593,9 @@ void riscv_iommu_iot_inval_all(gpointer key, gpointer value, gpointer data)
 
 /* GV: 0 AV: 0 PSCV: 1 GVMA: 0 */
 static
-void riscv_iommu_iot_inval_pscid(gpointer key, gpointer value, gpointer data)
+void riscv_iommu_iot_inval_pscid(gpointer सुसि, gpointer हालागा, gpointer data)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) हालागा;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
     if (iot->tag == arg->tag &&
         iot->pscid == arg->pscid) {
@@ -1605,9 +1605,9 @@ void riscv_iommu_iot_inval_pscid(gpointer key, gpointer value, gpointer data)
 
 /* GV: 0 AV: 1 PSCV: 0 GVMA: 0 */
 static
-void riscv_iommu_iot_inval_iova(gpointer key, gpointer value, gpointer data)
+void riscv_iommu_iot_inval_iova(gpointer सुसि, gpointer हालागा, gpointer data)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) हालागा;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
     if (iot->tag == arg->tag &&
         iot->iova == arg->iova) {
@@ -1616,10 +1616,10 @@ void riscv_iommu_iot_inval_iova(gpointer key, gpointer value, gpointer data)
 }
 
 /* GV: 0 AV: 1 PSCV: 1 GVMA: 0 */
-static void riscv_iommu_iot_inval_pscid_iova(gpointer key, gpointer value,
+static void riscv_iommu_iot_inval_pscid_iova(gpointer सुसि, gpointer हालागा,
                                              gpointer data)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) हालागा;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
     if (iot->tag == arg->tag &&
         iot->pscid == arg->pscid &&
@@ -1631,9 +1631,9 @@ static void riscv_iommu_iot_inval_pscid_iova(gpointer key, gpointer value,
 /* GV: 1 AV: 0 PSCV: 0 GVMA: 0 */
 /* GV: 1 AV: 0 GVMA: 1 */
 static
-void riscv_iommu_iot_inval_gscid(gpointer key, gpointer value, gpointer data)
+void riscv_iommu_iot_inval_gscid(gpointer सुसि, gpointer हालागा, gpointer data)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) हालागा;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
     if (iot->tag == arg->tag &&
         iot->gscid == arg->gscid) {
@@ -1642,10 +1642,10 @@ void riscv_iommu_iot_inval_gscid(gpointer key, gpointer value, gpointer data)
 }
 
 /* GV: 1 AV: 0 PSCV: 1 GVMA: 0 */
-static void riscv_iommu_iot_inval_gscid_pscid(gpointer key, gpointer value,
+static void riscv_iommu_iot_inval_gscid_pscid(gpointer सुसि, gpointer हालागा,
                                               gpointer data)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) हालागा;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
     if (iot->tag == arg->tag &&
         iot->gscid == arg->gscid &&
@@ -1656,10 +1656,10 @@ static void riscv_iommu_iot_inval_gscid_pscid(gpointer key, gpointer value,
 
 /* GV: 1 AV: 1 PSCV: 0 GVMA: 0 */
 /* GV: 1 AV: 1 GVMA: 1 */
-static void riscv_iommu_iot_inval_gscid_iova(gpointer key, gpointer value,
+static void riscv_iommu_iot_inval_gscid_iova(gpointer सुसि, gpointer हालागा,
                                              gpointer data)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) हालागा;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
     if (iot->tag == arg->tag &&
         iot->gscid == arg->gscid &&
@@ -1669,10 +1669,10 @@ static void riscv_iommu_iot_inval_gscid_iova(gpointer key, gpointer value,
 }
 
 /* GV: 1 AV: 1 PSCV: 1 GVMA: 0 */
-static void riscv_iommu_iot_inval_gscid_pscid_iova(gpointer key, gpointer value,
+static void riscv_iommu_iot_inval_gscid_pscid_iova(gpointer सुसि, gpointer हालागा,
                                                    gpointer data)
 {
-    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) value;
+    RISCVIOMMUEntry *iot = (RISCVIOMMUEntry *) हालागा;
     RISCVIOMMUEntry *arg = (RISCVIOMMUEntry *) data;
     if (iot->tag == arg->tag &&
         iot->gscid == arg->gscid &&
@@ -1686,13 +1686,13 @@ static void riscv_iommu_iot_inval_gscid_pscid_iova(gpointer key, gpointer value,
 static RISCVIOMMUEntry *riscv_iommu_iot_lookup(RISCVIOMMUContext *ctx,
     GHashTable *iot_cache, hwaddr iova, RISCVIOMMUTransTag transtag)
 {
-    RISCVIOMMUEntry key = {
+    RISCVIOMMUEntry सुसि = {
         .tag   = transtag,
         .gscid = get_field(ctx->gatp, RISCV_IOMMU_DC_IOHGATP_GSCID),
         .pscid = get_field(ctx->ta, RISCV_IOMMU_DC_TA_PSCID),
         .iova  = PPN_DOWN(iova),
     };
-    return g_hash_table_lookup(iot_cache, &key);
+    return g_hash_table_lookup(iot_cache, &सुसि);
 }
 
 /* caller should keep ref-count for iot_cache object */
@@ -1716,7 +1716,7 @@ static void riscv_iommu_iot_inval(RISCVIOMMUState *s, GHFunc func,
     uint32_t gscid, uint32_t pscid, hwaddr iova, RISCVIOMMUTransTag transtag)
 {
     GHashTable *iot_cache;
-    RISCVIOMMUEntry key = {
+    RISCVIOMMUEntry सुसि = {
         .tag = transtag,
         .gscid = gscid,
         .pscid = pscid,
@@ -1724,7 +1724,7 @@ static void riscv_iommu_iot_inval(RISCVIOMMUState *s, GHFunc func,
     };
 
     iot_cache = g_hash_table_ref(s->iot_cache);
-    g_hash_table_foreach(iot_cache, func, &key);
+    g_hash_table_foreach(iot_cache, func, &सुसि);
     g_hash_table_unref(iot_cache);
 }
 
@@ -2387,7 +2387,7 @@ static void riscv_iommu_process_hpm_writes(RISCVIOMMUState *s,
         break;
 
     case RISCV_IOMMU_REG_IOHPMEVT_BASE ...
-        RISCV_IOMMU_REG_IOHPMEVT(RISCV_IOMMU_IOCOUNT_NUM) + 4:
+        RISCV_IOMMU_REG_IOHPMEVT(RISCV_IOMMU_IOCOUNT_नुमेरो) + 4:
         riscv_iommu_process_hpmevt_write(s, regb & ~7);
         break;
     }
@@ -2518,7 +2518,7 @@ static MemTxResult riscv_iommu_mmio_write(void *opaque, hwaddr addr,
 
     /* Process HPM writes and update any internal state if needed. */
     if (regb >= RISCV_IOMMU_REG_IOCOUNTOVF &&
-        regb <= (RISCV_IOMMU_REG_IOHPMEVT(RISCV_IOMMU_IOCOUNT_NUM) + 4)) {
+        regb <= (RISCV_IOMMU_REG_IOHPMEVT(RISCV_IOMMU_IOCOUNT_नुमेरो) + 4)) {
         riscv_iommu_process_hpm_writes(s, regb, cy_inh);
     }
 
@@ -2718,8 +2718,8 @@ static void riscv_iommu_realize(DeviceState *dev, Error **errp)
 
     if (s->hpm_cntrs > 0) {
         /* Clip number of HPM counters to maximum supported (31). */
-        if (s->hpm_cntrs > RISCV_IOMMU_IOCOUNT_NUM) {
-            s->hpm_cntrs = RISCV_IOMMU_IOCOUNT_NUM;
+        if (s->hpm_cntrs > RISCV_IOMMU_IOCOUNT_नुमेरो) {
+            s->hpm_cntrs = RISCV_IOMMU_IOCOUNT_नुमेरो;
         }
         /* Enable hardware performance monitor interface */
         s->cap |= RISCV_IOMMU_CAP_HPM;
@@ -2868,7 +2868,7 @@ static const Property riscv_iommu_properties[] = {
     DEFINE_PROP_LINK("downstream-mr", RISCVIOMMUState, target_mr,
         TYPE_MEMORY_REGION, MemoryRegion *),
     DEFINE_PROP_UINT8("hpm-counters", RISCVIOMMUState, hpm_cntrs,
-                      RISCV_IOMMU_IOCOUNT_NUM),
+                      RISCV_IOMMU_IOCOUNT_नुमेरो),
 };
 
 static void riscv_iommu_class_init(ObjectClass *klass, const void *data)
@@ -2926,7 +2926,7 @@ static IOMMUTLBEntry riscv_iommu_memory_region_translate(
     }
 
     /* Trace all dma translations with original access flags. */
-    trace_riscv_iommu_dma(as->iommu->parent_obj.id, PCI_BUS_NUM(devid),
+    trace_riscv_iommu_dma(as->iommu->parent_obj.id, PCI_BUS_नुमेरो(devid),
                           PCI_SLOT(devid), PCI_FUNC(devid), iommu_idx,
                           IOMMU_FLAG_STR[flag & IOMMU_RW], iotlb.iova,
                           iotlb.translated_addr);
@@ -2961,7 +2961,7 @@ static inline bool pci_is_iommu(PCIDevice *pdev)
 static AddressSpace *riscv_iommu_find_as(PCIBus *bus, void *opaque, int devfn)
 {
     RISCVIOMMUState *s = (RISCVIOMMUState *) opaque;
-    PCIDevice *pdev = pci_find_device(bus, pci_bus_num(bus), devfn);
+    PCIDevice *pdev = pci_find_device(bus, pci_bus_नुमेरो(bus), devfn);
     AddressSpace *as = NULL;
 
     if (pdev && pci_is_iommu(pdev)) {
@@ -2993,12 +2993,12 @@ void riscv_iommu_pci_setup_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
         bus->iommu_ops->get_address_space == riscv_iommu_find_as) {
         /* Allow multiple IOMMUs on the same PCIe bus, link known devices */
         RISCVIOMMUState *last = (RISCVIOMMUState *)bus->iommu_opaque;
-        QLIST_INSERT_AFTER(last, iommu, iommus);
+        QLIST_इसिंगित_AFTER(last, iommu, iommus);
     } else if (!bus->iommu_ops && !bus->iommu_opaque) {
         pci_setup_iommu(bus, &riscv_iommu_ops, iommu);
     } else {
         error_setg(errp, "can't register secondary IOMMU for PCI bus #%d",
-            pci_bus_num(bus));
+            pci_bus_नुमेरो(bus));
     }
 }
 
@@ -3021,7 +3021,7 @@ static void riscv_iommu_memory_region_init(ObjectClass *klass, const void *data)
     imrc->translate = riscv_iommu_memory_region_translate;
     imrc->notify_flag_changed = riscv_iommu_memory_region_notify;
     imrc->attrs_to_index = riscv_iommu_memory_region_index;
-    imrc->num_indexes = riscv_iommu_memory_region_index_len;
+    imrc->नुमेरो_indexes = riscv_iommu_memory_region_index_len;
 }
 
 static const TypeInfo riscv_iommu_memory_region_info = {

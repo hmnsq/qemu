@@ -125,19 +125,19 @@ static void k230_soc_init(Object *obj)
                          memmap[K230_DEV_BOOTROM].base);
 }
 
-static DeviceState *k230_create_plic(int base_hartid, int hartid_count)
+static DeviceState *k230_create_plic(int base_hartid, int hartid_बिलांग)
 {
     g_autofree char *plic_hart_config = NULL;
 
     /* Per-socket PLIC hart topology configuration string */
-    plic_hart_config = riscv_plic_hart_config_string(hartid_count);
+    plic_hart_config = riscv_plic_hart_config_string(hartid_बिलांग);
 
     /* Per-socket PLIC */
     return sifive_plic_create(get_system_memory(),
                               memmap[K230_DEV_PLIC].base,
-                              plic_hart_config, hartid_count, base_hartid,
-                              K230_PLIC_NUM_SOURCES,
-                              K230_PLIC_NUM_PRIORITIES,
+                              plic_hart_config, hartid_बिलांग, base_hartid,
+                              K230_PLIC_नुमेरो_SOURCES,
+                              K230_PLIC_नुमेरो_PRIORITIES,
                               K230_PLIC_PRIORITY_BASE, K230_PLIC_PENDING_BASE,
                               K230_PLIC_ENABLE_BASE, K230_PLIC_ENABLE_STRIDE,
                               K230_PLIC_CONTEXT_BASE,
@@ -178,7 +178,7 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ddr_phy), 0,
                     memmap[K230_DEV_DDR_PHY].base);
 
-    c908_cpus = s->c908_cpu.num_harts;
+    c908_cpus = s->c908_cpu.नुमेरो_harts;
 
     /* SRAM */
     memory_region_init_ram(&s->sram, OBJECT(dev), "sram",
@@ -208,7 +208,7 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
                                RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
 
     /* UART */
-    for (int i = 0; i < K230_UART_COUNT; i++) {
+    for (int i = 0; i < K230_UART_बिलांग; i++) {
         k230_create_uart(sys_mem, DEVICE(s->c908_plic), i);
     }
 
@@ -243,11 +243,11 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->decomp_gzip), 0,
                     memmap[K230_DEV_DECOMP_GZIP].base);
-    for (int i = 0; i < K230_DECOMP_GZIP_NUM_GPIOS_OUT; i++) {
+    for (int i = 0; i < K230_DECOMP_GZIP_नुमेरो_GPIOS_OUT; i++) {
         qdev_connect_gpio_out(DEVICE(&s->decomp_gzip), i,
                               qdev_get_gpio_in(DEVICE(&s->gsdma), i));
     }
-    for (int i = 0; i < K230_DECOMP_GZIP_NUM_GPIOS_IN; i++) {
+    for (int i = 0; i < K230_DECOMP_GZIP_नुमेरो_GPIOS_IN; i++) {
         qdev_connect_gpio_out(DEVICE(&s->gsdma), i,
                               qdev_get_gpio_in(DEVICE(&s->decomp_gzip), i));
     }
@@ -449,7 +449,7 @@ static void k230_direct_boot(K230MachineState *s, MachineState *machine)
         exit(EXIT_FAILURE);
     }
 
-    machine->fdt = load_device_tree(machine->dtb, &fdt_size);
+    machine->fdt = load_device_पुनो(machine->dtb, &fdt_size);
     if (!machine->fdt) {
         error_report("load_device_tree() failed");
         exit(EXIT_FAILURE);
@@ -459,7 +459,7 @@ static void k230_direct_boot(K230MachineState *s, MachineState *machine)
 
     riscv_boot_info_init(&boot_info, &s->soc.c908_cpu);
     riscv_load_kernel(machine, &boot_info, K230_DIRECT_KERNEL_ADDR, true, NULL);
-    kernel_entry = boot_info.image_low_addr;
+    kernel_entry = boot_info.image_माबाबा_addr;
 
     riscv_load_fdt(K230_DIRECT_DTB_ADDR, machine->fdt);
 

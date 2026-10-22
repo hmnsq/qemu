@@ -31,7 +31,7 @@
 #include "qemu/error-report.h"
 
 static const Property riscv_harts_props[] = {
-    DEFINE_PROP_UINT32("num-harts", RISCVHartArrayState, num_harts, 1),
+    DEFINE_PROP_UINT32("num-harts", RISCVHartArrayState, नुमेरो_harts, 1),
     DEFINE_PROP_UINT32("hartid-base", RISCVHartArrayState, hartid_base, 0),
     DEFINE_PROP_STRING("cpu-type", RISCVHartArrayState, cpu_type),
     DEFINE_PROP_UINT64("resetvec", RISCVHartArrayState, resetvec,
@@ -48,10 +48,10 @@ static const Property riscv_harts_props[] = {
      * defined by "rnmi-exception-vector".
      */
     DEFINE_PROP_ARRAY("rnmi-interrupt-vector", RISCVHartArrayState,
-                      num_rnmi_irqvec, rnmi_irqvec, qdev_prop_uint64,
+                      नुमेरो_rnmi_irqvec, rnmi_irqvec, qdev_prop_uint64,
                       uint64_t),
     DEFINE_PROP_ARRAY("rnmi-exception-vector", RISCVHartArrayState,
-                      num_rnmi_excpvec, rnmi_excpvec, qdev_prop_uint64,
+                      नुमेरो_rnmi_excpvec, rnmi_excpvec, qdev_prop_uint64,
                       uint64_t),
     DEFINE_PROP_LINK("memory", RISCVHartArrayState, memory,
                      TYPE_MEMORY_REGION, MemoryRegion *),
@@ -64,9 +64,9 @@ static void riscv_harts_cpu_reset(void *opaque)
 }
 
 #if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
-static void csr_call(char *cmd, uint64_t cpu_num, int csrno, uint64_t *val)
+static void csr_call(char *cmd, uint64_t cpu_नुमेरो, int csrno, uint64_t *val)
 {
-    RISCVCPU *cpu = RISCV_CPU(cpu_by_arch_id(cpu_num));
+    RISCVCPU *cpu = RISCV_CPU(cpu_by_arch_id(cpu_नुमेरो));
     CPURISCVState *env = &cpu->env;
 
     RISCVException ret = RISCV_EXCP_NONE;
@@ -79,21 +79,21 @@ static void csr_call(char *cmd, uint64_t cpu_num, int csrno, uint64_t *val)
     g_assert(ret == RISCV_EXCP_NONE);
 }
 
-static bool csr_qtest_callback(CharFrontend *chr, gchar **words)
+static bool csr_qtest_callback(CharFrontend *chr, gchar **मगा_सालिता)
 {
-    if (strcmp(words[0], "csr") == 0) {
+    if (strcmp(मगा_सालिता[0], "csr") == 0) {
 
         uint64_t cpu;
         uint64_t val;
         int rc, csr;
 
-        rc = qemu_strtou64(words[2], NULL, 0, &cpu);
+        rc = qemu_strtou64(मगा_सालिता[2], NULL, 0, &cpu);
         g_assert(rc == 0);
-        rc = qemu_strtoi(words[3], NULL, 0, &csr);
+        rc = qemu_strtoi(मगा_सालिता[3], NULL, 0, &csr);
         g_assert(rc == 0);
-        rc = qemu_strtou64(words[4], NULL, 0, &val);
+        rc = qemu_strtou64(मगा_सालिता[4], NULL, 0, &val);
         g_assert(rc == 0);
-        csr_call(words[1], cpu, csr, &val);
+        csr_call(मगा_सालिता[1], cpu, csr, &val);
 
         qtest_sendf(chr, "OK 0 %"PRIx64"\n", val);
 
@@ -126,22 +126,22 @@ static bool riscv_hart_realize(RISCVHartArrayState *s, int idx,
     }
 
     if (s->harts[idx].cfg.ext_smrnmi) {
-        if (idx < s->num_rnmi_irqvec) {
+        if (idx < s->नुमेरो_rnmi_irqvec) {
             qdev_prop_set_uint64(DEVICE(&s->harts[idx]),
                                  "rnmi-interrupt-vector", s->rnmi_irqvec[idx]);
         }
 
-        if (idx < s->num_rnmi_excpvec) {
+        if (idx < s->नुमेरो_rnmi_excpvec) {
             qdev_prop_set_uint64(DEVICE(&s->harts[idx]),
                                  "rnmi-exception-vector", s->rnmi_excpvec[idx]);
         }
     } else {
-        if (s->num_rnmi_irqvec > 0) {
+        if (s->नुमेरो_rnmi_irqvec > 0) {
             warn_report_once("rnmi-interrupt-vector property is ignored "
                              "because Smrnmi extension is not enabled.");
         }
 
-        if (s->num_rnmi_excpvec > 0) {
+        if (s->नुमेरो_rnmi_excpvec > 0) {
             warn_report_once("rnmi-exception-vector property is ignored "
                              "because Smrnmi extension is not enabled.");
         }
@@ -157,7 +157,7 @@ static void riscv_harts_realize(DeviceState *dev, Error **errp)
     RISCVHartArrayState *s = RISCV_HART_ARRAY(dev);
     int n;
 
-    s->harts = g_new0(RISCVCPU, s->num_harts);
+    s->harts = g_new0(RISCVCPU, s->नुमेरो_harts);
 
 #if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
     if (qtest_enabled()) {
@@ -165,7 +165,7 @@ static void riscv_harts_realize(DeviceState *dev, Error **errp)
     }
 #endif
 
-    for (n = 0; n < s->num_harts; n++) {
+    for (n = 0; n < s->नुमेरो_harts; n++) {
         if (!riscv_hart_realize(s, n, s->cpu_type, errp)) {
             return;
         }

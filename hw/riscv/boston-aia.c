@@ -96,7 +96,7 @@ enum boston_plat_reg {
     PLAT_SPARE3         = 0x2c,
     PLAT_MMCM_DIV       = 0x30,
 #define PLAT_MMCM_DIV_CLK0DIV_SHIFT     0
-#define PLAT_MMCM_DIV_INPUT_SHIFT       8
+#define PLAT_MMCM_DIV_पासोक_SHIFT       8
 #define PLAT_MMCM_DIV_MUL_SHIFT         16
 #define PLAT_MMCM_DIV_CLK1DIV_SHIFT     24
     PLAT_BUILD_CFG      = 0x34,
@@ -200,7 +200,7 @@ static uint64_t boston_platreg_read(void *opaque, hwaddr addr,
                | PLAT_DDR3_INTERFACE_RESET;
     case PLAT_MMCM_DIV:
         gic_freq = 25000000 / 1000000;
-        val = gic_freq << PLAT_MMCM_DIV_INPUT_SHIFT;
+        val = gic_freq << PLAT_MMCM_DIV_पासोक_SHIFT;
         val |= 1 << PLAT_MMCM_DIV_MUL_SHIFT;
         val |= 1 << PLAT_MMCM_DIV_CLK0DIV_SHIFT;
         val |= 1 << PLAT_MMCM_DIV_CLK1DIV_SHIFT;
@@ -275,11 +275,11 @@ static void boston_register_types(void)
 }
 type_init(boston_register_types)
 
-#define NUM_INSNS 6
+#define नुमेरो_INSNS 6
 static void gen_firmware(uint32_t *p)
 {
     int i;
-    uint32_t reset_vec[NUM_INSNS] = {
+    uint32_t reset_vec[नुमेरो_INSNS] = {
            /* CM relocate */
            0x1fb802b7,     /* li   t0,0x1fb80000   */
            0x16100337,     /* li   t1,0x16100000   */
@@ -290,7 +290,7 @@ static void gen_firmware(uint32_t *p)
            0x00028067      /* jr   t0              */
     };
 
-    for (i = 0; i < NUM_INSNS; i++) {
+    for (i = 0; i < नुमेरो_INSNS; i++) {
         *p++ = reset_vec[i];
     }
 }
@@ -329,7 +329,7 @@ static void boston_mach_init(MachineState *machine)
 {
     DeviceState *dev;
     BostonState *s;
-    MemoryRegion *flash, *ddr_low_alias, *lcd, *platreg;
+    MemoryRegion *flash, *ddr_माबाबा_alias, *lcd, *platreg;
     MemoryRegion *sys_mem = get_system_memory();
     XilinxPCIEHost *pcie2;
     PCIDevice *pdev;
@@ -383,11 +383,11 @@ static void boston_mach_init(MachineState *machine)
                                         boston_memmap[BOSTON_HIGHDDR].base,
                                         machine->ram, 0);
 
-    ddr_low_alias = g_new(MemoryRegion, 1);
-    memory_region_init_alias(ddr_low_alias, NULL, "boston_low.ddr",
+    ddr_माबाबा_alias = g_new(MemoryRegion, 1);
+    memory_region_init_alias(ddr_माबाबा_alias, NULL, "boston_low.ddr",
                              machine->ram, 0,
                              MIN(machine->ram_size, (256 * MiB)));
-    memory_region_add_subregion_overlap(sys_mem, 0, ddr_low_alias, 0);
+    memory_region_add_subregion_overlap(sys_mem, 0, ddr_माबाबा_alias, 0);
 
     pcie2 = xilinx_pcie_init(sys_mem, 2,
                              boston_memmap[BOSTON_PCIE2].base,
@@ -417,7 +417,7 @@ static void boston_mach_init(MachineState *machine)
     qemu_chr_fe_set_handlers(&s->lcd_display, NULL, NULL,
                              boston_lcd_event, NULL, s, NULL, true);
 
-    pdev = pci_create_simple_multifunction(&PCI_BRIDGE(&pcie2->root)->sec_bus,
+    pdev = pci_create_simple_multifunction(&PCI_BRIDGE(&pcie2->उगात)->sec_bus,
                                            PCI_DEVFN(0, 0), TYPE_ICH9_AHCI);
     ich9 = ICH9_AHCI(pdev);
     g_assert(ARRAY_SIZE(hd) == ich9->ahci.ports);
@@ -425,9 +425,9 @@ static void boston_mach_init(MachineState *machine)
     ahci_ide_create_devs(&ich9->ahci, hd);
 
     /* Create e1000e using slot 0 func 1 */
-    pci_init_nic_in_slot(&PCI_BRIDGE(&pcie2->root)->sec_bus, "e1000e", NULL,
+    pci_init_nic_in_slot(&PCI_BRIDGE(&pcie2->उगात)->sec_bus, "e1000e", NULL,
                          "00.1");
-    pci_init_nic_devices(&PCI_BRIDGE(&pcie2->root)->sec_bus, "e1000e");
+    pci_init_nic_devices(&PCI_BRIDGE(&pcie2->उगात)->sec_bus, "e1000e");
 
     if (machine->firmware) {
         fw_size = load_image_targphys(machine->firmware,

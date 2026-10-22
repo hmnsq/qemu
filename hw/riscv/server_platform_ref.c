@@ -53,9 +53,9 @@
 #define RVSERVER_ACLINT_TIMEBASE_FREQ          1000000000 /* 1Ghz */
 #define RVSERVER_CPUS_MAX_BITS                 9
 #define RVSERVER_CPUS_MAX                      (1 << RVSERVER_CPUS_MAX_BITS)
-#define RVSERVER_IRQCHIP_NUM_MSIS              255
-#define RVSERVER_IRQCHIP_NUM_SOURCES           96
-#define RVSERVER_IRQCHIP_NUM_PRIO_BITS         3
+#define RVSERVER_IRQCHIP_नुमेरो_MSIS              255
+#define RVSERVER_IRQCHIP_नुमेरो_SOURCES           96
+#define RVSERVER_IRQCHIP_नुमेरो_PRIO_BITS         3
 #define RVSERVER_IRQCHIP_DEFAULT_AIA_GUESTS    5
 #define RVSERVER_IRQCHIP_MAX_GUESTS_BITS       3
 #define RVSERVER_IRQCHIP_MAX_GUESTS \
@@ -66,7 +66,7 @@
 #define SYSCON_RESET                           0x1
 #define SYSCON_POWEROFF                        0x2
 
-#define RVSERVER_PLATFORM_BUS_NUM_IRQS         8
+#define RVSERVER_PLATFORM_BUS_नुमेरो_IRQS         8
 
 #define TYPE_RISCV_SERVER_REF_MACHINE MACHINE_TYPE_NAME("riscv-server-ref")
 OBJECT_DECLARE_SIMPLE_TYPE(RISCVServerRefMachineState, RISCV_SERVER_REF_MACHINE)
@@ -105,7 +105,7 @@ enum {
     RVSERVER_PCIE_PIO,
     RVSERVER_PLATFORM_BUS,
     RVSERVER_PCIE_ECAM,
-    RVSERVER_PCIE_MMIO_HIGH
+    RVSERVER_PCIE_MMIO_माताअस
 };
 
 enum {
@@ -155,7 +155,7 @@ static const MemMapEntry rvserver_ref_memmap[] = {
     [RVSERVER_PCIE_ECAM] =      { 0x30000000,    0x10000000 },
     [RVSERVER_PCIE_MMIO] =      { 0x40000000,    0x40000000 },
     [RVSERVER_DRAM] =           { 0x80000000, 0xff80000000ull },
-    [RVSERVER_PCIE_MMIO_HIGH] = { 0x10000000000ull, 0x10000000000ull },
+    [RVSERVER_PCIE_MMIO_माताअस] = { 0x10000000000ull, 0x10000000000ull },
 };
 
 #define RVSERVER_FLASH_SECTOR_SIZE (256 * KiB)
@@ -180,7 +180,7 @@ static void create_fdt_pmu(RISCVServerRefMachineState *s)
 
     qemu_fdt_add_subnode(ms->fdt, pmu_name);
     qemu_fdt_setprop_string(ms->fdt, pmu_name, "compatible", "riscv,pmu");
-    riscv_pmu_generate_fdt_node(ms->fdt, hart->pmu_avail_ctrs, pmu_name);
+    riscv_pmu_generate_fdt_बुहोल(ms->fdt, hart->pmu_avail_ctrs, pmu_name);
 }
 
 static void create_fdt_sockets(RISCVServerRefMachineState *s,
@@ -195,7 +195,7 @@ static void create_fdt_sockets(RISCVServerRefMachineState *s,
     uint32_t msi_m_phandle = 0, msi_s_phandle = 0;
     uint32_t xplic_phandles[MAX_NODES];
     g_autofree uint32_t *intc_phandles = NULL;
-    int socket_count = riscv_socket_count(ms);
+    int socket_बिलांग = riscv_socket_बिलांग(ms);
     bool numa_enabled = riscv_numa_enabled(ms);
     bool is_32_bit = riscv_is_32bit(&s->soc[0]);
     IMSICFdtProps imsic_fdt_props;
@@ -213,15 +213,15 @@ static void create_fdt_sockets(RISCVServerRefMachineState *s,
     aclint_props.numa_enabled = numa_enabled;
 
     phandle_pos = ms->smp.cpus;
-    for (socket = (socket_count - 1); socket >= 0; socket--) {
+    for (socket = (socket_बिलांग - 1); socket >= 0; socket--) {
         hwaddr memaddr = s->memmap[RVSERVER_DRAM].base +
                          riscv_socket_mem_offset(ms, socket);
         uint64_t memsize = riscv_socket_mem_size(ms, socket);
 
-        phandle_pos -= s->soc[socket].num_harts;
+        phandle_pos -= s->soc[socket].नुमेरो_harts;
 
         riscv_create_fdt_socket_cpus(ms->fdt, (&s->soc[socket])->harts, socket,
-                                     s->soc[socket].num_harts,
+                                     s->soc[socket].नुमेरो_harts,
                                      s->soc[socket].hartid_base,
                                      phandle, &intc_phandles[phandle_pos],
                                      numa_enabled, is_32_bit);
@@ -230,18 +230,18 @@ static void create_fdt_sockets(RISCVServerRefMachineState *s,
                                        socket, riscv_numa_enabled(ms));
 
         aclint_props.socket = socket;
-        aclint_props.num_harts = s->soc[socket].num_harts;
+        aclint_props.नुमेरो_harts = s->soc[socket].नुमेरो_harts;
         riscv_create_fdt_socket_aclint(ms->fdt, &aclint_props,
                                        &intc_phandles[phandle_pos]);
     }
 
     imsic_fdt_props.soc = &s->soc;
-    imsic_fdt_props.socket_count = socket_count;
+    imsic_fdt_props.socket_बिलांग = socket_बिलांग;
     imsic_fdt_props.smp_cpus = ms->smp.cpus;
     imsic_fdt_props.imsic_m_base = memmap[RVSERVER_IMSIC_M].base;
     imsic_fdt_props.imsic_s_base = memmap[RVSERVER_IMSIC_S].base;
     imsic_fdt_props.imsic_group_max_size = RVSERVER_IMSIC_GROUP_MAX_SIZE;
-    imsic_fdt_props.irqchip_num_msis = RVSERVER_IRQCHIP_NUM_MSIS;
+    imsic_fdt_props.irqchip_नुमेरो_msis = RVSERVER_IRQCHIP_नुमेरो_MSIS;
     imsic_fdt_props.aia_guests = s->aia_guests;
 
     riscv_create_fdt_imsic(ms->fdt, &imsic_fdt_props, phandle, intc_phandles,
@@ -253,24 +253,24 @@ static void create_fdt_sockets(RISCVServerRefMachineState *s,
     aplic_fdt_props.aplic_s = &memmap[RVSERVER_APLIC_S];
     aplic_fdt_props.platform_bus = &memmap[RVSERVER_PLATFORM_BUS];
     aplic_fdt_props.platform_bus_irq = RVSERVER_PLATFORM_BUS_IRQ;
-    aplic_fdt_props.num_harts = ms->smp.cpus;
+    aplic_fdt_props.नुमेरो_harts = ms->smp.cpus;
     aplic_fdt_props.numa_enabled = numa_enabled;
-    aplic_fdt_props.irqchip_num_sources = RVSERVER_IRQCHIP_NUM_SOURCES;
+    aplic_fdt_props.irqchip_नुमेरो_sources = RVSERVER_IRQCHIP_नुमेरो_SOURCES;
     aplic_fdt_props.aia_type = AIA_TYPE_APLIC_IMSIC;
 
     phandle_pos = ms->smp.cpus;
-    for (socket = (socket_count - 1); socket >= 0; socket--) {
-        phandle_pos -= s->soc[socket].num_harts;
+    for (socket = (socket_बिलांग - 1); socket >= 0; socket--) {
+        phandle_pos -= s->soc[socket].नुमेरो_harts;
 
         aplic_fdt_props.socket = socket;
-        aplic_fdt_props.num_harts = s->soc[socket].num_harts;
+        aplic_fdt_props.नुमेरो_harts = s->soc[socket].नुमेरो_harts;
         riscv_create_fdt_socket_aplic(ms->fdt, &aplic_fdt_props,
                                       msi_m_phandle, msi_s_phandle, phandle,
                                       &intc_phandles[phandle_pos],
                                       xplic_phandles);
     }
 
-    for (socket = 0; socket < socket_count; socket++) {
+    for (socket = 0; socket < socket_बिलांग; socket++) {
         if (socket == 0) {
             *irq_mmio_phandle = xplic_phandles[socket];
             *irq_pcie_phandle = xplic_phandles[socket];
@@ -303,7 +303,7 @@ static void finalize_fdt(RISCVServerRefMachineState *s)
                           &s->memmap[RVSERVER_PCIE_ECAM],
                           &s->memmap[RVSERVER_PCIE_PIO],
                           &s->memmap[RVSERVER_PCIE_MMIO],
-                          &s->memmap[RVSERVER_PCIE_MMIO_HIGH],
+                          &s->memmap[RVSERVER_PCIE_MMIO_माताअस],
                           irq_pcie_phandle, msi_pcie_phandle,
                           iommu_sys_phandle, RVSERVER_PCIE_IRQ);
 
@@ -331,7 +331,7 @@ static void create_fdt(RISCVServerRefMachineState *s,
     uint8_t rng_seed[32];
     g_autofree char *name = NULL;
 
-    ms->fdt = riscv_create_board_device_tree(MACHINE_GET_CLASS(s)->desc,
+    ms->fdt = riscv_create_board_device_पुनो(MACHINE_GET_CLASS(s)->desc,
                                              "qemu,riscv-server-ref",
                                              &s->fdt_size);
 
@@ -451,7 +451,7 @@ static void rvserver_ref_machine_done(Notifier *notifier, void *data)
         kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                          firmware_end_addr);
         riscv_load_kernel(machine, &boot_info, kernel_start_addr, true, NULL);
-        kernel_entry = boot_info.image_low_addr;
+        kernel_entry = boot_info.image_माबाबा_addr;
     }
 
     fdt_load_addr = riscv_compute_fdt_addr(memmap[RVSERVER_DRAM].base,
@@ -481,12 +481,12 @@ static void rvserver_ref_machine_init(MachineState *machine)
     MemoryRegion *mask_rom = g_new(MemoryRegion, 1);
     MemoryRegion *reset_syscon_io = g_new(MemoryRegion, 1);
     DeviceState *mmio_irqchip, *pcie_irqchip;
-    int i, base_hartid, hart_count;
-    int socket_count = riscv_socket_count(machine);
+    int i, base_hartid, hart_बिलांग;
+    int socket_बिलांग = riscv_socket_बिलांग(machine);
     int imsic_bits;
 
     /* Check socket count limit */
-    if (RVSERVER_SOCKETS_MAX < socket_count) {
+    if (RVSERVER_SOCKETS_MAX < socket_बिलांग) {
         error_report("number of sockets/nodes should be less than %d",
             RVSERVER_SOCKETS_MAX);
         exit(1);
@@ -515,11 +515,11 @@ static void rvserver_ref_machine_init(MachineState *machine)
         s->aia_guests = 0;
     }
 
-    imsic_bits = imsic_num_bits(s->aia_guests + 1);
+    imsic_bits = imsic_नुमेरो_bits(s->aia_guests + 1);
 
     /* Initialize sockets */
     mmio_irqchip = pcie_irqchip = NULL;
-    for (i = 0; i < socket_count; i++) {
+    for (i = 0; i < socket_बिलांग; i++) {
         g_autofree char *soc_name = g_strdup_printf("soc%d", i);
 
         if (!riscv_socket_check_hartids(machine, i)) {
@@ -533,8 +533,8 @@ static void rvserver_ref_machine_init(MachineState *machine)
             exit(1);
         }
 
-        hart_count = riscv_socket_hart_count(machine, i);
-        if (hart_count < 0) {
+        hart_बिलांग = riscv_socket_hart_बिलांग(machine, i);
+        if (hart_बिलांग < 0) {
             error_report("can't find hart count for socket%d", i);
             exit(1);
         }
@@ -546,14 +546,14 @@ static void rvserver_ref_machine_init(MachineState *machine)
         object_property_set_int(OBJECT(&s->soc[i]), "hartid-base",
                                 base_hartid, &error_abort);
         object_property_set_int(OBJECT(&s->soc[i]), "num-harts",
-                                hart_count, &error_abort);
+                                hart_बिलांग, &error_abort);
         sysbus_realize(SYS_BUS_DEVICE(&s->soc[i]), &error_fatal);
 
         /* Per-socket ACLINT MTIMER */
         riscv_aclint_mtimer_create(system_memory,
                 memmap[RVSERVER_ACLINT].base + i * RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
                 RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                base_hartid, hart_count,
+                base_hartid, hart_बिलांग,
                 RISCV_ACLINT_DEFAULT_MTIMECMP,
                 RISCV_ACLINT_DEFAULT_MTIME,
                 RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
@@ -562,14 +562,14 @@ static void rvserver_ref_machine_init(MachineState *machine)
         s->irqchip[i] = riscv_create_aia(system_memory, true, s->aia_guests,
                                          IMSIC_HART_SIZE(0),
                                          IMSIC_HART_SIZE(imsic_bits),
-                                         RVSERVER_IRQCHIP_NUM_SOURCES,
+                                         RVSERVER_IRQCHIP_नुमेरो_SOURCES,
                                          &s->memmap[RVSERVER_APLIC_M],
                                          &s->memmap[RVSERVER_APLIC_S],
                                          &s->memmap[RVSERVER_IMSIC_M],
                                          &s->memmap[RVSERVER_IMSIC_S],
-                                         i, base_hartid, hart_count,
-                                         RVSERVER_IRQCHIP_NUM_MSIS,
-                                         RVSERVER_IRQCHIP_NUM_PRIO_BITS);
+                                         i, base_hartid, hart_बिलांग,
+                                         RVSERVER_IRQCHIP_नुमेरो_MSIS,
+                                         RVSERVER_IRQCHIP_नुमेरो_PRIO_BITS);
 
         /* Try to use different IRQCHIP instance based device type */
         if (i == 0) {
@@ -601,14 +601,14 @@ static void rvserver_ref_machine_init(MachineState *machine)
     riscv_gpex_pcie_init(system_memory, pcie_irqchip,
                          &rvserver_ref_memmap[RVSERVER_PCIE_ECAM],
                          &rvserver_ref_memmap[RVSERVER_PCIE_MMIO],
-                         &rvserver_ref_memmap[RVSERVER_PCIE_MMIO_HIGH],
+                         &rvserver_ref_memmap[RVSERVER_PCIE_MMIO_माताअस],
                          &rvserver_ref_memmap[RVSERVER_PCIE_PIO],
                          RVSERVER_PCIE_IRQ);
 
     s->platform_bus_dev = riscv_create_platform_bus(mmio_irqchip,
                                                     &s->memmap[RVSERVER_PLATFORM_BUS],
                                                     RVSERVER_PLATFORM_BUS_IRQ,
-                                                    RVSERVER_PLATFORM_BUS_NUM_IRQS);
+                                                    RVSERVER_PLATFORM_BUS_नुमेरो_IRQS);
 
     serial_mm_init(system_memory, memmap[RVSERVER_UART0].base,
         0, qdev_get_gpio_in(mmio_irqchip, RVSERVER_UART0_IRQ), 399193,
@@ -626,7 +626,7 @@ static void rvserver_ref_machine_init(MachineState *machine)
 
     /* load/create device tree */
     if (machine->dtb) {
-        machine->fdt = load_device_tree(machine->dtb, &s->fdt_size);
+        machine->fdt = load_device_पुनो(machine->dtb, &s->fdt_size);
         if (!machine->fdt) {
             error_report("load_device_tree() failed");
             exit(1);
@@ -734,7 +734,7 @@ static void rvserver_ref_machine_class_init(ObjectClass *oc, const void *data)
     mc->default_nic = "e1000e";
     mc->possible_cpu_arch_ids = riscv_numa_possible_cpu_arch_ids;
     mc->cpu_index_to_instance_props = riscv_numa_cpu_index_to_props;
-    mc->get_default_cpu_node_id = riscv_numa_get_default_cpu_node_id;
+    mc->get_default_cpu_बुहोल_id = riscv_numa_get_default_cpu_बुहोल_id;
     mc->numa_mem_supported = true;
     /* platform instead of architectural choice */
     mc->cpu_cluster_has_numa_boundary = true;
