@@ -29,21 +29,21 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "system/address-spaces.h"
-#include "hw/core/boards.h"
-#include "hw/char/serial-mm.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/riscv_aplic.h"
-#include "hw/intc/riscv_imsic.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/riscv/boot.h"
-#include "hw/riscv/xiangshan_kmh.h"
-#include "hw/riscv/riscv_hart.h"
-#include "system/system.h"
+#अन्तर्भाव "qemu/osdep.h"
+#अन्तर्भाव "qapi/error.h"
+#अन्तर्भाव "system/address-spaces.h"
+#अन्तर्भाव "hw/core/boards.h"
+#अन्तर्भाव "hw/char/serial-mm.h"
+#अन्तर्भाव "hw/intc/riscv_aclint.h"
+#अन्तर्भाव "hw/intc/riscv_aplic.h"
+#अन्तर्भाव "hw/intc/riscv_imsic.h"
+#अन्तर्भाव "hw/core/qdev-properties.h"
+#अन्तर्भाव "hw/riscv/boot.h"
+#अन्तर्भाव "hw/riscv/xiangshan_kmh.h"
+#अन्तर्भाव "hw/riscv/riscv_hart.h"
+#अन्तर्भाव "system/system.h"
 
-static const MemMapEntry xiangshan_kmh_memmap[] = {
+स्थिर ध्रुव Mem_Map_प्रविष्टिः xiangshan_kmh_memmap[] = {
     [XIANGSHAN_KMH_ROM] =          {     0x1000,        0xF000 },
     [XIANGSHAN_KMH_UART0] =        { 0x310B0000,       0x10000 },
     [XIANGSHAN_KMH_CLINT] =        { 0x38000000,       0x10000 },
@@ -54,89 +54,89 @@ static const MemMapEntry xiangshan_kmh_memmap[] = {
     [XIANGSHAN_KMH_DRAM] =         { 0x80000000,           0x0 },
 };
 
-static DeviceState *xiangshan_kmh_create_aia(uint32_t num_harts)
+स्थिर DeviceState *xiangshan_kmh_create_aia(uint32_t अङ्कः_harts)
 {
-    int i;
-    const MemMapEntry *memmap = xiangshan_kmh_memmap;
+    पूर्णाङ्क i;
+    ध्रुव Mem_Map_प्रविष्टिः *memmap = xiangshan_kmh_memmap;
     hwaddr addr = 0;
-    DeviceState *aplic_m = NULL;
+    DeviceState *aplic_m = रिक्त;
 
     /* M-level IMSICs */
-    addr = memmap[XIANGSHAN_KMH_IMSIC_M].base;
-    for (i = 0; i < num_harts; i++) {
-        riscv_imsic_create(get_system_memory(),
-                           addr + i * IMSIC_HART_SIZE(0), i, true,
-                           1, XIANGSHAN_KMH_IMSIC_NUM_IDS);
+    addr = memmap[XIANGSHAN_KMH_IMSIC_M].आधारः;
+    प्रति (i = 0; i < अङ्कः_harts; i++) {
+        riscv_imsic_create(get_system_स्मृतिः(),
+                           addr + i * IMSIC_HART_आकार(0), i, true,
+                           1, XIANGSHAN_KMH_IMSIC_अङ्कः_IDS);
     }
 
     /* S-level IMSICs */
-    addr = memmap[XIANGSHAN_KMH_IMSIC_S].base;
-    for (i = 0; i < num_harts; i++) {
-        riscv_imsic_create(get_system_memory(), addr +
-                           i * IMSIC_HART_SIZE(XIANGSHAN_KMH_IMSIC_GUEST_BITS),
-                           i, false, 1 + XIANGSHAN_KMH_IMSIC_GUEST_BITS,
-                           XIANGSHAN_KMH_IMSIC_NUM_IDS);
+    addr = memmap[XIANGSHAN_KMH_IMSIC_S].आधारः;
+    प्रति (i = 0; i < अङ्कः_harts; i++) {
+        riscv_imsic_create(get_system_स्मृतिः(), addr +
+                           i * IMSIC_HART_आकार(XIANGSHAN_KMH_IMSIC_GUEST_द्वयङ्काः),
+                           i, false, 1 + XIANGSHAN_KMH_IMSIC_GUEST_द्वयङ्काः,
+                           XIANGSHAN_KMH_IMSIC_अङ्कः_IDS);
     }
 
     /* M-level APLIC */
-    aplic_m = riscv_aplic_create(get_system_memory(),
-                                 memmap[XIANGSHAN_KMH_APLIC_M].base,
-                                 memmap[XIANGSHAN_KMH_APLIC_M].size,
-                                 0, 0, XIANGSHAN_KMH_APLIC_NUM_SOURCES,
-                                 1, true, true, NULL);
+    aplic_m = riscv_aplic_create(get_system_स्मृतिः(),
+                                 memmap[XIANGSHAN_KMH_APLIC_M].आधारः,
+                                 memmap[XIANGSHAN_KMH_APLIC_M].आकार,
+                                 0, 0, XIANGSHAN_KMH_APLIC_अङ्कः_SOURCES,
+                                 1, true, true, रिक्त);
 
     /* S-level APLIC */
-    riscv_aplic_create(get_system_memory(),
-                       memmap[XIANGSHAN_KMH_APLIC_S].base,
-                       memmap[XIANGSHAN_KMH_APLIC_S].size,
-                       0, 0, XIANGSHAN_KMH_APLIC_NUM_SOURCES,
+    riscv_aplic_create(get_system_स्मृतिः(),
+                       memmap[XIANGSHAN_KMH_APLIC_S].आधारः,
+                       memmap[XIANGSHAN_KMH_APLIC_S].आकार,
+                       0, 0, XIANGSHAN_KMH_APLIC_अङ्कः_SOURCES,
                        1, true, false, aplic_m);
 
-    return aplic_m;
+    प्रत्यागम aplic_m;
 }
 
-static void xiangshan_kmh_soc_realize(DeviceState *dev, Error **errp)
+स्थिर शून्य xiangshan_kmh_soc_realize(DeviceState *dev, Error **errp)
 {
     MachineState *ms = MACHINE(qdev_get_machine());
     XiangshanKmhSoCState *s = XIANGSHAN_KMH_SOC(dev);
-    const MemMapEntry *memmap = xiangshan_kmh_memmap;
-    MemoryRegion *system_memory = get_system_memory();
-    uint32_t num_harts = ms->smp.cpus;
+    ध्रुव Mem_Map_प्रविष्टिः *memmap = xiangshan_kmh_memmap;
+    स्मृतिः_Region *system_स्मृतिः = get_system_स्मृतिः();
+    uint32_t अङ्कः_harts = ms->smp.cpus;
 
-    qdev_prop_set_uint32(DEVICE(&s->cpus), "num-harts", num_harts);
-    qdev_prop_set_uint32(DEVICE(&s->cpus), "hartid-base", 0);
-    qdev_prop_set_string(DEVICE(&s->cpus), "cpu-type",
+    qdev_prop_समुच्चयः_uint32(DEVICE(&s->cpus), "num-harts", अङ्कः_harts);
+    qdev_prop_समुच्चयः_uint32(DEVICE(&s->cpus), "hartid-base", 0);
+    qdev_prop_समुच्चयः_string(DEVICE(&s->cpus), "cpu-type",
                          TYPE_RISCV_CPU_XIANGSHAN_KMH);
     sysbus_realize(SYS_BUS_DEVICE(&s->cpus), &error_fatal);
 
     /* AIA */
-    s->irqchip = xiangshan_kmh_create_aia(num_harts);
+    s->irqchip = xiangshan_kmh_create_aia(अङ्कः_harts);
 
     /* UART */
-    serial_mm_init(system_memory, memmap[XIANGSHAN_KMH_UART0].base, 2,
-                   qdev_get_gpio_in(s->irqchip, XIANGSHAN_KMH_UART0_IRQ),
+    serial_mm_init(system_स्मृतिः, memmap[XIANGSHAN_KMH_UART0].आधारः, 2,
+                   qdev_get_gpio_अन्तर्(s->irqchip, XIANGSHAN_KMH_UART0_IRQ),
                    115200, serial_hd(0), DEVICE_LITTLE_ENDIAN);
 
     /* CLINT */
-    riscv_aclint_swi_create(system_memory,
-                            memmap[XIANGSHAN_KMH_CLINT].base,
-                            0, num_harts, false);
-    riscv_aclint_mtimer_create(system_memory,
-                               memmap[XIANGSHAN_KMH_CLINT].base +
-                               RISCV_ACLINT_SWI_SIZE,
-                               RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                               0, num_harts, RISCV_ACLINT_DEFAULT_MTIMECMP,
+    riscv_aclint_swi_create(system_स्मृतिः,
+                            memmap[XIANGSHAN_KMH_CLINT].आधारः,
+                            0, अङ्कः_harts, false);
+    riscv_aclint_mtimer_create(system_स्मृतिः,
+                               memmap[XIANGSHAN_KMH_CLINT].आधारः +
+                               RISCV_ACLINT_SWI_आकार,
+                               RISCV_ACLINT_DEFAULT_MTIMER_आकार,
+                               0, अङ्कः_harts, RISCV_ACLINT_DEFAULT_MTIMECMP,
                                RISCV_ACLINT_DEFAULT_MTIME,
                                XIANGSHAN_KMH_CLINT_TIMEBASE_FREQ, true);
 
     /* ROM */
-    memory_region_init_rom(&s->rom, OBJECT(dev), "xiangshan.kunminghu.rom",
-                           memmap[XIANGSHAN_KMH_ROM].size, &error_fatal);
-    memory_region_add_subregion(system_memory,
-                                memmap[XIANGSHAN_KMH_ROM].base, &s->rom);
+    स्मृतिः_region_init_rom(&s->rom, OBJECT(dev), "xiangshan.kunminghu.rom",
+                           memmap[XIANGSHAN_KMH_ROM].आकार, &error_fatal);
+    स्मृतिः_region_सङ्कलय_subregion(system_स्मृतिः,
+                                memmap[XIANGSHAN_KMH_ROM].आधारः, &s->rom);
 }
 
-static void xiangshan_kmh_soc_class_init(ObjectClass *klass, const void *data)
+स्थिर शून्य xiangshan_kmh_soc_class_init(ObjectClass *klass, ध्रुव शून्य *दत्त)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
 
@@ -144,66 +144,66 @@ static void xiangshan_kmh_soc_class_init(ObjectClass *klass, const void *data)
     dc->user_creatable = false;
 }
 
-static void xiangshan_kmh_soc_instance_init(Object *obj)
+स्थिर शून्य xiangshan_kmh_soc_instance_init(Object *obj)
 {
     XiangshanKmhSoCState *s = XIANGSHAN_KMH_SOC(obj);
 
     object_initialize_child(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
 }
 
-static const TypeInfo xiangshan_kmh_soc_info = {
+स्थिर ध्रुव TypeInfo xiangshan_kmh_soc_info = {
     .name = TYPE_XIANGSHAN_KMH_SOC,
     .parent = TYPE_DEVICE,
-    .instance_size = sizeof(XiangshanKmhSoCState),
+    .instance_आकार = परिमाण(XiangshanKmhSoCState),
     .instance_init = xiangshan_kmh_soc_instance_init,
     .class_init = xiangshan_kmh_soc_class_init,
 };
 
-static void xiangshan_kmh_soc_register_types(void)
+स्थिर शून्य xiangshan_kmh_soc_पञ्जिकाकोशः_types(शून्य)
 {
-    type_register_static(&xiangshan_kmh_soc_info);
+    type_पञ्जिकाकोशः_static(&xiangshan_kmh_soc_info);
 }
-type_init(xiangshan_kmh_soc_register_types)
+type_init(xiangshan_kmh_soc_पञ्जिकाकोशः_types)
 
-static void xiangshan_kmh_machine_init(MachineState *machine)
+स्थिर शून्य xiangshan_kmh_machine_init(MachineState *machine)
 {
     XiangshanKmhState *s = XIANGSHAN_KMH_MACHINE(machine);
-    const MemMapEntry *memmap = xiangshan_kmh_memmap;
-    MemoryRegion *system_memory = get_system_memory();
-    hwaddr start_addr = memmap[XIANGSHAN_KMH_DRAM].base;
+    ध्रुव Mem_Map_प्रविष्टिः *memmap = xiangshan_kmh_memmap;
+    स्मृतिः_Region *system_स्मृतिः = get_system_स्मृतिः();
+    hwaddr start_addr = memmap[XIANGSHAN_KMH_DRAM].आधारः;
     RISCVBootInfo boot_info;
 
     /* Initialize SoC */
     object_initialize_child(OBJECT(machine), "soc", &s->soc,
                             TYPE_XIANGSHAN_KMH_SOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&s->soc), रिक्त, &error_fatal);
 
     /* Register RAM */
-    memory_region_add_subregion(system_memory,
-                                memmap[XIANGSHAN_KMH_DRAM].base,
+    स्मृतिः_region_सङ्कलय_subregion(system_स्मृतिः,
+                                memmap[XIANGSHAN_KMH_DRAM].आधारः,
                                 machine->ram);
 
     riscv_boot_info_init(&boot_info, &s->soc.cpus);
 
     /* ROM reset vector */
-    riscv_setup_rom_reset_vec(machine, &s->soc.cpus,
+    riscv_सज्जता_rom_reset_vec(machine, &s->soc.cpus,
                               start_addr,
-                              memmap[XIANGSHAN_KMH_ROM].base,
-                              memmap[XIANGSHAN_KMH_ROM].size, 0, 0);
-    if (machine->firmware) {
-        riscv_load_firmware(machine, &boot_info, machine->firmware,
-                            &start_addr, NULL);
+                              memmap[XIANGSHAN_KMH_ROM].आधारः,
+                              memmap[XIANGSHAN_KMH_ROM].आकार, 0, 0);
+    यदि (machine->firmware) {
+        riscv_आरोपय_firmware(machine, &boot_info, machine->firmware,
+                            &start_addr, रिक्त);
     }
 
     /* Note: dtb has been integrated into firmware(OpenSBI) when compiling */
 }
 
-static void xiangshan_kmh_machine_class_init(ObjectClass *klass, const void *data)
+स्थिर शून्य xiangshan_kmh_machine_class_init(ObjectClass *klass, ध्रुव शून्य *दत्त)
 {
     MachineClass *mc = MACHINE_CLASS(klass);
-    static const char *const valid_cpu_types[] = {
+    स्थिर ध्रुव वर्ण *ध्रुव valid_cpu_types[] = {
         TYPE_RISCV_CPU_XIANGSHAN_KMH,
-        NULL
+        रिक्त
     };
 
     mc->desc = "RISC-V Board compatible with the Xiangshan " \
@@ -215,15 +215,15 @@ static void xiangshan_kmh_machine_class_init(ObjectClass *klass, const void *dat
     mc->default_ram_id = "xiangshan.kunminghu.ram";
 }
 
-static const TypeInfo xiangshan_kmh_machine_info = {
+स्थिर ध्रुव TypeInfo xiangshan_kmh_machine_info = {
     .name = TYPE_XIANGSHAN_KMH_MACHINE,
     .parent = TYPE_MACHINE,
-    .instance_size = sizeof(XiangshanKmhState),
+    .instance_आकार = परिमाण(XiangshanKmhState),
     .class_init = xiangshan_kmh_machine_class_init,
 };
 
-static void xiangshan_kmh_machine_register_types(void)
+स्थिर शून्य xiangshan_kmh_machine_पञ्जिकाकोशः_types(शून्य)
 {
-    type_register_static(&xiangshan_kmh_machine_info);
+    type_पञ्जिकाकोशः_static(&xiangshan_kmh_machine_info);
 }
-type_init(xiangshan_kmh_machine_register_types)
+type_init(xiangshan_kmh_machine_पञ्जिकाकोशः_types)

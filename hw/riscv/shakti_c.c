@@ -16,21 +16,21 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "hw/core/boards.h"
-#include "hw/riscv/shakti_c.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "hw/intc/sifive_plic.h"
-#include "hw/intc/riscv_aclint.h"
-#include "system/system.h"
-#include "hw/core/qdev-properties.h"
-#include "system/address-spaces.h"
-#include "hw/riscv/boot.h"
+#अन्तर्भाव "qemu/osdep.h"
+#अन्तर्भाव "hw/core/boards.h"
+#अन्तर्भाव "hw/riscv/shakti_c.h"
+#अन्तर्भाव "qapi/error.h"
+#अन्तर्भाव "qemu/error-report.h"
+#अन्तर्भाव "hw/intc/sifive_plic.h"
+#अन्तर्भाव "hw/intc/riscv_aclint.h"
+#अन्तर्भाव "system/system.h"
+#अन्तर्भाव "hw/core/qdev-properties.h"
+#अन्तर्भाव "system/address-spaces.h"
+#अन्तर्भाव "hw/riscv/boot.h"
 
-static const struct MemmapEntry {
-    hwaddr base;
-    hwaddr size;
+स्थिर ध्रुव संरचना Memmap_प्रविष्टिः {
+    hwaddr आधारः;
+    hwaddr आकार;
 } shakti_c_memmap[] = {
     [SHAKTI_C_ROM]   =  {  0x00001000,  0x2000   },
     [SHAKTI_C_RAM]   =  {  0x80000000,  0x0      },
@@ -41,46 +41,46 @@ static const struct MemmapEntry {
     [SHAKTI_C_I2C]   =  {  0x20c00000,  0x00100  },
 };
 
-static void shakti_c_machine_state_init(MachineState *mstate)
+स्थिर शून्य shakti_c_machine_state_init(MachineState *mstate)
 {
     ShaktiCMachineState *sms = RISCV_SHAKTI_MACHINE(mstate);
-    MemoryRegion *system_memory = get_system_memory();
+    स्मृतिः_Region *system_स्मृतिः = get_system_स्मृतिः();
     RISCVBootInfo boot_info;
-    hwaddr firmware_load_addr = shakti_c_memmap[SHAKTI_C_RAM].base;
+    hwaddr firmware_आरोपय_addr = shakti_c_memmap[SHAKTI_C_RAM].आधारः;
 
     /* Initialize SoC */
     object_initialize_child(OBJECT(mstate), "soc", &sms->soc,
                             TYPE_RISCV_SHAKTI_SOC);
-    qdev_realize(DEVICE(&sms->soc), NULL, &error_abort);
+    qdev_realize(DEVICE(&sms->soc), रिक्त, &error_abort);
 
     /* register RAM */
-    memory_region_add_subregion(system_memory,
-                                shakti_c_memmap[SHAKTI_C_RAM].base,
+    स्मृतिः_region_सङ्कलय_subregion(system_स्मृतिः,
+                                shakti_c_memmap[SHAKTI_C_RAM].आधारः,
                                 mstate->ram);
 
     riscv_boot_info_init(&boot_info, &sms->soc.cpus);
 
-    if (mstate->firmware) {
-        riscv_load_firmware(mstate, &boot_info, mstate->firmware,
-                            &firmware_load_addr, NULL);
+    यदि (mstate->firmware) {
+        riscv_आरोपय_firmware(mstate, &boot_info, mstate->firmware,
+                            &firmware_आरोपय_addr, रिक्त);
     }
 
     /* ROM reset vector */
-    riscv_setup_rom_reset_vec(mstate, &sms->soc.cpus, firmware_load_addr,
-                              shakti_c_memmap[SHAKTI_C_ROM].base,
-                              shakti_c_memmap[SHAKTI_C_ROM].size, 0, 0);
+    riscv_सज्जता_rom_reset_vec(mstate, &sms->soc.cpus, firmware_आरोपय_addr,
+                              shakti_c_memmap[SHAKTI_C_ROM].आधारः,
+                              shakti_c_memmap[SHAKTI_C_ROM].आकार, 0, 0);
 }
 
-static void shakti_c_machine_instance_init(Object *obj)
+स्थिर शून्य shakti_c_machine_instance_init(Object *obj)
 {
 }
 
-static void shakti_c_machine_class_init(ObjectClass *klass, const void *data)
+स्थिर शून्य shakti_c_machine_class_init(ObjectClass *klass, ध्रुव शून्य *दत्त)
 {
     MachineClass *mc = MACHINE_CLASS(klass);
-    static const char * const valid_cpu_types[] = {
+    स्थिर ध्रुव वर्ण * ध्रुव valid_cpu_types[] = {
         RISCV_CPU_TYPE_NAME("shakti-c"),
-        NULL
+        रिक्त
     };
 
     mc->desc = "RISC-V Board compatible with Shakti SDK";
@@ -91,65 +91,65 @@ static void shakti_c_machine_class_init(ObjectClass *klass, const void *data)
     mc->default_ram_id = "riscv.shakti.c.ram";
 }
 
-static const TypeInfo shakti_c_machine_type_info = {
+स्थिर ध्रुव TypeInfo shakti_c_machine_type_info = {
     .name = TYPE_RISCV_SHAKTI_MACHINE,
     .parent = TYPE_MACHINE,
     .class_init = shakti_c_machine_class_init,
     .instance_init = shakti_c_machine_instance_init,
-    .instance_size = sizeof(ShaktiCMachineState),
+    .instance_आकार = परिमाण(ShaktiCMachineState),
 };
 
-static void shakti_c_machine_type_info_register(void)
+स्थिर शून्य shakti_c_machine_type_info_पञ्जिकाकोशः(शून्य)
 {
-    type_register_static(&shakti_c_machine_type_info);
+    type_पञ्जिकाकोशः_static(&shakti_c_machine_type_info);
 }
-type_init(shakti_c_machine_type_info_register)
+type_init(shakti_c_machine_type_info_पञ्जिकाकोशः)
 
-static void shakti_c_soc_state_realize(DeviceState *dev, Error **errp)
+स्थिर शून्य shakti_c_soc_state_realize(DeviceState *dev, Error **errp)
 {
     MachineState *ms = MACHINE(qdev_get_machine());
     ShaktiCSoCState *sss = RISCV_SHAKTI_SOC(dev);
-    MemoryRegion *system_memory = get_system_memory();
+    स्मृतिः_Region *system_स्मृतिः = get_system_स्मृतिः();
 
     sysbus_realize(SYS_BUS_DEVICE(&sss->cpus), &error_abort);
 
-    sss->plic = sifive_plic_create(system_memory,
-        shakti_c_memmap[SHAKTI_C_PLIC].base,
-        (char *)SHAKTI_C_PLIC_HART_CONFIG, ms->smp.cpus, 0,
-        SHAKTI_C_PLIC_NUM_SOURCES,
-        SHAKTI_C_PLIC_NUM_PRIORITIES,
-        SHAKTI_C_PLIC_PRIORITY_BASE,
-        SHAKTI_C_PLIC_PENDING_BASE,
-        SHAKTI_C_PLIC_ENABLE_BASE,
+    sss->plic = sifive_plic_create(system_स्मृतिः,
+        shakti_c_memmap[SHAKTI_C_PLIC].आधारः,
+        (वर्ण *)SHAKTI_C_PLIC_HART_CONFIG, ms->smp.cpus, 0,
+        SHAKTI_C_PLIC_अङ्कः_SOURCES,
+        SHAKTI_C_PLIC_अङ्कः_PRIORITIES,
+        SHAKTI_C_PLIC_प्राथमिकता_आधारः,
+        SHAKTI_C_PLIC_PENDING_आधारः,
+        SHAKTI_C_PLIC_ENABLE_आधारः,
         SHAKTI_C_PLIC_ENABLE_STRIDE,
-        SHAKTI_C_PLIC_CONTEXT_BASE,
+        SHAKTI_C_PLIC_CONTEXT_आधारः,
         SHAKTI_C_PLIC_CONTEXT_STRIDE,
-        shakti_c_memmap[SHAKTI_C_PLIC].size);
+        shakti_c_memmap[SHAKTI_C_PLIC].आकार);
 
-    riscv_aclint_swi_create(system_memory,
-        shakti_c_memmap[SHAKTI_C_CLINT].base,
+    riscv_aclint_swi_create(system_स्मृतिः,
+        shakti_c_memmap[SHAKTI_C_CLINT].आधारः,
         0, 1, false);
-    riscv_aclint_mtimer_create(system_memory,
-        shakti_c_memmap[SHAKTI_C_CLINT].base + RISCV_ACLINT_SWI_SIZE,
-        RISCV_ACLINT_DEFAULT_MTIMER_SIZE, 0, 1,
+    riscv_aclint_mtimer_create(system_स्मृतिः,
+        shakti_c_memmap[SHAKTI_C_CLINT].आधारः + RISCV_ACLINT_SWI_आकार,
+        RISCV_ACLINT_DEFAULT_MTIMER_आकार, 0, 1,
         RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
         RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, false);
 
-    qdev_prop_set_chr(DEVICE(&(sss->uart)), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&sss->uart), errp)) {
-        return;
+    qdev_prop_समुच्चयः_chr(DEVICE(&(sss->uart)), "chardev", serial_hd(0));
+    यदि (!sysbus_realize(SYS_BUS_DEVICE(&sss->uart), errp)) {
+        प्रत्यागम;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&sss->uart), 0,
-                    shakti_c_memmap[SHAKTI_C_UART].base);
+                    shakti_c_memmap[SHAKTI_C_UART].आधारः);
 
     /* ROM */
-    memory_region_init_rom(&sss->rom, OBJECT(dev), "riscv.shakti.c.rom",
-                           shakti_c_memmap[SHAKTI_C_ROM].size, &error_fatal);
-    memory_region_add_subregion(system_memory,
-        shakti_c_memmap[SHAKTI_C_ROM].base, &sss->rom);
+    स्मृतिः_region_init_rom(&sss->rom, OBJECT(dev), "riscv.shakti.c.rom",
+                           shakti_c_memmap[SHAKTI_C_ROM].आकार, &error_fatal);
+    स्मृतिः_region_सङ्कलय_subregion(system_स्मृतिः,
+        shakti_c_memmap[SHAKTI_C_ROM].आधारः, &sss->rom);
 }
 
-static void shakti_c_soc_class_init(ObjectClass *klass, const void *data)
+स्थिर शून्य shakti_c_soc_class_init(ObjectClass *klass, ध्रुव शून्य *दत्त)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
     dc->realize = shakti_c_soc_state_realize;
@@ -162,7 +162,7 @@ static void shakti_c_soc_class_init(ObjectClass *klass, const void *data)
     dc->user_creatable = false;
 }
 
-static void shakti_c_soc_instance_init(Object *obj)
+स्थिर शून्य shakti_c_soc_instance_init(Object *obj)
 {
     ShaktiCSoCState *sss = RISCV_SHAKTI_SOC(obj);
 
@@ -174,22 +174,22 @@ static void shakti_c_soc_instance_init(Object *obj)
      * So let it be in instance_init. When supported should use ms->cpu_type
      * instead of TYPE_RISCV_CPU_SHAKTI_C
      */
-    object_property_set_str(OBJECT(&sss->cpus), "cpu-type",
+    object_property_समुच्चयः_str(OBJECT(&sss->cpus), "cpu-type",
                             TYPE_RISCV_CPU_SHAKTI_C, &error_abort);
-    object_property_set_int(OBJECT(&sss->cpus), "num-harts", 1,
+    object_property_समुच्चयः_int(OBJECT(&sss->cpus), "num-harts", 1,
                             &error_abort);
 }
 
-static const TypeInfo shakti_c_type_info = {
+स्थिर ध्रुव TypeInfo shakti_c_type_info = {
     .name = TYPE_RISCV_SHAKTI_SOC,
     .parent = TYPE_DEVICE,
     .class_init = shakti_c_soc_class_init,
     .instance_init = shakti_c_soc_instance_init,
-    .instance_size = sizeof(ShaktiCSoCState),
+    .instance_आकार = परिमाण(ShaktiCSoCState),
 };
 
-static void shakti_c_type_info_register(void)
+स्थिर शून्य shakti_c_type_info_पञ्जिकाकोशः(शून्य)
 {
-    type_register_static(&shakti_c_type_info);
+    type_पञ्जिकाकोशः_static(&shakti_c_type_info);
 }
-type_init(shakti_c_type_info_register)
+type_init(shakti_c_type_info_पञ्जिकाकोशः)

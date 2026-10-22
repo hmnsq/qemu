@@ -18,72 +18,72 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/units.h"
-#include "qemu/error-report.h"
-#include "qemu/guest-random.h"
-#include "qapi/error.h"
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/core/sysbus.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/char/serial-mm.h"
-#include "target/riscv/cpu.h"
-#include "hw/core/sysbus-fdt.h"
-#include "hw/riscv/riscv_hart.h"
-#include "hw/riscv/iommu.h"
-#include "hw/riscv/riscv-iommu.h"
-#include "hw/riscv/riscv-iommu-bits.h"
-#include "hw/riscv/virt.h"
-#include "hw/riscv/boot.h"
-#include "hw/riscv/device-common.h"
-#include "hw/riscv/fdt-common.h"
-#include "hw/riscv/numa.h"
-#include "kvm/kvm_riscv.h"
-#include "hw/firmware/smbios.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/riscv_aplic.h"
-#include "hw/intc/sifive_plic.h"
-#include "hw/misc/sifive_test.h"
-#include "hw/core/platform-bus.h"
-#include "chardev/char.h"
-#include "system/device_tree.h"
-#include "system/system.h"
-#include "system/tcg.h"
-#include "system/kvm.h"
-#include "system/tpm.h"
-#include "system/qtest.h"
-#include "hw/pci/pci.h"
-#include "hw/pci-host/gpex.h"
-#include "hw/display/ramfb.h"
-#include "hw/acpi/aml-build.h"
-#include "qapi/qapi-visit-common.h"
-#include "hw/virtio/virtio-iommu.h"
-#include "hw/uefi/var-service-api.h"
+#अन्तर्भाव "qemu/osdep.h"
+#अन्तर्भाव "qemu/units.h"
+#अन्तर्भाव "qemu/error-report.h"
+#अन्तर्भाव "qemu/guest-random.h"
+#अन्तर्भाव "qapi/error.h"
+#अन्तर्भाव "hw/core/boards.h"
+#अन्तर्भाव "hw/core/loader.h"
+#अन्तर्भाव "hw/core/sysbus.h"
+#अन्तर्भाव "hw/core/qdev-properties.h"
+#अन्तर्भाव "hw/char/serial-mm.h"
+#अन्तर्भाव "target/riscv/cpu.h"
+#अन्तर्भाव "hw/core/sysbus-fdt.h"
+#अन्तर्भाव "hw/riscv/riscv_hart.h"
+#अन्तर्भाव "hw/riscv/iommu.h"
+#अन्तर्भाव "hw/riscv/riscv-iommu.h"
+#अन्तर्भाव "hw/riscv/riscv-iommu-bits.h"
+#अन्तर्भाव "hw/riscv/virt.h"
+#अन्तर्भाव "hw/riscv/boot.h"
+#अन्तर्भाव "hw/riscv/device-common.h"
+#अन्तर्भाव "hw/riscv/fdt-common.h"
+#अन्तर्भाव "hw/riscv/numa.h"
+#अन्तर्भाव "kvm/kvm_riscv.h"
+#अन्तर्भाव "hw/firmware/smbios.h"
+#अन्तर्भाव "hw/intc/riscv_aclint.h"
+#अन्तर्भाव "hw/intc/riscv_aplic.h"
+#अन्तर्भाव "hw/intc/sifive_plic.h"
+#अन्तर्भाव "hw/misc/sifive_test.h"
+#अन्तर्भाव "hw/core/platform-bus.h"
+#अन्तर्भाव "chardev/char.h"
+#अन्तर्भाव "system/device_tree.h"
+#अन्तर्भाव "system/system.h"
+#अन्तर्भाव "system/tcg.h"
+#अन्तर्भाव "system/kvm.h"
+#अन्तर्भाव "system/tpm.h"
+#अन्तर्भाव "system/qtest.h"
+#अन्तर्भाव "hw/pci/pci.h"
+#अन्तर्भाव "hw/pci-host/gpex.h"
+#अन्तर्भाव "hw/display/ramfb.h"
+#अन्तर्भाव "hw/acpi/aml-build.h"
+#अन्तर्भाव "qapi/qapi-visit-common.h"
+#अन्तर्भाव "hw/virtio/virtio-iommu.h"
+#अन्तर्भाव "hw/uefi/var-service-api.h"
 
-#include "aia.h"
+#अन्तर्भाव "aia.h"
 
 /* KVM AIA only supports APLIC MSI. APLIC Wired is always emulated by QEMU. */
-static bool virt_use_kvm_aia_aplic_imsic(RISCVVirtAIAType aia_type)
+स्थिर bool virt_use_kvm_aia_aplic_imsic(RISCVVirtAIAType aia_type)
 {
     bool msimode = aia_type == VIRT_AIA_TYPE_APLIC_IMSIC;
 
-    return riscv_is_kvm_aia_aplic_imsic(msimode);
+    प्रत्यागम riscv_is_kvm_aia_aplic_imsic(msimode);
 }
 
-static bool virt_use_emulated_aplic(RISCVVirtAIAType aia_type)
+स्थिर bool virt_use_emulated_aplic(RISCVVirtAIAType aia_type)
 {
     bool msimode = aia_type == VIRT_AIA_TYPE_APLIC_IMSIC;
 
-    return riscv_use_emulated_aplic(msimode);
+    प्रत्यागम riscv_use_emulated_aplic(msimode);
 }
 
-static bool virt_aclint_allowed(void)
+स्थिर bool virt_aclint_allowed(शून्य)
 {
-    return tcg_enabled() || qtest_enabled();
+    प्रत्यागम tcg_enabled() || qtest_enabled();
 }
 
-static const MemMapEntry virt_memmap[] = {
+स्थिर ध्रुव Mem_Map_प्रविष्टिः virt_memmap[] = {
     [VIRT_DEBUG] =        {        0x0,         0x100 },
     [VIRT_MROM] =         {     0x1000,        0xf000 },
     [VIRT_TEST] =         {   0x100000,        0x1000 },
@@ -93,130 +93,130 @@ static const MemMapEntry virt_memmap[] = {
     [VIRT_PCIE_PIO] =     {  0x3000000,       0x10000 },
     [VIRT_IOMMU_SYS] =    {  0x3010000,        0x1000 },
     [VIRT_PLATFORM_BUS] = {  0x4000000,     0x2000000 },
-    [VIRT_PLIC] =         {  0xc000000, VIRT_PLIC_SIZE(VIRT_CPUS_MAX * 2) },
-    [VIRT_APLIC_M] =      {  0xc000000, APLIC_SIZE(VIRT_CPUS_MAX) },
-    [VIRT_APLIC_S] =      {  0xd000000, APLIC_SIZE(VIRT_CPUS_MAX) },
+    [VIRT_PLIC] =         {  0xc000000, VIRT_PLIC_आकार(VIRT_CPUS_MAX * 2) },
+    [VIRT_APLIC_M] =      {  0xc000000, APLIC_आकार(VIRT_CPUS_MAX) },
+    [VIRT_APLIC_S] =      {  0xd000000, APLIC_आकार(VIRT_CPUS_MAX) },
     [VIRT_UART0] =        { 0x10000000,         0x100 },
     [VIRT_VIRTIO] =       { 0x10001000,        0x1000 },
     /* UART1 supports page isolation from UART0 */
     [VIRT_UART1] =        { 0x1000a000,         0x100 },
     [VIRT_FW_CFG] =       { 0x10100000,          0x18 },
     [VIRT_FLASH] =        { 0x20000000,     0x4000000 },
-    [VIRT_IMSIC_M] =      { 0x24000000, VIRT_IMSIC_MAX_SIZE },
-    [VIRT_IMSIC_S] =      { 0x28000000, VIRT_IMSIC_MAX_SIZE },
+    [VIRT_IMSIC_M] =      { 0x24000000, VIRT_IMSIC_MAX_आकार },
+    [VIRT_IMSIC_S] =      { 0x28000000, VIRT_IMSIC_MAX_आकार },
     [VIRT_PCIE_ECAM] =    { 0x30000000,    0x10000000 },
     [VIRT_PCIE_MMIO] =    { 0x40000000,    0x40000000 },
     [VIRT_DRAM] =         { 0x80000000,           0x0 },
 };
 
 /* PCIe high mmio is fixed for RV32 */
-#define VIRT32_HIGH_PCIE_MMIO_BASE  0x300000000ULL
-#define VIRT32_HIGH_PCIE_MMIO_SIZE  (4 * GiB)
+#परिभाषय VIRT32_उच्चः_PCIE_MMIO_आधारः  0x300000000ULL
+#परिभाषय VIRT32_उच्चः_PCIE_MMIO_आकार  (4 * GiB)
 
 /* PCIe high mmio for RV64, size is fixed but base depends on top of RAM */
-#define VIRT64_HIGH_PCIE_MMIO_SIZE  (16 * GiB)
+#परिभाषय VIRT64_उच्चः_PCIE_MMIO_आकार  (16 * GiB)
 
-static MemMapEntry virt_high_pcie_memmap;
+स्थिर Mem_Map_प्रविष्टिः virt_उच्चः_pcie_memmap;
 
-#define VIRT_FLASH_SECTOR_SIZE (256 * KiB)
+#परिभाषय VIRT_FLASH_SECTOR_आकार (256 * KiB)
 
-static void virt_flash_create(RISCVVirtState *s)
+स्थिर शून्य virt_flash_create(RISCVVirtState *s)
 {
     s->flash[0] = riscv_flash_create(OBJECT(s), "virt.flash0", "pflash0",
-                                     VIRT_FLASH_SECTOR_SIZE);
+                                     VIRT_FLASH_SECTOR_आकार);
     s->flash[1] = riscv_flash_create(OBJECT(s), "virt.flash1", "pflash1",
-                                     VIRT_FLASH_SECTOR_SIZE);
+                                     VIRT_FLASH_SECTOR_आकार);
 }
 
-static void virt_flash_map(RISCVVirtState *s,
-                           MemoryRegion *sysmem)
+स्थिर शून्य virt_flash_map(RISCVVirtState *s,
+                           स्मृतिः_Region *sysmem)
 {
-    hwaddr flashsize = s->memmap[VIRT_FLASH].size / 2;
-    hwaddr flashbase = s->memmap[VIRT_FLASH].base;
+    hwaddr flashsize = s->memmap[VIRT_FLASH].आकार / 2;
+    hwaddr flashbase = s->memmap[VIRT_FLASH].आधारः;
 
     riscv_init_flash_map(s->flash[0], flashbase, flashsize,
-                         sysmem, VIRT_FLASH_SECTOR_SIZE);
+                         sysmem, VIRT_FLASH_SECTOR_आकार);
     riscv_init_flash_map(s->flash[1], flashbase + flashsize, flashsize,
-                         sysmem, VIRT_FLASH_SECTOR_SIZE);
+                         sysmem, VIRT_FLASH_SECTOR_आकार);
 }
 
-static void create_fdt_socket_plic(RISCVVirtState *s,
-                                   int socket,
+स्थिर शून्य create_fdt_socket_plic(RISCVVirtState *s,
+                                   पूर्णाङ्क socket,
                                    uint32_t *phandle, uint32_t *intc_phandles,
                                    uint32_t *plic_phandles)
 {
-    int cpu;
-    g_autofree char *plic_name = NULL;
+    पूर्णाङ्क cpu;
+    g_autofree वर्ण *plic_name = रिक्त;
     g_autofree uint32_t *plic_cells;
     MachineState *ms = MACHINE(s);
-    unsigned long plic_addr = s->memmap[VIRT_PLIC].base +
-                              (s->memmap[VIRT_PLIC].size * socket);
+    अचिह्नित दीर्घ plic_addr = s->memmap[VIRT_PLIC].आधारः +
+                              (s->memmap[VIRT_PLIC].आकार * socket);
     bool numa_enabled = riscv_numa_enabled(MACHINE(s));
-    uint32_t cells_length;
+    uint32_t cells_दीर्घता;
 
     plic_name = g_strdup_printf("/soc/interrupt-controller@%lx", plic_addr);
 
-    if (kvm_enabled()) {
-        cells_length = s->soc[socket].num_harts * 2;
-        plic_cells = g_new0(uint32_t, cells_length);
+    यदि (kvm_enabled()) {
+        cells_दीर्घता = s->soc[socket].अङ्कः_harts * 2;
+        plic_cells = g_new0(uint32_t, cells_दीर्घता);
 
-        for (cpu = 0; cpu < s->soc[socket].num_harts; cpu++) {
-            plic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-            plic_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_S_EXT);
+        प्रति (cpu = 0; cpu < s->soc[socket].अङ्कः_harts; cpu++) {
+            plic_cells[cpu * 2 + 0] = cpu_गन्तव्यम्_be32(intc_phandles[cpu]);
+            plic_cells[cpu * 2 + 1] = cpu_गन्तव्यम्_be32(IRQ_S_EXT);
         }
-   } else {
-        cells_length = s->soc[socket].num_harts * 4;
-        plic_cells = g_new0(uint32_t, cells_length);
+   } अन्यथा {
+        cells_दीर्घता = s->soc[socket].अङ्कः_harts * 4;
+        plic_cells = g_new0(uint32_t, cells_दीर्घता);
 
-        for (cpu = 0; cpu < s->soc[socket].num_harts; cpu++) {
-            plic_cells[cpu * 4 + 0] = cpu_to_be32(intc_phandles[cpu]);
-            plic_cells[cpu * 4 + 1] = cpu_to_be32(IRQ_M_EXT);
-            plic_cells[cpu * 4 + 2] = cpu_to_be32(intc_phandles[cpu]);
-            plic_cells[cpu * 4 + 3] = cpu_to_be32(IRQ_S_EXT);
+        प्रति (cpu = 0; cpu < s->soc[socket].अङ्कः_harts; cpu++) {
+            plic_cells[cpu * 4 + 0] = cpu_गन्तव्यम्_be32(intc_phandles[cpu]);
+            plic_cells[cpu * 4 + 1] = cpu_गन्तव्यम्_be32(IRQ_M_EXT);
+            plic_cells[cpu * 4 + 2] = cpu_गन्तव्यम्_be32(intc_phandles[cpu]);
+            plic_cells[cpu * 4 + 3] = cpu_गन्तव्यम्_be32(IRQ_S_EXT);
         }
     }
 
     plic_phandles[socket] = (*phandle)++;
 
-    riscv_create_fdt_plic(ms->fdt, plic_addr, s->memmap[VIRT_PLIC].size,
+    riscv_create_fdt_plic(ms->fdt, plic_addr, s->memmap[VIRT_PLIC].आकार,
                           plic_phandles[socket], FDT_PLIC_INT_CELLS,
                           FDT_PLIC_ADDR_CELLS, plic_cells,
-                          cells_length * sizeof(uint32_t),
-                          VIRT_IRQCHIP_NUM_SOURCES - 1,
+                          cells_दीर्घता * परिमाण(uint32_t),
+                          VIRT_IRQCHIP_अङ्कः_SOURCES - 1,
                           numa_enabled, socket);
 
-    if (!socket) {
-        platform_bus_add_all_fdt_nodes(ms->fdt, plic_name,
-                                       s->memmap[VIRT_PLATFORM_BUS].base,
-                                       s->memmap[VIRT_PLATFORM_BUS].size,
+    यदि (!socket) {
+        platform_bus_सङ्कलय_all_fdt_nodes(ms->fdt, plic_name,
+                                       s->memmap[VIRT_PLATFORM_BUS].आधारः,
+                                       s->memmap[VIRT_PLATFORM_BUS].आकार,
                                        VIRT_PLATFORM_BUS_IRQ);
     }
 }
 
-static void create_fdt_pmu(RISCVVirtState *s)
+स्थिर शून्य create_fdt_pmu(RISCVVirtState *s)
 {
-    g_autofree char *pmu_name = g_strdup_printf("/pmu");
+    g_autofree वर्ण *pmu_name = g_strdup_printf("/pmu");
     MachineState *ms = MACHINE(s);
     RISCVCPU *hart = &s->soc[0].harts[0];
 
-    qemu_fdt_add_subnode(ms->fdt, pmu_name);
+    qemu_fdt_सङ्कलय_subnode(ms->fdt, pmu_name);
     qemu_fdt_setprop_string(ms->fdt, pmu_name, "compatible", "riscv,pmu");
-    riscv_pmu_generate_fdt_node(ms->fdt, hart->pmu_avail_ctrs, pmu_name);
+    riscv_pmu_generate_fdt_ग्रन्थिः(ms->fdt, hart->pmu_avail_ctrs, pmu_name);
 }
 
-static void create_fdt_sockets(RISCVVirtState *s,
+स्थिर शून्य create_fdt_sockets(RISCVVirtState *s,
                                uint32_t *phandle,
                                uint32_t *irq_mmio_phandle,
                                uint32_t *irq_pcie_phandle,
                                uint32_t *irq_virtio_phandle,
                                uint32_t *msi_pcie_phandle)
 {
-    int socket, phandle_pos;
+    पूर्णाङ्क socket, phandle_pos;
     MachineState *ms = MACHINE(s);
     uint32_t msi_m_phandle = 0, msi_s_phandle = 0;
     uint32_t xplic_phandles[MAX_NODES];
-    g_autofree uint32_t *intc_phandles = NULL;
-    int socket_count = riscv_socket_count(ms);
+    g_autofree uint32_t *intc_phandles = रिक्त;
+    पूर्णाङ्क socket_गणनम् = riscv_socket_गणनम्(ms);
     bool numa_enabled = riscv_numa_enabled(ms);
     bool is_32_bit = riscv_is_32bit(&s->soc[0]);
     APLICFdtProps aplic_props;
@@ -228,7 +228,7 @@ static void create_fdt_sockets(RISCVVirtState *s,
 
     intc_phandles = g_new0(uint32_t, ms->smp.cpus);
 
-    if (virt_aclint_allowed() && s->have_aclint) {
+    यदि (virt_aclint_allowed() && s->have_aclint) {
         aclint_props.clint = &s->memmap[VIRT_CLINT];
         aclint_props.aclint_sswi = &s->memmap[VIRT_ACLINT_SSWI];
         aclint_props.aia_type = s->aia_type;
@@ -236,48 +236,48 @@ static void create_fdt_sockets(RISCVVirtState *s,
     }
 
     phandle_pos = ms->smp.cpus;
-    for (socket = (socket_count - 1); socket >= 0; socket--) {
-        hwaddr memaddr = s->memmap[VIRT_DRAM].base +
-                         riscv_socket_mem_offset(ms, socket);
-        uint64_t memsize = riscv_socket_mem_size(ms, socket);
+    प्रति (socket = (socket_गणनम् - 1); socket >= 0; socket--) {
+        hwaddr memaddr = s->memmap[VIRT_DRAM].आधारः +
+                         riscv_socket_mem_विस्थापनम्(ms, socket);
+        uint64_t memsize = riscv_socket_mem_आकार(ms, socket);
 
-        phandle_pos -= s->soc[socket].num_harts;
+        phandle_pos -= s->soc[socket].अङ्कः_harts;
 
         riscv_create_fdt_socket_cpus(ms->fdt, (&s->soc[socket])->harts, socket,
-                                     s->soc[socket].num_harts,
-                                     s->soc[socket].hartid_base,
+                                     s->soc[socket].अङ्कः_harts,
+                                     s->soc[socket].hartid_आधारः,
                                      phandle, &intc_phandles[phandle_pos],
                                      numa_enabled, is_32_bit);
 
-        riscv_create_fdt_socket_memory(ms->fdt, memaddr, memsize,
+        riscv_create_fdt_socket_स्मृतिः(ms->fdt, memaddr, memsize,
                                        socket, riscv_numa_enabled(ms));
 
-        if (virt_aclint_allowed() && s->have_aclint) {
+        यदि (virt_aclint_allowed() && s->have_aclint) {
             aclint_props.socket = socket;
-            aclint_props.num_harts = s->soc[socket].num_harts;
+            aclint_props.अङ्कः_harts = s->soc[socket].अङ्कः_harts;
             riscv_create_fdt_socket_aclint(ms->fdt, &aclint_props,
                                            &intc_phandles[phandle_pos]);
-        } else if (tcg_enabled()) {
-            hwaddr clintaddr = s->memmap[VIRT_CLINT].base +
-                               s->memmap[VIRT_CLINT].size * socket;
+        } अन्यथा यदि (tcg_enabled()) {
+            hwaddr clintaddr = s->memmap[VIRT_CLINT].आधारः +
+                               s->memmap[VIRT_CLINT].आकार * socket;
 
             riscv_create_fdt_socket_clint(ms->fdt, clintaddr,
-                                          s->memmap[VIRT_CLINT].size,
+                                          s->memmap[VIRT_CLINT].आकार,
                                           socket, &intc_phandles[phandle_pos],
-                                          s->soc[socket].num_harts,
+                                          s->soc[socket].अङ्कः_harts,
                                           numa_enabled);
         }
     }
 
-    if (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
+    यदि (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
         IMSICFdtProps props = {
             .soc = &s->soc,
-            .socket_count = riscv_socket_count(ms),
+            .socket_गणनम् = riscv_socket_गणनम्(ms),
             .smp_cpus = ms->smp.cpus,
-            .imsic_m_base = !kvm_enabled() ? s->memmap[VIRT_IMSIC_M].base : 0,
-            .imsic_s_base = s->memmap[VIRT_IMSIC_S].base,
-            .imsic_group_max_size = VIRT_IMSIC_GROUP_MAX_SIZE,
-            .irqchip_num_msis = VIRT_IRQCHIP_NUM_MSIS,
+            .imsic_m_आधारः = !kvm_enabled() ? s->memmap[VIRT_IMSIC_M].आधारः : 0,
+            .imsic_s_आधारः = s->memmap[VIRT_IMSIC_S].आधारः,
+            .imsic_गणः_max_आकार = VIRT_IMSIC_गणः_MAX_आकार,
+            .irqchip_अङ्कः_msis = VIRT_IRQCHIP_अङ्कः_MSIS,
             .aia_guests = s->aia_guests
         };
 
@@ -287,15 +287,15 @@ static void create_fdt_sockets(RISCVVirtState *s,
         *msi_pcie_phandle = msi_s_phandle;
     }
 
-    if (s->aia_type != VIRT_AIA_TYPE_NONE) {
-        aplic_props.aplic_m = !kvm_enabled() ? &s->memmap[VIRT_APLIC_M] : NULL;
+    यदि (s->aia_type != VIRT_AIA_TYPE_NONE) {
+        aplic_props.aplic_m = !kvm_enabled() ? &s->memmap[VIRT_APLIC_M] : रिक्त;
         aplic_props.aplic_s = &s->memmap[VIRT_APLIC_S];
         aplic_props.platform_bus = &s->memmap[VIRT_PLATFORM_BUS];
         aplic_props.platform_bus_irq = VIRT_PLATFORM_BUS_IRQ;
         aplic_props.socket = 0;
-        aplic_props.num_harts = ms->smp.cpus;
+        aplic_props.अङ्कः_harts = ms->smp.cpus;
         aplic_props.numa_enabled = numa_enabled;
-        aplic_props.irqchip_num_sources = VIRT_IRQCHIP_NUM_SOURCES;
+        aplic_props.irqchip_अङ्कः_sources = VIRT_IRQCHIP_अङ्कः_SOURCES;
         aplic_props.aia_type = s->aia_type;
     }
 
@@ -303,7 +303,7 @@ static void create_fdt_sockets(RISCVVirtState *s,
      * With KVM AIA aplic-imsic, using an irqchip without split
      * mode, we'll use only one APLIC instance.
      */
-    if (!virt_use_emulated_aplic(s->aia_type)) {
+    यदि (!virt_use_emulated_aplic(s->aia_type)) {
         riscv_create_fdt_socket_aplic(ms->fdt, &aplic_props,
                                       msi_m_phandle, msi_s_phandle, phandle,
                                       &intc_phandles[0], xplic_phandles);
@@ -311,18 +311,18 @@ static void create_fdt_sockets(RISCVVirtState *s,
         *irq_mmio_phandle = xplic_phandles[0];
         *irq_virtio_phandle = xplic_phandles[0];
         *irq_pcie_phandle = xplic_phandles[0];
-    } else {
+    } अन्यथा {
         phandle_pos = ms->smp.cpus;
-        for (socket = (socket_count - 1); socket >= 0; socket--) {
-            phandle_pos -= s->soc[socket].num_harts;
+        प्रति (socket = (socket_गणनम् - 1); socket >= 0; socket--) {
+            phandle_pos -= s->soc[socket].अङ्कः_harts;
 
-            if (s->aia_type == VIRT_AIA_TYPE_NONE) {
+            यदि (s->aia_type == VIRT_AIA_TYPE_NONE) {
                 create_fdt_socket_plic(s, socket, phandle,
                                        &intc_phandles[phandle_pos],
                                        xplic_phandles);
-            } else {
+            } अन्यथा {
                 aplic_props.socket = socket;
-                aplic_props.num_harts = s->soc[socket].num_harts;
+                aplic_props.अङ्कः_harts = s->soc[socket].अङ्कः_harts;
                 riscv_create_fdt_socket_aplic(ms->fdt, &aplic_props,
                                               msi_m_phandle, msi_s_phandle,
                                               phandle,
@@ -331,17 +331,17 @@ static void create_fdt_sockets(RISCVVirtState *s,
             }
         }
 
-        for (socket = 0; socket < socket_count; socket++) {
-            if (socket == 0) {
+        प्रति (socket = 0; socket < socket_गणनम्; socket++) {
+            यदि (socket == 0) {
                 *irq_mmio_phandle = xplic_phandles[socket];
                 *irq_virtio_phandle = xplic_phandles[socket];
                 *irq_pcie_phandle = xplic_phandles[socket];
             }
-            if (socket == 1) {
+            यदि (socket == 1) {
                 *irq_virtio_phandle = xplic_phandles[socket];
                 *irq_pcie_phandle = xplic_phandles[socket];
             }
-            if (socket == 2) {
+            यदि (socket == 2) {
                 *irq_pcie_phandle = xplic_phandles[socket];
             }
         }
@@ -350,40 +350,40 @@ static void create_fdt_sockets(RISCVVirtState *s,
     riscv_socket_fdt_write_distance_matrix(ms);
 }
 
-static void create_fdt_virtio(RISCVVirtState *s, uint32_t irq_virtio_phandle)
+स्थिर शून्य create_fdt_virtio(RISCVVirtState *s, uint32_t irq_virtio_phandle)
 {
-    int i;
+    पूर्णाङ्क i;
     MachineState *ms = MACHINE(s);
-    hwaddr virtio_base = s->memmap[VIRT_VIRTIO].base;
+    hwaddr virtio_आधारः = s->memmap[VIRT_VIRTIO].आधारः;
 
-    for (i = 0; i < VIRTIO_COUNT; i++) {
-        g_autofree char *name = NULL;
-        uint64_t size = s->memmap[VIRT_VIRTIO].size;
-        hwaddr addr = virtio_base + i * size;
+    प्रति (i = 0; i < VIRTIO_गणनम्; i++) {
+        g_autofree वर्ण *name = रिक्त;
+        uint64_t आकार = s->memmap[VIRT_VIRTIO].आकार;
+        hwaddr addr = virtio_आधारः + i * आकार;
 
         name = g_strdup_printf("/soc/virtio_mmio@%"HWADDR_PRIx, addr);
 
-        qemu_fdt_add_subnode(ms->fdt, name);
+        qemu_fdt_सङ्कलय_subnode(ms->fdt, name);
         qemu_fdt_setprop_string(ms->fdt, name, "compatible", "virtio,mmio");
-        qemu_fdt_setprop_sized_cells(ms->fdt, name, "reg", 2, addr, 2, size);
+        qemu_fdt_setprop_sized_cells(ms->fdt, name, "reg", 2, addr, 2, आकार);
         qemu_fdt_setprop_cell(ms->fdt, name, "interrupt-parent",
             irq_virtio_phandle);
-        if (s->aia_type == VIRT_AIA_TYPE_NONE) {
+        यदि (s->aia_type == VIRT_AIA_TYPE_NONE) {
             qemu_fdt_setprop_cell(ms->fdt, name, "interrupts",
                                   VIRTIO_IRQ + i);
-        } else {
+        } अन्यथा {
             qemu_fdt_setprop_cells(ms->fdt, name, "interrupts",
                                    VIRTIO_IRQ + i, 0x4);
         }
     }
 }
 
-static void create_fdt_uarts(RISCVVirtState *s, uint32_t irq_mmio_phandle)
+स्थिर शून्य create_fdt_uarts(RISCVVirtState *s, uint32_t irq_mmio_phandle)
 {
-    g_autofree char *name = NULL;
+    g_autofree वर्ण *name = रिक्त;
     MachineState *ms = MACHINE(s);
 
-    if (s->uart1_present) {
+    यदि (s->uart1_present) {
         riscv_create_fdt_uart(ms->fdt, &s->memmap[VIRT_UART1],
                               UART1_IRQ, s->aia_type, irq_mmio_phandle);
     }
@@ -391,80 +391,80 @@ static void create_fdt_uarts(RISCVVirtState *s, uint32_t irq_mmio_phandle)
     riscv_create_fdt_uart(ms->fdt, &s->memmap[VIRT_UART0], UART0_IRQ,
                           s->aia_type, irq_mmio_phandle);
 
-    name = riscv_fdt_get_uart_nodename(s->memmap[VIRT_UART0].base);
+    name = riscv_fdt_get_uart_nodename(s->memmap[VIRT_UART0].आधारः);
     qemu_fdt_setprop_string(ms->fdt, "/chosen", "stdout-path", name);
     qemu_fdt_setprop_string(ms->fdt, "/aliases", "serial0", name);
 }
 
-static void create_fdt_fw_cfg(RISCVVirtState *s)
+स्थिर शून्य create_fdt_fw_cfg(RISCVVirtState *s)
 {
     MachineState *ms = MACHINE(s);
-    hwaddr base = s->memmap[VIRT_FW_CFG].base;
-    hwaddr size = s->memmap[VIRT_FW_CFG].size;
-    g_autofree char *nodename = g_strdup_printf("/fw-cfg@%" PRIx64, base);
+    hwaddr आधारः = s->memmap[VIRT_FW_CFG].आधारः;
+    hwaddr आकार = s->memmap[VIRT_FW_CFG].आकार;
+    g_autofree वर्ण *nodename = g_strdup_printf("/fw-cfg@%" PRIx64, आधारः);
 
-    qemu_fdt_add_subnode(ms->fdt, nodename);
+    qemu_fdt_सङ्कलय_subnode(ms->fdt, nodename);
     qemu_fdt_setprop_string(ms->fdt, nodename,
                             "compatible", "qemu,fw-cfg-mmio");
     qemu_fdt_setprop_sized_cells(ms->fdt, nodename, "reg",
-                                 2, base, 2, size);
-    qemu_fdt_setprop(ms->fdt, nodename, "dma-coherent", NULL, 0);
+                                 2, आधारः, 2, आकार);
+    qemu_fdt_setprop(ms->fdt, nodename, "dma-coherent", रिक्त, 0);
 }
 
-static void create_fdt_virtio_iommu(RISCVVirtState *s, uint16_t bdf)
+स्थिर शून्य create_fdt_virtio_iommu(RISCVVirtState *s, uint16_t bdf)
 {
-    const char compat[] = "virtio,pci-iommu\0pci1af4,1057";
-    void *fdt = MACHINE(s)->fdt;
+    ध्रुव वर्ण compat[] = "virtio,pci-iommu\0pci1af4,1057";
+    शून्य *fdt = MACHINE(s)->fdt;
     uint32_t iommu_phandle;
-    g_autofree char *iommu_node = NULL;
-    g_autofree char *pci_node = NULL;
+    g_autofree वर्ण *iommu_ग्रन्थिः = रिक्त;
+    g_autofree वर्ण *pci_ग्रन्थिः = रिक्त;
 
-    pci_node = g_strdup_printf("/soc/pci@%"HWADDR_PRIx,
-                               s->memmap[VIRT_PCIE_ECAM].base);
-    iommu_node = g_strdup_printf("%s/virtio_iommu@%x,%x", pci_node,
+    pci_ग्रन्थिः = g_strdup_printf("/soc/pci@%"HWADDR_PRIx,
+                               s->memmap[VIRT_PCIE_ECAM].आधारः);
+    iommu_ग्रन्थिः = g_strdup_printf("%s/virtio_iommu@%x,%x", pci_ग्रन्थिः,
                                  PCI_SLOT(bdf), PCI_FUNC(bdf));
     iommu_phandle = qemu_fdt_alloc_phandle(fdt);
 
-    qemu_fdt_add_subnode(fdt, iommu_node);
+    qemu_fdt_सङ्कलय_subnode(fdt, iommu_ग्रन्थिः);
 
-    qemu_fdt_setprop(fdt, iommu_node, "compatible", compat, sizeof(compat));
-    qemu_fdt_setprop_sized_cells(fdt, iommu_node, "reg",
+    qemu_fdt_setprop(fdt, iommu_ग्रन्थिः, "compatible", compat, परिमाण(compat));
+    qemu_fdt_setprop_sized_cells(fdt, iommu_ग्रन्थिः, "reg",
                                  1, bdf << 8, 1, 0, 1, 0,
                                  1, 0, 1, 0);
-    qemu_fdt_setprop_cell(fdt, iommu_node, "#iommu-cells", 1);
-    qemu_fdt_setprop_cell(fdt, iommu_node, "phandle", iommu_phandle);
+    qemu_fdt_setprop_cell(fdt, iommu_ग्रन्थिः, "#iommu-cells", 1);
+    qemu_fdt_setprop_cell(fdt, iommu_ग्रन्थिः, "phandle", iommu_phandle);
 
-    qemu_fdt_setprop_cells(fdt, pci_node, "iommu-map",
+    qemu_fdt_setprop_cells(fdt, pci_ग्रन्थिः, "iommu-map",
                            0, iommu_phandle, 0, bdf,
                            bdf + 1, iommu_phandle, bdf + 1, 0xffff - bdf);
 }
 
-static void create_fdt_iommu(RISCVVirtState *s, uint16_t bdf)
+स्थिर शून्य create_fdt_iommu(RISCVVirtState *s, uint16_t bdf)
 {
-    const char comp[] = "riscv,pci-iommu";
-    void *fdt = MACHINE(s)->fdt;
+    ध्रुव वर्ण comp[] = "riscv,pci-iommu";
+    शून्य *fdt = MACHINE(s)->fdt;
     uint32_t iommu_phandle;
-    g_autofree char *iommu_node = NULL;
-    g_autofree char *pci_node = NULL;
+    g_autofree वर्ण *iommu_ग्रन्थिः = रिक्त;
+    g_autofree वर्ण *pci_ग्रन्थिः = रिक्त;
 
-    pci_node = g_strdup_printf("/soc/pci@%"HWADDR_PRIx,
-                               s->memmap[VIRT_PCIE_ECAM].base);
-    iommu_node = g_strdup_printf("%s/iommu@%x", pci_node, bdf);
+    pci_ग्रन्थिः = g_strdup_printf("/soc/pci@%"HWADDR_PRIx,
+                               s->memmap[VIRT_PCIE_ECAM].आधारः);
+    iommu_ग्रन्थिः = g_strdup_printf("%s/iommu@%x", pci_ग्रन्थिः, bdf);
     iommu_phandle = qemu_fdt_alloc_phandle(fdt);
-    qemu_fdt_add_subnode(fdt, iommu_node);
+    qemu_fdt_सङ्कलय_subnode(fdt, iommu_ग्रन्थिः);
 
-    qemu_fdt_setprop(fdt, iommu_node, "compatible", comp, sizeof(comp));
-    qemu_fdt_setprop_cell(fdt, iommu_node, "#iommu-cells", 1);
-    qemu_fdt_setprop_cell(fdt, iommu_node, "phandle", iommu_phandle);
-    qemu_fdt_setprop_cells(fdt, iommu_node, "reg",
+    qemu_fdt_setprop(fdt, iommu_ग्रन्थिः, "compatible", comp, परिमाण(comp));
+    qemu_fdt_setprop_cell(fdt, iommu_ग्रन्थिः, "#iommu-cells", 1);
+    qemu_fdt_setprop_cell(fdt, iommu_ग्रन्थिः, "phandle", iommu_phandle);
+    qemu_fdt_setprop_cells(fdt, iommu_ग्रन्थिः, "reg",
                            bdf << 8, 0, 0, 0, 0);
-    qemu_fdt_setprop_cells(fdt, pci_node, "iommu-map",
+    qemu_fdt_setprop_cells(fdt, pci_ग्रन्थिः, "iommu-map",
                            0, iommu_phandle, 0, bdf,
                            bdf + 1, iommu_phandle, bdf + 1, 0xffff - bdf);
     s->pci_iommu_bdf = bdf;
 }
 
-static void finalize_fdt(RISCVVirtState *s)
+स्थिर शून्य finalize_fdt(RISCVVirtState *s)
 {
     uint32_t phandle = 1, irq_mmio_phandle = 1, msi_pcie_phandle = 1;
     uint32_t irq_pcie_phandle = 1, irq_virtio_phandle = 1;
@@ -476,11 +476,11 @@ static void finalize_fdt(RISCVVirtState *s)
 
     create_fdt_virtio(s, irq_virtio_phandle);
 
-    if (virt_is_iommu_sys_enabled(s)) {
+    यदि (virt_is_iommu_sys_enabled(s)) {
         iommu_sys_phandle =
             riscv_create_fdt_riscv_iommu_sys(MACHINE(s)->fdt,
-                                             s->memmap[VIRT_IOMMU_SYS].base,
-                                             s->memmap[VIRT_IOMMU_SYS].size,
+                                             s->memmap[VIRT_IOMMU_SYS].आधारः,
+                                             s->memmap[VIRT_IOMMU_SYS].आकार,
                                              &phandle,
                                              irq_mmio_phandle,
                                              msi_pcie_phandle,
@@ -492,13 +492,13 @@ static void finalize_fdt(RISCVVirtState *s)
                           &s->memmap[VIRT_PCIE_ECAM],
                           &s->memmap[VIRT_PCIE_PIO],
                           &s->memmap[VIRT_PCIE_MMIO],
-                          &virt_high_pcie_memmap,
+                          &virt_उच्चः_pcie_memmap,
                           irq_pcie_phandle, msi_pcie_phandle,
                           iommu_sys_phandle, PCIE_IRQ);
 
     riscv_create_fdt_syscon(MACHINE(s)->fdt, &phandle,
-                            s->memmap[VIRT_TEST].base,
-                            s->memmap[VIRT_TEST].size,
+                            s->memmap[VIRT_TEST].आधारः,
+                            s->memmap[VIRT_TEST].आकार,
                             FINISHER_RESET, FINISHER_PASS, true);
 
     create_fdt_uarts(s, irq_mmio_phandle);
@@ -507,129 +507,129 @@ static void finalize_fdt(RISCVVirtState *s)
                          s->aia_type, irq_mmio_phandle);
 }
 
-static void create_fdt(RISCVVirtState *s)
+स्थिर शून्य create_fdt(RISCVVirtState *s)
 {
     MachineState *ms = MACHINE(s);
-    uint8_t rng_seed[32];
-    g_autofree char *name = NULL;
+    uint8_t rng_बीजम्[32];
+    g_autofree वर्ण *name = रिक्त;
 
-    ms->fdt = riscv_create_board_device_tree("riscv-virtio,qemu",
+    ms->fdt = riscv_create_board_device_वृक्षः("riscv-virtio,qemu",
                                              "riscv-virtio",
-                                             &s->fdt_size);
+                                             &s->fdt_आकार);
 
     /*
      * The "/soc/pci@..." node is needed for PCIE hotplugs
      * that might happen before finalize_fdt().
      */
     name = g_strdup_printf("/soc/pci@%"HWADDR_PRIx,
-                           s->memmap[VIRT_PCIE_ECAM].base);
-    qemu_fdt_add_subnode(ms->fdt, name);
+                           s->memmap[VIRT_PCIE_ECAM].आधारः);
+    qemu_fdt_सङ्कलय_subnode(ms->fdt, name);
 
-    qemu_fdt_add_subnode(ms->fdt, "/chosen");
+    qemu_fdt_सङ्कलय_subnode(ms->fdt, "/chosen");
 
     /* Pass seed to RNG */
-    qemu_guest_getrandom_nofail(rng_seed, sizeof(rng_seed));
+    qemu_guest_getrandom_nofail(rng_बीजम्, परिमाण(rng_बीजम्));
     qemu_fdt_setprop(ms->fdt, "/chosen", "rng-seed",
-                     rng_seed, sizeof(rng_seed));
+                     rng_बीजम्, परिमाण(rng_बीजम्));
 
-    qemu_fdt_add_subnode(ms->fdt, "/aliases");
+    qemu_fdt_सङ्कलय_subnode(ms->fdt, "/aliases");
 
-    riscv_create_fdt_flash(ms->fdt, s->memmap[VIRT_FLASH].base,
-                           s->memmap[VIRT_FLASH].size / 2);
+    riscv_create_fdt_flash(ms->fdt, s->memmap[VIRT_FLASH].आधारः,
+                           s->memmap[VIRT_FLASH].आकार / 2);
     create_fdt_fw_cfg(s);
     create_fdt_pmu(s);
 }
 
-static FWCfgState *create_fw_cfg(const MachineState *ms, hwaddr base)
+स्थिर FWCfgState *create_fw_cfg(ध्रुव MachineState *ms, hwaddr आधारः)
 {
     FWCfgState *fw_cfg;
 
-    fw_cfg = fw_cfg_init_mem_dma(base, &address_space_memory);
-    fw_cfg_add_i16(fw_cfg, FW_CFG_NB_CPUS, (uint16_t)ms->smp.cpus);
+    fw_cfg = fw_cfg_init_mem_dma(आधारः, &स्थानाङ्कः_space_स्मृतिः);
+    fw_cfg_सङ्कलय_i16(fw_cfg, FW_CFG_NB_CPUS, (uint16_t)ms->smp.cpus);
 
-    return fw_cfg;
+    प्रत्यागम fw_cfg;
 }
 
-static DeviceState *virt_create_plic(const MemMapEntry *memmap, int socket,
-                                     int base_hartid, int hart_count)
+स्थिर DeviceState *virt_create_plic(ध्रुव Mem_Map_प्रविष्टिः *memmap, पूर्णाङ्क socket,
+                                     पूर्णाङ्क आधारः_hartid, पूर्णाङ्क hart_गणनम्)
 {
-    g_autofree char *plic_hart_config = NULL;
+    g_autofree वर्ण *plic_hart_config = रिक्त;
 
     /* Per-socket PLIC hart topology configuration string */
-    plic_hart_config = riscv_plic_hart_config_string(hart_count);
+    plic_hart_config = riscv_plic_hart_config_string(hart_गणनम्);
 
     /* Per-socket PLIC */
-    return sifive_plic_create(
-             get_system_memory(),
-             memmap[VIRT_PLIC].base + socket * memmap[VIRT_PLIC].size,
-             plic_hart_config, hart_count, base_hartid,
-             VIRT_IRQCHIP_NUM_SOURCES,
-             ((1U << VIRT_IRQCHIP_NUM_PRIO_BITS) - 1),
-             VIRT_PLIC_PRIORITY_BASE, VIRT_PLIC_PENDING_BASE,
-             VIRT_PLIC_ENABLE_BASE, VIRT_PLIC_ENABLE_STRIDE,
-             VIRT_PLIC_CONTEXT_BASE,
+    प्रत्यागम sifive_plic_create(
+             get_system_स्मृतिः(),
+             memmap[VIRT_PLIC].आधारः + socket * memmap[VIRT_PLIC].आकार,
+             plic_hart_config, hart_गणनम्, आधारः_hartid,
+             VIRT_IRQCHIP_अङ्कः_SOURCES,
+             ((1U << VIRT_IRQCHIP_अङ्कः_PRIO_द्वयङ्काः) - 1),
+             VIRT_PLIC_प्राथमिकता_आधारः, VIRT_PLIC_PENDING_आधारः,
+             VIRT_PLIC_ENABLE_आधारः, VIRT_PLIC_ENABLE_STRIDE,
+             VIRT_PLIC_CONTEXT_आधारः,
              VIRT_PLIC_CONTEXT_STRIDE,
-             memmap[VIRT_PLIC].size);
+             memmap[VIRT_PLIC].आकार);
 }
 
-static void virt_build_smbios(RISCVVirtState *s)
+स्थिर शून्य virt_build_smbios(RISCVVirtState *s)
 {
     MachineClass *mc = MACHINE_GET_CLASS(s);
     MachineState *ms = MACHINE(s);
     uint8_t *smbios_tables, *smbios_anchor;
-    size_t smbios_tables_len, smbios_anchor_len;
-    struct smbios_phys_mem_area mem_array;
-    const char *product = "QEMU Virtual Machine";
+    आकार_t smbios_tables_len, smbios_anchor_len;
+    संरचना smbios_phys_mem_area mem_array;
+    ध्रुव वर्ण *गुणनफलम् = "QEMU Virtual Machine";
 
-    if (kvm_enabled()) {
-        product = "KVM Virtual Machine";
+    यदि (kvm_enabled()) {
+        गुणनफलम् = "KVM Virtual Machine";
     }
 
-    smbios_set_defaults("QEMU", product, mc->name);
+    smbios_समुच्चयः_defaults("QEMU", गुणनफलम्, mc->name);
 
-    if (riscv_is_32bit(&s->soc[0])) {
-        smbios_set_default_processor_family(0x200);
-    } else {
-        smbios_set_default_processor_family(0x201);
+    यदि (riscv_is_32bit(&s->soc[0])) {
+        smbios_समुच्चयः_default_processor_family(0x200);
+    } अन्यथा {
+        smbios_समुच्चयः_default_processor_family(0x201);
     }
 
     /* build the array of physical mem area from base_memmap */
-    mem_array.address = s->memmap[VIRT_DRAM].base;
-    mem_array.length = ms->ram_size;
+    mem_array.स्थानाङ्कः = s->memmap[VIRT_DRAM].आधारः;
+    mem_array.दीर्घता = ms->ram_आकार;
 
-    smbios_get_tables(ms, SMBIOS_ENTRY_POINT_TYPE_64,
+    smbios_get_tables(ms, SMBIOS_प्रविष्टिः_POINT_TYPE_64,
                       &mem_array, 1,
                       &smbios_tables, &smbios_tables_len,
                       &smbios_anchor, &smbios_anchor_len,
                       &error_fatal);
 
-    if (smbios_anchor) {
-        fw_cfg_add_file(s->fw_cfg, "etc/smbios/smbios-tables",
+    यदि (smbios_anchor) {
+        fw_cfg_सङ्कलय_file(s->fw_cfg, "etc/smbios/smbios-tables",
                         smbios_tables, smbios_tables_len);
-        fw_cfg_add_file(s->fw_cfg, "etc/smbios/smbios-anchor",
+        fw_cfg_सङ्कलय_file(s->fw_cfg, "etc/smbios/smbios-anchor",
                         smbios_anchor, smbios_anchor_len);
     }
 }
 
-static void virt_machine_done(Notifier *notifier, void *data)
+स्थिर शून्य virt_machine_समाप्तम्(Notifier *notifier, शून्य *दत्त)
 {
-    RISCVVirtState *s = container_of(notifier, RISCVVirtState,
-                                     machine_done);
+    RISCVVirtState *s = container_सम्बन्धि(notifier, RISCVVirtState,
+                                     machine_समाप्तम्);
     MachineState *machine = MACHINE(s);
-    hwaddr start_addr = s->memmap[VIRT_DRAM].base;
-    hwaddr firmware_end_addr;
+    hwaddr start_addr = s->memmap[VIRT_DRAM].आधारः;
+    hwaddr firmware_अन्तः_addr;
     vaddr kernel_start_addr;
-    const char *firmware_name = riscv_default_firmware_name(&s->soc[0]);
-    uint64_t fdt_load_addr;
-    uint64_t kernel_entry = 0;
-    BlockBackend *pflash_blk0;
+    ध्रुव वर्ण *firmware_name = riscv_default_firmware_name(&s->soc[0]);
+    uint64_t fdt_आरोपय_addr;
+    uint64_t kernel_प्रविष्टिः = 0;
+    खण्डम्_Backend *pflash_blk0;
     RISCVBootInfo boot_info;
 
     /*
      * An user provided dtb must include everything, including
      * dynamic sysbus devices. Our FDT needs to be finalized.
      */
-    if (machine->dtb == NULL) {
+    यदि (machine->dtb == रिक्त) {
         finalize_fdt(s);
     }
 
@@ -637,498 +637,498 @@ static void virt_machine_done(Notifier *notifier, void *data)
      * Only direct boot kernel is currently supported for KVM VM,
      * so the "-bios" parameter is not supported when KVM is enabled.
      */
-    if (kvm_enabled()) {
-        if (machine->firmware) {
-            if (strcmp(machine->firmware, "none")) {
+    यदि (kvm_enabled()) {
+        यदि (machine->firmware) {
+            यदि (वाक्यं_तुलय(machine->firmware, "none")) {
                 error_report("Machine mode firmware is not supported in "
                              "combination with KVM.");
-                exit(1);
+                निर्गच्छ(1);
             }
-        } else {
+        } अन्यथा {
             machine->firmware = g_strdup("none");
         }
     }
 
     riscv_boot_info_init(&boot_info, &s->soc[0]);
 
-    firmware_end_addr = riscv_find_and_load_firmware(machine, &boot_info,
+    firmware_अन्तः_addr = riscv_find_and_आरोपय_firmware(machine, &boot_info,
                                                      firmware_name,
-                                                     &start_addr, NULL);
+                                                     &start_addr, रिक्त);
 
     pflash_blk0 = pflash_cfi01_get_blk(s->flash[0]);
-    if (pflash_blk0) {
-        if (machine->firmware && !strcmp(machine->firmware, "none") &&
+    यदि (pflash_blk0) {
+        यदि (machine->firmware && !वाक्यं_तुलय(machine->firmware, "none") &&
             !kvm_enabled()) {
             /*
              * Pflash was supplied but bios is none and not KVM guest,
              * let's overwrite the address we jump to after reset to
              * the base of the flash.
              */
-            start_addr = s->memmap[VIRT_FLASH].base;
-        } else {
+            start_addr = s->memmap[VIRT_FLASH].आधारः;
+        } अन्यथा {
             /*
              * Pflash was supplied but either KVM guest or bios is not none.
              * In this case, base of the flash would contain S-mode payload.
              */
-            riscv_setup_firmware_boot(machine);
-            kernel_entry = s->memmap[VIRT_FLASH].base;
+            riscv_सज्जता_firmware_boot(machine);
+            kernel_प्रविष्टिः = s->memmap[VIRT_FLASH].आधारः;
         }
     }
 
-    if (machine->kernel_filename && !kernel_entry) {
+    यदि (machine->kernel_filename && !kernel_प्रविष्टिः) {
         kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
-                                                         firmware_end_addr);
-        riscv_load_kernel(machine, &boot_info, kernel_start_addr,
-                          true, NULL);
-        kernel_entry = boot_info.image_low_addr;
+                                                         firmware_अन्तः_addr);
+        riscv_आरोपय_kernel(machine, &boot_info, kernel_start_addr,
+                          true, रिक्त);
+        kernel_प्रविष्टिः = boot_info.image_नीचः_addr;
     }
 
-    fdt_load_addr = riscv_compute_fdt_addr(s->memmap[VIRT_DRAM].base,
-                                           s->memmap[VIRT_DRAM].size,
+    fdt_आरोपय_addr = riscv_compute_fdt_addr(s->memmap[VIRT_DRAM].आधारः,
+                                           s->memmap[VIRT_DRAM].आकार,
                                            machine, &boot_info);
-    riscv_load_fdt(fdt_load_addr, machine->fdt);
+    riscv_आरोपय_fdt(fdt_आरोपय_addr, machine->fdt);
 
     /* load the reset vector */
-    riscv_setup_rom_reset_vec(machine, &s->soc[0], start_addr,
-                              s->memmap[VIRT_MROM].base,
-                              s->memmap[VIRT_MROM].size, kernel_entry,
-                              fdt_load_addr);
+    riscv_सज्जता_rom_reset_vec(machine, &s->soc[0], start_addr,
+                              s->memmap[VIRT_MROM].आधारः,
+                              s->memmap[VIRT_MROM].आकार, kernel_प्रविष्टिः,
+                              fdt_आरोपय_addr);
 
     /*
      * Only direct boot kernel is currently supported for KVM VM,
      * So here setup kernel start address and fdt address.
      * TODO:Support firmware loading and integrate to TCG start
      */
-    if (kvm_enabled()) {
-        riscv_setup_direct_kernel(kernel_entry, fdt_load_addr);
+    यदि (kvm_enabled()) {
+        riscv_सज्जता_प्रत्यक्षम्_kernel(kernel_प्रविष्टिः, fdt_आरोपय_addr);
     }
 
     virt_build_smbios(s);
 
-    if (virt_is_acpi_enabled(s)) {
-        virt_acpi_setup(s);
+    यदि (virt_is_acpi_enabled(s)) {
+        virt_acpi_सज्जता(s);
     }
 }
 
-static void virt_machine_init(MachineState *machine)
+स्थिर शून्य virt_machine_init(MachineState *machine)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(machine);
-    MemoryRegion *system_memory = get_system_memory();
-    MemoryRegion *mask_rom = g_new(MemoryRegion, 1);
+    स्मृतिः_Region *system_स्मृतिः = get_system_स्मृतिः();
+    स्मृतिः_Region *आवरणम्_rom = g_new(स्मृतिः_Region, 1);
     DeviceState *mmio_irqchip, *virtio_irqchip, *pcie_irqchip;
-    int i, base_hartid, hart_count;
-    int socket_count = riscv_socket_count(machine);
+    पूर्णाङ्क i, आधारः_hartid, hart_गणनम्;
+    पूर्णाङ्क socket_गणनम् = riscv_socket_गणनम्(machine);
 
     s->memmap = virt_memmap;
 
     /* Check socket count limit */
-    if (VIRT_SOCKETS_MAX < socket_count) {
+    यदि (VIRT_SOCKETS_MAX < socket_गणनम्) {
         error_report("number of sockets/nodes should be less than %d",
             VIRT_SOCKETS_MAX);
-        exit(1);
+        निर्गच्छ(1);
     }
 
-    if (!virt_aclint_allowed() && s->have_aclint) {
+    यदि (!virt_aclint_allowed() && s->have_aclint) {
         error_report("'aclint' is only available with TCG acceleration");
-        exit(1);
+        निर्गच्छ(1);
     }
 
     /* Initialize sockets */
-    mmio_irqchip = virtio_irqchip = pcie_irqchip = NULL;
-    for (i = 0; i < socket_count; i++) {
-        g_autofree char *soc_name = g_strdup_printf("soc%d", i);
+    mmio_irqchip = virtio_irqchip = pcie_irqchip = रिक्त;
+    प्रति (i = 0; i < socket_गणनम्; i++) {
+        g_autofree वर्ण *soc_name = g_strdup_printf("soc%d", i);
 
-        if (!riscv_socket_check_hartids(machine, i)) {
+        यदि (!riscv_socket_check_hartids(machine, i)) {
             error_report("discontinuous hartids in socket%d", i);
-            exit(1);
+            निर्गच्छ(1);
         }
 
-        base_hartid = riscv_socket_first_hartid(machine, i);
-        if (base_hartid < 0) {
+        आधारः_hartid = riscv_socket_first_hartid(machine, i);
+        यदि (आधारः_hartid < 0) {
             error_report("can't find hartid base for socket%d", i);
-            exit(1);
+            निर्गच्छ(1);
         }
 
-        hart_count = riscv_socket_hart_count(machine, i);
-        if (hart_count < 0) {
+        hart_गणनम् = riscv_socket_hart_गणनम्(machine, i);
+        यदि (hart_गणनम् < 0) {
             error_report("can't find hart count for socket%d", i);
-            exit(1);
+            निर्गच्छ(1);
         }
 
         object_initialize_child(OBJECT(machine), soc_name, &s->soc[i],
                                 TYPE_RISCV_HART_ARRAY);
-        object_property_set_str(OBJECT(&s->soc[i]), "cpu-type",
+        object_property_समुच्चयः_str(OBJECT(&s->soc[i]), "cpu-type",
                                 machine->cpu_type, &error_abort);
-        object_property_set_int(OBJECT(&s->soc[i]), "hartid-base",
-                                base_hartid, &error_abort);
-        object_property_set_int(OBJECT(&s->soc[i]), "num-harts",
-                                hart_count, &error_abort);
+        object_property_समुच्चयः_int(OBJECT(&s->soc[i]), "hartid-base",
+                                आधारः_hartid, &error_abort);
+        object_property_समुच्चयः_int(OBJECT(&s->soc[i]), "num-harts",
+                                hart_गणनम्, &error_abort);
         sysbus_realize(SYS_BUS_DEVICE(&s->soc[i]), &error_fatal);
 
-        if (virt_aclint_allowed() && s->have_aclint) {
-            if (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
+        यदि (virt_aclint_allowed() && s->have_aclint) {
+            यदि (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
                 /* Per-socket ACLINT MTIMER */
-                riscv_aclint_mtimer_create(system_memory,
-                        s->memmap[VIRT_CLINT].base +
-                            i * RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                        RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                        base_hartid, hart_count,
+                riscv_aclint_mtimer_create(system_स्मृतिः,
+                        s->memmap[VIRT_CLINT].आधारः +
+                            i * RISCV_ACLINT_DEFAULT_MTIMER_आकार,
+                        RISCV_ACLINT_DEFAULT_MTIMER_आकार,
+                        आधारः_hartid, hart_गणनम्,
                         RISCV_ACLINT_DEFAULT_MTIMECMP,
                         RISCV_ACLINT_DEFAULT_MTIME,
                         RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
-            } else {
+            } अन्यथा {
                 /* Per-socket ACLINT MSWI, MTIMER, and SSWI */
-                riscv_aclint_swi_create(system_memory,
-                        s->memmap[VIRT_CLINT].base +
-                            i * s->memmap[VIRT_CLINT].size,
-                        base_hartid, hart_count, false);
-                riscv_aclint_mtimer_create(system_memory,
-                        s->memmap[VIRT_CLINT].base +
-                            i * s->memmap[VIRT_CLINT].size +
-                            RISCV_ACLINT_SWI_SIZE,
-                        RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                        base_hartid, hart_count,
+                riscv_aclint_swi_create(system_स्मृतिः,
+                        s->memmap[VIRT_CLINT].आधारः +
+                            i * s->memmap[VIRT_CLINT].आकार,
+                        आधारः_hartid, hart_गणनम्, false);
+                riscv_aclint_mtimer_create(system_स्मृतिः,
+                        s->memmap[VIRT_CLINT].आधारः +
+                            i * s->memmap[VIRT_CLINT].आकार +
+                            RISCV_ACLINT_SWI_आकार,
+                        RISCV_ACLINT_DEFAULT_MTIMER_आकार,
+                        आधारः_hartid, hart_गणनम्,
                         RISCV_ACLINT_DEFAULT_MTIMECMP,
                         RISCV_ACLINT_DEFAULT_MTIME,
                         RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
-                riscv_aclint_swi_create(system_memory,
-                        s->memmap[VIRT_ACLINT_SSWI].base +
-                            i * s->memmap[VIRT_ACLINT_SSWI].size,
-                        base_hartid, hart_count, true);
+                riscv_aclint_swi_create(system_स्मृतिः,
+                        s->memmap[VIRT_ACLINT_SSWI].आधारः +
+                            i * s->memmap[VIRT_ACLINT_SSWI].आकार,
+                        आधारः_hartid, hart_गणनम्, true);
             }
-        } else if (tcg_enabled()) {
+        } अन्यथा यदि (tcg_enabled()) {
             /* Per-socket SiFive CLINT */
-            riscv_aclint_swi_create(system_memory,
-                    s->memmap[VIRT_CLINT].base + i * s->memmap[VIRT_CLINT].size,
-                    base_hartid, hart_count, false);
-            riscv_aclint_mtimer_create(system_memory,
-                    s->memmap[VIRT_CLINT].base +
-                    i * s->memmap[VIRT_CLINT].size + RISCV_ACLINT_SWI_SIZE,
-                    RISCV_ACLINT_DEFAULT_MTIMER_SIZE, base_hartid, hart_count,
+            riscv_aclint_swi_create(system_स्मृतिः,
+                    s->memmap[VIRT_CLINT].आधारः + i * s->memmap[VIRT_CLINT].आकार,
+                    आधारः_hartid, hart_गणनम्, false);
+            riscv_aclint_mtimer_create(system_स्मृतिः,
+                    s->memmap[VIRT_CLINT].आधारः +
+                    i * s->memmap[VIRT_CLINT].आकार + RISCV_ACLINT_SWI_आकार,
+                    RISCV_ACLINT_DEFAULT_MTIMER_आकार, आधारः_hartid, hart_गणनम्,
                     RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
                     RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
         }
 
         /* Per-socket interrupt controller */
-        if (s->aia_type == VIRT_AIA_TYPE_NONE) {
+        यदि (s->aia_type == VIRT_AIA_TYPE_NONE) {
             s->irqchip[i] = virt_create_plic(s->memmap, i,
-                                             base_hartid, hart_count);
-        } else {
+                                             आधारः_hartid, hart_गणनम्);
+        } अन्यथा {
             bool msimode = s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC;
-            int imsic_bits = imsic_num_bits(s->aia_guests + 1);
-            s->irqchip[i] = riscv_create_aia(system_memory, msimode,
+            पूर्णाङ्क imsic_द्वयङ्काः = imsic_अङ्कः_द्वयङ्काः(s->aia_guests + 1);
+            s->irqchip[i] = riscv_create_aia(system_स्मृतिः, msimode,
                                              s->aia_guests,
-                                             IMSIC_HART_SIZE(0),
-                                             IMSIC_HART_SIZE(imsic_bits),
-                                             s->num_sources,
+                                             IMSIC_HART_आकार(0),
+                                             IMSIC_HART_आकार(imsic_द्वयङ्काः),
+                                             s->अङ्कः_sources,
                                              &s->memmap[VIRT_APLIC_M],
                                              &s->memmap[VIRT_APLIC_S],
                                              &s->memmap[VIRT_IMSIC_M],
                                              &s->memmap[VIRT_IMSIC_S],
-                                             i, base_hartid, hart_count,
-                                             VIRT_IRQCHIP_NUM_MSIS,
-                                             VIRT_IRQCHIP_NUM_PRIO_BITS);
+                                             i, आधारः_hartid, hart_गणनम्,
+                                             VIRT_IRQCHIP_अङ्कः_MSIS,
+                                             VIRT_IRQCHIP_अङ्कः_PRIO_द्वयङ्काः);
         }
 
         /* Try to use different IRQCHIP instance based device type */
-        if (i == 0) {
+        यदि (i == 0) {
             mmio_irqchip = s->irqchip[i];
             virtio_irqchip = s->irqchip[i];
             pcie_irqchip = s->irqchip[i];
         }
-        if (i == 1) {
+        यदि (i == 1) {
             virtio_irqchip = s->irqchip[i];
             pcie_irqchip = s->irqchip[i];
         }
-        if (i == 2) {
+        यदि (i == 2) {
             pcie_irqchip = s->irqchip[i];
         }
     }
 
-    if (kvm_enabled() && virt_use_kvm_aia_aplic_imsic(s->aia_type)) {
-        kvm_riscv_aia_create(machine, IMSIC_MMIO_GROUP_MIN_SHIFT,
-                             VIRT_IRQCHIP_NUM_SOURCES, VIRT_IRQCHIP_NUM_MSIS,
-                             s->memmap[VIRT_APLIC_S].base,
-                             s->memmap[VIRT_IMSIC_S].base,
+    यदि (kvm_enabled() && virt_use_kvm_aia_aplic_imsic(s->aia_type)) {
+        kvm_riscv_aia_create(machine, IMSIC_MMIO_गणः_MIN_सरणम्,
+                             VIRT_IRQCHIP_अङ्कः_SOURCES, VIRT_IRQCHIP_अङ्कः_MSIS,
+                             s->memmap[VIRT_APLIC_S].आधारः,
+                             s->memmap[VIRT_IMSIC_S].आधारः,
                              s->aia_guests);
     }
 
-    if (riscv_is_32bit(&s->soc[0])) {
-#if HOST_LONG_BITS == 64
+    यदि (riscv_is_32bit(&s->soc[0])) {
+#यदि HOST_LONG_द्वयङ्काः == 64
         /* limit RAM size in a 32-bit system */
-        if (machine->ram_size > 10 * GiB) {
-            machine->ram_size = 10 * GiB;
+        यदि (machine->ram_आकार > 10 * GiB) {
+            machine->ram_आकार = 10 * GiB;
             error_report("Limiting RAM size to 10 GiB");
         }
-#endif
-        virt_high_pcie_memmap.base = VIRT32_HIGH_PCIE_MMIO_BASE;
-        virt_high_pcie_memmap.size = VIRT32_HIGH_PCIE_MMIO_SIZE;
-    } else {
-        virt_high_pcie_memmap.size = VIRT64_HIGH_PCIE_MMIO_SIZE;
-        virt_high_pcie_memmap.base = s->memmap[VIRT_DRAM].base +
-                                     machine->ram_size;
-        virt_high_pcie_memmap.base =
-            ROUND_UP(virt_high_pcie_memmap.base, virt_high_pcie_memmap.size);
+#यदि_अन्तः
+        virt_उच्चः_pcie_memmap.आधारः = VIRT32_उच्चः_PCIE_MMIO_आधारः;
+        virt_उच्चः_pcie_memmap.आकार = VIRT32_उच्चः_PCIE_MMIO_आकार;
+    } अन्यथा {
+        virt_उच्चः_pcie_memmap.आकार = VIRT64_उच्चः_PCIE_MMIO_आकार;
+        virt_उच्चः_pcie_memmap.आधारः = s->memmap[VIRT_DRAM].आधारः +
+                                     machine->ram_आकार;
+        virt_उच्चः_pcie_memmap.आधारः =
+            आवर्तनम्_ऊर्ध्वम्(virt_उच्चः_pcie_memmap.आधारः, virt_उच्चः_pcie_memmap.आकार);
     }
 
     /* register system main memory (actual RAM) */
-    memory_region_add_subregion(system_memory, s->memmap[VIRT_DRAM].base,
+    स्मृतिः_region_सङ्कलय_subregion(system_स्मृतिः, s->memmap[VIRT_DRAM].आधारः,
                                 machine->ram);
 
     /* boot rom */
-    memory_region_init_rom(mask_rom, NULL, "riscv_virt_board.mrom",
-                           s->memmap[VIRT_MROM].size, &error_fatal);
-    memory_region_add_subregion(system_memory, s->memmap[VIRT_MROM].base,
-                                mask_rom);
+    स्मृतिः_region_init_rom(आवरणम्_rom, रिक्त, "riscv_virt_board.mrom",
+                           s->memmap[VIRT_MROM].आकार, &error_fatal);
+    स्मृतिः_region_सङ्कलय_subregion(system_स्मृतिः, s->memmap[VIRT_MROM].आधारः,
+                                आवरणम्_rom);
 
     /*
      * Init fw_cfg. Must be done before riscv_load_fdt, otherwise the
      * device tree cannot be altered and we get FDT_ERR_NOSPACE.
      */
-    s->fw_cfg = create_fw_cfg(machine, s->memmap[VIRT_FW_CFG].base);
-    rom_set_fw(s->fw_cfg);
+    s->fw_cfg = create_fw_cfg(machine, s->memmap[VIRT_FW_CFG].आधारः);
+    rom_समुच्चयः_fw(s->fw_cfg);
 
     /* SiFive Test MMIO device */
-    sifive_test_create(s->memmap[VIRT_TEST].base);
+    sifive_test_create(s->memmap[VIRT_TEST].आधारः);
 
     /* VirtIO MMIO devices */
-    for (i = 0; i < VIRTIO_COUNT; i++) {
+    प्रति (i = 0; i < VIRTIO_गणनम्; i++) {
         sysbus_create_simple("virtio-mmio",
-            s->memmap[VIRT_VIRTIO].base + i * s->memmap[VIRT_VIRTIO].size,
-            qdev_get_gpio_in(virtio_irqchip, VIRTIO_IRQ + i));
+            s->memmap[VIRT_VIRTIO].आधारः + i * s->memmap[VIRT_VIRTIO].आकार,
+            qdev_get_gpio_अन्तर्(virtio_irqchip, VIRTIO_IRQ + i));
     }
 
-    riscv_gpex_pcie_init(system_memory, pcie_irqchip,
+    riscv_gpex_pcie_init(system_स्मृतिः, pcie_irqchip,
                    &s->memmap[VIRT_PCIE_ECAM], &s->memmap[VIRT_PCIE_MMIO],
-                   &virt_high_pcie_memmap, &s->memmap[VIRT_PCIE_PIO],
+                   &virt_उच्चः_pcie_memmap, &s->memmap[VIRT_PCIE_PIO],
                    PCIE_IRQ);
 
     s->platform_bus_dev = riscv_create_platform_bus(mmio_irqchip,
         &s->memmap[VIRT_PLATFORM_BUS], VIRT_PLATFORM_BUS_IRQ,
-        VIRT_PLATFORM_BUS_NUM_IRQS);
+        VIRT_PLATFORM_BUS_अङ्कः_IRQS);
 
-    serial_mm_init(system_memory, s->memmap[VIRT_UART0].base,
-        0, qdev_get_gpio_in(mmio_irqchip, UART0_IRQ), 399193,
+    serial_mm_init(system_स्मृतिः, s->memmap[VIRT_UART0].आधारः,
+        0, qdev_get_gpio_अन्तर्(mmio_irqchip, UART0_IRQ), 399193,
         serial_hd(0), DEVICE_LITTLE_ENDIAN);
 
-    if (serial_hd(1)) {
-        serial_mm_init(system_memory, s->memmap[VIRT_UART1].base,
-            0, qdev_get_gpio_in(mmio_irqchip, UART1_IRQ), 399193,
+    यदि (serial_hd(1)) {
+        serial_mm_init(system_स्मृतिः, s->memmap[VIRT_UART1].आधारः,
+            0, qdev_get_gpio_अन्तर्(mmio_irqchip, UART1_IRQ), 399193,
             serial_hd(1), DEVICE_LITTLE_ENDIAN);
         s->uart1_present = true;
     }
 
-    sysbus_create_simple("goldfish_rtc", s->memmap[VIRT_RTC].base,
-        qdev_get_gpio_in(mmio_irqchip, RTC_IRQ));
+    sysbus_create_simple("goldfish_rtc", s->memmap[VIRT_RTC].आधारः,
+        qdev_get_gpio_अन्तर्(mmio_irqchip, RTC_IRQ));
 
-    for (i = 0; i < ARRAY_SIZE(s->flash); i++) {
+    प्रति (i = 0; i < ARRAY_आकार(s->flash); i++) {
         /* Map legacy -drive if=pflash to machine properties */
         pflash_cfi01_legacy_drive(s->flash[i],
                                   drive_get(IF_PFLASH, 0, i));
     }
-    virt_flash_map(s, system_memory);
+    virt_flash_map(s, system_स्मृतिः);
 
     /* load/create device tree */
-    if (machine->dtb) {
-        machine->fdt = load_device_tree(machine->dtb, &s->fdt_size);
-        if (!machine->fdt) {
+    यदि (machine->dtb) {
+        machine->fdt = आरोपय_device_वृक्षः(machine->dtb, &s->fdt_आकार);
+        यदि (!machine->fdt) {
             error_report("load_device_tree() failed");
-            exit(1);
+            निर्गच्छ(1);
         }
-    } else {
+    } अन्यथा {
         create_fdt(s);
     }
 
-    if (virt_is_iommu_sys_enabled(s)) {
-        riscv_create_iommu_sys(mmio_irqchip, s->memmap[VIRT_IOMMU_SYS].base,
+    यदि (virt_is_iommu_sys_enabled(s)) {
+        riscv_create_iommu_sys(mmio_irqchip, s->memmap[VIRT_IOMMU_SYS].आधारः,
                                IOMMU_SYS_IRQ, riscv_is_32bit(&s->soc[0]));
     }
 
-    s->machine_done.notify = virt_machine_done;
-    qemu_add_machine_init_done_notifier(&s->machine_done);
+    s->machine_समाप्तम्.notify = virt_machine_समाप्तम्;
+    qemu_सङ्कलय_machine_init_समाप्तम्_notifier(&s->machine_समाप्तम्);
 }
 
-static void virt_machine_instance_finalize(Object *obj)
+स्थिर शून्य virt_machine_instance_finalize(Object *obj)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
-    for (int i = 0; i < ARRAY_SIZE(s->flash); i++) {
-        if (s->flash[i] && !qdev_is_realized(DEVICE(s->flash[i]))) {
+    प्रति (पूर्णाङ्क i = 0; i < ARRAY_आकार(s->flash); i++) {
+        यदि (s->flash[i] && !qdev_is_realized(DEVICE(s->flash[i]))) {
             object_unref(OBJECT(s->flash[i]));
         }
     }
     g_free(s->oem_id);
-    g_free(s->oem_table_id);
+    g_free(s->oem_सारणी_id);
 }
 
-static void virt_machine_instance_init(Object *obj)
+स्थिर शून्य virt_machine_instance_init(Object *obj)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
     virt_flash_create(s);
 
     s->oem_id = g_strndup(ACPI_BUILD_APPNAME6, 6);
-    s->oem_table_id = g_strndup(ACPI_BUILD_APPNAME8, 8);
+    s->oem_सारणी_id = g_strndup(ACPI_BUILD_APPNAME8, 8);
     s->acpi = ON_OFF_AUTO_AUTO;
     s->iommu_sys = ON_OFF_AUTO_AUTO;
-    s->num_sources = VIRT_IRQCHIP_NUM_SOURCES;
+    s->अङ्कः_sources = VIRT_IRQCHIP_अङ्कः_SOURCES;
 }
 
-static char *virt_get_aia_guests(Object *obj, Error **errp)
+स्थिर वर्ण *virt_get_aia_guests(Object *obj, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
-    return g_strdup_printf("%d", s->aia_guests);
+    प्रत्यागम g_strdup_printf("%d", s->aia_guests);
 }
 
-static void virt_set_aia_guests(Object *obj, const char *val, Error **errp)
+स्थिर शून्य virt_समुच्चयः_aia_guests(Object *obj, ध्रुव वर्ण *val, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
     s->aia_guests = atoi(val);
-    if (s->aia_guests < 0 || s->aia_guests > VIRT_IRQCHIP_MAX_GUESTS) {
+    यदि (s->aia_guests < 0 || s->aia_guests > VIRT_IRQCHIP_MAX_GUESTS) {
         error_setg(errp, "Invalid number of AIA IMSIC guests");
         error_append_hint(errp, "Valid values be between 0 and %d.\n",
                           VIRT_IRQCHIP_MAX_GUESTS);
     }
 }
 
-static char *virt_get_aia(Object *obj, Error **errp)
+स्थिर वर्ण *virt_get_aia(Object *obj, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
-    const char *val;
+    ध्रुव वर्ण *val;
 
-    switch (s->aia_type) {
-    case VIRT_AIA_TYPE_APLIC:
+    विकल्प (s->aia_type) {
+    पक्ष VIRT_AIA_TYPE_APLIC:
         val = "aplic";
-        break;
-    case VIRT_AIA_TYPE_APLIC_IMSIC:
+        भङ्ग;
+    पक्ष VIRT_AIA_TYPE_APLIC_IMSIC:
         val = "aplic-imsic";
-        break;
-    default:
+        भङ्ग;
+    स्वभाव:
         val = "none";
-        break;
+        भङ्ग;
     };
 
-    return g_strdup(val);
+    प्रत्यागम g_strdup(val);
 }
 
-static void virt_set_aia(Object *obj, const char *val, Error **errp)
+स्थिर शून्य virt_समुच्चयः_aia(Object *obj, ध्रुव वर्ण *val, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
-    if (!strcmp(val, "none")) {
+    यदि (!वाक्यं_तुलय(val, "none")) {
         s->aia_type = VIRT_AIA_TYPE_NONE;
-    } else if (!strcmp(val, "aplic")) {
+    } अन्यथा यदि (!वाक्यं_तुलय(val, "aplic")) {
         s->aia_type = VIRT_AIA_TYPE_APLIC;
-    } else if (!strcmp(val, "aplic-imsic")) {
+    } अन्यथा यदि (!वाक्यं_तुलय(val, "aplic-imsic")) {
         s->aia_type = VIRT_AIA_TYPE_APLIC_IMSIC;
-    } else {
+    } अन्यथा {
         error_setg(errp, "Invalid AIA interrupt controller type");
         error_append_hint(errp, "Valid values are none, aplic, and "
                           "aplic-imsic.\n");
     }
 }
 
-static bool virt_get_aclint(Object *obj, Error **errp)
+स्थिर bool virt_get_aclint(Object *obj, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
-    return s->have_aclint;
+    प्रत्यागम s->have_aclint;
 }
 
-static void virt_set_aclint(Object *obj, bool value, Error **errp)
+स्थिर शून्य virt_समुच्चयः_aclint(Object *obj, bool मानम्, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
-    s->have_aclint = value;
+    s->have_aclint = मानम्;
 }
 
 bool virt_is_iommu_sys_enabled(RISCVVirtState *s)
 {
-    return s->iommu_sys == ON_OFF_AUTO_ON;
+    प्रत्यागम s->iommu_sys == ON_OFF_AUTO_ON;
 }
 
-static void virt_get_iommu_sys(Object *obj, Visitor *v, const char *name,
-                               void *opaque, Error **errp)
+स्थिर शून्य virt_get_iommu_sys(Object *obj, Visitor *v, ध्रुव वर्ण *name,
+                               शून्य *opaque, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
     OnOffAuto iommu_sys = s->iommu_sys;
 
-    visit_type_OnOffAuto(v, name, &iommu_sys, errp);
+    दर्शय_type_On_Off_Auto(v, name, &iommu_sys, errp);
 }
 
-static void virt_set_iommu_sys(Object *obj, Visitor *v, const char *name,
-                               void *opaque, Error **errp)
+स्थिर शून्य virt_समुच्चयः_iommu_sys(Object *obj, Visitor *v, ध्रुव वर्ण *name,
+                               शून्य *opaque, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
-    visit_type_OnOffAuto(v, name, &s->iommu_sys, errp);
+    दर्शय_type_On_Off_Auto(v, name, &s->iommu_sys, errp);
 }
 
 bool virt_is_acpi_enabled(RISCVVirtState *s)
 {
-    return s->acpi != ON_OFF_AUTO_OFF;
+    प्रत्यागम s->acpi != ON_OFF_AUTO_OFF;
 }
 
-static void virt_get_acpi(Object *obj, Visitor *v, const char *name,
-                          void *opaque, Error **errp)
+स्थिर शून्य virt_get_acpi(Object *obj, Visitor *v, ध्रुव वर्ण *name,
+                          शून्य *opaque, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
     OnOffAuto acpi = s->acpi;
 
-    visit_type_OnOffAuto(v, name, &acpi, errp);
+    दर्शय_type_On_Off_Auto(v, name, &acpi, errp);
 }
 
-static void virt_set_acpi(Object *obj, Visitor *v, const char *name,
-                          void *opaque, Error **errp)
+स्थिर शून्य virt_समुच्चयः_acpi(Object *obj, Visitor *v, ध्रुव वर्ण *name,
+                          शून्य *opaque, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(obj);
 
-    visit_type_OnOffAuto(v, name, &s->acpi, errp);
+    दर्शय_type_On_Off_Auto(v, name, &s->acpi, errp);
 }
 
-static const HotplugHandler *
+स्थिर ध्रुव HotplugHandler *
 virt_machine_get_hotplug_handler(MachineState *machine, DeviceState *dev)
 {
     MachineClass *mc = MACHINE_GET_CLASS(machine);
     RISCVVirtState *s = RISCV_VIRT_MACHINE(machine);
 
-    if (device_is_dynamic_sysbus(mc, dev) ||
+    यदि (device_is_dynamic_sysbus(mc, dev) ||
         object_dynamic_cast(OBJECT(dev), TYPE_VIRTIO_IOMMU_PCI) ||
         object_dynamic_cast(OBJECT(dev), TYPE_RISCV_IOMMU_PCI)) {
         s->iommu_sys = ON_OFF_AUTO_OFF;
-        return HOTPLUG_HANDLER(machine);
+        प्रत्यागम HOTPLUG_HANDLER(machine);
     }
 
-    return NULL;
+    प्रत्यागम रिक्त;
 }
 
-static void virt_machine_device_plug_cb(const HotplugHandler *hotplug_dev,
+स्थिर शून्य virt_machine_device_plug_cb(ध्रुव HotplugHandler *hotplug_dev,
                                         DeviceState *dev, Error **errp)
 {
     RISCVVirtState *s = RISCV_VIRT_MACHINE(hotplug_dev);
 
-    if (s->platform_bus_dev) {
+    यदि (s->platform_bus_dev) {
         MachineClass *mc = MACHINE_GET_CLASS(s);
 
-        if (device_is_dynamic_sysbus(mc, dev)) {
+        यदि (device_is_dynamic_sysbus(mc, dev)) {
             platform_bus_link_device(PLATFORM_BUS_DEVICE(s->platform_bus_dev),
                                      SYS_BUS_DEVICE(dev));
         }
     }
 
-    if (object_dynamic_cast(OBJECT(dev), TYPE_VIRTIO_IOMMU_PCI)) {
+    यदि (object_dynamic_cast(OBJECT(dev), TYPE_VIRTIO_IOMMU_PCI)) {
         create_fdt_virtio_iommu(s, pci_get_bdf(PCI_DEVICE(dev)));
     }
 
-    if (object_dynamic_cast(OBJECT(dev), TYPE_RISCV_IOMMU_PCI)) {
+    यदि (object_dynamic_cast(OBJECT(dev), TYPE_RISCV_IOMMU_PCI)) {
         create_fdt_iommu(s, pci_get_bdf(PCI_DEVICE(dev)));
         s->iommu_sys = ON_OFF_AUTO_OFF;
     }
 }
 
-static void virt_machine_class_init(ObjectClass *oc, const void *data)
+स्थिर शून्य virt_machine_class_init(ObjectClass *oc, ध्रुव शून्य *दत्त)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
     HotplugHandlerClass *hc = HOTPLUG_HANDLER_CLASS(oc);
@@ -1136,82 +1136,82 @@ static void virt_machine_class_init(ObjectClass *oc, const void *data)
     mc->desc = "RISC-V VirtIO board";
     mc->init = virt_machine_init;
     mc->max_cpus = VIRT_CPUS_MAX;
-    mc->default_cpu_type = TYPE_RISCV_CPU_BASE;
-    mc->block_default_type = IF_VIRTIO;
+    mc->default_cpu_type = TYPE_RISCV_CPU_आधारः;
+    mc->खण्डम्_default_type = IF_VIRTIO;
     mc->no_cdrom = 1;
-    mc->pci_allow_0_address = true;
+    mc->pci_allow_0_स्थानाङ्कः = true;
     mc->possible_cpu_arch_ids = riscv_numa_possible_cpu_arch_ids;
-    mc->cpu_index_to_instance_props = riscv_numa_cpu_index_to_props;
-    mc->get_default_cpu_node_id = riscv_numa_get_default_cpu_node_id;
+    mc->cpu_सूचकांक_गन्तव्यम्_instance_props = riscv_numa_cpu_सूचकांक_गन्तव्यम्_props;
+    mc->get_default_cpu_ग्रन्थिः_id = riscv_numa_get_default_cpu_ग्रन्थिः_id;
     mc->numa_mem_supported = true;
     /* platform instead of architectural choice */
     mc->cpu_cluster_has_numa_boundary = true;
     mc->default_ram_id = "riscv_virt_board.ram";
-    assert(!mc->get_hotplug_handler);
+    प्रतिज्ञा(!mc->get_hotplug_handler);
     mc->get_hotplug_handler = virt_machine_get_hotplug_handler;
 
     hc->plug = virt_machine_device_plug_cb;
 
     machine_class_allow_dynamic_sysbus_dev(mc, TYPE_RAMFB_DEVICE);
     machine_class_allow_dynamic_sysbus_dev(mc, TYPE_UEFI_VARS_SYSBUS);
-#ifdef CONFIG_TPM
+#यदि_परिभाषितम् CONFIG_TPM
     machine_class_allow_dynamic_sysbus_dev(mc, TYPE_TPM_TIS_SYSBUS);
-#endif
+#यदि_अन्तः
 
-    object_class_property_add_bool(oc, "aclint", virt_get_aclint,
-                                   virt_set_aclint);
-    object_class_property_set_description(oc, "aclint",
+    object_class_property_सङ्कलय_bool(oc, "aclint", virt_get_aclint,
+                                   virt_समुच्चयः_aclint);
+    object_class_property_समुच्चयः_description(oc, "aclint",
                                           "(TCG only) Set on/off to "
                                           "enable/disable emulating "
                                           "ACLINT devices");
 
-    object_class_property_add_str(oc, "aia", virt_get_aia,
-                                  virt_set_aia);
-    object_class_property_set_description(oc, "aia",
+    object_class_property_सङ्कलय_str(oc, "aia", virt_get_aia,
+                                  virt_समुच्चयः_aia);
+    object_class_property_समुच्चयः_description(oc, "aia",
                                           "Set type of AIA interrupt "
                                           "controller. Valid values are "
                                           "none, aplic, and aplic-imsic.");
 
-    object_class_property_add_str(oc, "aia-guests",
+    object_class_property_सङ्कलय_str(oc, "aia-guests",
                                   virt_get_aia_guests,
-                                  virt_set_aia_guests);
+                                  virt_समुच्चयः_aia_guests);
     {
-        g_autofree char *str =
+        g_autofree वर्ण *str =
             g_strdup_printf("Set number of guest MMIO pages for AIA IMSIC. "
                             "Valid value should be between 0 and %d.",
                             VIRT_IRQCHIP_MAX_GUESTS);
-        object_class_property_set_description(oc, "aia-guests", str);
+        object_class_property_समुच्चयः_description(oc, "aia-guests", str);
     }
 
-    object_class_property_add(oc, "acpi", "OnOffAuto",
-                              virt_get_acpi, virt_set_acpi,
-                              NULL, NULL);
-    object_class_property_set_description(oc, "acpi",
+    object_class_property_सङ्कलय(oc, "acpi", "OnOffAuto",
+                              virt_get_acpi, virt_समुच्चयः_acpi,
+                              रिक्त, रिक्त);
+    object_class_property_समुच्चयः_description(oc, "acpi",
                                           "Enable ACPI");
 
-    object_class_property_add(oc, "iommu-sys", "OnOffAuto",
-                              virt_get_iommu_sys, virt_set_iommu_sys,
-                              NULL, NULL);
-    object_class_property_set_description(oc, "iommu-sys",
+    object_class_property_सङ्कलय(oc, "iommu-sys", "OnOffAuto",
+                              virt_get_iommu_sys, virt_समुच्चयः_iommu_sys,
+                              रिक्त, रिक्त);
+    object_class_property_समुच्चयः_description(oc, "iommu-sys",
                                           "Enable IOMMU platform device");
 }
 
-static const TypeInfo virt_machine_typeinfo = {
+स्थिर ध्रुव TypeInfo virt_machine_typeinfo = {
     .name       = MACHINE_TYPE_NAME("virt"),
     .parent     = TYPE_MACHINE,
     .class_init = virt_machine_class_init,
     .instance_init = virt_machine_instance_init,
     .instance_finalize = virt_machine_instance_finalize,
-    .instance_size = sizeof(RISCVVirtState),
-    .interfaces = (const InterfaceInfo[]) {
+    .instance_आकार = परिमाण(RISCVVirtState),
+    .interfaces = (ध्रुव InterfaceInfo[]) {
          { TYPE_HOTPLUG_HANDLER },
          { }
     },
 };
 
-static void virt_machine_init_register_types(void)
+स्थिर शून्य virt_machine_init_पञ्जिकाकोशः_types(शून्य)
 {
-    type_register_static(&virt_machine_typeinfo);
+    type_पञ्जिकाकोशः_static(&virt_machine_typeinfo);
 }
 
-type_init(virt_machine_init_register_types)
+type_init(virt_machine_init_पञ्जिकाकोशः_types)
