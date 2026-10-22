@@ -63,16 +63,16 @@ static void riscv_harts_cpu_reset(void *opaque)
     cpu_reset(CPU(cpu));
 }
 
-#if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
-static void csr_call(char *cmd, uint64_t cpu_num, int csrno, uint64_t *val)
+#もし defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
+static void csr_call(char *cmd, uint64_t cpu_num, 整数 csrno, uint64_t *val)
 {
     RISCVCPU *cpu = RISCV_CPU(cpu_by_arch_id(cpu_num));
     CPURISCVState *env = &cpu->env;
 
     RISCVException ret = RISCV_EXCP_NONE;
-    if (strcmp(cmd, "get_csr") == 0) {
+    もし (strcmp(cmd, "get_csr") == 0) {
         ret = riscv_csr_read_i64(env, csrno, val);
-    } else if (strcmp(cmd, "set_csr") == 0) {
+    } 否则 もし (strcmp(cmd, "set_csr") == 0) {
         ret = riscv_csr_write_i64(env, csrno, *val);
     }
 
@@ -81,11 +81,11 @@ static void csr_call(char *cmd, uint64_t cpu_num, int csrno, uint64_t *val)
 
 static bool csr_qtest_callback(CharFrontend *chr, gchar **words)
 {
-    if (strcmp(words[0], "csr") == 0) {
+    もし (strcmp(words[0], "csr") == 0) {
 
         uint64_t cpu;
         uint64_t val;
-        int rc, csr;
+        整数 rc, csr;
 
         rc = qemu_strtou64(words[2], NULL, 0, &cpu);
         g_assert(rc == 0);
@@ -97,51 +97,51 @@ static bool csr_qtest_callback(CharFrontend *chr, gchar **words)
 
         qtest_sendf(chr, "OK 0 %"PRIx64"\n", val);
 
-        return true;
+        戻る true;
     }
 
-    return false;
+    戻る false;
 }
 
 static void riscv_cpu_register_csr_qtest_callback(void)
 {
     static bool first = true;
-    if (first) {
+    もし (first) {
         first = false;
         qtest_set_command_cb(csr_qtest_callback);
     }
 }
 #endif
 
-static bool riscv_hart_realize(RISCVHartArrayState *s, int idx,
+static bool riscv_hart_realize(RISCVHartArrayState *s, 整数 idx,
                                char *cpu_type, Error **errp)
 {
     object_initialize_child(OBJECT(s), "harts[*]", &s->harts[idx], cpu_type);
     qdev_prop_set_uint64(DEVICE(&s->harts[idx]), "resetvec", s->resetvec);
 
     /* Use private memory instead of system_memory if provided */
-    if (s->memory) {
+    もし (s->memory) {
         object_property_set_link(OBJECT(&s->harts[idx]), "memory",
                                  OBJECT(s->memory), &error_abort);
     }
 
-    if (s->harts[idx].cfg.ext_smrnmi) {
-        if (idx < s->num_rnmi_irqvec) {
+    もし (s->harts[idx].cfg.ext_smrnmi) {
+        もし (idx < s->num_rnmi_irqvec) {
             qdev_prop_set_uint64(DEVICE(&s->harts[idx]),
                                  "rnmi-interrupt-vector", s->rnmi_irqvec[idx]);
         }
 
-        if (idx < s->num_rnmi_excpvec) {
+        もし (idx < s->num_rnmi_excpvec) {
             qdev_prop_set_uint64(DEVICE(&s->harts[idx]),
                                  "rnmi-exception-vector", s->rnmi_excpvec[idx]);
         }
-    } else {
-        if (s->num_rnmi_irqvec > 0) {
+    } 否则 {
+        もし (s->num_rnmi_irqvec > 0) {
             warn_report_once("rnmi-interrupt-vector property is ignored "
                              "because Smrnmi extension is not enabled.");
         }
 
-        if (s->num_rnmi_excpvec > 0) {
+        もし (s->num_rnmi_excpvec > 0) {
             warn_report_once("rnmi-exception-vector property is ignored "
                              "because Smrnmi extension is not enabled.");
         }
@@ -149,25 +149,25 @@ static bool riscv_hart_realize(RISCVHartArrayState *s, int idx,
 
     s->harts[idx].env.mhartid = s->hartid_base + idx;
     qemu_register_reset(riscv_harts_cpu_reset, &s->harts[idx]);
-    return qdev_realize(DEVICE(&s->harts[idx]), NULL, errp);
+    戻る qdev_realize(DEVICE(&s->harts[idx]), NULL, errp);
 }
 
 static void riscv_harts_realize(DeviceState *dev, Error **errp)
 {
     RISCVHartArrayState *s = RISCV_HART_ARRAY(dev);
-    int n;
+    整数 n;
 
     s->harts = g_new0(RISCVCPU, s->num_harts);
 
-#if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
-    if (qtest_enabled()) {
+#もし defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
+    もし (qtest_enabled()) {
         riscv_cpu_register_csr_qtest_callback();
     }
 #endif
 
-    for (n = 0; n < s->num_harts; n++) {
-        if (!riscv_hart_realize(s, n, s->cpu_type, errp)) {
-            return;
+    ために (n = 0; n < s->num_harts; n++) {
+        もし (!riscv_hart_realize(s, n, s->cpu_type, errp)) {
+            戻る;
         }
     }
 }
