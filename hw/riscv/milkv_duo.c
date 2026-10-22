@@ -5,20 +5,20 @@
  * Copyright (c) 2026 Kuan-Wei Chiu <visitorckw@gmail.com>
  */
 
-#include "qemu/osdep.h"
-#include "qemu/units.h"
-#include "qapi/error.h"
-#include "hw/core/boards.h"
-#include "hw/riscv/cv1800b.h"
-#include "hw/riscv/boot.h"
-#include "target/riscv/cpu-qom.h"
-#include "system/system.h"
-#include "system/device_tree.h"
-#include "qemu/error-report.h"
-#include "hw/core/loader.h"
-#include <libfdt.h>
+#ଅନ୍ତର୍ଭାଵ "qemu/osdep.h"
+#ଅନ୍ତର୍ଭାଵ "qemu/units.h"
+#ଅନ୍ତର୍ଭାଵ "qapi/error.h"
+#ଅନ୍ତର୍ଭାଵ "hw/core/boards.h"
+#ଅନ୍ତର୍ଭାଵ "hw/riscv/cv1800b.h"
+#ଅନ୍ତର୍ଭାଵ "hw/riscv/boot.h"
+#ଅନ୍ତର୍ଭାଵ "target/riscv/cpu-qom.h"
+#ଅନ୍ତର୍ଭାଵ "system/system.h"
+#ଅନ୍ତର୍ଭାଵ "system/device_tree.h"
+#ଅନ୍ତର୍ଭାଵ "qemu/error-report.h"
+#ଅନ୍ତର୍ଭାଵ "hw/core/loader.h"
+#ଅନ୍ତର୍ଭାଵ <libfdt.h>
 
-struct MilkVDuoState {
+ସଂରଚନା MilkVDuoState {
     MachineState parent_obj;
     CV1800BSoCState soc;
 };
@@ -26,19 +26,19 @@ struct MilkVDuoState {
 #define TYPE_MILK_V_DUO MACHINE_TYPE_NAME("milkv-duo")
 OBJECT_DECLARE_SIMPLE_TYPE(MilkVDuoState, MILK_V_DUO)
 
-static void milkv_duo_init(MachineState *machine)
+ସ୍ଥିର ଶୂନ୍ୟ milkv_duo_init(MachineState *machine)
 {
     MilkVDuoState *s = MILK_V_DUO(machine);
     MemoryRegion *system_memory = get_system_memory();
     RISCVBootInfo boot_info;
-    const char *firmware_name;
+    ଅଚଳ ଅକ୍ଷର *firmware_name;
     hwaddr firmware_load_addr, firmware_end_addr;
     hwaddr fdt_load_addr = 0;
-    int fdt_size = 0;
+    ପୂର୍ଣ୍ଣସଂଖ୍ୟା fdt_size = 0;
     uint64_t kernel_entry = 0;
 
     object_initialize_child(OBJECT(machine), "soc", &s->soc, TYPE_CV1800B_SOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&s->soc), ଖାଲି, &error_fatal);
 
     memory_region_add_subregion(system_memory,
                                 cv1800b_memmap[CV1800B_DEV_DRAM].base,
@@ -50,17 +50,17 @@ static void milkv_duo_init(MachineState *machine)
     firmware_load_addr = cv1800b_memmap[CV1800B_DEV_DRAM].base;
     firmware_end_addr = riscv_find_and_load_firmware(machine, &boot_info,
                                                      firmware_name,
-                                                     &firmware_load_addr, NULL);
+                                                     &firmware_load_addr, ଖାଲି);
 
-    if (machine->dtb) {
-        machine->fdt = load_device_tree(machine->dtb, &fdt_size);
-        if (!machine->fdt) {
+    ଯଦି (machine->dtb) {
+        machine->fdt = load_device_ବୃକ୍ଷ(machine->dtb, &fdt_size);
+        ଯଦି (!machine->fdt) {
             error_report("Failed to load device tree");
             exit(1);
         }
 
-        if (machine->kernel_cmdline && *machine->kernel_cmdline) {
-            if (fdt_path_offset(machine->fdt, "/chosen") < 0) {
+        ଯଦି (machine->kernel_cmdline && *machine->kernel_cmdline) {
+            ଯଦି (fdt_path_offset(machine->fdt, "/chosen") < 0) {
                 qemu_fdt_add_subnode(machine->fdt, "/chosen");
             }
             qemu_fdt_setprop_string(machine->fdt, "/chosen", "bootargs",
@@ -68,14 +68,14 @@ static void milkv_duo_init(MachineState *machine)
         }
     }
 
-    if (machine->kernel_filename) {
+    ଯଦି (machine->kernel_filename) {
         hwaddr kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                                 firmware_end_addr);
-        riscv_load_kernel(machine, &boot_info, kernel_start_addr, true, NULL);
-        kernel_entry = boot_info.image_low_addr;
+        riscv_load_kernel(machine, &boot_info, kernel_start_addr, true, ଖାଲି);
+        kernel_entry = boot_info.image_ତଳ_addr;
     }
 
-    if (machine->dtb) {
+    ଯଦି (machine->dtb) {
         fdt_load_addr = riscv_compute_fdt_addr(cv1800b_memmap[CV1800B_DEV_DRAM].base,
                                                machine->ram_size, machine, &boot_info);
         riscv_load_fdt(fdt_load_addr, machine->fdt);
@@ -89,12 +89,12 @@ static void milkv_duo_init(MachineState *machine)
                               fdt_load_addr);
 }
 
-static void milkv_duo_machine_class_init(ObjectClass *oc, const void *data)
+ସ୍ଥିର ଶୂନ୍ୟ milkv_duo_machine_class_init(ObjectClass *oc, ଅଚଳ ଶୂନ୍ୟ *data)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
-    static const char *const valid_cpu_types[] = {
+    ସ୍ଥିର ଅଚଳ ଅକ୍ଷର *ଅଚଳ valid_cpu_types[] = {
         TYPE_RISCV_CPU_THEAD_C906,
-        NULL
+        ଖାଲି
     };
 
     mc->desc = "Milk-V Duo Board (CV1800B)";
@@ -106,11 +106,11 @@ static void milkv_duo_machine_class_init(ObjectClass *oc, const void *data)
     mc->default_ram_id = "riscv.milkv_duo.ram";
 }
 
-static const TypeInfo milkv_duo_machine_type_infos[] = {
+ସ୍ଥିର ଅଚଳ TypeInfo milkv_duo_machine_type_infos[] = {
     {
         .name = TYPE_MILK_V_DUO,
         .parent = TYPE_MACHINE,
-        .instance_size = sizeof(MilkVDuoState),
+        .instance_size = ଆକାର(MilkVDuoState),
         .class_init = milkv_duo_machine_class_init,
     },
 };

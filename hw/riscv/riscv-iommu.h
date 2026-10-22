@@ -19,15 +19,15 @@
 #ifndef HW_RISCV_IOMMU_STATE_H
 #define HW_RISCV_IOMMU_STATE_H
 
-#include "qom/object.h"
-#include "hw/core/qdev-properties.h"
-#include "system/dma.h"
-#include "hw/riscv/iommu.h"
-#include "hw/riscv/riscv-iommu-bits.h"
+#ଅନ୍ତର୍ଭାଵ "qom/object.h"
+#ଅନ୍ତର୍ଭାଵ "hw/core/qdev-properties.h"
+#ଅନ୍ତର୍ଭାଵ "system/dma.h"
+#ଅନ୍ତର୍ଭାଵ "hw/riscv/iommu.h"
+#ଅନ୍ତର୍ଭାଵ "hw/riscv/riscv-iommu-bits.h"
 
-typedef enum riscv_iommu_igs_modes riscv_iommu_igs_mode;
+ପ୍ରକାରବ୍ୟାଖ୍ୟା ଗଣନା riscv_iommu_igs_modes riscv_iommu_igs_mode;
 
-struct RISCVIOMMUState {
+ସଂରଚନା RISCVIOMMUState {
     /*< private >*/
     DeviceState parent_obj;
 
@@ -59,7 +59,7 @@ struct RISCVIOMMUState {
     uint32_t pq_mask;     /* Page request queue index bit mask */
 
     /* interrupt notifier */
-    void (*notify)(RISCVIOMMUState *iommu, unsigned vector);
+    ଶୂନ୍ୟ (*notify)(RISCVIOMMUState *iommu, unsigned vector);
 
     /* IOMMU target address space */
     AddressSpace *target_as;
@@ -91,26 +91,26 @@ struct RISCVIOMMUState {
     QEMUTimer *hpm_timer;
     uint64_t hpmcycle_val;      /* Current value of cycle register */
     uint64_t hpmcycle_prev;     /* Saved value of QEMU_CLOCK_VIRTUAL clock */
-    uint64_t irq_overflow_left; /* Value beyond INT64_MAX after overflow */
+    uint64_t irq_overflow_ବାମ; /* Value beyond INT64_MAX after overflow */
 
     /* HPM event counters */
     GHashTable *hpm_event_ctr_map; /* Mapping of events to counters */
     uint8_t hpm_cntrs;
 };
 
-void riscv_iommu_pci_setup_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
+ଶୂନ୍ୟ riscv_iommu_pci_setup_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
          Error **errp);
-void riscv_iommu_set_cap_igs(RISCVIOMMUState *s, riscv_iommu_igs_mode mode);
-void riscv_iommu_reset(RISCVIOMMUState *s);
-void riscv_iommu_notify(RISCVIOMMUState *s, int vec_type);
-void riscv_iommu_fault(RISCVIOMMUState *s, struct riscv_iommu_fq_record *ev);
+ଶୂନ୍ୟ riscv_iommu_set_cap_igs(RISCVIOMMUState *s, riscv_iommu_igs_mode mode);
+ଶୂନ୍ୟ riscv_iommu_reset(RISCVIOMMUState *s);
+ଶୂନ୍ୟ riscv_iommu_notify(RISCVIOMMUState *s, ପୂର୍ଣ୍ଣସଂଖ୍ୟା vec_type);
+ଶୂନ୍ୟ riscv_iommu_fault(RISCVIOMMUState *s, ସଂରଚନା riscv_iommu_fq_record *ev);
 DeviceState *riscv_create_iommu_sys(DeviceState *mmio_irqchip,
-                                    hwaddr addr, int base_irq,
+                                    hwaddr addr, ପୂର୍ଣ୍ଣସଂଖ୍ୟା base_irq,
                                     bool is_32_bit);
 
-typedef struct RISCVIOMMUContext RISCVIOMMUContext;
+ପ୍ରକାରବ୍ୟାଖ୍ୟା ସଂରଚନା RISCVIOMMUContext RISCVIOMMUContext;
 /* Device translation context state. */
-struct RISCVIOMMUContext {
+ସଂରଚନା RISCVIOMMUContext {
     uint64_t devid:24;          /* Requester Id, AKA device_id */
     uint64_t process_id:20;     /* Process ID. PASID for PCIe */
     uint64_t tc;                /* Translation Control */
@@ -125,42 +125,42 @@ struct RISCVIOMMUContext {
 /* private helpers */
 
 /* Register helper functions */
-static inline uint32_t riscv_iommu_reg_mod32(RISCVIOMMUState *s,
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ uint32_t riscv_iommu_reg_mod32(RISCVIOMMUState *s,
     unsigned idx, uint32_t set, uint32_t clr)
 {
     uint32_t val = ldl_le_p(s->regs + idx);
     stl_le_p(s->regs + idx, (val & ~clr) | set);
-    return val;
+    ଫେରନ୍ତୁ val;
 }
 
-static inline void riscv_iommu_reg_set32(RISCVIOMMUState *s, unsigned idx,
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ଶୂନ୍ୟ riscv_iommu_reg_set32(RISCVIOMMUState *s, unsigned idx,
                                          uint32_t set)
 {
     stl_le_p(s->regs + idx, set);
 }
 
-static inline uint32_t riscv_iommu_reg_get32(RISCVIOMMUState *s, unsigned idx)
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ uint32_t riscv_iommu_reg_get32(RISCVIOMMUState *s, unsigned idx)
 {
-    return ldl_le_p(s->regs + idx);
+    ଫେରନ୍ତୁ ldl_le_p(s->regs + idx);
 }
 
-static inline uint64_t riscv_iommu_reg_mod64(RISCVIOMMUState *s, unsigned idx,
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ uint64_t riscv_iommu_reg_mod64(RISCVIOMMUState *s, unsigned idx,
                                              uint64_t set, uint64_t clr)
 {
     uint64_t val = ldq_le_p(s->regs + idx);
     stq_le_p(s->regs + idx, (val & ~clr) | set);
-    return val;
+    ଫେରନ୍ତୁ val;
 }
 
-static inline void riscv_iommu_reg_set64(RISCVIOMMUState *s, unsigned idx,
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ ଶୂନ୍ୟ riscv_iommu_reg_set64(RISCVIOMMUState *s, unsigned idx,
                                          uint64_t set)
 {
     stq_le_p(s->regs + idx, set);
 }
 
-static inline uint64_t riscv_iommu_reg_get64(RISCVIOMMUState *s,
+ସ୍ଥିର ଧାଡ଼ିଭିତରେ uint64_t riscv_iommu_reg_get64(RISCVIOMMUState *s,
                                              unsigned idx)
 {
-    return ldq_le_p(s->regs + idx);
+    ଫେରନ୍ତୁ ldq_le_p(s->regs + idx);
 }
 #endif
