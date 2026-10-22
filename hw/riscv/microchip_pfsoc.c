@@ -203,7 +203,7 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
     MemoryRegion *envm_data = g_new(MemoryRegion, 1);
     MemoryRegion *qspi_xip_mem = g_new(MemoryRegion, 1);
     char *plic_hart_config;
-    int i;
+    ціле i;
 
     sysbus_realize(SYS_BUS_DEVICE(&s->e_cpus), &error_abort);
     qdev_prop_set_uint32(DEVICE(&s->u_cpus), "num-harts", ms->smp.cpus - 1);
@@ -299,7 +299,7 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
     sysbus_realize(SYS_BUS_DEVICE(&s->dma), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->dma), 0,
                     memmap[MICROCHIP_PFSOC_DMA].base);
-    for (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
+    для (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
         sysbus_connect_irq(SYS_BUS_DEVICE(&s->dma), i,
                            qdev_get_gpio_in(DEVICE(s->plic),
                                             MICROCHIP_PFSOC_DMA_IRQ0 + i));
@@ -534,7 +534,7 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
     RISCVBootInfo boot_info;
 
     /* Sanity check on RAM size */
-    if (machine->ram_size < mc->default_ram_size) {
+    якщо (machine->ram_size < mc->default_ram_size) {
         char *sz = size_to_str(mc->default_ram_size);
         error_report("Invalid RAM size, should be bigger than %s", sz);
         g_free(sz);
@@ -579,7 +579,7 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
                                 mem_high_alias);
 
     /* Attach an SD card */
-    if (dinfo) {
+    якщо (dinfo) {
         CadenceSDHCIState *sdhci = &(s->soc.sdhci);
         DeviceState *card = qdev_new(TYPE_SD_CARD);
 
@@ -599,23 +599,23 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
      * NULL, default |          Y | RISCV64_BIOS_BIN
      * other         | don't care | other
      */
-    if (machine->firmware && !strcmp(machine->firmware, "none")) {
-        if (!machine->kernel_filename) {
+    якщо (machine->firmware && !strcmp(machine->firmware, "none")) {
+        якщо (!machine->kernel_filename) {
             error_report("for -bios none, a kernel is required");
             exit(1);
         }
 
         firmware_name = NULL;
         firmware_load_addr = RESET_VECTOR;
-    } else if (!machine->firmware || !strcmp(machine->firmware, "default")) {
-        if (machine->kernel_filename) {
+    } інакше якщо (!machine->firmware || !strcmp(machine->firmware, "default")) {
+        якщо (machine->kernel_filename) {
             firmware_name = RISCV64_BIOS_BIN;
             firmware_load_addr = memmap[MICROCHIP_PFSOC_DRAM_LO].base;
-        } else {
+        } інакше {
             firmware_name = BIOS_FILENAME;
             firmware_load_addr = RESET_VECTOR;
         }
-    } else {
+    } інакше {
         firmware_name = machine->firmware;
         firmware_load_addr = RESET_VECTOR;
     }
@@ -626,9 +626,9 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
 
     /* Load the firmware if necessary */
     firmware_end_addr = firmware_load_addr;
-    if (firmware_name) {
+    якщо (firmware_name) {
         char *filename = riscv_find_firmware(firmware_name, NULL);
-        if (filename) {
+        якщо (filename) {
             firmware_end_addr = riscv_load_firmware(machine, &boot_info,
                                                     filename,
                                                     &firmware_load_addr, NULL);
@@ -636,7 +636,7 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
         }
     }
 
-    if (machine->kernel_filename) {
+    якщо (machine->kernel_filename) {
         kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                          firmware_end_addr);
 
@@ -644,10 +644,10 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
                           true, NULL);
         kernel_entry = boot_info.image_low_addr;
 
-        if (machine->dtb) {
-            int fdt_size;
+        якщо (machine->dtb) {
+            ціле fdt_size;
             machine->fdt = load_device_tree(machine->dtb, &fdt_size);
-            if (!machine->fdt) {
+            якщо (!machine->fdt) {
                 error_report("load_device_tree() failed");
                 exit(1);
             }
@@ -656,7 +656,7 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
             hwaddr kernel_ram_base = memmap[MICROCHIP_PFSOC_DRAM_LO].base;
             hwaddr kernel_ram_size = memmap[MICROCHIP_PFSOC_DRAM_LO].size;
 
-            if (kernel_entry - kernel_ram_base >= kernel_ram_size) {
+            якщо (kernel_entry - kernel_ram_base >= kernel_ram_size) {
                 kernel_ram_base = memmap[MICROCHIP_PFSOC_DRAM_HI].base;
                 kernel_ram_size = mem_high_size;
             }
@@ -664,7 +664,7 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
             fdt_load_addr = riscv_compute_fdt_addr(kernel_ram_base, kernel_ram_size,
                                                    machine, &boot_info);
             riscv_load_fdt(fdt_load_addr, machine->fdt);
-        } else {
+        } інакше {
             warn_report_once("The QEMU microchip-icicle-kit machine does not "
                              "generate a device tree, so no device tree is "
                              "being provided to the guest.");
@@ -672,9 +672,9 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
         }
 
         hwaddr start_addr;
-        if (firmware_name) {
+        якщо (firmware_name) {
             start_addr = firmware_load_addr;
-        } else {
+        } інакше {
             start_addr = kernel_entry;
         }
 
@@ -695,8 +695,8 @@ static void microchip_icicle_kit_set_clint_timebase_freq(Object *obj,
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(obj);
     uint32_t value;
 
-    if (!visit_type_uint32(v, name, &value, errp)) {
-        return;
+    якщо (!visit_type_uint32(v, name, &value, errp)) {
+        повернути;
     }
 
     s->clint_timebase_freq = value;

@@ -77,13 +77,13 @@ static I2CBus *i2c_get_bus(TTAtlantisSoCState *s, unsigned busnr)
 {
     assert(busnr < TT_ATL_NUM_I2C);
 
-    return s->i2c[busnr].bus;
+    повернути s->i2c[busnr].bus;
 }
 
 static uint32_t fdt_phandle = 1;
 static uint32_t next_phandle(void)
 {
-    return fdt_phandle++;
+    повернути fdt_phandle++;
 }
 
 static void create_fdt_memory(void *fdt, TTAtlantisSoCState *s)
@@ -92,14 +92,14 @@ static void create_fdt_memory(void *fdt, TTAtlantisSoCState *s)
     hwaddr size_lo = ram_size;
     hwaddr size_hi = 0;
 
-    if (size_lo > s->memmap[TT_ATL_DDR_LO].size) {
+    якщо (size_lo > s->memmap[TT_ATL_DDR_LO].size) {
         size_lo = s->memmap[TT_ATL_DDR_LO].size;
         size_hi = ram_size - size_lo;
     }
 
     riscv_create_fdt_socket_memory(fdt, s->memmap[TT_ATL_DDR_LO].base,
                                    size_lo, 0, false);
-    if (size_hi) {
+    якщо (size_hi) {
         /*
          * The first part of the HI address is aliased at the LO address
          * so do not include that as usable memory. Is there any way
@@ -121,7 +121,7 @@ static void create_fdt_aclint(void *fdt, TTAtlantisSoCState *s,
 
     aclint_mtimer_cells = g_new0(uint32_t, s->cpus.num_harts * 2);
 
-    for (int cpu = 0; cpu < s->cpus.num_harts; cpu++) {
+    для (ціле cpu = 0; cpu < s->cpus.num_harts; cpu++) {
         aclint_mtimer_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         aclint_mtimer_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_M_TIMER);
     }
@@ -141,14 +141,14 @@ static void create_fdt_aclint(void *fdt, TTAtlantisSoCState *s,
                      aclint_mtimer_cells, aclint_cells_size);
 }
 
-static void create_fdt_one_imsic(void *fdt, const MemMapEntry *mem, int cpus,
+static void create_fdt_one_imsic(void *fdt, const MemMapEntry *mem, ціле cpus,
                                  uint32_t *intc_phandles, uint32_t msi_phandle,
-                                 int irq_line, uint32_t imsic_guest_bits)
+                                 ціле irq_line, uint32_t imsic_guest_bits)
 {
     g_autofree char *name = NULL;
     g_autofree uint32_t *imsic_cells = g_new0(uint32_t, cpus * 2);
 
-    for (int cpu = 0; cpu < cpus; cpu++) {
+    для (ціле cpu = 0; cpu < cpus; cpu++) {
         imsic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         imsic_cells[cpu * 2 + 1] = cpu_to_be32(irq_line);
     }
@@ -165,7 +165,7 @@ static void create_fdt_one_imsic(void *fdt, const MemMapEntry *mem, int cpus,
     qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
     qemu_fdt_setprop_cell(fdt, name, "riscv,num-ids", TT_IRQCHIP_NUM_MSIS);
 
-    if (imsic_guest_bits) {
+    якщо (imsic_guest_bits) {
         qemu_fdt_setprop_cell(fdt, name, "riscv,guest-index-bits",
                               imsic_guest_bits);
     }
@@ -178,13 +178,13 @@ static void create_fdt_one_aplic(void *fdt,
                                  uint32_t *intc_phandles,
                                  uint32_t aplic_phandle,
                                  uint32_t aplic_child_phandle,
-                                 int irq_line, int num_harts)
+                                 ціле irq_line, ціле num_harts)
 {
     g_autofree char *name =
         g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->base);
     g_autofree uint32_t *aplic_cells = g_new0(uint32_t, num_harts * 2);
 
-    for (int cpu = 0; cpu < num_harts; cpu++) {
+    для (ціле cpu = 0; cpu < num_harts; cpu++) {
         aplic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
         aplic_cells[cpu * 2 + 1] = cpu_to_be32(irq_line);
     }
@@ -203,7 +203,7 @@ static void create_fdt_one_aplic(void *fdt,
     qemu_fdt_setprop_cell(fdt, name, "riscv,num-sources",
                           TT_IRQCHIP_NUM_SOURCES);
 
-    if (aplic_child_phandle) {
+    якщо (aplic_child_phandle) {
         qemu_fdt_setprop_cell(fdt, name, "riscv,children",
                               aplic_child_phandle);
         qemu_fdt_setprop_cells(fdt, name, "riscv,delegation",
@@ -228,7 +228,7 @@ static void create_fdt_cpu(void *fdt, TTAtlantisSoCState *s,
                            uint32_t imsic_s_phandle)
 {
     g_autofree uint32_t *intc_phandles = g_new0(uint32_t, s->cpus.num_harts);
-    int num_harts = s->cpus.num_harts;
+    ціле num_harts = s->cpus.num_harts;
 
     riscv_fdt_create_cpu_socket_subnode(fdt, TT_ACLINT_TIMEBASE_FREQ);
 
@@ -264,8 +264,8 @@ static void create_fdt_cpu(void *fdt, TTAtlantisSoCState *s,
                          IRQ_S_EXT, num_harts);
 }
 
-static void create_fdt_uart(void *fdt, const MemMapEntry *mem, int irq,
-                            int irqchip_phandle, uint32_t clk_parent_phandle,
+static void create_fdt_uart(void *fdt, const MemMapEntry *mem, ціле irq,
+                            ціле irqchip_phandle, uint32_t clk_parent_phandle,
                             uint32_t clk_phandle)
 {
     g_autofree char *name = g_strdup_printf("/soc/serial@%"HWADDR_PRIX,
@@ -326,8 +326,8 @@ static void create_fdt_i2c(void *fdt, const MemMapEntry *mem, uint32_t irq,
     qemu_fdt_setprop_cell(fdt, name, "#size-cells", 0);
 }
 
-static void create_fdt_i2c_device(void *fdt, TTAtlantisSoCState *s, int bus,
-                                  const char *compat, int addr)
+static void create_fdt_i2c_device(void *fdt, TTAtlantisSoCState *s, ціле bus,
+                                  const char *compat, ціле addr)
 {
     hwaddr base = s->memmap[TT_ATL_I2C0 + bus].base;
     g_autofree char *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX"/sensor@%x",
@@ -355,7 +355,7 @@ static char *create_fdt_prcm(void *fdt, const MemMapEntry *mem,
     qemu_fdt_setprop_cell(fdt, name, "#reset-cells", 1);
     qemu_fdt_setprop_cell(fdt, name, "phandle", next_phandle());
 
-    return name;
+    повернути name;
 }
 
 static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
@@ -405,7 +405,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     create_fdt_uart(fdt, &s->memmap[TT_ATL_UART1], TT_ATL_UART1_IRQ,
                     aplic_s_phandle, prcm_rcpu_phandle, TT_ATL_CLK_UART1_PCLK);
 
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    для (ціле i = 0; i < TT_ATL_NUM_I2C; i++) {
         create_fdt_i2c(fdt,
                        &s->memmap[TT_ATL_I2C0 + i],
                        TT_ATL_I2C0_IRQ + i,
@@ -421,7 +421,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
 static void create_fdt(TTAtlantisState *ams)
 {
     MachineState *ms = MACHINE(ams);
-    int fdt_size = 0;
+    ціле fdt_size = 0;
 
     ms->fdt = riscv_create_board_device_tree("Tenstorrent Atlantis RISC-V Machine",
                                              "tenstorrent,atlantis", &fdt_size);
@@ -440,10 +440,10 @@ static void load_fdt(TTAtlantisState *ams)
     MachineState *ms = MACHINE(ams);
     char **node_path;
     Error *err = NULL;
-    int fdt_size = 0;
+    ціле fdt_size = 0;
 
     ms->fdt = load_device_tree(ms->dtb, &fdt_size);
-    if (!ms->fdt) {
+    якщо (!ms->fdt) {
         error_report("load_device_tree() failed");
         exit(1);
     }
@@ -452,10 +452,10 @@ static void load_fdt(TTAtlantisState *ams)
 
     /* Clear memory nodes and update with the specified RAM size */
     node_path = qemu_fdt_node_unit_path(ms->fdt, "memory", &err);
-    if (err) {
+    якщо (err) {
         warn_report_err(err);
-    } else {
-        for (int i = 0; node_path[i]; i++) {
+    } інакше {
+        для (ціле i = 0; node_path[i]; i++) {
             warn_report("Replacing device tree %s with the requested RAM size",
                         node_path[i]);
             qemu_fdt_nop_node(ms->fdt, node_path[i]);
@@ -494,12 +494,12 @@ static void tt_atlantis_machine_done(Notifier *n, void *data)
      * A user provided dtb must include everything, including
      * dynamic sysbus devices. Our FDT needs to be finalized.
      */
-    if (machine->dtb == NULL) {
+    якщо (machine->dtb == NULL) {
         finalize_fdt(machine->fdt, s);
     }
 
     mem_size = machine->ram_size;
-    if (mem_size > s->memmap[TT_ATL_DDR_LO].size) {
+    якщо (mem_size > s->memmap[TT_ATL_DDR_LO].size) {
         mem_size = s->memmap[TT_ATL_DDR_LO].size;
     }
     riscv_boot_info_init_discontig_mem(&boot_info, &s->cpus,
@@ -512,11 +512,11 @@ static void tt_atlantis_machine_done(Notifier *n, void *data)
 
     kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                      firmware_end_addr);
-    if (machine->kernel_filename) {
+    якщо (machine->kernel_filename) {
         riscv_load_kernel(machine, &boot_info, kernel_start_addr,
                           true, NULL);
         kernel_entry = boot_info.image_low_addr;
-    } else {
+    } інакше {
         /* If we aren't loading a payload, OpenSBI thinks we are trying to boot
          * address 0, which fails `sbi_domain_check_addr()` as that is where
          * OpenSBI is running. Instead point OpenSBI to the end of the region
@@ -561,7 +561,7 @@ static void tt_atlantis_soc_init(Object *obj)
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM],
                             TYPE_TT_ATLANTIS_PRCM_MM);
 
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    для (ціле i = 0; i < TT_ATL_NUM_I2C; i++) {
         object_initialize_child(obj, "i2c[*]", &s->i2c[i],
                                 TYPE_DESIGNWARE_I2C);
     }
@@ -571,15 +571,15 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
 {
     TTAtlantisSoCState *s = TT_ATLANTIS_SOC(dev);
     ram_addr_t lo_ram_size, ram_size;
-    int hart_count = s->num_harts;
+    ціле hart_count = s->num_harts;
 
-    if (!s->memory) {
+    якщо (!s->memory) {
         error_setg(errp, "'memory' link is not set");
-        return;
+        повернути;
     }
-    if (!s->dram) {
+    якщо (!s->dram) {
         error_setg(errp, "'dram' link is not set");
-        return;
+        повернути;
     }
     ram_size = memory_region_size(s->dram);
 
@@ -597,8 +597,8 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
                             &error_abort);
     object_property_set_link(OBJECT(&s->cpus), "memory", OBJECT(s->memory),
                              &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
-        return;
+    якщо (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
+        повернути;
     }
 
     s->irqchip = riscv_create_aia(s->memory,
@@ -628,10 +628,10 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
      * The high address is where RAM lives. It is always present and may be
      * up to 64GB. The low address is an alias of the first 2GB of that RAM.
      */
-    if (ram_size > s->memmap[TT_ATL_DDR_HI].size) {
+    якщо (ram_size > s->memmap[TT_ATL_DDR_HI].size) {
         g_autofree char *sz = size_to_str(s->memmap[TT_ATL_DDR_HI].size);
         error_setg(errp, "RAM size is too large, maximum is %s", sz);
-        return;
+        повернути;
     }
 
     memory_region_init_alias(&s->ram_hi, OBJECT(s), "ram.high", s->dram,
@@ -646,9 +646,9 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
                                 s->memmap[TT_ATL_DDR_LO].base, &s->ram_lo);
 
     /* Boot ROM */
-    if (!memory_region_init_rom(&s->bootrom, OBJECT(s), "tt-atlantis.bootrom",
+    якщо (!memory_region_init_rom(&s->bootrom, OBJECT(s), "tt-atlantis.bootrom",
                                 s->memmap[TT_ATL_BOOTROM].size, errp)) {
-        return;
+        повернути;
     }
     memory_region_add_subregion(s->memory, s->memmap[TT_ATL_BOOTROM].base,
                                 &s->bootrom);
@@ -659,36 +659,36 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
                    115200, serial_hd(0), DEVICE_LITTLE_ENDIAN);
 
     /* 4 PRCM blocks */
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]),
+    якщо (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]),
                         errp)) {
-        return;
+        повернути;
     }
     memory_region_add_subregion(
         s->memory, s->memmap[TT_ATL_PRCM_RCPU].base,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]),
+    якщо (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]),
                         errp)) {
-        return;
+        повернути;
     }
     memory_region_add_subregion(
         s->memory, s->memmap[TT_ATL_PRCM_HSIO].base,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]),
+    якщо (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]),
                         errp)) {
-        return;
+        повернути;
     }
     memory_region_add_subregion(
         s->memory, s->memmap[TT_ATL_PRCM_PCIE].base,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]),
+    якщо (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]),
                         errp)) {
-        return;
+        повернути;
     }
     memory_region_add_subregion(
         s->memory, s->memmap[TT_ATL_PRCM_MM].base,
@@ -709,11 +709,11 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
                            s->memmap[TT_ATL_UART1].size);
 
     /* I2C */
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    для (ціле i = 0; i < TT_ATL_NUM_I2C; i++) {
         SysBusDevice *sbd = SYS_BUS_DEVICE(&s->i2c[i]);
 
-        if (!sysbus_realize(sbd, errp)) {
-            return;
+        якщо (!sysbus_realize(sbd, errp)) {
+            повернути;
         }
         memory_region_add_subregion(s->memory,
                                     s->memmap[TT_ATL_I2C0 + i].base,
@@ -770,9 +770,9 @@ static void tt_atlantis_machine_init(MachineState *machine)
     i2c_slave_create_simple(i2c_get_bus(s, 4), "tmp105", 0x48);
 
     /* Load or create device tree */
-    if (machine->dtb) {
+    якщо (machine->dtb) {
         load_fdt(ams);
-    } else {
+    } інакше {
         create_fdt(ams);
     }
 
