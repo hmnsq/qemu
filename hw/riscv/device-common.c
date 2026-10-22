@@ -6,27 +6,27 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#include "qemu/osdep.h"
+#ضمن "qemu/osdep.h"
 
-#include "hw/riscv/device-common.h"
+#ضمن "hw/riscv/device-common.h"
 
-#include "hw/block/flash.h"
-#include "hw/core/platform-bus.h"
-#include "hw/core/qdev.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/core/sysbus.h"
-#include "hw/pci/pci.h"
-#include "hw/pci-host/gpex.h"
-#include "qapi/error.h"
-#include "qom/object.h"
-#include "system/address-spaces.h"
-#include "system/memory.h"
+#ضمن "hw/block/flash.h"
+#ضمن "hw/core/platform-bus.h"
+#ضمن "hw/core/qdev.h"
+#ضمن "hw/core/qdev-properties.h"
+#ضمن "hw/core/sysbus.h"
+#ضمن "hw/pci/pci.h"
+#ضمن "hw/pci-host/gpex.h"
+#ضمن "qapi/error.h"
+#ضمن "qom/object.h"
+#ضمن "system/address-spaces.h"
+#ضمن "system/memory.h"
 
 
 DeviceState *riscv_create_platform_bus(DeviceState *irqchip,
-                                       const MemMapEntry *platform_bus_mem,
-                                       int platform_bus_base_irq,
-                                       int platform_bus_num_irqs)
+                                       ثابت MemMapEntry *platform_bus_mem,
+                                       صحيح platform_bus_base_irq,
+                                       صحيح platform_bus_num_irqs)
 {
     MemoryRegion *sysmem = get_system_memory();
     DeviceState *dev;
@@ -39,8 +39,8 @@ DeviceState *riscv_create_platform_bus(DeviceState *irqchip,
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
     sysbus = SYS_BUS_DEVICE(dev);
-    for (int i = 0; i < platform_bus_num_irqs; i++) {
-        int irq = platform_bus_base_irq + i;
+    עבור (صحيح i = 0; i < platform_bus_num_irqs; i++) {
+        صحيح irq = platform_bus_base_irq + i;
         sysbus_connect_irq(sysbus, i, qdev_get_gpio_in(irqchip, irq));
     }
 
@@ -48,12 +48,12 @@ DeviceState *riscv_create_platform_bus(DeviceState *irqchip,
                                 platform_bus_mem->base,
                                 sysbus_mmio_get_region(sysbus, 0));
 
-    return dev;
+    החזר dev;
 }
 
-PFlashCFI01 *riscv_flash_create(Object *parent, const char *name,
-                                const char *alias_prop_name,
-                                int flash_sector_size)
+PFlashCFI01 *riscv_flash_create(Object *parent, ثابت حرف *name,
+                                ثابت حرف *alias_prop_name,
+                                صحيح flash_sector_size)
 {
     /*
      * Create a single flash device.  We use the same parameters as
@@ -75,16 +75,16 @@ PFlashCFI01 *riscv_flash_create(Object *parent, const char *name,
     object_property_add_alias(parent, alias_prop_name,
                               OBJECT(dev), "drive");
 
-    return PFLASH_CFI01(dev);
+    החזר PFLASH_CFI01(dev);
 }
 
-void riscv_init_flash_map(PFlashCFI01 *flash, hwaddr base, hwaddr size,
-                          MemoryRegion *sysmem, int flash_sector_size)
+فراغ riscv_init_flash_map(PFlashCFI01 *flash, hwaddr base, hwaddr size,
+                          MemoryRegion *sysmem, صحيح flash_sector_size)
 {
     DeviceState *dev = DEVICE(flash);
 
-    assert(QEMU_IS_ALIGNED(size, flash_sector_size));
-    assert(size / flash_sector_size <= UINT32_MAX);
+    أكد(QEMU_IS_ALIGNED(size, flash_sector_size));
+    أكد(size / flash_sector_size <= UINT32_MAX);
 
     qdev_prop_set_uint32(dev, "num-blocks", size / flash_sector_size);
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
@@ -95,11 +95,11 @@ void riscv_init_flash_map(PFlashCFI01 *flash, hwaddr base, hwaddr size,
 
 DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
                                   DeviceState *irqchip,
-                                  const MemMapEntry *pcie_ecam_mem,
-                                  const MemMapEntry *pcie_mmio_mem,
-                                  const MemMapEntry *high_pcie_mmio_mem,
-                                  const MemMapEntry *pcie_pio_mem,
-                                  int pcie_irq)
+                                  ثابت MemMapEntry *pcie_ecam_mem,
+                                  ثابت MemMapEntry *pcie_mmio_mem,
+                                  ثابت MemMapEntry *high_pcie_mmio_mem,
+                                  ثابت MemMapEntry *pcie_pio_mem,
+                                  صحيح pcie_irq)
 {
     DeviceState *dev;
     MemoryRegion *ecam_alias, *ecam_reg;
@@ -117,21 +117,21 @@ DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
 
     /* Set GPEX object properties for the virt machine */
     object_property_set_uint(OBJECT(dev), PCI_HOST_ECAM_BASE,
-                            ecam_base, NULL);
+                            ecam_base, عدم);
     object_property_set_int(OBJECT(dev), PCI_HOST_ECAM_SIZE,
-                            ecam_size, NULL);
+                            ecam_size, عدم);
     object_property_set_uint(OBJECT(dev), PCI_HOST_BELOW_4G_MMIO_BASE,
-                             mmio_base, NULL);
+                             mmio_base, عدم);
     object_property_set_int(OBJECT(dev), PCI_HOST_BELOW_4G_MMIO_SIZE,
-                            mmio_size, NULL);
+                            mmio_size, عدم);
     object_property_set_uint(OBJECT(dev), PCI_HOST_ABOVE_4G_MMIO_BASE,
-                             high_mmio_base, NULL);
+                             high_mmio_base, عدم);
     object_property_set_int(OBJECT(dev), PCI_HOST_ABOVE_4G_MMIO_SIZE,
-                            high_mmio_size, NULL);
+                            high_mmio_size, عدم);
     object_property_set_uint(OBJECT(dev), PCI_HOST_PIO_BASE,
-                            pio_base, NULL);
+                            pio_base, عدم);
     object_property_set_int(OBJECT(dev), PCI_HOST_PIO_SIZE,
-                            pio_size, NULL);
+                            pio_size, عدم);
 
     sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
 
@@ -156,7 +156,7 @@ DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
 
     sysbus_mmio_map(SYS_BUS_DEVICE(dev), 2, pio_base);
 
-    for (int i = 0; i < PCI_NUM_PINS; i++) {
+    עבור (صحيح i = 0; i < PCI_NUM_PINS; i++) {
         qemu_irq irq = qdev_get_gpio_in(irqchip, pcie_irq + i);
 
         sysbus_connect_irq(SYS_BUS_DEVICE(dev), i, irq);
@@ -164,5 +164,5 @@ DeviceState *riscv_gpex_pcie_init(MemoryRegion *sys_mem,
     }
 
     GPEX_HOST(dev)->gpex_cfg.bus = PCI_HOST_BRIDGE(dev)->bus;
-    return dev;
+    החזר dev;
 }
