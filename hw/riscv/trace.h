@@ -1,1 +1,1 @@
-#include "trace/trace-hw_riscv.h"
+#شامل "trace/trace-hw_riscv.h"

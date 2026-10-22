@@ -16,168 +16,168 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/units.h"
-#include "qemu/error-report.h"
-#include "qapi/error.h"
-#include "hw/core/boards.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/riscv/numa.h"
-#include "system/device_tree.h"
+#شامل "qemu/osdep.h"
+#شامل "qemu/units.h"
+#شامل "qemu/error-report.h"
+#شامل "qapi/error.h"
+#شامل "hw/core/boards.h"
+#شامل "hw/core/qdev-properties.h"
+#شامل "hw/riscv/numa.h"
+#شامل "system/device_tree.h"
 
-bool riscv_numa_enabled(const MachineState *ms)
+bool riscv_numa_enabled(ثابت MachineState *ms)
 {
-    return (ms->numa_state && ms->numa_state->num_nodes) ? true : false;
+    بازگشت (ms->numa_state && ms->numa_state->رقم_nodes) ? true : false;
 }
 
-int riscv_socket_count(const MachineState *ms)
+صحیح riscv_socket_شمار(ثابت MachineState *ms)
 {
-    return (riscv_numa_enabled(ms)) ? ms->numa_state->num_nodes : 1;
+    بازگشت (riscv_numa_enabled(ms)) ? ms->numa_state->رقم_nodes : 1;
 }
 
-int riscv_socket_first_hartid(const MachineState *ms, int socket_id)
+صحیح riscv_socket_first_hartid(ثابت MachineState *ms, صحیح socket_id)
 {
-    int i, first_hartid = ms->smp.cpus;
+    صحیح i, first_hartid = ms->smp.cpus;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? 0 : -1;
+    اگر (!riscv_numa_enabled(ms)) {
+        بازگشت (!socket_id) ? 0 : -1;
     }
 
-    for (i = 0; i < ms->smp.cpus; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
-            continue;
+    برای (i = 0; i < ms->smp.cpus; i++) {
+        اگر (ms->possible_cpus->cpus[i].props.گره_id != socket_id) {
+            ادامه;
         }
-        if (i < first_hartid) {
+        اگر (i < first_hartid) {
             first_hartid = i;
         }
     }
 
-    return (first_hartid < ms->smp.cpus) ? first_hartid : -1;
+    بازگشت (first_hartid < ms->smp.cpus) ? first_hartid : -1;
 }
 
-int riscv_socket_last_hartid(const MachineState *ms, int socket_id)
+صحیح riscv_socket_last_hartid(ثابت MachineState *ms, صحیح socket_id)
 {
-    int i, last_hartid = -1;
+    صحیح i, last_hartid = -1;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->smp.cpus - 1 : -1;
+    اگر (!riscv_numa_enabled(ms)) {
+        بازگشت (!socket_id) ? ms->smp.cpus - 1 : -1;
     }
 
-    for (i = 0; i < ms->smp.cpus; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
-            continue;
+    برای (i = 0; i < ms->smp.cpus; i++) {
+        اگر (ms->possible_cpus->cpus[i].props.گره_id != socket_id) {
+            ادامه;
         }
-        if (i > last_hartid) {
+        اگر (i > last_hartid) {
             last_hartid = i;
         }
     }
 
-    return (last_hartid < ms->smp.cpus) ? last_hartid : -1;
+    بازگشت (last_hartid < ms->smp.cpus) ? last_hartid : -1;
 }
 
-int riscv_socket_hart_count(const MachineState *ms, int socket_id)
+صحیح riscv_socket_hart_شمار(ثابت MachineState *ms, صحیح socket_id)
 {
-    int first_hartid, last_hartid;
+    صحیح first_hartid, last_hartid;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->smp.cpus : -1;
+    اگر (!riscv_numa_enabled(ms)) {
+        بازگشت (!socket_id) ? ms->smp.cpus : -1;
     }
 
     first_hartid = riscv_socket_first_hartid(ms, socket_id);
-    if (first_hartid < 0) {
-        return -1;
+    اگر (first_hartid < 0) {
+        بازگشت -1;
     }
 
     last_hartid = riscv_socket_last_hartid(ms, socket_id);
-    if (last_hartid < 0) {
-        return -1;
+    اگر (last_hartid < 0) {
+        بازگشت -1;
     }
 
-    if (first_hartid > last_hartid) {
-        return -1;
+    اگر (first_hartid > last_hartid) {
+        بازگشت -1;
     }
 
-    return last_hartid - first_hartid + 1;
+    بازگشت last_hartid - first_hartid + 1;
 }
 
-bool riscv_socket_check_hartids(const MachineState *ms, int socket_id)
+bool riscv_socket_check_hartids(ثابت MachineState *ms, صحیح socket_id)
 {
-    int i, first_hartid, last_hartid;
+    صحیح i, first_hartid, last_hartid;
 
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? true : false;
+    اگر (!riscv_numa_enabled(ms)) {
+        بازگشت (!socket_id) ? true : false;
     }
 
     first_hartid = riscv_socket_first_hartid(ms, socket_id);
-    if (first_hartid < 0) {
-        return false;
+    اگر (first_hartid < 0) {
+        بازگشت false;
     }
 
     last_hartid = riscv_socket_last_hartid(ms, socket_id);
-    if (last_hartid < 0) {
-        return false;
+    اگر (last_hartid < 0) {
+        بازگشت false;
     }
 
-    for (i = first_hartid; i <= last_hartid; i++) {
-        if (ms->possible_cpus->cpus[i].props.node_id != socket_id) {
-            return false;
+    برای (i = first_hartid; i <= last_hartid; i++) {
+        اگر (ms->possible_cpus->cpus[i].props.گره_id != socket_id) {
+            بازگشت false;
         }
     }
 
-    return true;
+    بازگشت true;
 }
 
-uint64_t riscv_socket_mem_offset(const MachineState *ms, int socket_id)
+uint64_t riscv_socket_mem_offset(ثابت MachineState *ms, صحیح socket_id)
 {
-    int i;
+    صحیح i;
     uint64_t mem_offset = 0;
 
-    if (!riscv_numa_enabled(ms)) {
-        return 0;
+    اگر (!riscv_numa_enabled(ms)) {
+        بازگشت 0;
     }
 
-    for (i = 0; i < ms->numa_state->num_nodes; i++) {
-        if (i == socket_id) {
-            break;
+    برای (i = 0; i < ms->numa_state->رقم_nodes; i++) {
+        اگر (i == socket_id) {
+            بشکن;
         }
-        mem_offset += ms->numa_state->nodes[i].node_mem;
+        mem_offset += ms->numa_state->nodes[i].گره_mem;
     }
 
-    return (i == socket_id) ? mem_offset : 0;
+    بازگشت (i == socket_id) ? mem_offset : 0;
 }
 
-uint64_t riscv_socket_mem_size(const MachineState *ms, int socket_id)
+uint64_t riscv_socket_mem_size(ثابت MachineState *ms, صحیح socket_id)
 {
-    if (!riscv_numa_enabled(ms)) {
-        return (!socket_id) ? ms->ram_size : 0;
+    اگر (!riscv_numa_enabled(ms)) {
+        بازگشت (!socket_id) ? ms->ram_size : 0;
     }
 
-    return (socket_id < ms->numa_state->num_nodes) ?
-            ms->numa_state->nodes[socket_id].node_mem : 0;
+    بازگشت (socket_id < ms->numa_state->رقم_nodes) ?
+            ms->numa_state->nodes[socket_id].گره_mem : 0;
 }
 
-void riscv_socket_fdt_write_id(const MachineState *ms, const char *node_name,
-                               int socket_id)
+تهی riscv_socket_fdt_write_id(ثابت MachineState *ms, ثابت نویسه *گره_name,
+                               صحیح socket_id)
 {
-    if (riscv_numa_enabled(ms)) {
-        qemu_fdt_setprop_cell(ms->fdt, node_name, "numa-node-id", socket_id);
+    اگر (riscv_numa_enabled(ms)) {
+        qemu_fdt_setprop_cell(ms->fdt, گره_name, "numa-node-id", socket_id);
     }
 }
 
-void riscv_socket_fdt_write_distance_matrix(const MachineState *ms)
+تهی riscv_socket_fdt_write_distance_matrix(ثابت MachineState *ms)
 {
-    int i, j, idx;
-    g_autofree uint32_t *dist_matrix = NULL;
+    صحیح i, j, idx;
+    g_autofree uint32_t *dist_matrix = پوچ;
     uint32_t dist_matrix_size;
 
-    if (riscv_numa_enabled(ms) && ms->numa_state->have_numa_distance) {
-        dist_matrix_size = riscv_socket_count(ms) * riscv_socket_count(ms);
-        dist_matrix_size *= (3 * sizeof(uint32_t));
+    اگر (riscv_numa_enabled(ms) && ms->numa_state->have_numa_distance) {
+        dist_matrix_size = riscv_socket_شمار(ms) * riscv_socket_شمار(ms);
+        dist_matrix_size *= (3 * اندازه(uint32_t));
         dist_matrix = g_malloc0(dist_matrix_size);
 
-        for (i = 0; i < riscv_socket_count(ms); i++) {
-            for (j = 0; j < riscv_socket_count(ms); j++) {
-                idx = (i * riscv_socket_count(ms) + j) * 3;
+        برای (i = 0; i < riscv_socket_شمار(ms); i++) {
+            برای (j = 0; j < riscv_socket_شمار(ms); j++) {
+                idx = (i * riscv_socket_شمار(ms) + j) * 3;
                 dist_matrix[idx + 0] = cpu_to_be32(i);
                 dist_matrix[idx + 1] = cpu_to_be32(j);
                 dist_matrix[idx + 2] =
@@ -197,46 +197,46 @@ CpuInstanceProperties
 riscv_numa_cpu_index_to_props(MachineState *ms, unsigned cpu_index)
 {
     MachineClass *mc = MACHINE_GET_CLASS(ms);
-    const CPUArchIdList *possible_cpus = mc->possible_cpu_arch_ids(ms);
+    ثابت CPUArchIdList *possible_cpus = mc->possible_cpu_arch_ids(ms);
 
-    assert(cpu_index < possible_cpus->len);
-    return possible_cpus->cpus[cpu_index].props;
+    أكد(cpu_index < possible_cpus->len);
+    بازگشت possible_cpus->cpus[cpu_index].props;
 }
 
-int64_t riscv_numa_get_default_cpu_node_id(const MachineState *ms, int idx)
+int64_t riscv_numa_get_default_cpu_گره_id(ثابت MachineState *ms, صحیح idx)
 {
     int64_t nidx = 0;
 
-    if (ms->numa_state->num_nodes > ms->smp.cpus) {
+    اگر (ms->numa_state->رقم_nodes > ms->smp.cpus) {
         error_report("Number of NUMA nodes (%d)"
                      " cannot exceed the number of available CPUs (%u).",
-                     ms->numa_state->num_nodes, ms->smp.cpus);
+                     ms->numa_state->رقم_nodes, ms->smp.cpus);
         exit(EXIT_FAILURE);
     }
-    if (ms->numa_state->num_nodes) {
-        nidx = idx / (ms->smp.cpus / ms->numa_state->num_nodes);
-        if (ms->numa_state->num_nodes <= nidx) {
-            nidx = ms->numa_state->num_nodes - 1;
+    اگر (ms->numa_state->رقم_nodes) {
+        nidx = idx / (ms->smp.cpus / ms->numa_state->رقم_nodes);
+        اگر (ms->numa_state->رقم_nodes <= nidx) {
+            nidx = ms->numa_state->رقم_nodes - 1;
         }
     }
 
-    return nidx;
+    بازگشت nidx;
 }
 
-const CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
+ثابت CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
 {
-    int n;
-    unsigned int max_cpus = ms->smp.max_cpus;
+    صحیح n;
+    unsigned صحیح max_cpus = ms->smp.max_cpus;
 
-    if (ms->possible_cpus) {
-        assert(ms->possible_cpus->len == max_cpus);
-        return ms->possible_cpus;
+    اگر (ms->possible_cpus) {
+        أكد(ms->possible_cpus->len == max_cpus);
+        بازگشت ms->possible_cpus;
     }
 
-    ms->possible_cpus = g_malloc0(sizeof(CPUArchIdList) +
-                                  sizeof(CPUArchId) * max_cpus);
+    ms->possible_cpus = g_malloc0(اندازه(CPUArchIdList) +
+                                  اندازه(CPUArchId) * max_cpus);
     ms->possible_cpus->len = max_cpus;
-    for (n = 0; n < ms->possible_cpus->len; n++) {
+    برای (n = 0; n < ms->possible_cpus->len; n++) {
         ms->possible_cpus->cpus[n].type = ms->cpu_type;
         ms->possible_cpus->cpus[n].arch_id = n;
         ms->possible_cpus->cpus[n].props.has_socket_id = true;
@@ -253,5 +253,5 @@ const CPUArchIdList *riscv_numa_possible_cpu_arch_ids(MachineState *ms)
             n % ms->smp.threads;
     }
 
-    return ms->possible_cpus;
+    بازگشت ms->possible_cpus;
 }

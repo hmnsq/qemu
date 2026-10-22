@@ -17,61 +17,61 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/bswap.h"
-#include "qemu/datadir.h"
-#include "qemu/units.h"
-#include "qemu/error-report.h"
-#include "exec/cpu-defs.h"
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/riscv/boot.h"
-#include "hw/riscv/boot_opensbi.h"
-#include "elf.h"
-#include "system/device_tree.h"
-#include "system/qtest.h"
-#include "system/kvm.h"
-#include "system/reset.h"
+#شامل "qemu/osdep.h"
+#شامل "qemu/bswap.h"
+#شامل "qemu/datadir.h"
+#شامل "qemu/units.h"
+#شامل "qemu/error-report.h"
+#شامل "exec/cpu-defs.h"
+#شامل "hw/core/boards.h"
+#شامل "hw/core/loader.h"
+#شامل "hw/riscv/boot.h"
+#شامل "hw/riscv/boot_opensbi.h"
+#شامل "elf.h"
+#شامل "system/device_tree.h"
+#شامل "system/qtest.h"
+#شامل "system/kvm.h"
+#شامل "system/reset.h"
 
-#include <libfdt.h>
+#شامل <libfdt.h>
 
 bool riscv_is_32bit(RISCVHartArrayState *harts)
 {
     RISCVCPUClass *mcc = RISCV_CPU_GET_CLASS(&harts->harts[0]);
-    return mcc->def->misa_mxl_max == MXL_RV32;
+    بازگشت mcc->def->misa_mxl_max == MXL_RV32;
 }
 
 /*
  * Return the per-socket PLIC hart topology configuration string
  * (caller must free with g_free())
  */
-char *riscv_plic_hart_config_string(int hart_count)
+نویسه *riscv_plic_hart_config_string(صحیح hart_شمار)
 {
-    g_autofree const char **vals = g_new(const char *, hart_count + 1);
-    int i;
+    g_autofree ثابت نویسه **vals = g_new(ثابت نویسه *, hart_شمار + 1);
+    صحیح i;
 
-    for (i = 0; i < hart_count; i++) {
+    برای (i = 0; i < hart_شمار; i++) {
         CPUState *cs = qemu_get_cpu(i);
         CPURISCVState *env = &RISCV_CPU(cs)->env;
 
-        if (kvm_enabled()) {
+        اگر (kvm_enabled()) {
             vals[i] = "S";
-        } else if (riscv_has_ext(env, RVS)) {
+        } وگرنه اگر (riscv_has_ext(env, RVS)) {
             vals[i] = "MS";
-        } else {
+        } وگرنه {
             vals[i] = "M";
         }
     }
-    vals[i] = NULL;
+    vals[i] = پوچ;
 
     /* g_strjoinv() obliges us to cast away const here */
-    return g_strjoinv(",", (char **)vals);
+    بازگشت g_strjoinv(",", (نویسه **)vals);
 }
 
-void riscv_boot_info_init(RISCVBootInfo *info, RISCVHartArrayState *harts)
+تهی riscv_boot_info_init(RISCVBootInfo *info, RISCVHartArrayState *harts)
 {
-    info->ram_low_start = 0;
-    info->ram_low_size = 0;
+    info->ram_کم_start = 0;
+    info->ram_کم_size = 0;
     info->kernel_size = 0;
     info->initrd_size = 0;
     info->is_32bit = riscv_is_32bit(harts);
@@ -82,40 +82,40 @@ void riscv_boot_info_init(RISCVBootInfo *info, RISCVHartArrayState *harts)
  * discontiguous physical memory. The low memory range specified will be
  * used to place firmware images.
  */
-void riscv_boot_info_init_discontig_mem(RISCVBootInfo *info,
+تهی riscv_boot_info_init_discontig_mem(RISCVBootInfo *info,
                                         RISCVHartArrayState *harts,
-                                        hwaddr low_start, hwaddr low_size)
+                                        hwaddr کم_start, hwaddr کم_size)
 {
     riscv_boot_info_init(info, harts);
-    info->ram_low_start = low_start;
-    info->ram_low_size = low_size;
+    info->ram_کم_start = کم_start;
+    info->ram_کم_size = کم_size;
 }
 
-vaddr riscv_calc_kernel_start_addr(const RISCVBootInfo *info,
+vaddr riscv_calc_kernel_start_addr(ثابت RISCVBootInfo *info,
                                    hwaddr firmware_end_addr) {
-    if (info->is_32bit) {
-        return QEMU_ALIGN_UP(firmware_end_addr, 4 * MiB);
-    } else {
-        return QEMU_ALIGN_UP(firmware_end_addr, 2 * MiB);
+    اگر (info->is_32bit) {
+        بازگشت QEMU_ALIGN_UP(firmware_end_addr, 4 * MiB);
+    } وگرنه {
+        بازگشت QEMU_ALIGN_UP(firmware_end_addr, 2 * MiB);
     }
 }
 
-const char *riscv_default_firmware_name(RISCVHartArrayState *harts)
+ثابت نویسه *riscv_default_firmware_name(RISCVHartArrayState *harts)
 {
-    if (riscv_is_32bit(harts)) {
-        return RISCV32_BIOS_BIN;
+    اگر (riscv_is_32bit(harts)) {
+        بازگشت RISCV32_BIOS_BIN;
     }
 
-    return RISCV64_BIOS_BIN;
+    بازگشت RISCV64_BIOS_BIN;
 }
 
-static char *riscv_find_bios(const char *bios_filename)
+ایستا نویسه *riscv_find_bios(ثابت نویسه *bios_filename)
 {
-    char *filename;
+    نویسه *filename;
 
     filename = qemu_find_file(QEMU_FILE_TYPE_BIOS, bios_filename);
-    if (filename == NULL) {
-        if (!qtest_enabled()) {
+    اگر (filename == پوچ) {
+        اگر (!qtest_enabled()) {
             /*
              * We only ship OpenSBI binary bios images in the QEMU source.
              * For machines that use images other than the default bios,
@@ -128,41 +128,41 @@ static char *riscv_find_bios(const char *bios_filename)
         }
     }
 
-    return filename;
+    بازگشت filename;
 }
 
-char *riscv_find_firmware(const char *firmware_filename,
-                          const char *default_machine_firmware)
+نویسه *riscv_find_firmware(ثابت نویسه *firmware_filename,
+                          ثابت نویسه *default_machine_firmware)
 {
-    char *filename = NULL;
+    نویسه *filename = پوچ;
 
-    if ((!firmware_filename) || (!strcmp(firmware_filename, "default"))) {
+    اگر ((!firmware_filename) || (!strcmp(firmware_filename, "default"))) {
         /*
          * The user didn't specify -bios, or has specified "-bios default".
          * That means we are going to load the OpenSBI binary included in
          * the QEMU source.
          */
         filename = riscv_find_bios(default_machine_firmware);
-    } else if (strcmp(firmware_filename, "none")) {
+    } وگرنه اگر (strcmp(firmware_filename, "none")) {
         filename = riscv_find_bios(firmware_filename);
     }
 
-    return filename;
+    بازگشت filename;
 }
 
 hwaddr riscv_find_and_load_firmware(MachineState *machine,
-                                    const RISCVBootInfo *info,
-                                    const char *default_machine_firmware,
+                                    ثابت RISCVBootInfo *info,
+                                    ثابت نویسه *default_machine_firmware,
                                     hwaddr *firmware_load_addr,
-                                    symbol_fn_t sym_cb)
+                                    نماد_fn_t sym_cb)
 {
-    char *firmware_filename;
+    نویسه *firmware_filename;
     hwaddr firmware_end_addr = *firmware_load_addr;
 
     firmware_filename = riscv_find_firmware(machine->firmware,
                                             default_machine_firmware);
 
-    if (firmware_filename) {
+    اگر (firmware_filename) {
         /* If not "none" load the firmware */
         firmware_end_addr = riscv_load_firmware(machine, info,
                                                 firmware_filename,
@@ -170,31 +170,31 @@ hwaddr riscv_find_and_load_firmware(MachineState *machine,
         g_free(firmware_filename);
     }
 
-    return firmware_end_addr;
+    بازگشت firmware_end_addr;
 }
 
 hwaddr riscv_load_firmware(MachineState *machine,
-                           const RISCVBootInfo *info,
-                           const char *firmware_filename,
+                           ثابت RISCVBootInfo *info,
+                           ثابت نویسه *firmware_filename,
                            hwaddr *firmware_load_addr,
-                           symbol_fn_t sym_cb)
+                           نماد_fn_t sym_cb)
 {
-    uint64_t mem_size = info->ram_low_size ?: machine->ram_size;
+    uint64_t mem_size = info->ram_کم_size ?: machine->ram_size;
     uint64_t firmware_entry, firmware_end;
     ssize_t firmware_size;
 
-    g_assert(firmware_filename != NULL);
+    g_assert(firmware_filename != پوچ);
 
-    firmware_size = load_elf_ram_sym(firmware_filename, NULL, NULL, NULL,
-                                     &firmware_entry, NULL, &firmware_end,
-                                     NULL, 0, EM_RISCV, 1, 0, NULL, false,
+    firmware_size = load_elf_ram_sym(firmware_filename, پوچ, پوچ, پوچ,
+                                     &firmware_entry, پوچ, &firmware_end,
+                                     پوچ, 0, EM_RISCV, 1, 0, پوچ, false,
                                      sym_cb);
-    if (firmware_size > 0) {
+    اگر (firmware_size > 0) {
         *firmware_load_addr = firmware_entry;
-        return firmware_end;
+        بازگشت firmware_end;
     }
 
-    if (firmware_size != ELF_LOAD_NOT_ELF) {
+    اگر (firmware_size != ELF_LOAD_NOT_ELF) {
         /*
          * If the user specified an ELF format firmware that could not be
          * loaded as an ELF, it's possible that loading it as a binary is
@@ -208,11 +208,11 @@ hwaddr riscv_load_firmware(MachineState *machine,
 
     firmware_size = load_image_targphys_as(firmware_filename,
                                            *firmware_load_addr,
-                                           mem_size, NULL,
-                                           NULL);
+                                           mem_size, پوچ,
+                                           پوچ);
 
-    if (firmware_size > 0) {
-        return *firmware_load_addr + firmware_size;
+    اگر (firmware_size > 0) {
+        بازگشت *firmware_load_addr + firmware_size;
     }
 
     error_report("could not load firmware '%s': %s", firmware_filename,
@@ -220,15 +220,15 @@ hwaddr riscv_load_firmware(MachineState *machine,
     exit(1);
 }
 
-static void riscv_load_initrd(MachineState *machine, RISCVBootInfo *info)
+ایستا تهی riscv_load_initrd(MachineState *machine, RISCVBootInfo *info)
 {
-    const char *filename = machine->initrd_filename;
-    uint64_t mem_size = info->ram_low_size ?: machine->ram_size;
-    void *fdt = machine->fdt;
+    ثابت نویسه *filename = machine->initrd_filename;
+    uint64_t mem_size = info->ram_کم_size ?: machine->ram_size;
+    تهی *fdt = machine->fdt;
     hwaddr start, end;
     ssize_t size;
 
-    g_assert(filename != NULL);
+    g_assert(filename != پوچ);
 
     /*
      * We want to put the initrd far enough into RAM that when the
@@ -241,12 +241,12 @@ static void riscv_load_initrd(MachineState *machine, RISCVBootInfo *info)
      * halfway into RAM, and for boards with 1GB of RAM or more we put
      * the initrd at 512MB.
      */
-    start = info->image_low_addr + MIN(mem_size / 2, 512 * MiB);
+    start = info->image_کم_addr + MIN(mem_size / 2, 512 * MiB);
 
     size = load_ramdisk(filename, start, mem_size - start);
-    if (size == -1) {
-        size = load_image_targphys(filename, start, mem_size - start, NULL);
-        if (size == -1) {
+    اگر (size == -1) {
+        size = load_image_targphys(filename, start, mem_size - start, پوچ);
+        اگر (size == -1) {
             error_report("could not load ramdisk '%s'", filename);
             exit(1);
         }
@@ -256,25 +256,25 @@ static void riscv_load_initrd(MachineState *machine, RISCVBootInfo *info)
     info->initrd_size = size;
 
     /* Some RISC-V machines (e.g. opentitan) don't have a fdt. */
-    if (fdt) {
+    اگر (fdt) {
         end = start + size;
         qemu_fdt_setprop_u64(fdt, "/chosen", "linux,initrd-start", start);
         qemu_fdt_setprop_u64(fdt, "/chosen", "linux,initrd-end", end);
     }
 }
 
-void riscv_load_kernel(MachineState *machine,
+تهی riscv_load_kernel(MachineState *machine,
                        RISCVBootInfo *info,
                        vaddr kernel_start_addr,
                        bool load_initrd,
-                       symbol_fn_t sym_cb)
+                       نماد_fn_t sym_cb)
 {
-    uint64_t mem_size = info->ram_low_size ?: machine->ram_size;
-    const char *kernel_filename = machine->kernel_filename;
+    uint64_t mem_size = info->ram_کم_size ?: machine->ram_size;
+    ثابت نویسه *kernel_filename = machine->kernel_filename;
     ssize_t kernel_size;
-    void *fdt = machine->fdt;
+    تهی *fdt = machine->fdt;
 
-    g_assert(kernel_filename != NULL);
+    g_assert(kernel_filename != پوچ);
 
     /*
      * NB: Use low address not ELF entry point to ensure that the fw_dynamic
@@ -283,30 +283,30 @@ void riscv_load_kernel(MachineState *machine,
      * the (expected) load address load address. This allows kernels to have
      * separate SBI and ELF entry points (used by FreeBSD, for example).
      */
-    kernel_size = load_elf_ram_sym(kernel_filename, NULL, NULL, NULL, NULL,
-                                   &info->image_low_addr, &info->image_high_addr,
-                                   NULL, ELFDATA2LSB, EM_RISCV,
-                                   1, 0, NULL, true, sym_cb);
-    if (kernel_size > 0) {
+    kernel_size = load_elf_ram_sym(kernel_filename, پوچ, پوچ, پوچ, پوچ,
+                                   &info->image_کم_addr, &info->image_بالا_addr,
+                                   پوچ, ELFDATA2LSB, EM_RISCV,
+                                   1, 0, پوچ, true, sym_cb);
+    اگر (kernel_size > 0) {
         info->kernel_size = kernel_size;
-        goto out;
+        برو out;
     }
 
-    kernel_size = load_uimage_as(kernel_filename, &info->image_low_addr,
-                                 NULL, NULL, NULL, NULL, NULL);
-    if (kernel_size > 0) {
+    kernel_size = load_uimage_as(kernel_filename, &info->image_کم_addr,
+                                 پوچ, پوچ, پوچ, پوچ, پوچ);
+    اگر (kernel_size > 0) {
         info->kernel_size = kernel_size;
-        info->image_high_addr = info->image_low_addr + kernel_size;
-        goto out;
+        info->image_بالا_addr = info->image_کم_addr + kernel_size;
+        برو out;
     }
 
     kernel_size = load_image_targphys_as(kernel_filename, kernel_start_addr,
-                                         mem_size, NULL, NULL);
-    if (kernel_size > 0) {
+                                         mem_size, پوچ, پوچ);
+    اگر (kernel_size > 0) {
         info->kernel_size = kernel_size;
-        info->image_low_addr = kernel_start_addr;
-        info->image_high_addr = info->image_low_addr + kernel_size;
-        goto out;
+        info->image_کم_addr = kernel_start_addr;
+        info->image_بالا_addr = info->image_کم_addr + kernel_size;
+        برو out;
     }
 
     error_report("could not load kernel '%s'", kernel_filename);
@@ -317,15 +317,15 @@ out:
      * For 32 bit CPUs 'image_low_addr' can be sign-extended by
      * load_elf_ram_sym().
      */
-    if (info->is_32bit) {
-        info->image_low_addr = extract64(info->image_low_addr, 0, 32);
+    اگر (info->is_32bit) {
+        info->image_کم_addr = extract64(info->image_کم_addr, 0, 32);
     }
 
-    if (load_initrd && machine->initrd_filename) {
+    اگر (load_initrd && machine->initrd_filename) {
         riscv_load_initrd(machine, info);
     }
 
-    if (fdt && machine->kernel_cmdline && *machine->kernel_cmdline) {
+    اگر (fdt && machine->kernel_cmdline && *machine->kernel_cmdline) {
         qemu_fdt_setprop_string(fdt, "/chosen", "bootargs",
                                 machine->kernel_cmdline);
     }
@@ -348,29 +348,29 @@ out:
  * The FDT is fdt_packed() during the calculation.
  */
 uint64_t riscv_compute_fdt_addr(hwaddr dram_base, hwaddr dram_size,
-                                MachineState *ms, const RISCVBootInfo *info)
+                                MachineState *ms, ثابت RISCVBootInfo *info)
 {
-    int ret = fdt_pack(ms->fdt);
+    صحیح ret = fdt_pack(ms->fdt);
     hwaddr dram_end, temp;
-    int fdtsize;
+    صحیح fdtsize;
     uint64_t dtb_start, dtb_start_limit;
 
     /* Should only fail if we've built a corrupted tree */
     g_assert(ret == 0);
 
     fdtsize = fdt_totalsize(ms->fdt);
-    if (fdtsize <= 0) {
+    اگر (fdtsize <= 0) {
         error_report("invalid device-tree");
         exit(1);
     }
 
-    if (info->initrd_size) {
+    اگر (info->initrd_size) {
         /* If initrd is successfully loaded, place DTB after it. */
         dtb_start_limit = info->initrd_start + info->initrd_size;
-    } else if (info->kernel_size) {
+    } وگرنه اگر (info->kernel_size) {
         /* If only kernel is successfully loaded, place DTB after it. */
-        dtb_start_limit = info->image_high_addr;
-    } else {
+        dtb_start_limit = info->image_بالا_addr;
+    } وگرنه {
         /* Otherwise, do not check DTB overlapping */
         dtb_start_limit = 0;
     }
@@ -388,27 +388,27 @@ uint64_t riscv_compute_fdt_addr(hwaddr dram_base, hwaddr dram_size,
      * Thus, put it near to the end of dram in RV64, and put it near to the end
      * of dram or 3GB whichever is lesser in RV32.
      */
-    if (!info->is_32bit) {
+    اگر (!info->is_32bit) {
         temp = dram_end;
-    } else {
+    } وگرنه {
         temp = (dram_base < 3072 * MiB) ? MIN(dram_end, 3072 * MiB) : dram_end;
     }
 
     dtb_start = QEMU_ALIGN_DOWN(temp - fdtsize, 2 * MiB);
 
-    if (dtb_start_limit && (dtb_start < dtb_start_limit)) {
+    اگر (dtb_start_limit && (dtb_start < dtb_start_limit)) {
         error_report("Not enough memory to place DTB after kernel/initrd");
         exit(1);
     }
 
-    return dtb_start;
+    بازگشت dtb_start;
 }
 
 /*
  * 'fdt_addr' is received as hwaddr because boards might put
  * the FDT beyond 32-bit addressing boundary.
  */
-void riscv_load_fdt(hwaddr fdt_addr, void *fdt)
+تهی riscv_load_fdt(hwaddr fdt_addr, تهی *fdt)
 {
     uint32_t fdtsize = fdt_totalsize(fdt);
 
@@ -419,22 +419,22 @@ void riscv_load_fdt(hwaddr fdt_addr, void *fdt)
                         rom_ptr_for_as(&address_space_memory, fdt_addr, fdtsize));
 }
 
-void riscv_rom_copy_firmware_info(MachineState *machine,
+تهی riscv_rom_copy_firmware_info(MachineState *machine,
                                   RISCVHartArrayState *harts,
                                   hwaddr rom_base, hwaddr rom_size,
                                   uint32_t reset_vec_size,
                                   uint64_t kernel_entry)
 {
-    struct fw_dynamic_info32 dinfo32;
-    struct fw_dynamic_info64 dinfo64;
-    void *dinfo_ptr = NULL;
+    ساختار fw_dynamic_info32 dinfo32;
+    ساختار fw_dynamic_info64 dinfo64;
+    تهی *dinfo_ptr = پوچ;
     size_t dinfo_len;
-    const bool rv32 = riscv_is_32bit(harts);
-    const bool be = harts->harts[0].cfg.big_endian;
+    ثابت bool rv32 = riscv_is_32bit(harts);
+    ثابت bool be = harts->harts[0].cfg.big_endian;
 
-    if (rv32) {
-        dinfo32.magic = be ? cpu_to_be32(FW_DYNAMIC_INFO_MAGIC_VALUE)
-                           : cpu_to_le32(FW_DYNAMIC_INFO_MAGIC_VALUE);
+    اگر (rv32) {
+        dinfo32.magic = be ? cpu_to_be32(FW_DYNAMIC_INFO_MAGIC_مقدار)
+                           : cpu_to_le32(FW_DYNAMIC_INFO_MAGIC_مقدار);
         dinfo32.version = be ? cpu_to_be32(FW_DYNAMIC_INFO_VERSION)
                              : cpu_to_le32(FW_DYNAMIC_INFO_VERSION);
         dinfo32.next_mode = be ? cpu_to_be32(FW_DYNAMIC_INFO_NEXT_MODE_S)
@@ -444,10 +444,10 @@ void riscv_rom_copy_firmware_info(MachineState *machine,
         dinfo32.options = 0;
         dinfo32.boot_hart = 0;
         dinfo_ptr = &dinfo32;
-        dinfo_len = sizeof(dinfo32);
-    } else {
-        dinfo64.magic = be ? cpu_to_be64(FW_DYNAMIC_INFO_MAGIC_VALUE)
-                           : cpu_to_le64(FW_DYNAMIC_INFO_MAGIC_VALUE);
+        dinfo_len = اندازه(dinfo32);
+    } وگرنه {
+        dinfo64.magic = be ? cpu_to_be64(FW_DYNAMIC_INFO_MAGIC_مقدار)
+                           : cpu_to_le64(FW_DYNAMIC_INFO_MAGIC_مقدار);
         dinfo64.version = be ? cpu_to_be64(FW_DYNAMIC_INFO_VERSION)
                              : cpu_to_le64(FW_DYNAMIC_INFO_VERSION);
         dinfo64.next_mode = be ? cpu_to_be64(FW_DYNAMIC_INFO_NEXT_MODE_S)
@@ -457,7 +457,7 @@ void riscv_rom_copy_firmware_info(MachineState *machine,
         dinfo64.options = 0;
         dinfo64.boot_hart = 0;
         dinfo_ptr = &dinfo64;
-        dinfo_len = sizeof(dinfo64);
+        dinfo_len = اندازه(dinfo64);
     }
 
     /**
@@ -465,7 +465,7 @@ void riscv_rom_copy_firmware_info(MachineState *machine,
      * OpenSBI but doesn't break any other firmware as long as they don't
      * expect any certain value in "a2" register.
      */
-    if (dinfo_len > (rom_size - reset_vec_size)) {
+    اگر (dinfo_len > (rom_size - reset_vec_size)) {
         error_report("not enough space to store dynamic firmware info");
         exit(1);
     }
@@ -477,26 +477,26 @@ void riscv_rom_copy_firmware_info(MachineState *machine,
                            &address_space_memory);
 }
 
-#define CODE_WORDS 6
-#define DATA_WORDS 4
+#define CODE_واژگان 6
+#define DATA_واژگان 4
 
-void riscv_setup_rom_reset_vec(MachineState *machine, RISCVHartArrayState *harts,
+تهی riscv_setup_rom_reset_vec(MachineState *machine, RISCVHartArrayState *harts,
                                hwaddr start_addr,
                                hwaddr rom_base, hwaddr rom_size,
                                uint64_t kernel_entry,
                                uint64_t fdt_load_addr)
 {
-    const bool rv32 = riscv_is_32bit(harts);
-    const bool big_endian = harts->harts[0].cfg.big_endian;
-    uint32_t reset_vec[CODE_WORDS + DATA_WORDS];
+    ثابت bool rv32 = riscv_is_32bit(harts);
+    ثابت bool big_endian = harts->harts[0].cfg.big_endian;
+    uint32_t reset_vec[CODE_واژگان + DATA_واژگان];
 
     /* .text (RISC-V instructions are always little-endian) */
     reset_vec[0] = const_le32(0x00000297);      /* 1:  auipc  t0, %pcrel_hi(fw_dyn) */
     reset_vec[1] = const_le32(0x02828613);      /*     addi   a2, t0, %pcrel_lo(1b) */
     reset_vec[2] = const_le32(0xf1402573);      /*     csrr   a0, mhartid  */
-    if (harts->harts[0].cfg.ext_zicsr) {
+    اگر (harts->harts[0].cfg.ext_zicsr) {
         reset_vec[2] = const_le32(0xf1402573);  /*     csrr   a0, mhartid  */
-    } else {
+    } وگرنه {
         /*
          * The Zicsr extension has been disabled, so let's ensure we don't
          * run the CSR instruction. Let's fill the address with a non
@@ -504,33 +504,33 @@ void riscv_setup_rom_reset_vec(MachineState *machine, RISCVHartArrayState *harts
          */
         reset_vec[2] = const_le32(0x00000013);  /*     addi   x0, x0, 0 */
     }
-    if (rv32) {
+    اگر (rv32) {
         reset_vec[3] = const_le32(0x0202a583);  /*     lw     a1, 32(t0) */
         reset_vec[4] = const_le32(0x0182a283);  /*     lw     t0, 24(t0) */
-    } else {
+    } وگرنه {
         reset_vec[3] = const_le32(0x0202b583);  /*     ld     a1, 32(t0) */
         reset_vec[4] = const_le32(0x0182b283);  /*     ld     t0, 24(t0) */
     }
     reset_vec[5] = const_le32(0x00028067);      /*     jr     t0 */
 
     /* .data (must match the firmware's data endianness) */
-    if (big_endian) {
+    اگر (big_endian) {
         stq_be_p(&reset_vec[6], start_addr);    /* start:       .dword */
         stq_be_p(&reset_vec[8], fdt_load_addr); /* fdt_laddr:   .dword */
-    } else {
+    } وگرنه {
         stq_le_p(&reset_vec[6], start_addr);
         stq_le_p(&reset_vec[8], fdt_load_addr);
     }
 
-    rom_add_blob_fixed_as("mrom.reset", reset_vec, sizeof(reset_vec),
+    rom_add_blob_fixed_as("mrom.reset", reset_vec, اندازه(reset_vec),
                           rom_base, &address_space_memory);
     riscv_rom_copy_firmware_info(machine, harts,
                                  rom_base, rom_size,
-                                 sizeof(reset_vec),
+                                 اندازه(reset_vec),
                                  kernel_entry);
 }
 
-void riscv_setup_direct_kernel(hwaddr kernel_addr, hwaddr fdt_addr)
+تهی riscv_setup_direct_kernel(hwaddr kernel_addr, hwaddr fdt_addr)
 {
     CPUState *cs;
 
@@ -542,13 +542,13 @@ void riscv_setup_direct_kernel(hwaddr kernel_addr, hwaddr fdt_addr)
     }
 }
 
-void riscv_setup_firmware_boot(MachineState *machine)
+تهی riscv_setup_firmware_boot(MachineState *machine)
 {
-    if (machine->kernel_filename) {
+    اگر (machine->kernel_filename) {
         FWCfgState *fw_cfg;
         fw_cfg = fw_cfg_find();
 
-        assert(fw_cfg);
+        أكد(fw_cfg);
         /*
          * Expose the kernel, the command line, and the initrd in fw_cfg.
          * We don't process them here at all, it's all left to the
@@ -562,7 +562,7 @@ void riscv_setup_firmware_boot(MachineState *machine)
                              FW_CFG_INITRD_SIZE, FW_CFG_INITRD_DATA,
                              machine->initrd_filename, false);
 
-        if (machine->kernel_cmdline) {
+        اگر (machine->kernel_cmdline) {
             fw_cfg_add_i32(fw_cfg, FW_CFG_CMDLINE_SIZE,
                            strlen(machine->kernel_cmdline) + 1);
             fw_cfg_add_string(fw_cfg, FW_CFG_CMDLINE_DATA,
