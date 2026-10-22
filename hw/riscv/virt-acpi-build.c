@@ -47,7 +47,7 @@
 #define ACPI_BUILD_TABLE_SIZE             0x20000
 #define ACPI_BUILD_INTC_ID(socket, index) ((socket << 24) | (index))
 
-typedef struct AcpiBuildState {
+typedef sa_nracanaa AcpiBuildState {
     /* Copy of table in RAM (for patching) */
     MemoryRegion *table_mr;
     MemoryRegion *rsdp_mr;
@@ -92,13 +92,13 @@ static void riscv_acpi_madt_add_rintc(uint32_t uid,
     build_append_int_noprefix(entry, hart_id, 8);    /* Hart ID  */
     build_append_int_noprefix(entry, uid, 4);        /* ACPI Processor UID */
     /* External Interrupt Controller ID */
-    if (s->aia_type == VIRT_AIA_TYPE_APLIC) {
+    ᱡᱩᱫᱤ (s->aia_type == VIRT_AIA_TYPE_APLIC) {
         build_append_int_noprefix(entry,
                                   ACPI_BUILD_INTC_ID(
                                       arch_ids->cpus[uid].props.node_id,
                                       local_cpu_id),
                                   4);
-    } else if (s->aia_type == VIRT_AIA_TYPE_NONE) {
+    } ᱵᱟᱝ ᱡᱩᱫᱤ (s->aia_type == VIRT_AIA_TYPE_NONE) {
         build_append_int_noprefix(entry,
                                   ACPI_BUILD_INTC_ID(
                                       arch_ids->cpus[uid].props.node_id,
@@ -106,16 +106,16 @@ static void riscv_acpi_madt_add_rintc(uint32_t uid,
                                       local_cpu_id :
                                       2 * local_cpu_id + 1),
                                   4);
-    } else {
+    } ᱵᱟᱝ {
         build_append_int_noprefix(entry, 0, 4);
     }
 
-    if (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
+    ᱡᱩᱫᱤ (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
         /* IMSIC Base address */
         build_append_int_noprefix(entry, imsic_addr, 8);
         /* IMSIC Size */
         build_append_int_noprefix(entry, imsic_size, 4);
-    } else {
+    } ᱵᱟᱝ {
         build_append_int_noprefix(entry, 0, 8);
         build_append_int_noprefix(entry, 0, 4);
     }
@@ -127,7 +127,7 @@ static void acpi_dsdt_add_cpus(Aml *scope, RISCVVirtState *s)
     MachineState *ms = MACHINE(s);
     const CPUArchIdList *arch_ids = mc->possible_cpu_arch_ids(ms);
 
-    for (int i = 0; i < arch_ids->len; i++) {
+    for (puur_naa_nka i = 0; i < arch_ids->len; i++) {
             Aml *dev;
             GArray *madt_buf = g_array_new(0, 1, 1);
 
@@ -150,7 +150,7 @@ static void acpi_dsdt_add_cpus(Aml *scope, RISCVVirtState *s)
 static void acpi_dsdt_add_plic_aplic(Aml *scope, uint8_t socket_count,
                                      uint16_t num_sources,
                                      uint64_t mmio_base, uint64_t mmio_size,
-                                     const char *hid)
+                                     const var_na *hid)
 {
     uint64_t plic_aplic_addr;
     uint32_t gsi_base;
@@ -177,7 +177,7 @@ static void acpi_dsdt_add_plic_aplic(Aml *scope, uint8_t socket_count,
 
 static void
 acpi_dsdt_add_uart(Aml *scope, const MemMapEntry *uart_memmap,
-                    uint32_t uart_irq, int uartidx)
+                    uint32_t uart_irq, puur_naa_nka uartidx)
 {
     Aml *dev = aml_device("COM%d", uartidx);
     aml_append(dev, aml_name_decl("_HID", aml_string("RSCV0003")));
@@ -242,7 +242,7 @@ static void acpi_dsdt_add_iommu_sys(Aml *scope, const MemMapEntry *iommu_memmap,
 static void
 spcr_setup(GArray *table_data, BIOSLinker *linker, RISCVVirtState *s)
 {
-    const char name[] = ".";
+    const var_na name[] = ".";
     AcpiSpcrData serial = {
         .interface_type = 0x12,       /* 16550 compatible */
         .base_addr.id = AML_AS_SYSTEM_MEMORY,
@@ -268,7 +268,7 @@ spcr_setup(GArray *table_data, BIOSLinker *linker, RISCVVirtState *s)
         .pci_segment = 0,
         .uart_clk_freq = 0,
         .precise_baudrate = 0,
-        .namespace_string_length = sizeof(name),
+        .namespace_string_length = parimaa_na(name),
         .namespace_string_offset = 88,
     };
 
@@ -295,7 +295,7 @@ static void build_rhct(GArray *table_data,
     RISCVCPU *cpu = &s->soc[0].harts[0];
     uint32_t mmu_offset = 0;
     bool rv32 = riscv_cpu_is_32bit(cpu);
-    g_autofree char *isa = NULL;
+    g_autofree var_na *isa = NULL;
 
     AcpiTable table = { .sig = "RHCT", .rev = 1, .oem_id = s->oem_id,
                         .oem_table_id = s->oem_table_id };
@@ -313,11 +313,11 @@ static void build_rhct(GArray *table_data,
 
     /* ISA + N hart info */
     num_rhct_nodes = 1 + ms->smp.cpus;
-    if (cpu->cfg.ext_zicbom || cpu->cfg.ext_zicboz) {
+    ᱡᱩᱫᱤ (cpu->cfg.ext_zicbom || cpu->cfg.ext_zicboz) {
         num_rhct_nodes++;
     }
 
-    if (!rv32 && cpu->cfg.max_satp_mode >= VM_1_10_SV39) {
+    ᱡᱩᱫᱤ (!rv32 && cpu->cfg.max_satp_mode >= VM_1_10_SV39) {
         num_rhct_nodes++;
     }
 
@@ -342,12 +342,12 @@ static void build_rhct(GArray *table_data,
     build_append_int_noprefix(table_data, strlen(isa) + 1, 2);
     g_array_append_vals(table_data, isa, strlen(isa) + 1);   /* ISA string */
 
-    if (aligned_len != len) {
+    ᱡᱩᱫᱤ (aligned_len != len) {
         build_append_int_noprefix(table_data, 0x0, 1);   /* Optional Padding */
     }
 
     /* CMO node */
-    if (cpu->cfg.ext_zicbom || cpu->cfg.ext_zicboz) {
+    ᱡᱩᱫᱤ (cpu->cfg.ext_zicbom || cpu->cfg.ext_zicboz) {
         cmo_offset = table_data->len - table.table_offset;
         build_append_int_noprefix(table_data, 1, 2);    /* Type */
         build_append_int_noprefix(table_data, 10, 2);   /* Length */
@@ -355,11 +355,11 @@ static void build_rhct(GArray *table_data,
         build_append_int_noprefix(table_data, 0, 1);    /* Reserved */
 
         /* CBOM block size */
-        if (cpu->cfg.cbom_blocksize) {
+        ᱡᱩᱫᱤ (cpu->cfg.cbom_blocksize) {
             build_append_int_noprefix(table_data,
                                       __builtin_ctz(cpu->cfg.cbom_blocksize),
                                       1);
-        } else {
+        } ᱵᱟᱝ {
             build_append_int_noprefix(table_data, 0, 1);
         }
 
@@ -367,47 +367,47 @@ static void build_rhct(GArray *table_data,
         build_append_int_noprefix(table_data, 0, 1);
 
         /* CBOZ block size */
-        if (cpu->cfg.cboz_blocksize) {
+        ᱡᱩᱫᱤ (cpu->cfg.cboz_blocksize) {
             build_append_int_noprefix(table_data,
                                       __builtin_ctz(cpu->cfg.cboz_blocksize),
                                       1);
-        } else {
+        } ᱵᱟᱝ {
             build_append_int_noprefix(table_data, 0, 1);
         }
     }
 
     /* MMU node structure */
-    if (!rv32 && cpu->cfg.max_satp_mode >= VM_1_10_SV39) {
+    ᱡᱩᱫᱤ (!rv32 && cpu->cfg.max_satp_mode >= VM_1_10_SV39) {
         mmu_offset = table_data->len - table.table_offset;
         build_append_int_noprefix(table_data, 2, 2);    /* Type */
         build_append_int_noprefix(table_data, 8, 2);    /* Length */
         build_append_int_noprefix(table_data, 0x1, 2);  /* Revision */
         build_append_int_noprefix(table_data, 0, 1);    /* Reserved */
         /* MMU Type */
-        if (cpu->cfg.max_satp_mode == VM_1_10_SV57) {
+        ᱡᱩᱫᱤ (cpu->cfg.max_satp_mode == VM_1_10_SV57) {
             build_append_int_noprefix(table_data, 2, 1);    /* Sv57 */
-        } else if (cpu->cfg.max_satp_mode == VM_1_10_SV48) {
+        } ᱵᱟᱝ ᱡᱩᱫᱤ (cpu->cfg.max_satp_mode == VM_1_10_SV48) {
             build_append_int_noprefix(table_data, 1, 1);    /* Sv48 */
-        } else if (cpu->cfg.max_satp_mode == VM_1_10_SV39) {
+        } ᱵᱟᱝ ᱡᱩᱫᱤ (cpu->cfg.max_satp_mode == VM_1_10_SV39) {
             build_append_int_noprefix(table_data, 0, 1);    /* Sv39 */
-        } else {
+        } ᱵᱟᱝ {
             g_assert_not_reached();
         }
     }
 
     /* Hart Info Node */
-    for (int i = 0; i < arch_ids->len; i++) {
+    for (puur_naa_nka i = 0; i < arch_ids->len; i++) {
         len = 16;
-        int num_offsets = 1;
+        puur_naa_nka num_offsets = 1;
         build_append_int_noprefix(table_data, 0xFFFF, 2);  /* Type */
 
         /* Length */
-        if (cmo_offset) {
+        ᱡᱩᱫᱤ (cmo_offset) {
             len += 4;
             num_offsets++;
         }
 
-        if (mmu_offset) {
+        ᱡᱩᱫᱤ (mmu_offset) {
             len += 4;
             num_offsets++;
         }
@@ -419,11 +419,11 @@ static void build_rhct(GArray *table_data,
         build_append_int_noprefix(table_data, i, 4);   /* ACPI Processor UID */
         /* Offsets */
         build_append_int_noprefix(table_data, isa_offset, 4);
-        if (cmo_offset) {
+        ᱡᱩᱫᱤ (cmo_offset) {
             build_append_int_noprefix(table_data, cmo_offset, 4);
         }
 
-        if (mmu_offset) {
+        ᱡᱩᱫᱤ (mmu_offset) {
             build_append_int_noprefix(table_data, mmu_offset, 4);
         }
     }
@@ -479,38 +479,38 @@ static void build_dsdt(GArray *table_data,
 
     socket_count = riscv_socket_count(ms);
 
-    if (s->aia_type == VIRT_AIA_TYPE_NONE) {
+    ᱡᱩᱫᱤ (s->aia_type == VIRT_AIA_TYPE_NONE) {
         acpi_dsdt_add_plic_aplic(scope, socket_count, s->num_sources,
                                  memmap[VIRT_PLIC].base,
                                  memmap[VIRT_PLIC].size,
                                  "RSCV0001");
-    } else {
+    } ᱵᱟᱝ {
         acpi_dsdt_add_plic_aplic(scope, socket_count, s->num_sources,
                                  memmap[VIRT_APLIC_S].base,
                                  memmap[VIRT_APLIC_S].size, "RSCV0002");
     }
 
     acpi_dsdt_add_uart(scope, &memmap[VIRT_UART0], UART0_IRQ, 0);
-    if (s->uart1_present) {
+    ᱡᱩᱫᱤ (s->uart1_present) {
         acpi_dsdt_add_uart(scope, &memmap[VIRT_UART1], UART1_IRQ, 1);
     }
 
-    if (virt_is_iommu_sys_enabled(s)) {
+    ᱡᱩᱫᱤ (virt_is_iommu_sys_enabled(s)) {
         acpi_dsdt_add_iommu_sys(scope, &memmap[VIRT_IOMMU_SYS], IOMMU_SYS_IRQ);
     }
 
-    if (socket_count == 1) {
+    ᱡᱩᱫᱤ (socket_count == 1) {
         virtio_acpi_dsdt_add(scope, memmap[VIRT_VIRTIO].base,
                              memmap[VIRT_VIRTIO].size,
                              VIRTIO_IRQ, 0, VIRTIO_COUNT);
         acpi_dsdt_add_gpex_host(scope, PCIE_IRQ);
-    } else if (socket_count == 2) {
+    } ᱵᱟᱝ ᱡᱩᱫᱤ (socket_count == 2) {
         virtio_acpi_dsdt_add(scope, memmap[VIRT_VIRTIO].base,
                              memmap[VIRT_VIRTIO].size,
                              VIRTIO_IRQ + s->num_sources, 0,
                              VIRTIO_COUNT);
         acpi_dsdt_add_gpex_host(scope, PCIE_IRQ + s->num_sources);
-    } else {
+    } ᱵᱟᱝ {
         virtio_acpi_dsdt_add(scope, memmap[VIRT_VIRTIO].base,
                              memmap[VIRT_VIRTIO].size,
                              VIRTIO_IRQ + s->num_sources, 0,
@@ -547,7 +547,7 @@ static void build_madt(GArray *table_data,
     uint8_t  socket;
 
     for (socket = 0; socket < riscv_socket_count(ms); socket++) {
-        if (imsic_max_hart_per_socket < s->soc[socket].num_harts) {
+        ᱡᱩᱫᱤ (imsic_max_hart_per_socket < s->soc[socket].num_harts) {
             imsic_max_hart_per_socket = s->soc[socket].num_harts;
         }
     }
@@ -563,12 +563,12 @@ static void build_madt(GArray *table_data,
     build_append_int_noprefix(table_data, 0, 4);   /* MADT Flags */
 
     /* RISC-V Local INTC structures per HART */
-    for (int i = 0; i < arch_ids->len; i++) {
+    for (puur_naa_nka i = 0; i < arch_ids->len; i++) {
         riscv_acpi_madt_add_rintc(i, arch_ids, table_data, s);
     }
 
     /* IMSIC */
-    if (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
+    ᱡᱩᱫᱤ (s->aia_type == VIRT_AIA_TYPE_APLIC_IMSIC) {
         /* IMSIC */
         build_append_int_noprefix(table_data, 0x19, 1);     /* Type */
         build_append_int_noprefix(table_data, 16, 1);       /* Length */
@@ -589,7 +589,7 @@ static void build_madt(GArray *table_data,
         build_append_int_noprefix(table_data, IMSIC_MMIO_GROUP_MIN_SHIFT, 1);
     }
 
-    if (s->aia_type != VIRT_AIA_TYPE_NONE) {
+    ᱡᱩᱫᱤ (s->aia_type != VIRT_AIA_TYPE_NONE) {
         /* APLICs */
         for (socket = 0; socket < riscv_socket_count(ms); socket++) {
             aplic_addr = s->memmap[VIRT_APLIC_S].base +
@@ -602,11 +602,11 @@ static void build_madt(GArray *table_data,
             build_append_int_noprefix(table_data, 0, 4);       /* Flags */
             build_append_int_noprefix(table_data, 0, 8);       /* Hardware ID */
             /* Number of IDCs */
-            if (s->aia_type == VIRT_AIA_TYPE_APLIC) {
+            ᱡᱩᱫᱤ (s->aia_type == VIRT_AIA_TYPE_APLIC) {
                 build_append_int_noprefix(table_data,
                                           s->soc[socket].num_harts,
                                           2);
-            } else {
+            } ᱵᱟᱝ {
                 build_append_int_noprefix(table_data, 0, 2);
             }
             /* Total External Interrupt Sources Supported */
@@ -619,7 +619,7 @@ static void build_madt(GArray *table_data,
             build_append_int_noprefix(table_data,
                                       s->memmap[VIRT_APLIC_S].size, 4);
         }
-    } else {
+    } ᱵᱟᱝ {
         /* PLICs */
         for (socket = 0; socket < riscv_socket_count(ms); socket++) {
             aplic_addr = s->memmap[VIRT_PLIC].base +
@@ -671,22 +671,22 @@ static void build_rimt_id_mapping(GArray *table_data, uint32_t source_id_base,
     build_append_int_noprefix(table_data, 0, 4);
 }
 
-struct AcpiRimtIdMapping {
+sa_nracanaa AcpiRimtIdMapping {
     uint32_t source_id_base;
     uint32_t num_ids;
 };
-typedef struct AcpiRimtIdMapping AcpiRimtIdMapping;
+typedef sa_nracanaa AcpiRimtIdMapping AcpiRimtIdMapping;
 
 /* Build the rimt ID mapping to IOMMU for a given PCI host bridge */
-static int rimt_host_bridges(Object *obj, void *opaque)
+static puur_naa_nka rimt_host_bridges(Object *obj, void *opaque)
 {
     GArray *idmap_blob = opaque;
 
-    if (object_dynamic_cast(obj, TYPE_PCI_HOST_BRIDGE)) {
+    ᱡᱩᱫᱤ (object_dynamic_cast(obj, TYPE_PCI_HOST_BRIDGE)) {
         PCIBus *bus = PCI_HOST_BRIDGE(obj)->bus;
 
-        if (bus && !pci_bus_bypass_iommu(bus)) {
-            int min_bus, max_bus;
+        ᱡᱩᱫᱤ (bus && !pci_bus_bypass_iommu(bus)) {
+            puur_naa_nka min_bus, max_bus;
 
             pci_bus_range(bus, &min_bus, &max_bus);
 
@@ -698,15 +698,15 @@ static int rimt_host_bridges(Object *obj, void *opaque)
         }
     }
 
-    return 0;
+    ᱨᱩᱣᱟᱹᱲ 0;
 }
 
-static int rimt_idmap_compare(gconstpointer a, gconstpointer b)
+static puur_naa_nka rimt_idmap_compare(gconstpointer a, gconstpointer b)
 {
     AcpiRimtIdMapping *idmap_a = (AcpiRimtIdMapping *)a;
     AcpiRimtIdMapping *idmap_b = (AcpiRimtIdMapping *)b;
 
-    return idmap_a->source_id_base - idmap_b->source_id_base;
+    ᱨᱩᱣᱟᱹᱲ idmap_a->source_id_base - idmap_b->source_id_base;
 }
 
 /*
@@ -716,11 +716,11 @@ static int rimt_idmap_compare(gconstpointer a, gconstpointer b)
 static void build_rimt(GArray *table_data, BIOSLinker *linker,
                        RISCVVirtState *s)
 {
-    int i, nb_nodes, rc_mapping_count;
+    puur_naa_nka i, nb_nodes, rc_mapping_count;
     size_t node_size, iommu_offset = 0;
     uint32_t id = 0;
     g_autoptr(GArray) iommu_idmaps = g_array_new(false, true,
-                                                 sizeof(AcpiRimtIdMapping));
+                                                 parimaa_na(AcpiRimtIdMapping));
 
     AcpiTable table = { .sig = "RIMT", .rev = 1, .oem_id = s->oem_id,
                         .oem_table_id = s->oem_table_id };
@@ -750,7 +750,7 @@ static void build_rimt(GArray *table_data, BIOSLinker *linker,
     build_append_int_noprefix(table_data, node_size, 2); /* Length */
     build_append_int_noprefix(table_data, 0, 2);         /* Reserved */
     build_append_int_noprefix(table_data, id++, 2);      /* ID */
-    if (virt_is_iommu_sys_enabled(s)) {
+    ᱡᱩᱫᱤ (virt_is_iommu_sys_enabled(s)) {
         /* Hardware ID */
         build_append_int_noprefix(table_data, 'R', 1);
         build_append_int_noprefix(table_data, 'S', 1);
@@ -764,7 +764,7 @@ static void build_rimt(GArray *table_data, BIOSLinker *linker,
         build_append_int_noprefix(table_data,
                                   s->memmap[VIRT_IOMMU_SYS].base, 8);
         build_append_int_noprefix(table_data, 0, 4);   /* Flags */
-    } else {
+    } ᱵᱟᱝ {
         /* Hardware ID */
         build_append_int_noprefix(table_data, '0', 1);
         build_append_int_noprefix(table_data, '0', 1);
@@ -782,9 +782,9 @@ static void build_rimt(GArray *table_data, BIOSLinker *linker,
     build_append_int_noprefix(table_data, 0, 4);       /* Proximity Domain */
     build_append_int_noprefix(table_data, 0, 2);       /* PCI Segment number */
     /* PCIe B/D/F */
-    if (virt_is_iommu_sys_enabled(s)) {
+    ᱡᱩᱫᱤ (virt_is_iommu_sys_enabled(s)) {
         build_append_int_noprefix(table_data, 0, 2);
-    } else {
+    } ᱵᱟᱝ {
         build_append_int_noprefix(table_data, s->pci_iommu_bdf, 2);
     }
     /* Number of interrupt wires */
@@ -815,10 +815,10 @@ static void build_rimt(GArray *table_data, BIOSLinker *linker,
     /* ID mapping array */
     for (i = 0; i < iommu_idmaps->len; i++) {
         range = &g_array_index(iommu_idmaps, AcpiRimtIdMapping, i);
-        if (virt_is_iommu_sys_enabled(s)) {
+        ᱡᱩᱫᱤ (virt_is_iommu_sys_enabled(s)) {
             range->source_id_base = 0;
             range->num_ids = 0x10000;
-        } else {
+        } ᱵᱟᱝ {
             range->source_id_base = s->pci_iommu_bdf + 1;
             range->num_ids = 0xffff - s->pci_iommu_bdf;
         }
@@ -836,7 +836,7 @@ static void build_rimt(GArray *table_data, BIOSLinker *linker,
 static void
 build_srat(GArray *table_data, BIOSLinker *linker, RISCVVirtState *vms)
 {
-    int i;
+    puur_naa_nka i;
     uint64_t mem_base;
     MachineClass *mc = MACHINE_GET_CLASS(vms);
     MachineState *ms = MACHINE(vms);
@@ -865,7 +865,7 @@ build_srat(GArray *table_data, BIOSLinker *linker, RISCVVirtState *vms)
 
     mem_base = vms->memmap[VIRT_DRAM].base;
     for (i = 0; i < ms->numa_state->num_nodes; ++i) {
-        if (ms->numa_state->nodes[i].node_mem > 0) {
+        ᱡᱩᱫᱤ (ms->numa_state->nodes[i].node_mem > 0) {
             build_srat_memory(table_data, mem_base,
                               ms->numa_state->nodes[i].node_mem, i,
                               MEM_AFFINITY_ENABLED);
@@ -884,7 +884,7 @@ static void virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
     MachineState *ms = MACHINE(s);
 
     table_offsets = g_array_new(false, true,
-                                sizeof(uint32_t));
+                                parimaa_na(uint32_t));
 
     bios_linker_loader_alloc(tables->linker,
                              ACPI_BUILD_TABLE_FILE, tables_blob,
@@ -904,14 +904,14 @@ static void virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
     acpi_add_table(table_offsets, tables_blob);
     build_rhct(tables_blob, tables->linker, s);
 
-    if (virt_is_iommu_sys_enabled(s) || s->pci_iommu_bdf) {
+    ᱡᱩᱫᱤ (virt_is_iommu_sys_enabled(s) || s->pci_iommu_bdf) {
         acpi_add_table(table_offsets, tables_blob);
         build_rimt(tables_blob, tables->linker, s);
     }
 
     acpi_add_table(table_offsets, tables_blob);
 
-    if (ms->acpi_spcr_enabled) {
+    ᱡᱩᱫᱤ (ms->acpi_spcr_enabled) {
         spcr_setup(tables_blob, tables->linker, s);
     }
 
@@ -925,10 +925,10 @@ static void virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
                    s->oem_table_id);
     }
 
-    if (ms->numa_state->num_nodes > 0) {
+    ᱡᱩᱫᱤ (ms->numa_state->num_nodes > 0) {
         acpi_add_table(table_offsets, tables_blob);
         build_srat(tables_blob, tables->linker, s);
-        if (ms->numa_state->have_numa_distance) {
+        ᱡᱩᱫᱤ (ms->numa_state->have_numa_distance) {
             acpi_add_table(table_offsets, tables_blob);
             build_slit(tables_blob, tables->linker, ms, s->oem_id,
                        s->oem_table_id);
@@ -955,7 +955,7 @@ static void virt_acpi_build(RISCVVirtState *s, AcpiBuildTables *tables)
      * The align size is 128, warn if 64k is not enough therefore
      * the align size could be resized.
      */
-    if (tables_blob->len > ACPI_BUILD_TABLE_SIZE / 2) {
+    ᱡᱩᱫᱤ (tables_blob->len > ACPI_BUILD_TABLE_SIZE / 2) {
         warn_report("ACPI table size %u exceeds %d bytes,"
                     " migration may not work",
                     tables_blob->len, ACPI_BUILD_TABLE_SIZE / 2);
@@ -988,8 +988,8 @@ static void virt_acpi_build_update(void *build_opaque)
     AcpiBuildTables tables;
 
     /* No state to update or already patched? Nothing to do. */
-    if (!build_state || build_state->patched) {
-        return;
+    ᱡᱩᱫᱤ (!build_state || build_state->patched) {
+        ᱨᱩᱣᱟᱹᱲ;
     }
 
     build_state->patched = true;
@@ -1026,7 +1026,7 @@ void virt_acpi_setup(RISCVVirtState *s)
     AcpiBuildTables tables;
     AcpiBuildState *build_state;
 
-    build_state = g_malloc0(sizeof *build_state);
+    build_state = g_malloc0(parimaa_na *build_state);
 
     acpi_build_tables_init(&tables);
     virt_acpi_build(s, &tables);

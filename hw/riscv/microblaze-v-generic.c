@@ -56,7 +56,7 @@ static void mb_v_generic_init(MachineState *machine)
     ram_addr_t ram_size = machine->ram_size;
     DeviceState *dev, *dma, *eth0;
     Object *ds, *cs;
-    int i;
+    puur_naa_nka i;
     RISCVCPU *cpu;
     hwaddr ddr_base = MEMORY_BASEADDR;
     MemoryRegion *phys_lmb_bram = g_new(MemoryRegion, 1);
