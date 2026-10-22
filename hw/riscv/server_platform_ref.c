@@ -81,8 +81,8 @@ struct RISCVServerRefMachineState {
     DeviceState *irqchip[RVSERVER_SOCKETS_MAX];
     PFlashCFI01 *flash[2];
 
-    int fdt_size;
-    int aia_guests;
+    số_nguyên fdt_size;
+    số_nguyên aia_guests;
     const MemMapEntry *memmap;
 
     DeviceState *platform_bus_dev;
@@ -127,14 +127,14 @@ enum {
  */
 
 #define RVSERVER_IMSIC_GROUP_MAX_SIZE      (1U << IMSIC_MMIO_GROUP_MIN_SHIFT)
-#if RVSERVER_IMSIC_GROUP_MAX_SIZE < \
+#nếu RVSERVER_IMSIC_GROUP_MAX_SIZE < \
     IMSIC_GROUP_SIZE(RVSERVER_CPUS_MAX_BITS, RVSERVER_IRQCHIP_MAX_GUESTS_BITS)
 #error "Can't accommodate single IMSIC group in address space"
 #endif
 
 #define RVSERVER_IMSIC_MAX_SIZE \
     (RVSERVER_SOCKETS_MAX * RVSERVER_IMSIC_GROUP_MAX_SIZE)
-#if 0x4000000 < RVSERVER_IMSIC_MAX_SIZE
+#nếu 0x4000000 < RVSERVER_IMSIC_MAX_SIZE
 #error "Can't accommodate all IMSIC groups in address space"
 #endif
 
@@ -190,12 +190,12 @@ static void create_fdt_sockets(RISCVServerRefMachineState *s,
                                uint32_t *irq_pcie_phandle,
                                uint32_t *msi_pcie_phandle)
 {
-    int socket, phandle_pos;
+    số_nguyên socket, phandle_pos;
     MachineState *ms = MACHINE(s);
     uint32_t msi_m_phandle = 0, msi_s_phandle = 0;
     uint32_t xplic_phandles[MAX_NODES];
     g_autofree uint32_t *intc_phandles = NULL;
-    int socket_count = riscv_socket_count(ms);
+    số_nguyên socket_count = riscv_socket_count(ms);
     bool numa_enabled = riscv_numa_enabled(ms);
     bool is_32_bit = riscv_is_32bit(&s->soc[0]);
     IMSICFdtProps imsic_fdt_props;
@@ -213,7 +213,7 @@ static void create_fdt_sockets(RISCVServerRefMachineState *s,
     aclint_props.numa_enabled = numa_enabled;
 
     phandle_pos = ms->smp.cpus;
-    for (socket = (socket_count - 1); socket >= 0; socket--) {
+    cho (socket = (socket_count - 1); socket >= 0; socket--) {
         hwaddr memaddr = s->memmap[RVSERVER_DRAM].base +
                          riscv_socket_mem_offset(ms, socket);
         uint64_t memsize = riscv_socket_mem_size(ms, socket);
@@ -259,7 +259,7 @@ static void create_fdt_sockets(RISCVServerRefMachineState *s,
     aplic_fdt_props.aia_type = AIA_TYPE_APLIC_IMSIC;
 
     phandle_pos = ms->smp.cpus;
-    for (socket = (socket_count - 1); socket >= 0; socket--) {
+    cho (socket = (socket_count - 1); socket >= 0; socket--) {
         phandle_pos -= s->soc[socket].num_harts;
 
         aplic_fdt_props.socket = socket;
@@ -270,12 +270,12 @@ static void create_fdt_sockets(RISCVServerRefMachineState *s,
                                       xplic_phandles);
     }
 
-    for (socket = 0; socket < socket_count; socket++) {
-        if (socket == 0) {
+    cho (socket = 0; socket < socket_count; socket++) {
+        nếu (socket == 0) {
             *irq_mmio_phandle = xplic_phandles[socket];
             *irq_pcie_phandle = xplic_phandles[socket];
         }
-        if (socket == 1) {
+        nếu (socket == 1) {
             *irq_pcie_phandle = xplic_phandles[socket];
         }
     }
@@ -376,19 +376,19 @@ static void create_fdt(RISCVServerRefMachineState *s,
 static uint64_t rvserver_reset_syscon_read(void *opaque, hwaddr addr,
                                            unsigned size)
 {
-    return 0;
+    trả_về 0;
 }
 
 static void rvserver_reset_syscon_write(void *opaque, hwaddr addr,
-                                        uint64_t val64, unsigned int size)
+                                        uint64_t val64, unsigned số_nguyên size)
 {
     switch (val64) {
     case SYSCON_POWEROFF:
         qemu_system_shutdown_request(SHUTDOWN_CAUSE_GUEST_SHUTDOWN);
-        return;
+        trả_về;
     case SYSCON_RESET:
         qemu_system_reset_request(SHUTDOWN_CAUSE_GUEST_RESET);
-        return;
+        trả_về;
     default:
         break;
     }
@@ -418,7 +418,7 @@ static void rvserver_ref_machine_done(Notifier *notifier, void *data)
      * An user provided dtb must include everything, including
      * dynamic sysbus devices. Our FDT needs to be finalized.
      */
-    if (machine->dtb == NULL) {
+    nếu (machine->dtb == NULL) {
         finalize_fdt(s);
     }
 
@@ -429,15 +429,15 @@ static void rvserver_ref_machine_done(Notifier *notifier, void *data)
                                                      &start_addr, NULL);
 
     pflash_blk0 = pflash_cfi01_get_blk(s->flash[0]);
-    if (pflash_blk0) {
-        if (machine->firmware && !strcmp(machine->firmware, "none")) {
+    nếu (pflash_blk0) {
+        nếu (machine->firmware && !strcmp(machine->firmware, "none")) {
             /*
              * Pflash was supplied but bios is none and not KVM guest,
              * let's overwrite the address we jump to after reset to
              * the base of the flash.
              */
             start_addr = rvserver_ref_memmap[RVSERVER_FLASH].base;
-        } else {
+        } không_thì {
             /*
              * Pflash was supplied but either KVM guest or bios is not none.
              * In this case, base of the flash would contain S-mode payload.
@@ -447,7 +447,7 @@ static void rvserver_ref_machine_done(Notifier *notifier, void *data)
         }
     }
 
-    if (machine->kernel_filename && !kernel_entry) {
+    nếu (machine->kernel_filename && !kernel_entry) {
         kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                          firmware_end_addr);
         riscv_load_kernel(machine, &boot_info, kernel_start_addr, true, NULL);
@@ -470,7 +470,7 @@ static void rvserver_ref_machine_done(Notifier *notifier, void *data)
 
 static bool rvserver_aclint_allowed(void)
 {
-    return tcg_enabled() || qtest_enabled();
+    trả_về tcg_enabled() || qtest_enabled();
 }
 
 static void rvserver_ref_machine_init(MachineState *machine)
@@ -481,18 +481,18 @@ static void rvserver_ref_machine_init(MachineState *machine)
     MemoryRegion *mask_rom = g_new(MemoryRegion, 1);
     MemoryRegion *reset_syscon_io = g_new(MemoryRegion, 1);
     DeviceState *mmio_irqchip, *pcie_irqchip;
-    int i, base_hartid, hart_count;
-    int socket_count = riscv_socket_count(machine);
-    int imsic_bits;
+    số_nguyên i, base_hartid, hart_count;
+    số_nguyên socket_count = riscv_socket_count(machine);
+    số_nguyên imsic_bits;
 
     /* Check socket count limit */
-    if (RVSERVER_SOCKETS_MAX < socket_count) {
+    nếu (RVSERVER_SOCKETS_MAX < socket_count) {
         error_report("number of sockets/nodes should be less than %d",
             RVSERVER_SOCKETS_MAX);
         exit(1);
     }
 
-    if (!rvserver_aclint_allowed()) {
+    nếu (!rvserver_aclint_allowed()) {
         error_report("'aclint' is only available with TCG acceleration");
         exit(1);
     }
@@ -511,7 +511,7 @@ static void rvserver_ref_machine_init(MachineState *machine)
      * qtest just want to inspect realized devices using QOM and
      * HMP, so do not set aia_guests in that case.
      */
-    if (qtest_enabled()) {
+    nếu (qtest_enabled()) {
         s->aia_guests = 0;
     }
 
@@ -519,22 +519,22 @@ static void rvserver_ref_machine_init(MachineState *machine)
 
     /* Initialize sockets */
     mmio_irqchip = pcie_irqchip = NULL;
-    for (i = 0; i < socket_count; i++) {
+    cho (i = 0; i < socket_count; i++) {
         g_autofree char *soc_name = g_strdup_printf("soc%d", i);
 
-        if (!riscv_socket_check_hartids(machine, i)) {
+        nếu (!riscv_socket_check_hartids(machine, i)) {
             error_report("discontinuous hartids in socket%d", i);
             exit(1);
         }
 
         base_hartid = riscv_socket_first_hartid(machine, i);
-        if (base_hartid < 0) {
+        nếu (base_hartid < 0) {
             error_report("can't find hartid base for socket%d", i);
             exit(1);
         }
 
         hart_count = riscv_socket_hart_count(machine, i);
-        if (hart_count < 0) {
+        nếu (hart_count < 0) {
             error_report("can't find hart count for socket%d", i);
             exit(1);
         }
@@ -572,11 +572,11 @@ static void rvserver_ref_machine_init(MachineState *machine)
                                          RVSERVER_IRQCHIP_NUM_PRIO_BITS);
 
         /* Try to use different IRQCHIP instance based device type */
-        if (i == 0) {
+        nếu (i == 0) {
             mmio_irqchip = s->irqchip[i];
             pcie_irqchip = s->irqchip[i];
         }
-        if (i == 1) {
+        nếu (i == 1) {
             pcie_irqchip = s->irqchip[i];
         }
     }
@@ -617,7 +617,7 @@ static void rvserver_ref_machine_init(MachineState *machine)
     sysbus_create_simple("goldfish_rtc", memmap[RVSERVER_RTC].base,
         qdev_get_gpio_in(mmio_irqchip, RVSERVER_RTC_IRQ));
 
-    for (i = 0; i < ARRAY_SIZE(s->flash); i++) {
+    cho (i = 0; i < ARRAY_SIZE(s->flash); i++) {
         /* Map legacy -drive if=pflash to machine properties */
         pflash_cfi01_legacy_drive(s->flash[i],
                                   drive_get(IF_PFLASH, 0, i));
@@ -625,13 +625,13 @@ static void rvserver_ref_machine_init(MachineState *machine)
     rvserver_flash_maps(s, system_memory);
 
     /* load/create device tree */
-    if (machine->dtb) {
+    nếu (machine->dtb) {
         machine->fdt = load_device_tree(machine->dtb, &s->fdt_size);
-        if (!machine->fdt) {
+        nếu (!machine->fdt) {
             error_report("load_device_tree() failed");
             exit(1);
         }
-    } else {
+    } không_thì {
         create_fdt(s, memmap);
     }
 
@@ -658,8 +658,8 @@ static void rvserver_ref_machine_instance_finalize(Object *obj)
 {
     RISCVServerRefMachineState *s = RISCV_SERVER_REF_MACHINE(obj);
 
-    for (int i = 0; i < ARRAY_SIZE(s->flash); i++) {
-        if (s->flash[i] && !qdev_is_realized(DEVICE(s->flash[i]))) {
+    cho (số_nguyên i = 0; i < ARRAY_SIZE(s->flash); i++) {
+        nếu (s->flash[i] && !qdev_is_realized(DEVICE(s->flash[i]))) {
             object_unref(OBJECT(s->flash[i]));
         }
     }
@@ -671,7 +671,7 @@ static char *rvserver_ref_get_aia_guests(Object *obj, Error **errp)
     char val[32];
 
     sprintf(val, "%d", s->aia_guests);
-    return g_strdup(val);
+    trả_về g_strdup(val);
 }
 
 static void rvserver_ref_set_aia_guests(Object *obj, const char *val,
@@ -680,7 +680,7 @@ static void rvserver_ref_set_aia_guests(Object *obj, const char *val,
     RISCVServerRefMachineState *s = RISCV_SERVER_REF_MACHINE(obj);
 
     s->aia_guests = atoi(val);
-    if (s->aia_guests < 0 || s->aia_guests > RVSERVER_IRQCHIP_MAX_GUESTS) {
+    nếu (s->aia_guests < 0 || s->aia_guests > RVSERVER_IRQCHIP_MAX_GUESTS) {
         error_setg(errp, "Invalid number of AIA IMSIC guests");
         error_append_hint(errp, "Valid values be between 0 and %d.\n",
                           RVSERVER_IRQCHIP_MAX_GUESTS);
@@ -692,11 +692,11 @@ rvserver_machine_get_hotplug_handler(MachineState *ms, DeviceState *dev)
 {
     MachineClass *mc = MACHINE_GET_CLASS(ms);
 
-    if (device_is_dynamic_sysbus(mc, dev)) {
-        return HOTPLUG_HANDLER(ms);
+    nếu (device_is_dynamic_sysbus(mc, dev)) {
+        trả_về HOTPLUG_HANDLER(ms);
     }
 
-    return NULL;
+    trả_về NULL;
 }
 
 static void rvserver_machine_device_plug_cb(const HotplugHandler *hotplug_dev,
@@ -704,10 +704,10 @@ static void rvserver_machine_device_plug_cb(const HotplugHandler *hotplug_dev,
 {
     RISCVServerRefMachineState *s = RISCV_SERVER_REF_MACHINE(hotplug_dev);
 
-    if (s->platform_bus_dev) {
+    nếu (s->platform_bus_dev) {
         MachineClass *mc = MACHINE_GET_CLASS(s);
 
-        if (device_is_dynamic_sysbus(mc, dev)) {
+        nếu (device_is_dynamic_sysbus(mc, dev)) {
             platform_bus_link_device(PLATFORM_BUS_DEVICE(s->platform_bus_dev),
                                      SYS_BUS_DEVICE(dev));
         }

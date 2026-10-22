@@ -60,7 +60,7 @@ static uint64_t msix_table_mmio_read(void *opaque, hwaddr addr,
     RISCVIOMMUStateSys *s = opaque;
 
     g_assert(addr + size <= RISCV_IOMMU_PCI_MSIX_VECTORS * PCI_MSIX_ENTRY_SIZE);
-    return pci_get_long(s->msix_table + addr);
+    trả_về pci_get_long(s->msix_table + addr);
 }
 
 static void msix_table_mmio_write(void *opaque, hwaddr addr,
@@ -90,7 +90,7 @@ static uint64_t msix_pba_mmio_read(void *opaque, hwaddr addr,
 {
     RISCVIOMMUStateSys *s = opaque;
 
-    return pci_get_long(s->msix_pba + addr);
+    trả_về pci_get_long(s->msix_pba + addr);
 }
 
 static void msix_pba_mmio_write(void *opaque, hwaddr addr,
@@ -145,9 +145,9 @@ static void riscv_iommu_sysdev_send_MSI(RISCVIOMMUStateSys *s,
     address_space_stl_le(&address_space_memory, msi_addr,
                          msi_data, MEMTXATTRS_UNSPECIFIED, &result);
 
-    if (result == MEMTX_OK) {
+    nếu (result == MEMTX_OK) {
         trace_riscv_iommu_sys_msi_sent(vector, msi_addr, msi_data, result);
-    } else {
+    } không_thì {
         /* Record an access fault error in the fault queue */
         struct riscv_iommu_fq_record ev = { 0 };
         RISCVIOMMUState *iommu = &s->iommu;
@@ -166,10 +166,10 @@ static void riscv_iommu_sysdev_notify(RISCVIOMMUState *iommu,
     RISCVIOMMUStateSys *s = container_of(iommu, RISCVIOMMUStateSys, iommu);
     uint32_t fctl =  riscv_iommu_reg_get32(iommu, RISCV_IOMMU_REG_FCTL);
 
-    if (fctl & RISCV_IOMMU_FCTL_WSI) {
+    nếu (fctl & RISCV_IOMMU_FCTL_WSI) {
         qemu_irq_pulse(s->irqs[vector]);
         trace_riscv_iommu_sys_irq_sent(vector);
-        return;
+        trả_về;
     }
 
     riscv_iommu_sysdev_send_MSI(s, vector);
@@ -184,19 +184,19 @@ static void riscv_iommu_sys_realize(DeviceState *dev, Error **errp)
 
     qdev_realize(DEVICE(&s->iommu), NULL, errp);
     sysbus_init_mmio(SYS_BUS_DEVICE(dev), &s->iommu.regs_mr);
-    if (s->addr) {
+    nếu (s->addr) {
         sysbus_mmio_map(SYS_BUS_DEVICE(s), 0, s->addr);
     }
 
     pci_bus = (PCIBus *) object_resolve_path_type("", TYPE_PCI_BUS, NULL);
-    if (pci_bus) {
+    nếu (pci_bus) {
         riscv_iommu_pci_setup_iommu(&s->iommu, pci_bus, errp);
     }
 
     s->iommu.notify = riscv_iommu_sysdev_notify;
 
     /* 4 IRQs are defined starting from s->base_irq */
-    for (int i = 0; i < RISCV_IOMMU_INTR_COUNT; i++) {
+    cho (số_nguyên i = 0; i < RISCV_IOMMU_INTR_COUNT; i++) {
         sysbus_init_irq(sysdev, &s->irqs[i]);
         irq = qdev_get_gpio_in(s->irqchip, s->base_irq + i);
         sysbus_connect_irq(sysdev, i, irq);
@@ -218,7 +218,7 @@ static void riscv_iommu_sys_init(Object *obj)
 }
 
 DeviceState *riscv_create_iommu_sys(DeviceState *mmio_irqchip,
-                                    hwaddr addr, int base_irq,
+                                    hwaddr addr, số_nguyên base_irq,
                                     bool is_32_bit)
 {
     DeviceState *iommu_sys = qdev_new(TYPE_RISCV_IOMMU_SYS);
@@ -239,7 +239,7 @@ DeviceState *riscv_create_iommu_sys(DeviceState *mmio_irqchip,
 
     sysbus_realize_and_unref(SYS_BUS_DEVICE(iommu_sys), &error_fatal);
 
-    return iommu_sys;
+    trả_về iommu_sys;
 }
 
 static const Property riscv_iommu_sys_properties[] = {

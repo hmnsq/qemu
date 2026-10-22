@@ -60,7 +60,7 @@ static void shakti_c_machine_state_init(MachineState *mstate)
 
     riscv_boot_info_init(&boot_info, &sms->soc.cpus);
 
-    if (mstate->firmware) {
+    nếu (mstate->firmware) {
         riscv_load_firmware(mstate, &boot_info, mstate->firmware,
                             &firmware_load_addr, NULL);
     }
@@ -136,8 +136,8 @@ static void shakti_c_soc_state_realize(DeviceState *dev, Error **errp)
         RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, false);
 
     qdev_prop_set_chr(DEVICE(&(sss->uart)), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&sss->uart), errp)) {
-        return;
+    nếu (!sysbus_realize(SYS_BUS_DEVICE(&sss->uart), errp)) {
+        trả_về;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&sss->uart), 0,
                     shakti_c_memmap[SHAKTI_C_UART].base);

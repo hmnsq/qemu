@@ -98,7 +98,7 @@ static void create_fdt(SiFiveUState *s, const MemMapEntry *memmap,
 {
     MachineState *ms = MACHINE(s);
     void *fdt;
-    int cpu;
+    số_nguyên cpu;
     uint32_t *cells, cells_length;
     char *nodename;
     uint32_t plic_phandle, prci_phandle, gpio_phandle, phandle = 1;
@@ -142,19 +142,19 @@ static void create_fdt(SiFiveUState *s, const MemMapEntry *memmap,
     clust_name = g_strdup_printf("/cpus/cpu-map/cluster%d", 0);
     qemu_fdt_add_subnode(fdt, clust_name);
 
-    for (cpu = ms->smp.cpus - 1; cpu >= 0; cpu--) {
+    cho (cpu = ms->smp.cpus - 1; cpu >= 0; cpu--) {
         nodename = g_strdup_printf("/cpus/cpu@%d", cpu);
         qemu_fdt_add_subnode(fdt, nodename);
 
         /* cpu 0 is the management hart that does not have mmu */
-        if (cpu != 0) {
-            if (is_32_bit) {
+        nếu (cpu != 0) {
+            nếu (is_32_bit) {
                 qemu_fdt_setprop_string(fdt, nodename, "mmu-type", "riscv,sv32");
-            } else {
+            } không_thì {
                 qemu_fdt_setprop_string(fdt, nodename, "mmu-type", "riscv,sv39");
             }
             riscv_isa_write_fdt(&s->soc.u_cpus.harts[cpu - 1], fdt, nodename);
-        } else {
+        } không_thì {
             riscv_isa_write_fdt(&s->soc.e_cpus.harts[0], fdt, nodename);
         }
 
@@ -197,12 +197,12 @@ static void create_fdt(SiFiveUState *s, const MemMapEntry *memmap,
     plic_phandle = phandle++;
     cells_length = ms->smp.cpus * 4 - 2;
     cells =  g_new0(uint32_t, cells_length);
-    for (cpu = 0; cpu < ms->smp.cpus; cpu++) {
+    cho (cpu = 0; cpu < ms->smp.cpus; cpu++) {
         /* cpu 0 is the management hart that does not have S-mode */
-        if (cpu == 0) {
+        nếu (cpu == 0) {
             cells[0] = cpu_to_be32(intc_phandles[cpu]);
             cells[1] = cpu_to_be32(IRQ_M_EXT);
-        } else {
+        } không_thì {
             cells[cpu * 4 - 2] = cpu_to_be32(intc_phandles[cpu]);
             cells[cpu * 4 - 1] = cpu_to_be32(IRQ_M_EXT);
             cells[cpu * 4 + 0] = cpu_to_be32(intc_phandles[cpu]);
@@ -436,10 +436,10 @@ static void create_fdt(SiFiveUState *s, const MemMapEntry *memmap,
     g_free(nodename);
 }
 
-static void sifive_u_machine_reset(void *opaque, int n, int level)
+static void sifive_u_machine_reset(void *opaque, số_nguyên n, số_nguyên level)
 {
     /* gpio pin active low triggers reset */
-    if (!level) {
+    nếu (!level) {
         qemu_system_reset_request(SHUTDOWN_CAUSE_GUEST_RESET);
     }
 }
@@ -456,7 +456,7 @@ static void sifive_u_machine_init(MachineState *machine)
     const char *firmware_name;
     uint32_t start_addr_hi32 = 0x00000000;
     uint32_t fdt_load_addr_hi32 = 0x00000000;
-    int i;
+    số_nguyên i;
     uint64_t fdt_load_addr;
     uint64_t kernel_entry;
     DriveInfo *dinfo;
@@ -488,17 +488,17 @@ static void sifive_u_machine_init(MachineState *machine)
                           qemu_allocate_irq(sifive_u_machine_reset, NULL, 0));
 
     /* load/create device tree */
-    if (machine->dtb) {
+    nếu (machine->dtb) {
         machine->fdt = load_device_tree(machine->dtb, &s->fdt_size);
-        if (!machine->fdt) {
+        nếu (!machine->fdt) {
             error_report("load_device_tree() failed");
             exit(1);
         }
-    } else {
+    } không_thì {
         create_fdt(s, memmap, riscv_is_32bit(&s->soc.u_cpus));
     }
 
-    if (s->start_in_flash) {
+    nếu (s->start_in_flash) {
         /*
          * If start_in_flash property is given, assign s->msel to a value
          * that representing booting from QSPI0 memory-mapped flash.
@@ -532,13 +532,13 @@ static void sifive_u_machine_init(MachineState *machine)
                                                      firmware_name,
                                                      &start_addr, NULL);
 
-    if (machine->kernel_filename) {
+    nếu (machine->kernel_filename) {
         kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                          firmware_end_addr);
         riscv_load_kernel(machine, &boot_info, kernel_start_addr,
                           true, NULL);
         kernel_entry = boot_info.image_low_addr;
-    } else {
+    } không_thì {
        /*
         * If dynamic firmware is used, it doesn't know where is the next mode
         * if kernel argument is not set.
@@ -551,7 +551,7 @@ static void sifive_u_machine_init(MachineState *machine)
                                            machine, &boot_info);
     riscv_load_fdt(fdt_load_addr, machine->fdt);
 
-    if (!riscv_is_32bit(&s->soc.u_cpus)) {
+    nếu (!riscv_is_32bit(&s->soc.u_cpus)) {
         start_addr_hi32 = (uint64_t)start_addr >> 32;
         fdt_load_addr_hi32 = fdt_load_addr >> 32;
     }
@@ -573,17 +573,17 @@ static void sifive_u_machine_init(MachineState *machine)
                                        /* fw_dyn: */
     };
 
-    if (riscv_is_32bit(&s->soc.u_cpus)) {
+    nếu (riscv_is_32bit(&s->soc.u_cpus)) {
         reset_vec[4] = 0x0242a583;     /*     lw     a1, 36(t0) */
         reset_vec[5] = 0x01c2a283;     /*     lw     t0, 28(t0) */
-    } else {
+    } không_thì {
         reset_vec[4] = 0x0242b583;     /*     ld     a1, 36(t0) */
         reset_vec[5] = 0x01c2b283;     /*     ld     t0, 28(t0) */
     }
 
 
     /* copy in the reset vector in little_endian byte order */
-    for (i = 0; i < ARRAY_SIZE(reset_vec); i++) {
+    cho (i = 0; i < ARRAY_SIZE(reset_vec); i++) {
         reset_vec[i] = cpu_to_le32(reset_vec[i]);
     }
     rom_add_blob_fixed_as("mrom.reset", reset_vec, sizeof(reset_vec),
@@ -597,7 +597,7 @@ static void sifive_u_machine_init(MachineState *machine)
     /* Connect an SPI flash to SPI0 */
     flash_dev = qdev_new("is25wp256");
     dinfo = drive_get(IF_MTD, 0, 0);
-    if (dinfo) {
+    nếu (dinfo) {
         qdev_prop_set_drive_err(flash_dev, "drive",
                                 blk_by_legacy_dinfo(dinfo),
                                 &error_fatal);
@@ -626,7 +626,7 @@ static bool sifive_u_machine_get_start_in_flash(Object *obj, Error **errp)
 {
     SiFiveUState *s = RISCV_U_MACHINE(obj);
 
-    return s->start_in_flash;
+    trả_về s->start_in_flash;
 }
 
 static void sifive_u_machine_set_start_in_flash(Object *obj, bool value, Error **errp)
@@ -730,7 +730,7 @@ static void sifive_u_soc_realize(DeviceState *dev, Error **errp)
     MemoryRegion *mask_rom = g_new(MemoryRegion, 1);
     MemoryRegion *l2lim_mem = g_new(MemoryRegion, 1);
     char *plic_hart_config;
-    int i, j;
+    số_nguyên i, j;
 
     qdev_prop_set_uint32(DEVICE(&s->u_cpus), "num-harts", ms->smp.cpus - 1);
     qdev_prop_set_uint32(DEVICE(&s->u_cpus), "hartid-base", 1);
@@ -798,14 +798,14 @@ static void sifive_u_soc_realize(DeviceState *dev, Error **errp)
         RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
         CLINT_TIMEBASE_FREQ, false);
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prci), errp)) {
-        return;
+    nếu (!sysbus_realize(SYS_BUS_DEVICE(&s->prci), errp)) {
+        trả_về;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->prci), 0, memmap[SIFIVE_U_DEV_PRCI].base);
 
     qdev_prop_set_uint32(DEVICE(&s->gpio), "ngpio", 16);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gpio), errp)) {
-        return;
+    nếu (!sysbus_realize(SYS_BUS_DEVICE(&s->gpio), errp)) {
+        trả_về;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->gpio), 0, memmap[SIFIVE_U_DEV_GPIO].base);
 
@@ -813,7 +813,7 @@ static void sifive_u_soc_realize(DeviceState *dev, Error **errp)
     qdev_pass_gpios(DEVICE(&s->gpio), dev, NULL);
 
     /* Connect GPIO interrupts to the PLIC */
-    for (i = 0; i < 16; i++) {
+    cho (i = 0; i < 16; i++) {
         sysbus_connect_irq(SYS_BUS_DEVICE(&s->gpio), i,
                            qdev_get_gpio_in(DEVICE(s->plic),
                                             SIFIVE_U_GPIO_IRQ0 + i));
@@ -824,38 +824,38 @@ static void sifive_u_soc_realize(DeviceState *dev, Error **errp)
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->dma), 0, memmap[SIFIVE_U_DEV_PDMA].base);
 
     /* Connect PDMA interrupts to the PLIC */
-    for (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
+    cho (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
         sysbus_connect_irq(SYS_BUS_DEVICE(&s->dma), i,
                            qdev_get_gpio_in(DEVICE(s->plic),
                                             SIFIVE_U_PDMA_IRQ0 + i));
     }
 
     qdev_prop_set_uint32(DEVICE(&s->otp), "serial", s->serial);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->otp), errp)) {
-        return;
+    nếu (!sysbus_realize(SYS_BUS_DEVICE(&s->otp), errp)) {
+        trả_về;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->otp), 0, memmap[SIFIVE_U_DEV_OTP].base);
 
     qemu_configure_nic_device(DEVICE(&s->gem), true, NULL);
     object_property_set_int(OBJECT(&s->gem), "revision", GEM_REVISION,
                             &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gem), errp)) {
-        return;
+    nếu (!sysbus_realize(SYS_BUS_DEVICE(&s->gem), errp)) {
+        trả_về;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->gem), 0, memmap[SIFIVE_U_DEV_GEM].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->gem), 0,
                        qdev_get_gpio_in(DEVICE(s->plic), SIFIVE_U_GEM_IRQ));
 
     /* PWM */
-    for (i = 0; i < 2; i++) {
-        if (!sysbus_realize(SYS_BUS_DEVICE(&s->pwm[i]), errp)) {
-            return;
+    cho (i = 0; i < 2; i++) {
+        nếu (!sysbus_realize(SYS_BUS_DEVICE(&s->pwm[i]), errp)) {
+            trả_về;
         }
         sysbus_mmio_map(SYS_BUS_DEVICE(&s->pwm[i]), 0,
                                 memmap[SIFIVE_U_DEV_PWM0].base + (0x1000 * i));
 
         /* Connect PWM interrupts to the PLIC */
-        for (j = 0; j < SIFIVE_PWM_IRQS; j++) {
+        cho (j = 0; j < SIFIVE_PWM_IRQS; j++) {
             sysbus_connect_irq(SYS_BUS_DEVICE(&s->pwm[i]), j,
                                qdev_get_gpio_in(DEVICE(s->plic),
                                         SIFIVE_U_PWM0_IRQ0 + (i * 4) + j));
