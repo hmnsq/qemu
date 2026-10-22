@@ -9,18 +9,18 @@
  *
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "qemu/module.h"
-#include "hw/riscv/cps.h"
-#include "hw/core/qdev-properties.h"
-#include "system/reset.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/riscv_aplic.h"
-#include "hw/intc/riscv_imsic.h"
-#include "hw/pci/msi.h"
+#ضمن "qemu/osdep.h"
+#ضمن "qapi/error.h"
+#ضمن "qemu/module.h"
+#ضمن "hw/riscv/cps.h"
+#ضمن "hw/core/qdev-properties.h"
+#ضمن "system/reset.h"
+#ضمن "hw/intc/riscv_aclint.h"
+#ضمن "hw/intc/riscv_aplic.h"
+#ضمن "hw/intc/riscv_imsic.h"
+#ضمن "hw/pci/msi.h"
 
-static void riscv_cps_init(Object *obj)
+ساكن فراغ riscv_cps_init(Object *obj)
 {
     SysBusDevice *sbd = SYS_BUS_DEVICE(obj);
     RISCVCPSState *s = RISCV_CPS(obj);
@@ -29,138 +29,138 @@ static void riscv_cps_init(Object *obj)
      * Cover entire address space as there do not seem to be any
      * constraints for the base address of CPC .
      */
-    memory_region_init(&s->container, obj, "mips-cps-container", UINT64_MAX);
+    حافظہ_region_init(&s->container, obj, "mips-cps-container", UINT64_MAX);
     sysbus_init_mmio(sbd, &s->container);
 }
 
-static void main_cpu_reset(void *opaque)
+ساكن فراغ main_cpu_reset(فراغ *opaque)
 {
     CPUState *cs = opaque;
 
     cpu_reset(cs);
 }
 
-static void riscv_cps_realize(DeviceState *dev, Error **errp)
+ساكن فراغ riscv_cps_realize(DeviceState *dev, Error **errp)
 {
     RISCVCPSState *s = RISCV_CPS(dev);
     RISCVCPU *cpu;
-    int i;
+    صحيح i;
 
     /* Validate num_vp */
-    if (s->num_vp == 0) {
+    إذا (s->عدد_vp == 0) {
         error_setg(errp, "num-vp must be at least 1");
-        return;
+        أرجع;
     }
-    if (s->num_vp > MAX_HARTS) {
+    إذا (s->عدد_vp > MAX_HARTS) {
         error_setg(errp, "num-vp cannot exceed %d", MAX_HARTS);
-        return;
+        أرجع;
     }
 
     /* Allocate CPU array */
-    s->cpus = g_new0(CPUState *, s->num_vp);
+    s->cpus = g_new0(CPUState *, s->عدد_vp);
 
     /* Set up cpu_index and mhartid for avaiable CPUs. */
-    int harts_in_cluster = s->num_hart * s->num_core;
-    int num_of_clusters = s->num_vp / harts_in_cluster;
-    for (i = 0; i < s->num_vp; i++) {
+    صحيح harts_وچ_cluster = s->عدد_hart * s->عدد_core;
+    صحيح عدد_دا_clusters = s->عدد_vp / harts_وچ_cluster;
+    لكل (i = 0; i < s->عدد_vp; i++) {
         cpu = RISCV_CPU(object_new(s->cpu_type));
 
         /* All VPs are halted on reset. Leave powering up to CPC. */
-        object_property_set_bool(OBJECT(cpu), "start-powered-off", true,
+        object_property_سیٹ_bool(OBJECT(cpu), "start-powered-off", true,
                                  &error_abort);
 
-        if (!qdev_realize_and_unref(DEVICE(cpu), NULL, errp)) {
-            return;
+        إذا (!qdev_realize_and_unref(DEVICE(cpu), عدم, errp)) {
+            أرجع;
         }
 
         /* Store CPU in array */
         s->cpus[i] = CPU(cpu);
 
         /* Set up mhartid */
-        int cluster_id = i / harts_in_cluster;
-        int hart_id = (i % harts_in_cluster) % s->num_hart;
-        int core_id = (i % harts_in_cluster) / s->num_hart;
-        int mhartid = (cluster_id << MHARTID_CLUSTER_SHIFT) +
-                      (core_id << MHARTID_CORE_SHIFT) +
-                      (hart_id << MHARTID_HART_SHIFT);
+        صحيح cluster_id = i / harts_وچ_cluster;
+        صحيح hart_id = (i % harts_وچ_cluster) % s->عدد_hart;
+        صحيح core_id = (i % harts_وچ_cluster) / s->عدد_hart;
+        صحيح mhartid = (cluster_id << MHARTID_CLUSTER_کھسکاؤ) +
+                      (core_id << MHARTID_CORE_کھسکاؤ) +
+                      (hart_id << MHARTID_HART_کھسکاؤ);
         cpu->env.mhartid = mhartid;
-        qemu_register_reset(main_cpu_reset, s->cpus[i]);
+        qemu_رجسٹر_reset(main_cpu_reset, s->cpus[i]);
     }
 
     /* Cluster Power Controller */
-    object_initialize_child(OBJECT(dev), "cpc", &s->cpc, TYPE_RISCV_CPC);
-    object_property_set_uint(OBJECT(&s->cpc), "cluster-id", 0,
+    object_initialize_بچہ(OBJECT(dev), "cpc", &s->cpc, TYPE_RISCV_CPC);
+    object_property_سیٹ_uint(OBJECT(&s->cpc), "cluster-id", 0,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->cpc), "num-vp", s->num_vp,
+    object_property_سیٹ_uint(OBJECT(&s->cpc), "num-vp", s->عدد_vp,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->cpc), "num-hart", s->num_hart,
+    object_property_سیٹ_uint(OBJECT(&s->cpc), "num-hart", s->عدد_hart,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->cpc), "num-core", s->num_core,
+    object_property_سیٹ_uint(OBJECT(&s->cpc), "num-core", s->عدد_core,
                             &error_abort);
 
     /* Pass CPUs to CPC using link properties */
-    for (i = 0; i < s->num_vp; i++) {
-        char *propname = g_strdup_printf("cpu[%d]", i);
-        object_property_set_link(OBJECT(&s->cpc), propname,
+    لكل (i = 0; i < s->عدد_vp; i++) {
+        حرف *propname = g_strdup_printf("cpu[%d]", i);
+        object_property_سیٹ_link(OBJECT(&s->cpc), propname,
                                 OBJECT(s->cpus[i]), &error_abort);
         g_free(propname);
     }
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpc), errp)) {
-        return;
+    إذا (!sysbus_realize(SYS_BUS_DEVICE(&s->cpc), errp)) {
+        أرجع;
     }
 
-    memory_region_add_subregion(&s->container, 0,
+    حافظہ_region_جوڑو_subregion(&s->container, 0,
                             sysbus_mmio_get_region(SYS_BUS_DEVICE(&s->cpc), 0));
 
     /* Global Configuration Registers */
-    object_initialize_child(OBJECT(dev), "gcr", &s->gcr, TYPE_RISCV_GCR);
-    object_property_set_uint(OBJECT(&s->gcr), "cluster-id", 0,
+    object_initialize_بچہ(OBJECT(dev), "gcr", &s->gcr, TYPE_RISCV_GCR);
+    object_property_سیٹ_uint(OBJECT(&s->gcr), "cluster-id", 0,
                             &error_abort);
-    object_property_set_uint(OBJECT(&s->gcr), "num-vp", s->num_vp,
+    object_property_سیٹ_uint(OBJECT(&s->gcr), "num-vp", s->عدد_vp,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->gcr), "gcr-rev", 0xa00,
+    object_property_سیٹ_int(OBJECT(&s->gcr), "gcr-rev", 0xa00,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->gcr), "gcr-base", s->gcr_base,
+    object_property_سیٹ_int(OBJECT(&s->gcr), "gcr-base", s->gcr_ادھار,
                             &error_abort);
-    object_property_set_link(OBJECT(&s->gcr), "cpc", OBJECT(&s->cpc.mr),
+    object_property_سیٹ_link(OBJECT(&s->gcr), "cpc", OBJECT(&s->cpc.mr),
                              &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gcr), errp)) {
-        return;
+    إذا (!sysbus_realize(SYS_BUS_DEVICE(&s->gcr), errp)) {
+        أرجع;
     }
 
-    memory_region_add_subregion(&s->container, s->gcr_base,
+    حافظہ_region_جوڑو_subregion(&s->container, s->gcr_ادھار,
                             sysbus_mmio_get_region(SYS_BUS_DEVICE(&s->gcr), 0));
 
-    for (i = 0; i < num_of_clusters; i++) {
-        uint64_t cm_base = GLOBAL_CM_BASE + (CM_SIZE * i);
-        uint32_t hartid_base = i << MHARTID_CLUSTER_SHIFT;
+    لكل (i = 0; i < عدد_دا_clusters; i++) {
+        uint64_t cm_ادھار = GLOBAL_CM_ادھار + (CM_ناپ * i);
+        uint32_t hartid_ادھار = i << MHARTID_CLUSTER_کھسکاؤ;
         s->aplic = riscv_aplic_create(&s->container,
-                                      cm_base + AIA_PLIC_M_OFFSET,
-                                      AIA_PLIC_M_SIZE,
-                                      hartid_base, /* hartid_base */
+                                      cm_ادھار + AIA_PLIC_M_وتھ,
+                                      AIA_PLIC_M_ناپ,
+                                      hartid_ادھار, /* hartid_base */
                                       MAX_HARTS, /* num_harts */
-                                      APLIC_NUM_SOURCES,
-                                      APLIC_NUM_PRIO_BITS,
-                                      false, true, NULL);
+                                      APLIC_عدد_SOURCES,
+                                      APLIC_عدد_PRIO_بٹ,
+                                      false, true, عدم);
         riscv_aplic_create(&s->container,
-                           cm_base + AIA_PLIC_S_OFFSET,
-                           AIA_PLIC_S_SIZE,
-                           hartid_base, /* hartid_base */
+                           cm_ادھار + AIA_PLIC_S_وتھ,
+                           AIA_PLIC_S_ناپ,
+                           hartid_ادھار, /* hartid_base */
                            MAX_HARTS, /* num_harts */
-                           APLIC_NUM_SOURCES,
-                           APLIC_NUM_PRIO_BITS,
+                           APLIC_عدد_SOURCES,
+                           APLIC_عدد_PRIO_بٹ,
                            false, false, s->aplic);
         /* PLIC changes msi_nonbroken to ture. We revert the change. */
         msi_nonbroken = false;
         riscv_aclint_swi_create(&s->container,
-                                cm_base + AIA_CLINT_OFFSET,
-                                hartid_base, MAX_HARTS, false);
+                                cm_ادھار + AIA_CLINT_وتھ,
+                                hartid_ادھار, MAX_HARTS, false);
         riscv_aclint_mtimer_create(&s->container,
-                                   cm_base + AIA_CLINT_OFFSET +
-                                   RISCV_ACLINT_SWI_SIZE,
-                                   RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                                   hartid_base,
+                                   cm_ادھار + AIA_CLINT_وتھ +
+                                   RISCV_ACLINT_SWI_ناپ,
+                                   RISCV_ACLINT_DEFAULT_MTIMER_ناپ,
+                                   hartid_ادھار,
                                    MAX_HARTS,
                                    RISCV_ACLINT_DEFAULT_MTIMECMP,
                                    RISCV_ACLINT_DEFAULT_MTIME,
@@ -168,33 +168,33 @@ static void riscv_cps_realize(DeviceState *dev, Error **errp)
     }
 }
 
-static const Property riscv_cps_properties[] = {
-    DEFINE_PROP_UINT32("num-vp", RISCVCPSState, num_vp, 1),
-    DEFINE_PROP_UINT32("num-hart", RISCVCPSState, num_hart, 1),
-    DEFINE_PROP_UINT32("num-core", RISCVCPSState, num_core, 1),
-    DEFINE_PROP_UINT64("gcr-base", RISCVCPSState, gcr_base, GCR_BASE_ADDR),
+ساكن ثابت Property riscv_cps_properties[] = {
+    DEFINE_PROP_UINT32("num-vp", RISCVCPSState, عدد_vp, 1),
+    DEFINE_PROP_UINT32("num-hart", RISCVCPSState, عدد_hart, 1),
+    DEFINE_PROP_UINT32("num-core", RISCVCPSState, عدد_core, 1),
+    DEFINE_PROP_UINT64("gcr-base", RISCVCPSState, gcr_ادھار, GCR_ادھار_ADDR),
     DEFINE_PROP_STRING("cpu-type", RISCVCPSState, cpu_type),
 };
 
-static void riscv_cps_class_init(ObjectClass *klass, const void *data)
+ساكن فراغ riscv_cps_class_init(ObjectClass *klass, ثابت فراغ *انکڑے)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
 
     dc->realize = riscv_cps_realize;
-    device_class_set_props(dc, riscv_cps_properties);
+    device_class_سیٹ_props(dc, riscv_cps_properties);
 }
 
-static const TypeInfo riscv_cps_info = {
+ساكن ثابت TypeInfo riscv_cps_info = {
     .name = TYPE_RISCV_CPS,
-    .parent = TYPE_SYS_BUS_DEVICE,
-    .instance_size = sizeof(RISCVCPSState),
+    .ماپا = TYPE_SYS_BUS_DEVICE,
+    .instance_ناپ = حجم(RISCVCPSState),
     .instance_init = riscv_cps_init,
     .class_init = riscv_cps_class_init,
 };
 
-static void riscv_cps_register_types(void)
+ساكن فراغ riscv_cps_رجسٹر_types(فراغ)
 {
-    type_register_static(&riscv_cps_info);
+    type_رجسٹر_static(&riscv_cps_info);
 }
 
-type_init(riscv_cps_register_types)
+type_init(riscv_cps_رجسٹر_types)
