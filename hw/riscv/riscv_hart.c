@@ -63,16 +63,16 @@ static void riscv_harts_cpu_reset(void *opaque)
     cpu_reset(CPU(cpu));
 }
 
-#if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
-static void csr_call(char *cmd, uint64_t cpu_num, int csrno, uint64_t *val)
+#ถ้า defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
+static void csr_call(var_na *cmd, uint64_t cpu_num, จำนวนเต็ม csrno, uint64_t *val)
 {
     RISCVCPU *cpu = RISCV_CPU(cpu_by_arch_id(cpu_num));
     CPURISCVState *env = &cpu->env;
 
     RISCVException ret = RISCV_EXCP_NONE;
-    if (strcmp(cmd, "get_csr") == 0) {
+    ถ้า (strcmp(cmd, "get_csr") == 0) {
         ret = riscv_csr_read_i64(env, csrno, val);
-    } else if (strcmp(cmd, "set_csr") == 0) {
+    } มิฉะนั้น ถ้า (strcmp(cmd, "set_csr") == 0) {
         ret = riscv_csr_write_i64(env, csrno, *val);
     }
 
@@ -81,11 +81,11 @@ static void csr_call(char *cmd, uint64_t cpu_num, int csrno, uint64_t *val)
 
 static bool csr_qtest_callback(CharFrontend *chr, gchar **words)
 {
-    if (strcmp(words[0], "csr") == 0) {
+    ถ้า (strcmp(words[0], "csr") == 0) {
 
         uint64_t cpu;
         uint64_t val;
-        int rc, csr;
+        จำนวนเต็ม rc, csr;
 
         rc = qemu_strtou64(words[2], NULL, 0, &cpu);
         g_assert(rc == 0);
@@ -97,51 +97,51 @@ static bool csr_qtest_callback(CharFrontend *chr, gchar **words)
 
         qtest_sendf(chr, "OK 0 %"PRIx64"\n", val);
 
-        return true;
+        คืน true;
     }
 
-    return false;
+    คืน false;
 }
 
 static void riscv_cpu_register_csr_qtest_callback(void)
 {
     static bool first = true;
-    if (first) {
+    ถ้า (first) {
         first = false;
         qtest_set_command_cb(csr_qtest_callback);
     }
 }
 #endif
 
-static bool riscv_hart_realize(RISCVHartArrayState *s, int idx,
-                               char *cpu_type, Error **errp)
+static bool riscv_hart_realize(RISCVHartArrayState *s, จำนวนเต็ม idx,
+                               var_na *cpu_type, Error **errp)
 {
     object_initialize_child(OBJECT(s), "harts[*]", &s->harts[idx], cpu_type);
     qdev_prop_set_uint64(DEVICE(&s->harts[idx]), "resetvec", s->resetvec);
 
     /* Use private memory instead of system_memory if provided */
-    if (s->memory) {
+    ถ้า (s->memory) {
         object_property_set_link(OBJECT(&s->harts[idx]), "memory",
                                  OBJECT(s->memory), &error_abort);
     }
 
-    if (s->harts[idx].cfg.ext_smrnmi) {
-        if (idx < s->num_rnmi_irqvec) {
+    ถ้า (s->harts[idx].cfg.ext_smrnmi) {
+        ถ้า (idx < s->num_rnmi_irqvec) {
             qdev_prop_set_uint64(DEVICE(&s->harts[idx]),
                                  "rnmi-interrupt-vector", s->rnmi_irqvec[idx]);
         }
 
-        if (idx < s->num_rnmi_excpvec) {
+        ถ้า (idx < s->num_rnmi_excpvec) {
             qdev_prop_set_uint64(DEVICE(&s->harts[idx]),
                                  "rnmi-exception-vector", s->rnmi_excpvec[idx]);
         }
-    } else {
-        if (s->num_rnmi_irqvec > 0) {
+    } มิฉะนั้น {
+        ถ้า (s->num_rnmi_irqvec > 0) {
             warn_report_once("rnmi-interrupt-vector property is ignored "
                              "because Smrnmi extension is not enabled.");
         }
 
-        if (s->num_rnmi_excpvec > 0) {
+        ถ้า (s->num_rnmi_excpvec > 0) {
             warn_report_once("rnmi-exception-vector property is ignored "
                              "because Smrnmi extension is not enabled.");
         }
@@ -149,25 +149,25 @@ static bool riscv_hart_realize(RISCVHartArrayState *s, int idx,
 
     s->harts[idx].env.mhartid = s->hartid_base + idx;
     qemu_register_reset(riscv_harts_cpu_reset, &s->harts[idx]);
-    return qdev_realize(DEVICE(&s->harts[idx]), NULL, errp);
+    คืน qdev_realize(DEVICE(&s->harts[idx]), NULL, errp);
 }
 
 static void riscv_harts_realize(DeviceState *dev, Error **errp)
 {
     RISCVHartArrayState *s = RISCV_HART_ARRAY(dev);
-    int n;
+    จำนวนเต็ม n;
 
     s->harts = g_new0(RISCVCPU, s->num_harts);
 
-#if defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
-    if (qtest_enabled()) {
+#ถ้า defined(CONFIG_TCG) && !defined(CONFIG_USER_ONLY)
+    ถ้า (qtest_enabled()) {
         riscv_cpu_register_csr_qtest_callback();
     }
 #endif
 
-    for (n = 0; n < s->num_harts; n++) {
-        if (!riscv_hart_realize(s, n, s->cpu_type, errp)) {
-            return;
+    สำหรับ (n = 0; n < s->num_harts; n++) {
+        ถ้า (!riscv_hart_realize(s, n, s->cpu_type, errp)) {
+            คืน;
         }
     }
 }
@@ -183,7 +183,7 @@ static void riscv_harts_class_init(ObjectClass *klass, const void *data)
 static const TypeInfo riscv_harts_info = {
     .name          = TYPE_RISCV_HART_ARRAY,
     .parent        = TYPE_SYS_BUS_DEVICE,
-    .instance_size = sizeof(RISCVHartArrayState),
+    .instance_size = parimaa_na(RISCVHartArrayState),
     .class_init    = riscv_harts_class_init,
 };
 

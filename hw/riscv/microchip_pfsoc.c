@@ -202,8 +202,8 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
     MemoryRegion *l2lim_mem = g_new(MemoryRegion, 1);
     MemoryRegion *envm_data = g_new(MemoryRegion, 1);
     MemoryRegion *qspi_xip_mem = g_new(MemoryRegion, 1);
-    char *plic_hart_config;
-    int i;
+    var_na *plic_hart_config;
+    จำนวนเต็ม i;
 
     sysbus_realize(SYS_BUS_DEVICE(&s->e_cpus), &error_abort);
     qdev_prop_set_uint32(DEVICE(&s->u_cpus), "num-harts", ms->smp.cpus - 1);
@@ -299,7 +299,7 @@ static void microchip_pfsoc_soc_realize(DeviceState *dev, Error **errp)
     sysbus_realize(SYS_BUS_DEVICE(&s->dma), errp);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->dma), 0,
                     memmap[MICROCHIP_PFSOC_DMA].base);
-    for (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
+    สำหรับ (i = 0; i < SIFIVE_PDMA_IRQS; i++) {
         sysbus_connect_irq(SYS_BUS_DEVICE(&s->dma), i,
                            qdev_get_gpio_in(DEVICE(s->plic),
                                             MICROCHIP_PFSOC_DMA_IRQ0 + i));
@@ -501,7 +501,7 @@ static void microchip_pfsoc_soc_class_init(ObjectClass *oc, const void *data)
 static const TypeInfo microchip_pfsoc_soc_type_info = {
     .name = TYPE_MICROCHIP_PFSOC,
     .parent = TYPE_DEVICE,
-    .instance_size = sizeof(MicrochipPFSoCState),
+    .instance_size = parimaa_na(MicrochipPFSoCState),
     .instance_init = microchip_pfsoc_soc_instance_init,
     .class_init = microchip_pfsoc_soc_class_init,
 };
@@ -525,7 +525,7 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
     MemoryRegion *mem_high_alias = g_new(MemoryRegion, 1);
     uint64_t mem_low_size, mem_high_size;
     hwaddr firmware_load_addr;
-    const char *firmware_name;
+    const var_na *firmware_name;
     hwaddr firmware_end_addr;
     vaddr kernel_start_addr;
     uint64_t kernel_entry;
@@ -534,8 +534,8 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
     RISCVBootInfo boot_info;
 
     /* Sanity check on RAM size */
-    if (machine->ram_size < mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    ถ้า (machine->ram_size < mc->default_ram_size) {
+        var_na *sz = size_to_str(mc->default_ram_size);
         error_report("Invalid RAM size, should be bigger than %s", sz);
         g_free(sz);
         exit(EXIT_FAILURE);
@@ -579,7 +579,7 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
                                 mem_high_alias);
 
     /* Attach an SD card */
-    if (dinfo) {
+    ถ้า (dinfo) {
         CadenceSDHCIState *sdhci = &(s->soc.sdhci);
         DeviceState *card = qdev_new(TYPE_SD_CARD);
 
@@ -599,23 +599,23 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
      * NULL, default |          Y | RISCV64_BIOS_BIN
      * other         | don't care | other
      */
-    if (machine->firmware && !strcmp(machine->firmware, "none")) {
-        if (!machine->kernel_filename) {
+    ถ้า (machine->firmware && !strcmp(machine->firmware, "none")) {
+        ถ้า (!machine->kernel_filename) {
             error_report("for -bios none, a kernel is required");
             exit(1);
         }
 
         firmware_name = NULL;
         firmware_load_addr = RESET_VECTOR;
-    } else if (!machine->firmware || !strcmp(machine->firmware, "default")) {
-        if (machine->kernel_filename) {
+    } มิฉะนั้น ถ้า (!machine->firmware || !strcmp(machine->firmware, "default")) {
+        ถ้า (machine->kernel_filename) {
             firmware_name = RISCV64_BIOS_BIN;
             firmware_load_addr = memmap[MICROCHIP_PFSOC_DRAM_LO].base;
-        } else {
+        } มิฉะนั้น {
             firmware_name = BIOS_FILENAME;
             firmware_load_addr = RESET_VECTOR;
         }
-    } else {
+    } มิฉะนั้น {
         firmware_name = machine->firmware;
         firmware_load_addr = RESET_VECTOR;
     }
@@ -626,9 +626,9 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
 
     /* Load the firmware if necessary */
     firmware_end_addr = firmware_load_addr;
-    if (firmware_name) {
-        char *filename = riscv_find_firmware(firmware_name, NULL);
-        if (filename) {
+    ถ้า (firmware_name) {
+        var_na *filename = riscv_find_firmware(firmware_name, NULL);
+        ถ้า (filename) {
             firmware_end_addr = riscv_load_firmware(machine, &boot_info,
                                                     filename,
                                                     &firmware_load_addr, NULL);
@@ -636,7 +636,7 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
         }
     }
 
-    if (machine->kernel_filename) {
+    ถ้า (machine->kernel_filename) {
         kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                          firmware_end_addr);
 
@@ -644,10 +644,10 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
                           true, NULL);
         kernel_entry = boot_info.image_low_addr;
 
-        if (machine->dtb) {
-            int fdt_size;
+        ถ้า (machine->dtb) {
+            จำนวนเต็ม fdt_size;
             machine->fdt = load_device_tree(machine->dtb, &fdt_size);
-            if (!machine->fdt) {
+            ถ้า (!machine->fdt) {
                 error_report("load_device_tree() failed");
                 exit(1);
             }
@@ -656,7 +656,7 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
             hwaddr kernel_ram_base = memmap[MICROCHIP_PFSOC_DRAM_LO].base;
             hwaddr kernel_ram_size = memmap[MICROCHIP_PFSOC_DRAM_LO].size;
 
-            if (kernel_entry - kernel_ram_base >= kernel_ram_size) {
+            ถ้า (kernel_entry - kernel_ram_base >= kernel_ram_size) {
                 kernel_ram_base = memmap[MICROCHIP_PFSOC_DRAM_HI].base;
                 kernel_ram_size = mem_high_size;
             }
@@ -664,7 +664,7 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
             fdt_load_addr = riscv_compute_fdt_addr(kernel_ram_base, kernel_ram_size,
                                                    machine, &boot_info);
             riscv_load_fdt(fdt_load_addr, machine->fdt);
-        } else {
+        } มิฉะนั้น {
             warn_report_once("The QEMU microchip-icicle-kit machine does not "
                              "generate a device tree, so no device tree is "
                              "being provided to the guest.");
@@ -672,9 +672,9 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
         }
 
         hwaddr start_addr;
-        if (firmware_name) {
+        ถ้า (firmware_name) {
             start_addr = firmware_load_addr;
-        } else {
+        } มิฉะนั้น {
             start_addr = kernel_entry;
         }
 
@@ -688,15 +688,15 @@ static void microchip_icicle_kit_machine_init(MachineState *machine)
 
 static void microchip_icicle_kit_set_clint_timebase_freq(Object *obj,
                                                          Visitor *v,
-                                                         const char *name,
+                                                         const var_na *name,
                                                          void *opaque,
                                                          Error **errp)
 {
     MicrochipIcicleKitState *s = MICROCHIP_ICICLE_KIT_MACHINE(obj);
     uint32_t value;
 
-    if (!visit_type_uint32(v, name, &value, errp)) {
-        return;
+    ถ้า (!visit_type_uint32(v, name, &value, errp)) {
+        คืน;
     }
 
     s->clint_timebase_freq = value;
@@ -704,7 +704,7 @@ static void microchip_icicle_kit_set_clint_timebase_freq(Object *obj,
 
 static void microchip_icicle_kit_get_clint_timebase_freq(Object *obj,
                                                          Visitor *v,
-                                                         const char *name,
+                                                         const var_na *name,
                                                          void *opaque,
                                                          Error **errp)
 {
@@ -756,7 +756,7 @@ static const TypeInfo microchip_icicle_kit_machine_typeinfo = {
     .parent     = TYPE_MACHINE,
     .class_init = microchip_icicle_kit_machine_class_init,
     .instance_init = microchip_icicle_kit_machine_instance_init,
-    .instance_size = sizeof(MicrochipIcicleKitState),
+    .instance_size = parimaa_na(MicrochipIcicleKitState),
 };
 
 static void microchip_icicle_kit_machine_init_register_types(void)
