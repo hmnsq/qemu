@@ -16,21 +16,21 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "hw/core/boards.h"
-#include "hw/riscv/shakti_c.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "hw/intc/sifive_plic.h"
-#include "hw/intc/riscv_aclint.h"
-#include "system/system.h"
-#include "hw/core/qdev-properties.h"
-#include "system/address-spaces.h"
-#include "hw/riscv/boot.h"
+#অন্তর্ভাব "qemu/osdep.h"
+#অন্তর্ভাব "hw/core/boards.h"
+#অন্তর্ভাব "hw/riscv/shakti_c.h"
+#অন্তর্ভাব "qapi/error.h"
+#অন্তর্ভাব "qemu/error-report.h"
+#অন্তর্ভাব "hw/intc/sifive_plic.h"
+#অন্তর্ভাব "hw/intc/riscv_aclint.h"
+#অন্তর্ভাব "system/system.h"
+#অন্তর্ভাব "hw/core/qdev-properties.h"
+#অন্তর্ভাব "system/address-spaces.h"
+#অন্তর্ভাব "hw/riscv/boot.h"
 
-static const struct MemmapEntry {
+স্থির ধ্রুবক কাঠামো MemmapEntry {
     hwaddr base;
-    hwaddr size;
+    hwaddr আকার_2;
 } shakti_c_memmap[] = {
     [SHAKTI_C_ROM]   =  {  0x00001000,  0x2000   },
     [SHAKTI_C_RAM]   =  {  0x80000000,  0x0      },
@@ -41,7 +41,7 @@ static const struct MemmapEntry {
     [SHAKTI_C_I2C]   =  {  0x20c00000,  0x00100  },
 };
 
-static void shakti_c_machine_state_init(MachineState *mstate)
+স্থির শূন্য shakti_c_machine_state_init(MachineState *mstate)
 {
     ShaktiCMachineState *sms = RISCV_SHAKTI_MACHINE(mstate);
     MemoryRegion *system_memory = get_system_memory();
@@ -51,7 +51,7 @@ static void shakti_c_machine_state_init(MachineState *mstate)
     /* Initialize SoC */
     object_initialize_child(OBJECT(mstate), "soc", &sms->soc,
                             TYPE_RISCV_SHAKTI_SOC);
-    qdev_realize(DEVICE(&sms->soc), NULL, &error_abort);
+    qdev_realize(DEVICE(&sms->soc), ফাঁকা, &error_abort);
 
     /* register RAM */
     memory_region_add_subregion(system_memory,
@@ -60,27 +60,27 @@ static void shakti_c_machine_state_init(MachineState *mstate)
 
     riscv_boot_info_init(&boot_info, &sms->soc.cpus);
 
-    if (mstate->firmware) {
+    যদি (mstate->firmware) {
         riscv_load_firmware(mstate, &boot_info, mstate->firmware,
-                            &firmware_load_addr, NULL);
+                            &firmware_load_addr, ফাঁকা);
     }
 
     /* ROM reset vector */
     riscv_setup_rom_reset_vec(mstate, &sms->soc.cpus, firmware_load_addr,
                               shakti_c_memmap[SHAKTI_C_ROM].base,
-                              shakti_c_memmap[SHAKTI_C_ROM].size, 0, 0);
+                              shakti_c_memmap[SHAKTI_C_ROM].আকার_2, 0, 0);
 }
 
-static void shakti_c_machine_instance_init(Object *obj)
+স্থির শূন্য shakti_c_machine_instance_init(Object *obj)
 {
 }
 
-static void shakti_c_machine_class_init(ObjectClass *klass, const void *data)
+স্থির শূন্য shakti_c_machine_class_init(ObjectClass *klass, ধ্রুবক শূন্য *তথ্য)
 {
     MachineClass *mc = MACHINE_CLASS(klass);
-    static const char * const valid_cpu_types[] = {
+    স্থির ধ্রুবক অক্ষর * ধ্রুবক valid_cpu_types[] = {
         RISCV_CPU_TYPE_NAME("shakti-c"),
-        NULL
+        ফাঁকা
     };
 
     mc->desc = "RISC-V Board compatible with Shakti SDK";
@@ -91,21 +91,21 @@ static void shakti_c_machine_class_init(ObjectClass *klass, const void *data)
     mc->default_ram_id = "riscv.shakti.c.ram";
 }
 
-static const TypeInfo shakti_c_machine_type_info = {
+স্থির ধ্রুবক TypeInfo shakti_c_machine_type_info = {
     .name = TYPE_RISCV_SHAKTI_MACHINE,
     .parent = TYPE_MACHINE,
     .class_init = shakti_c_machine_class_init,
     .instance_init = shakti_c_machine_instance_init,
-    .instance_size = sizeof(ShaktiCMachineState),
+    .instance_আকার = আকার(ShaktiCMachineState),
 };
 
-static void shakti_c_machine_type_info_register(void)
+স্থির শূন্য shakti_c_machine_type_info_register(শূন্য)
 {
     type_register_static(&shakti_c_machine_type_info);
 }
 type_init(shakti_c_machine_type_info_register)
 
-static void shakti_c_soc_state_realize(DeviceState *dev, Error **errp)
+স্থির শূন্য shakti_c_soc_state_realize(DeviceState *dev, Error **errp)
 {
     MachineState *ms = MACHINE(qdev_get_machine());
     ShaktiCSoCState *sss = RISCV_SHAKTI_SOC(dev);
@@ -115,41 +115,41 @@ static void shakti_c_soc_state_realize(DeviceState *dev, Error **errp)
 
     sss->plic = sifive_plic_create(system_memory,
         shakti_c_memmap[SHAKTI_C_PLIC].base,
-        (char *)SHAKTI_C_PLIC_HART_CONFIG, ms->smp.cpus, 0,
-        SHAKTI_C_PLIC_NUM_SOURCES,
-        SHAKTI_C_PLIC_NUM_PRIORITIES,
+        (অক্ষর *)SHAKTI_C_PLIC_HART_CONFIG, ms->smp.cpus, 0,
+        SHAKTI_C_PLIC_অঙ্ক_SOURCES,
+        SHAKTI_C_PLIC_অঙ্ক_PRIORITIES,
         SHAKTI_C_PLIC_PRIORITY_BASE,
         SHAKTI_C_PLIC_PENDING_BASE,
         SHAKTI_C_PLIC_ENABLE_BASE,
         SHAKTI_C_PLIC_ENABLE_STRIDE,
         SHAKTI_C_PLIC_CONTEXT_BASE,
         SHAKTI_C_PLIC_CONTEXT_STRIDE,
-        shakti_c_memmap[SHAKTI_C_PLIC].size);
+        shakti_c_memmap[SHAKTI_C_PLIC].আকার_2);
 
     riscv_aclint_swi_create(system_memory,
         shakti_c_memmap[SHAKTI_C_CLINT].base,
         0, 1, false);
     riscv_aclint_mtimer_create(system_memory,
-        shakti_c_memmap[SHAKTI_C_CLINT].base + RISCV_ACLINT_SWI_SIZE,
-        RISCV_ACLINT_DEFAULT_MTIMER_SIZE, 0, 1,
+        shakti_c_memmap[SHAKTI_C_CLINT].base + RISCV_ACLINT_SWI_আকার,
+        RISCV_ACLINT_DEFAULT_MTIMER_আকার, 0, 1,
         RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
         RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, false);
 
     qdev_prop_set_chr(DEVICE(&(sss->uart)), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&sss->uart), errp)) {
-        return;
+    যদি (!sysbus_realize(SYS_BUS_DEVICE(&sss->uart), errp)) {
+        ফেরত;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&sss->uart), 0,
                     shakti_c_memmap[SHAKTI_C_UART].base);
 
     /* ROM */
     memory_region_init_rom(&sss->rom, OBJECT(dev), "riscv.shakti.c.rom",
-                           shakti_c_memmap[SHAKTI_C_ROM].size, &error_fatal);
+                           shakti_c_memmap[SHAKTI_C_ROM].আকার_2, &error_fatal);
     memory_region_add_subregion(system_memory,
         shakti_c_memmap[SHAKTI_C_ROM].base, &sss->rom);
 }
 
-static void shakti_c_soc_class_init(ObjectClass *klass, const void *data)
+স্থির শূন্য shakti_c_soc_class_init(ObjectClass *klass, ধ্রুবক শূন্য *তথ্য)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
     dc->realize = shakti_c_soc_state_realize;
@@ -162,7 +162,7 @@ static void shakti_c_soc_class_init(ObjectClass *klass, const void *data)
     dc->user_creatable = false;
 }
 
-static void shakti_c_soc_instance_init(Object *obj)
+স্থির শূন্য shakti_c_soc_instance_init(Object *obj)
 {
     ShaktiCSoCState *sss = RISCV_SHAKTI_SOC(obj);
 
@@ -180,15 +180,15 @@ static void shakti_c_soc_instance_init(Object *obj)
                             &error_abort);
 }
 
-static const TypeInfo shakti_c_type_info = {
+স্থির ধ্রুবক TypeInfo shakti_c_type_info = {
     .name = TYPE_RISCV_SHAKTI_SOC,
     .parent = TYPE_DEVICE,
     .class_init = shakti_c_soc_class_init,
     .instance_init = shakti_c_soc_instance_init,
-    .instance_size = sizeof(ShaktiCSoCState),
+    .instance_আকার = আকার(ShaktiCSoCState),
 };
 
-static void shakti_c_type_info_register(void)
+স্থির শূন্য shakti_c_type_info_register(শূন্য)
 {
     type_register_static(&shakti_c_type_info);
 }

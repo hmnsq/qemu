@@ -5,22 +5,22 @@
  * Copyright (c) 2026 Kuan-Wei Chiu <visitorckw@gmail.com>
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "hw/riscv/cv1800b.h"
-#include "hw/core/qdev-properties.h"
-#include "target/riscv/cpu-qom.h"
-#include "system/system.h"
-#include "hw/intc/riscv_aclint.h"
-#include "system/address-spaces.h"
-#include "hw/intc/sifive_plic.h"
-#include "target/riscv/cpu.h"
-#include "hw/riscv/boot.h"
-#include "hw/sd/sdhci.h"
-#include "hw/misc/unimp.h"
+#অন্তর্ভাব "qemu/osdep.h"
+#অন্তর্ভাব "qapi/error.h"
+#অন্তর্ভাব "hw/riscv/cv1800b.h"
+#অন্তর্ভাব "hw/core/qdev-properties.h"
+#অন্তর্ভাব "target/riscv/cpu-qom.h"
+#অন্তর্ভাব "system/system.h"
+#অন্তর্ভাব "hw/intc/riscv_aclint.h"
+#অন্তর্ভাব "system/address-spaces.h"
+#অন্তর্ভাব "hw/intc/sifive_plic.h"
+#অন্তর্ভাব "target/riscv/cpu.h"
+#অন্তর্ভাব "hw/riscv/boot.h"
+#অন্তর্ভাব "hw/sd/sdhci.h"
+#অন্তর্ভাব "hw/misc/unimp.h"
 
-const MemMapEntry cv1800b_memmap[] = {
-    [CV1800B_DEV_TOP_MISC]     = { 0x03000000,      0x1000 },
+ধ্রুবক MemMapEntry cv1800b_memmap[] = {
+    [CV1800_B_DEV_শীর্ষ_MISC]     = { 0x03000000,      0x1000 },
     [CV1800B_DEV_PINMUX]       = { 0x03001000,      0x1000 },
     [CV1800B_DEV_CLK]          = { 0x03002000,      0x1000 },
     [CV1800B_DEV_RST]          = { 0x03003000,      0x1000 },
@@ -36,7 +36,7 @@ const MemMapEntry cv1800b_memmap[] = {
     [CV1800B_DEV_DRAM]         = { 0x80000000,         0x0 },
 };
 
-static void cv1800b_soc_instance_init(Object *obj)
+স্থির শূন্য cv1800b_soc_instance_init(Object *obj)
 {
     CV1800BSoCState *s = CV1800B_SOC(obj);
 
@@ -51,59 +51,59 @@ static void cv1800b_soc_instance_init(Object *obj)
     object_initialize_child(obj, "sdhci", &s->sdhci, TYPE_SYSBUS_SDHCI);
 }
 
-static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
+স্থির শূন্য cv1800b_soc_realize(DeviceState *dev, Error **errp)
 {
     CV1800BSoCState *s = CV1800B_SOC(dev);
     MachineState *ms = MACHINE(qdev_get_machine());
-    uint32_t num_harts = ms->smp.cpus;
+    uint32_t অঙ্ক_harts = ms->smp.cpus;
     MemoryRegion *system_memory = get_system_memory();
-    char *plic_hart_config;
+    অক্ষর *plic_hart_config;
 
-    qdev_prop_set_uint32(DEVICE(&s->cpus), "num-harts", num_harts);
+    qdev_prop_set_uint32(DEVICE(&s->cpus), "num-harts", অঙ্ক_harts);
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
-        return;
+    যদি (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
+        ফেরত;
     }
 
     memory_region_init_rom(&s->rom, OBJECT(dev), "cv1800b.rom",
-                           cv1800b_memmap[CV1800B_DEV_ROM].size, &error_fatal);
+                           cv1800b_memmap[CV1800B_DEV_ROM].আকার_2, &error_fatal);
     memory_region_add_subregion(system_memory,
                                 cv1800b_memmap[CV1800B_DEV_ROM].base, &s->rom);
 
     riscv_aclint_swi_create(system_memory,
                             cv1800b_memmap[CV1800B_DEV_CLINT].base,
-                            0, num_harts, false);
+                            0, অঙ্ক_harts, false);
     riscv_aclint_mtimer_create(system_memory,
                                cv1800b_memmap[CV1800B_DEV_CLINT].base +
-                               RISCV_ACLINT_SWI_SIZE,
-                               RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
-                               0, num_harts, RISCV_ACLINT_DEFAULT_MTIMECMP,
+                               RISCV_ACLINT_SWI_আকার,
+                               RISCV_ACLINT_DEFAULT_MTIMER_আকার,
+                               0, অঙ্ক_harts, RISCV_ACLINT_DEFAULT_MTIMECMP,
                                RISCV_ACLINT_DEFAULT_MTIME,
                                RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
 
-    plic_hart_config = riscv_plic_hart_config_string(num_harts);
+    plic_hart_config = riscv_plic_hart_config_string(অঙ্ক_harts);
     s->plic = sifive_plic_create(
         system_memory,
         cv1800b_memmap[CV1800B_DEV_PLIC].base,
         plic_hart_config,
-        num_harts,
+        অঙ্ক_harts,
         0,
-        CV1800B_PLIC_NUM_SOURCES,
-        CV1800B_PLIC_NUM_PRIORITIES,
+        CV1800_B_PLIC_অঙ্ক_SOURCES,
+        CV1800_B_PLIC_অঙ্ক_PRIORITIES,
         0x0,
         0x1000,
         0x2000,
         0x80,
         0x200000,
         0x1000,
-        cv1800b_memmap[CV1800B_DEV_PLIC].size);
+        cv1800b_memmap[CV1800B_DEV_PLIC].আকার_2);
 
     g_free(plic_hart_config);
 
     qdev_prop_set_uint8(DEVICE(&s->uart), "regshift", 2);
     qdev_prop_set_chr(DEVICE(&s->uart), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
-        return;
+    যদি (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
+        ফেরত;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->uart), 0, cv1800b_memmap[CV1800B_DEV_UART0].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->uart), 0,
@@ -111,49 +111,49 @@ static void cv1800b_soc_realize(DeviceState *dev, Error **errp)
 
     qdev_prop_set_uint8(DEVICE(&s->sdhci), "sd-spec-version", 3);
     qdev_prop_set_uint64(DEVICE(&s->sdhci), "capareg", 0x056900b9);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->sdhci), errp)) {
-        return;
+    যদি (!sysbus_realize(SYS_BUS_DEVICE(&s->sdhci), errp)) {
+        ফেরত;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->sdhci), 0, cv1800b_memmap[CV1800B_DEV_SD0].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->sdhci), 0,
                        qdev_get_gpio_in(DEVICE(s->plic), CV1800B_SD0_IRQ));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->clk), errp)) {
-        return;
+    যদি (!sysbus_realize(SYS_BUS_DEVICE(&s->clk), errp)) {
+        ফেরত;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->clk), 0,
                     cv1800b_memmap[CV1800B_DEV_CLK].base);
 
     create_unimplemented_device("cv1800b.top_misc",
-                                cv1800b_memmap[CV1800B_DEV_TOP_MISC].base,
-                                cv1800b_memmap[CV1800B_DEV_TOP_MISC].size);
+                                cv1800b_memmap[CV1800_B_DEV_শীর্ষ_MISC].base,
+                                cv1800b_memmap[CV1800_B_DEV_শীর্ষ_MISC].আকার_2);
 
     create_unimplemented_device("cv1800b.pinmux",
                                 cv1800b_memmap[CV1800B_DEV_PINMUX].base,
-                                cv1800b_memmap[CV1800B_DEV_PINMUX].size);
+                                cv1800b_memmap[CV1800B_DEV_PINMUX].আকার_2);
 
     create_unimplemented_device("cv1800b.rst",
                                 cv1800b_memmap[CV1800B_DEV_RST].base,
-                                cv1800b_memmap[CV1800B_DEV_RST].size);
+                                cv1800b_memmap[CV1800B_DEV_RST].আকার_2);
 
     create_unimplemented_device("cv1800b.wdt",
                                 cv1800b_memmap[CV1800B_DEV_WDT].base,
-                                cv1800b_memmap[CV1800B_DEV_WDT].size);
+                                cv1800b_memmap[CV1800B_DEV_WDT].আকার_2);
 
     create_unimplemented_device("cv1800b.gpio0_3",
                                 cv1800b_memmap[CV1800B_DEV_GPIO].base,
-                                cv1800b_memmap[CV1800B_DEV_GPIO].size);
+                                cv1800b_memmap[CV1800B_DEV_GPIO].আকার_2);
 
     create_unimplemented_device("cv1800b.rtc_gpio",
                                 cv1800b_memmap[CV1800B_DEV_RTC_GPIO].base,
-                                cv1800b_memmap[CV1800B_DEV_RTC_GPIO].size);
+                                cv1800b_memmap[CV1800B_DEV_RTC_GPIO].আকার_2);
 
     create_unimplemented_device("cv1800b.rtc_io",
                                 cv1800b_memmap[CV1800B_DEV_RTC_IO].base,
-                                cv1800b_memmap[CV1800B_DEV_RTC_IO].size);
+                                cv1800b_memmap[CV1800B_DEV_RTC_IO].আকার_2);
 }
 
-static void cv1800b_soc_class_init(ObjectClass *oc, const void *data)
+স্থির শূন্য cv1800b_soc_class_init(ObjectClass *oc, ধ্রুবক শূন্য *তথ্য)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
@@ -161,15 +161,15 @@ static void cv1800b_soc_class_init(ObjectClass *oc, const void *data)
     dc->user_creatable = false;
 }
 
-static const TypeInfo cv1800b_soc_type_info = {
+স্থির ধ্রুবক TypeInfo cv1800b_soc_type_info = {
     .name = TYPE_CV1800B_SOC,
     .parent = TYPE_DEVICE,
-    .instance_size = sizeof(CV1800BSoCState),
+    .instance_আকার = আকার(CV1800BSoCState),
     .instance_init = cv1800b_soc_instance_init,
     .class_init = cv1800b_soc_class_init,
 };
 
-static void cv1800b_soc_register_types(void)
+স্থির শূন্য cv1800b_soc_register_types(শূন্য)
 {
     type_register_static(&cv1800b_soc_type_info);
 }
