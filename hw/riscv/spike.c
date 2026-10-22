@@ -22,40 +22,40 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/error-report.h"
-#include "qapi/error.h"
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/core/sysbus.h"
-#include "target/riscv/cpu.h"
-#include "hw/riscv/riscv_hart.h"
-#include "hw/riscv/spike.h"
-#include "hw/riscv/boot.h"
-#include "hw/riscv/fdt-common.h"
-#include "hw/riscv/numa.h"
-#include "hw/char/riscv_htif.h"
-#include "hw/intc/riscv_aclint.h"
-#include "chardev/char.h"
-#include "system/device_tree.h"
-#include "system/system.h"
+#ضمن "qemu/osdep.h"
+#ضمن "qemu/error-report.h"
+#ضمن "qapi/error.h"
+#ضمن "hw/core/boards.h"
+#ضمن "hw/core/loader.h"
+#ضمن "hw/core/sysbus.h"
+#ضمن "target/riscv/cpu.h"
+#ضمن "hw/riscv/riscv_hart.h"
+#ضمن "hw/riscv/spike.h"
+#ضمن "hw/riscv/boot.h"
+#ضمن "hw/riscv/fdt-common.h"
+#ضمن "hw/riscv/numa.h"
+#ضمن "hw/char/riscv_htif.h"
+#ضمن "hw/intc/riscv_aclint.h"
+#ضمن "chardev/char.h"
+#ضمن "system/device_tree.h"
+#ضمن "system/system.h"
 
-#include <libfdt.h>
+#ضمن <libfdt.h>
 
-static const MemMapEntry spike_memmap[] = {
+ساكن ثابت MemMapEntry spike_memmap[] = {
     [SPIKE_MROM] =     {     0x1000,     0xf000 },
     [SPIKE_HTIF] =     {  0x1000000,     0x1000 },
     [SPIKE_CLINT] =    {  0x2000000,    0x10000 },
     [SPIKE_DRAM] =     { 0x80000000,        0x0 },
 };
 
-static void create_fdt(SpikeState *s, const MemMapEntry *memmap,
+ساكن فراغ create_fdt(SpikeState *s, ثابت MemMapEntry *memmap,
                        bool is_32_bit, bool htif_custom_base)
 {
-    void *fdt;
-    int fdt_size;
+    فراغ *fdt;
+    صحيح fdt_size;
     unsigned long clint_addr;
-    int socket;
+    صحيح socket;
     MachineState *ms = MACHINE(s);
     uint32_t phandle = 1;
     bool numa_enabled = riscv_numa_enabled(ms);
@@ -67,7 +67,7 @@ static void create_fdt(SpikeState *s, const MemMapEntry *memmap,
 
     qemu_fdt_add_subnode(fdt, "/htif");
     qemu_fdt_setprop_string(fdt, "/htif", "compatible", "ucb,htif0");
-    if (htif_custom_base) {
+    𐤀𐤌 (htif_custom_base) {
         qemu_fdt_setprop_cells(fdt, "/htif", "reg",
             0x0, memmap[SPIKE_HTIF].base, 0x0, memmap[SPIKE_HTIF].size);
     }
@@ -75,7 +75,7 @@ static void create_fdt(SpikeState *s, const MemMapEntry *memmap,
     riscv_fdt_create_cpu_socket_subnode(fdt,
                                         RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ);
 
-    for (socket = (riscv_socket_count(ms) - 1); socket >= 0; socket--) {
+    لكل (socket = (riscv_socket_count(ms) - 1); socket >= 0; socket--) {
         g_autofree uint32_t *intc_phandles = g_new0(uint32_t,
                                                     s->soc[socket].num_harts);
         hwaddr memaddr = memmap[SPIKE_DRAM].base +
@@ -105,50 +105,50 @@ static void create_fdt(SpikeState *s, const MemMapEntry *memmap,
     qemu_fdt_setprop_string(fdt, "/chosen", "stdout-path", "/htif");
 }
 
-static bool spike_test_elf_image(char *filename)
+ساكن bool spike_test_elf_image(حرف *filename)
 {
-    return load_elf_hdr(filename, NULL, NULL, NULL);
+    أرجع load_elf_hdr(filename, عدم, عدم, عدم);
 }
 
-static void spike_board_init(MachineState *machine)
+ساكن فراغ spike_board_init(MachineState *machine)
 {
-    const MemMapEntry *memmap = spike_memmap;
+    ثابت MemMapEntry *memmap = spike_memmap;
     SpikeState *s = SPIKE_MACHINE(machine);
     MemoryRegion *system_memory = get_system_memory();
     MemoryRegion *mask_rom = g_new(MemoryRegion, 1);
     hwaddr firmware_end_addr = memmap[SPIKE_DRAM].base;
     hwaddr firmware_load_addr = memmap[SPIKE_DRAM].base;
     vaddr kernel_start_addr;
-    char *firmware_name;
+    حرف *firmware_name;
     uint64_t fdt_load_addr;
     uint64_t kernel_entry;
-    char *soc_name;
-    int i, base_hartid, hart_count;
+    حرف *soc_name;
+    صحيح i, base_hartid, hart_count;
     bool htif_custom_base = false;
     RISCVBootInfo boot_info;
 
     /* Check socket count limit */
-    if (SPIKE_SOCKETS_MAX < riscv_socket_count(machine)) {
+    𐤀𐤌 (SPIKE_SOCKETS_MAX < riscv_socket_count(machine)) {
         error_report("number of sockets/nodes should be less than %d",
             SPIKE_SOCKETS_MAX);
         exit(1);
     }
 
     /* Initialize sockets */
-    for (i = 0; i < riscv_socket_count(machine); i++) {
-        if (!riscv_socket_check_hartids(machine, i)) {
+    لكل (i = 0; i < riscv_socket_count(machine); i++) {
+        𐤀𐤌 (!riscv_socket_check_hartids(machine, i)) {
             error_report("discontinuous hartids in socket%d", i);
             exit(1);
         }
 
         base_hartid = riscv_socket_first_hartid(machine, i);
-        if (base_hartid < 0) {
+        𐤀𐤌 (base_hartid < 0) {
             error_report("can't find hartid base for socket%d", i);
             exit(1);
         }
 
         hart_count = riscv_socket_hart_count(machine, i);
-        if (hart_count < 0) {
+        𐤀𐤌 (hart_count < 0) {
             error_report("can't find hart count for socket%d", i);
             exit(1);
         }
@@ -182,7 +182,7 @@ static void spike_board_init(MachineState *machine)
         machine->ram);
 
     /* boot rom */
-    memory_region_init_rom(mask_rom, NULL, "riscv.spike.mrom",
+    memory_region_init_rom(mask_rom, عدم, "riscv.spike.mrom",
                            memmap[SPIKE_MROM].size, &error_fatal);
     memory_region_add_subregion(system_memory, memmap[SPIKE_MROM].base,
                                 mask_rom);
@@ -197,13 +197,13 @@ static void spike_board_init(MachineState *machine)
      * the HTIF console, otherwise we fall back to use the custom base
      * passed from device tree for the HTIF console.
      */
-    if (!firmware_name && !machine->kernel_filename) {
+    𐤀𐤌 (!firmware_name && !machine->kernel_filename) {
         htif_custom_base = true;
-    } else {
-        if (firmware_name) {
+    } وإلا {
+        𐤀𐤌 (firmware_name) {
             htif_custom_base = !spike_test_elf_image(firmware_name);
         }
-        if (!htif_custom_base && machine->kernel_filename) {
+        𐤀𐤌 (!htif_custom_base && machine->kernel_filename) {
             htif_custom_base = !spike_test_elf_image(machine->kernel_filename);
         }
     }
@@ -211,7 +211,7 @@ static void spike_board_init(MachineState *machine)
     riscv_boot_info_init(&boot_info, &s->soc[0]);
 
     /* Load firmware */
-    if (firmware_name) {
+    𐤀𐤌 (firmware_name) {
         firmware_end_addr = riscv_load_firmware(machine, &boot_info,
                                                 firmware_name,
                                                 &firmware_load_addr,
@@ -223,14 +223,14 @@ static void spike_board_init(MachineState *machine)
     create_fdt(s, memmap, riscv_is_32bit(&s->soc[0]), htif_custom_base);
 
     /* Load kernel */
-    if (machine->kernel_filename) {
+    𐤀𐤌 (machine->kernel_filename) {
         kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
                                                          firmware_end_addr);
 
         riscv_load_kernel(machine, &boot_info, kernel_start_addr,
                           true, htif_symbol_callback);
         kernel_entry = boot_info.image_low_addr;
-    } else {
+    } وإلا {
        /*
         * If dynamic firmware is used, it doesn't know where is the next mode
         * if kernel argument is not set.
@@ -254,16 +254,16 @@ static void spike_board_init(MachineState *machine)
                  htif_custom_base);
 }
 
-static void spike_set_signature(Object *obj, const char *val, Error **errp)
+ساكن فراغ spike_set_signature(Object *obj, ثابت حرف *val, Error **errp)
 {
     sig_file = g_strdup(val);
 }
 
-static void spike_machine_instance_init(Object *obj)
+ساكن فراغ spike_machine_instance_init(Object *obj)
 {
 }
 
-static void spike_machine_class_init(ObjectClass *oc, const void *data)
+ساكن فراغ spike_machine_class_init(ObjectClass *oc, ثابت فراغ *data)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -278,7 +278,7 @@ static void spike_machine_class_init(ObjectClass *oc, const void *data)
     /* platform instead of architectural choice */
     mc->cpu_cluster_has_numa_boundary = true;
     mc->default_ram_id = "riscv.spike.ram";
-    object_class_property_add_str(oc, "signature", NULL, spike_set_signature);
+    object_class_property_add_str(oc, "signature", عدم, spike_set_signature);
     object_class_property_set_description(oc, "signature",
                                           "File to write ACT test signature");
     object_class_static_property_add_uint8_ptr(oc, "signature-granularity",
@@ -289,15 +289,15 @@ static void spike_machine_class_init(ObjectClass *oc, const void *data)
                                           "file");
 }
 
-static const TypeInfo spike_machine_typeinfo = {
+ساكن ثابت TypeInfo spike_machine_typeinfo = {
     .name       = MACHINE_TYPE_NAME("spike"),
     .parent     = TYPE_MACHINE,
     .class_init = spike_machine_class_init,
     .instance_init = spike_machine_instance_init,
-    .instance_size = sizeof(SpikeState),
+    .instance_size = حجم(SpikeState),
 };
 
-static void spike_machine_init_register_types(void)
+ساكن فراغ spike_machine_init_register_types(فراغ)
 {
     type_register_static(&spike_machine_typeinfo);
 }
