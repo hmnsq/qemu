@@ -18,17 +18,17 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "qemu/cutils.h"
-#include "hw/riscv/opentitan.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "hw/core/boards.h"
-#include "hw/misc/unimp.h"
-#include "hw/riscv/boot.h"
-#include "qemu/units.h"
-#include "system/system.h"
-#include "system/address-spaces.h"
+#ضمن "qemu/osdep.h"
+#ضمن "qemu/cutils.h"
+#ضمن "hw/riscv/opentitan.h"
+#ضمن "qapi/error.h"
+#ضمن "qemu/error-report.h"
+#ضمن "hw/core/boards.h"
+#ضمن "hw/misc/unimp.h"
+#ضمن "hw/riscv/boot.h"
+#ضمن "qemu/units.h"
+#ضمن "system/system.h"
+#ضمن "system/address-spaces.h"
 
 /*
  * This version of the OpenTitan machine currently supports
@@ -38,7 +38,7 @@
  * MMIO mapping as per (specified commit):
  * lowRISC/opentitan: hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h
  */
-static const MemMapEntry ibex_memmap[] = {
+ساكن ثابت Mem_Map_مدخل ibex_memmap[] = {
     [IBEX_DEV_ROM] =            {  0x00008000,  0x8000      },
     [IBEX_DEV_RAM] =            {  0x10000000,  0x20000     },
     [IBEX_DEV_FLASH] =          {  0x20000000,  0x100000    },
@@ -76,45 +76,45 @@ static const MemMapEntry ibex_memmap[] = {
     [IBEX_DEV_FLASH_VIRTUAL] =  {  0x80000000,  0x80000     },
 };
 
-static void opentitan_machine_init(MachineState *machine)
+ساكن فراغ opentitan_machine_init(MachineState *machine)
 {
     MachineClass *mc = MACHINE_GET_CLASS(machine);
     OpenTitanState *s = OPENTITAN_MACHINE(machine);
-    const MemMapEntry *memmap = ibex_memmap;
-    MemoryRegion *sys_mem = get_system_memory();
+    ثابت Mem_Map_مدخل *memmap = ibex_memmap;
+    حافظه_Region *sys_mem = get_system_حافظه();
     RISCVBootInfo boot_info;
 
-    if (machine->ram_size != mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    إذا (machine->ram_اندازه != mc->default_ram_اندازه) {
+        حرف *sz = اندازه_مقصد_str(mc->default_ram_اندازه);
         error_report("Invalid RAM size, should be %s", sz);
         g_free(sz);
-        exit(EXIT_FAILURE);
+        خروج(EXIT_FAILURE);
     }
 
     /* Initialize SoC */
-    object_initialize_child(OBJECT(machine), "soc", &s->soc,
+    object_initialize_فرزند(OBJECT(machine), "soc", &s->soc,
                             TYPE_RISCV_IBEX_SOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&s->soc), عدم, &error_fatal);
 
-    memory_region_add_subregion(sys_mem,
-        memmap[IBEX_DEV_RAM].base, machine->ram);
+    حافظه_region_جمع_کن_subregion(sys_mem,
+        memmap[IBEX_DEV_RAM].پایه, machine->ram);
 
     riscv_boot_info_init(&boot_info, &s->soc.cpus);
 
-    if (machine->firmware) {
-        hwaddr firmware_load_addr = memmap[IBEX_DEV_RAM].base;
-        riscv_load_firmware(machine, &boot_info, machine->firmware,
-                            &firmware_load_addr, NULL);
+    إذا (machine->firmware) {
+        hwaddr firmware_بارگیری_addr = memmap[IBEX_DEV_RAM].پایه;
+        riscv_بارگیری_firmware(machine, &boot_info, machine->firmware,
+                            &firmware_بارگیری_addr, عدم);
     }
 
-    if (machine->kernel_filename) {
-        riscv_load_kernel(machine, &boot_info,
-                          memmap[IBEX_DEV_RAM].base,
-                          false, NULL);
+    إذا (machine->kernel_filename) {
+        riscv_بارگیری_kernel(machine, &boot_info,
+                          memmap[IBEX_DEV_RAM].پایه,
+                          false, عدم);
     }
 }
 
-static void opentitan_machine_class_init(ObjectClass *oc, const void *data)
+ساكن فراغ opentitan_machine_class_init(ObjectClass *oc, ثابت فراغ *داده)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -123,219 +123,219 @@ static void opentitan_machine_class_init(ObjectClass *oc, const void *data)
     mc->max_cpus = 1;
     mc->default_cpu_type = TYPE_RISCV_CPU_IBEX;
     mc->default_ram_id = "riscv.lowrisc.ibex.ram";
-    mc->default_ram_size = ibex_memmap[IBEX_DEV_RAM].size;
+    mc->default_ram_اندازه = ibex_memmap[IBEX_DEV_RAM].اندازه;
 }
 
-static void lowrisc_ibex_soc_init(Object *obj)
+ساكن فراغ lowrisc_ibex_soc_init(Object *obj)
 {
-    LowRISCIbexSoCState *s = RISCV_IBEX_SOC(obj);
+    کم_RISCIbex_So_CState *s = RISCV_IBEX_SOC(obj);
 
-    object_initialize_child(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
+    object_initialize_فرزند(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
 
-    object_initialize_child(obj, "plic", &s->plic, TYPE_SIFIVE_PLIC);
+    object_initialize_فرزند(obj, "plic", &s->plic, TYPE_SIFIVE_PLIC);
 
-    object_initialize_child(obj, "uart", &s->uart, TYPE_IBEX_UART);
+    object_initialize_فرزند(obj, "uart", &s->uart, TYPE_IBEX_UART);
 
-    object_initialize_child(obj, "timer", &s->timer, TYPE_IBEX_TIMER);
+    object_initialize_فرزند(obj, "timer", &s->timer, TYPE_IBEX_TIMER);
 
-    for (int i = 0; i < OPENTITAN_NUM_SPI_HOSTS; i++) {
-        object_initialize_child(obj, "spi_host[*]", &s->spi_host[i],
+    لكل (صحيح i = 0; i < OPENTITAN_رقم_SPI_HOSTS; i++) {
+        object_initialize_فرزند(obj, "spi_host[*]", &s->spi_host[i],
                                 TYPE_IBEX_SPI_HOST);
     }
 }
 
-static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
+ساكن فراغ lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
 {
-    const MemMapEntry *memmap = ibex_memmap;
+    ثابت Mem_Map_مدخل *memmap = ibex_memmap;
     DeviceState *dev;
     SysBusDevice *busdev;
     MachineState *ms = MACHINE(qdev_get_machine());
-    LowRISCIbexSoCState *s = RISCV_IBEX_SOC(dev_soc);
-    MemoryRegion *sys_mem = get_system_memory();
-    int i;
+    کم_RISCIbex_So_CState *s = RISCV_IBEX_SOC(dev_soc);
+    حافظه_Region *sys_mem = get_system_حافظه();
+    صحيح i;
 
-    object_property_set_str(OBJECT(&s->cpus), "cpu-type", ms->cpu_type,
+    object_property_مجموعه_str(OBJECT(&s->cpus), "cpu-type", ms->cpu_type,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "num-harts", ms->smp.cpus,
+    object_property_مجموعه_int(OBJECT(&s->cpus), "num-harts", ms->smp.cpus,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "resetvec", s->resetvec,
+    object_property_مجموعه_int(OBJECT(&s->cpus), "resetvec", s->resetvec,
                             &error_abort);
     sysbus_realize(SYS_BUS_DEVICE(&s->cpus), &error_fatal);
 
     /* Boot ROM */
-    memory_region_init_rom(&s->rom, OBJECT(dev_soc), "riscv.lowrisc.ibex.rom",
-                           memmap[IBEX_DEV_ROM].size, &error_fatal);
-    memory_region_add_subregion(sys_mem,
-        memmap[IBEX_DEV_ROM].base, &s->rom);
+    حافظه_region_init_rom(&s->rom, OBJECT(dev_soc), "riscv.lowrisc.ibex.rom",
+                           memmap[IBEX_DEV_ROM].اندازه, &error_fatal);
+    حافظه_region_جمع_کن_subregion(sys_mem,
+        memmap[IBEX_DEV_ROM].پایه, &s->rom);
 
     /* Flash memory */
-    memory_region_init_rom(&s->flash_mem, OBJECT(dev_soc), "riscv.lowrisc.ibex.flash",
-                           memmap[IBEX_DEV_FLASH].size, &error_fatal);
-    memory_region_init_alias(&s->flash_alias, OBJECT(dev_soc),
+    حافظه_region_init_rom(&s->flash_mem, OBJECT(dev_soc), "riscv.lowrisc.ibex.flash",
+                           memmap[IBEX_DEV_FLASH].اندازه, &error_fatal);
+    حافظه_region_init_alias(&s->flash_alias, OBJECT(dev_soc),
                              "riscv.lowrisc.ibex.flash_virtual", &s->flash_mem, 0,
-                             memmap[IBEX_DEV_FLASH_VIRTUAL].size);
-    memory_region_add_subregion(sys_mem, memmap[IBEX_DEV_FLASH].base,
+                             memmap[IBEX_DEV_FLASH_VIRTUAL].اندازه);
+    حافظه_region_جمع_کن_subregion(sys_mem, memmap[IBEX_DEV_FLASH].پایه,
                                 &s->flash_mem);
-    memory_region_add_subregion(sys_mem, memmap[IBEX_DEV_FLASH_VIRTUAL].base,
+    حافظه_region_جمع_کن_subregion(sys_mem, memmap[IBEX_DEV_FLASH_VIRTUAL].پایه,
                                 &s->flash_alias);
 
     /* PLIC */
-    qdev_prop_set_string(DEVICE(&s->plic), "hart-config", "M");
-    qdev_prop_set_uint32(DEVICE(&s->plic), "num-sources", 180);
-    qdev_prop_set_uint32(DEVICE(&s->plic), "num-priorities", 3);
-    qdev_prop_set_uint32(DEVICE(&s->plic), "pending-base", 0x1000);
-    qdev_prop_set_uint32(DEVICE(&s->plic), "enable-base", 0x2000);
-    qdev_prop_set_uint32(DEVICE(&s->plic), "enable-stride", 32);
-    qdev_prop_set_uint32(DEVICE(&s->plic), "context-base", 0x200000);
-    qdev_prop_set_uint32(DEVICE(&s->plic), "context-stride", 8);
-    qdev_prop_set_uint32(DEVICE(&s->plic), "aperture-size", memmap[IBEX_DEV_PLIC].size);
+    qdev_prop_مجموعه_string(DEVICE(&s->plic), "hart-config", "M");
+    qdev_prop_مجموعه_uint32(DEVICE(&s->plic), "num-sources", 180);
+    qdev_prop_مجموعه_uint32(DEVICE(&s->plic), "num-priorities", 3);
+    qdev_prop_مجموعه_uint32(DEVICE(&s->plic), "pending-base", 0x1000);
+    qdev_prop_مجموعه_uint32(DEVICE(&s->plic), "enable-base", 0x2000);
+    qdev_prop_مجموعه_uint32(DEVICE(&s->plic), "enable-stride", 32);
+    qdev_prop_مجموعه_uint32(DEVICE(&s->plic), "context-base", 0x200000);
+    qdev_prop_مجموعه_uint32(DEVICE(&s->plic), "context-stride", 8);
+    qdev_prop_مجموعه_uint32(DEVICE(&s->plic), "aperture-size", memmap[IBEX_DEV_PLIC].اندازه);
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->plic), errp)) {
-        return;
+    إذا (!sysbus_realize(SYS_BUS_DEVICE(&s->plic), errp)) {
+        أرجع;
     }
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->plic), 0, memmap[IBEX_DEV_PLIC].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->plic), 0, memmap[IBEX_DEV_PLIC].پایه);
 
-    for (i = 0; i < ms->smp.cpus; i++) {
+    لكل (i = 0; i < ms->smp.cpus; i++) {
         CPUState *cpu = qemu_get_cpu(i);
 
-        qdev_connect_gpio_out(DEVICE(&s->plic), ms->smp.cpus + i,
-                              qdev_get_gpio_in(DEVICE(cpu), IRQ_M_EXT));
+        qdev_connect_gpio_بیرون(DEVICE(&s->plic), ms->smp.cpus + i,
+                              qdev_get_gpio_درون(DEVICE(cpu), IRQ_M_EXT));
     }
 
     /* UART */
-    qdev_prop_set_chr(DEVICE(&(s->uart)), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
-        return;
+    qdev_prop_مجموعه_chr(DEVICE(&(s->uart)), "chardev", serial_hd(0));
+    إذا (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
+        أرجع;
     }
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->uart), 0, memmap[IBEX_DEV_UART].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->uart), 0, memmap[IBEX_DEV_UART].پایه);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->uart),
-                       0, qdev_get_gpio_in(DEVICE(&s->plic),
+                       0, qdev_get_gpio_درون(DEVICE(&s->plic),
                        IBEX_UART0_TX_WATERMARK_IRQ));
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->uart),
-                       1, qdev_get_gpio_in(DEVICE(&s->plic),
+                       1, qdev_get_gpio_درون(DEVICE(&s->plic),
                        IBEX_UART0_RX_WATERMARK_IRQ));
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->uart),
-                       2, qdev_get_gpio_in(DEVICE(&s->plic),
-                       IBEX_UART0_TX_EMPTY_IRQ));
+                       2, qdev_get_gpio_درون(DEVICE(&s->plic),
+                       IBEX_UART0_TX_خالی_IRQ));
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->uart),
-                       3, qdev_get_gpio_in(DEVICE(&s->plic),
-                       IBEX_UART0_RX_OVERFLOW_IRQ));
+                       3, qdev_get_gpio_درون(DEVICE(&s->plic),
+                       IBEX_UART0_RX_سرریز_IRQ));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->timer), errp)) {
-        return;
+    إذا (!sysbus_realize(SYS_BUS_DEVICE(&s->timer), errp)) {
+        أرجع;
     }
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->timer), 0, memmap[IBEX_DEV_TIMER].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->timer), 0, memmap[IBEX_DEV_TIMER].پایه);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->timer),
-                       0, qdev_get_gpio_in(DEVICE(&s->plic),
+                       0, qdev_get_gpio_درون(DEVICE(&s->plic),
                        IBEX_TIMER_TIMEREXPIRED0_0));
-    qdev_connect_gpio_out(DEVICE(&s->timer), 0,
-                          qdev_get_gpio_in(DEVICE(qemu_get_cpu(0)),
+    qdev_connect_gpio_بیرون(DEVICE(&s->timer), 0,
+                          qdev_get_gpio_درون(DEVICE(qemu_get_cpu(0)),
                                            IRQ_M_TIMER));
 
     /* SPI-Hosts */
-    for (i = 0; i < OPENTITAN_NUM_SPI_HOSTS; ++i) {
+    لكل (i = 0; i < OPENTITAN_رقم_SPI_HOSTS; ++i) {
         dev = DEVICE(&(s->spi_host[i]));
-        if (!sysbus_realize(SYS_BUS_DEVICE(&s->spi_host[i]), errp)) {
-            return;
+        إذا (!sysbus_realize(SYS_BUS_DEVICE(&s->spi_host[i]), errp)) {
+            أرجع;
         }
         busdev = SYS_BUS_DEVICE(dev);
-        sysbus_mmio_map(busdev, 0, memmap[IBEX_DEV_SPI_HOST0 + i].base);
+        sysbus_mmio_map(busdev, 0, memmap[IBEX_DEV_SPI_HOST0 + i].پایه);
 
-        switch (i) {
-        case OPENTITAN_SPI_HOST0:
-            sysbus_connect_irq(busdev, 0, qdev_get_gpio_in(DEVICE(&s->plic),
+        بدل (i) {
+        حالة OPENTITAN_SPI_HOST0:
+            sysbus_connect_irq(busdev, 0, qdev_get_gpio_درون(DEVICE(&s->plic),
                                 IBEX_SPI_HOST0_ERR_IRQ));
-            sysbus_connect_irq(busdev, 1, qdev_get_gpio_in(DEVICE(&s->plic),
+            sysbus_connect_irq(busdev, 1, qdev_get_gpio_درون(DEVICE(&s->plic),
                                 IBEX_SPI_HOST0_SPI_EVENT_IRQ));
-            break;
-        case OPENTITAN_SPI_HOST1:
-            sysbus_connect_irq(busdev, 0, qdev_get_gpio_in(DEVICE(&s->plic),
+            اكسر;
+        حالة OPENTITAN_SPI_HOST1:
+            sysbus_connect_irq(busdev, 0, qdev_get_gpio_درون(DEVICE(&s->plic),
                                 IBEX_SPI_HOST1_ERR_IRQ));
-            sysbus_connect_irq(busdev, 1, qdev_get_gpio_in(DEVICE(&s->plic),
+            sysbus_connect_irq(busdev, 1, qdev_get_gpio_درون(DEVICE(&s->plic),
                                 IBEX_SPI_HOST1_SPI_EVENT_IRQ));
-            break;
+            اكسر;
         }
     }
 
     create_unimplemented_device("riscv.lowrisc.ibex.gpio",
-        memmap[IBEX_DEV_GPIO].base, memmap[IBEX_DEV_GPIO].size);
+        memmap[IBEX_DEV_GPIO].پایه, memmap[IBEX_DEV_GPIO].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.spi_device",
-        memmap[IBEX_DEV_SPI_DEVICE].base, memmap[IBEX_DEV_SPI_DEVICE].size);
+        memmap[IBEX_DEV_SPI_DEVICE].پایه, memmap[IBEX_DEV_SPI_DEVICE].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.i2c",
-        memmap[IBEX_DEV_I2C].base, memmap[IBEX_DEV_I2C].size);
+        memmap[IBEX_DEV_I2C].پایه, memmap[IBEX_DEV_I2C].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.pattgen",
-        memmap[IBEX_DEV_PATTGEN].base, memmap[IBEX_DEV_PATTGEN].size);
+        memmap[IBEX_DEV_PATTGEN].پایه, memmap[IBEX_DEV_PATTGEN].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.sensor_ctrl",
-        memmap[IBEX_DEV_SENSOR_CTRL].base, memmap[IBEX_DEV_SENSOR_CTRL].size);
+        memmap[IBEX_DEV_SENSOR_CTRL].پایه, memmap[IBEX_DEV_SENSOR_CTRL].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.otp_ctrl",
-        memmap[IBEX_DEV_OTP_CTRL].base, memmap[IBEX_DEV_OTP_CTRL].size);
+        memmap[IBEX_DEV_OTP_CTRL].پایه, memmap[IBEX_DEV_OTP_CTRL].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.lc_ctrl",
-        memmap[IBEX_DEV_LC_CTRL].base, memmap[IBEX_DEV_LC_CTRL].size);
+        memmap[IBEX_DEV_LC_CTRL].پایه, memmap[IBEX_DEV_LC_CTRL].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.pwrmgr",
-        memmap[IBEX_DEV_PWRMGR].base, memmap[IBEX_DEV_PWRMGR].size);
+        memmap[IBEX_DEV_PWRMGR].پایه, memmap[IBEX_DEV_PWRMGR].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.rstmgr",
-        memmap[IBEX_DEV_RSTMGR].base, memmap[IBEX_DEV_RSTMGR].size);
+        memmap[IBEX_DEV_RSTMGR].پایه, memmap[IBEX_DEV_RSTMGR].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.clkmgr",
-        memmap[IBEX_DEV_CLKMGR].base, memmap[IBEX_DEV_CLKMGR].size);
+        memmap[IBEX_DEV_CLKMGR].پایه, memmap[IBEX_DEV_CLKMGR].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.pinmux",
-        memmap[IBEX_DEV_PINMUX].base, memmap[IBEX_DEV_PINMUX].size);
+        memmap[IBEX_DEV_PINMUX].پایه, memmap[IBEX_DEV_PINMUX].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.aon_timer",
-        memmap[IBEX_DEV_AON_TIMER].base, memmap[IBEX_DEV_AON_TIMER].size);
+        memmap[IBEX_DEV_AON_TIMER].پایه, memmap[IBEX_DEV_AON_TIMER].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.usbdev",
-        memmap[IBEX_DEV_USBDEV].base, memmap[IBEX_DEV_USBDEV].size);
+        memmap[IBEX_DEV_USBDEV].پایه, memmap[IBEX_DEV_USBDEV].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.flash_ctrl",
-        memmap[IBEX_DEV_FLASH_CTRL].base, memmap[IBEX_DEV_FLASH_CTRL].size);
+        memmap[IBEX_DEV_FLASH_CTRL].پایه, memmap[IBEX_DEV_FLASH_CTRL].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.aes",
-        memmap[IBEX_DEV_AES].base, memmap[IBEX_DEV_AES].size);
+        memmap[IBEX_DEV_AES].پایه, memmap[IBEX_DEV_AES].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.hmac",
-        memmap[IBEX_DEV_HMAC].base, memmap[IBEX_DEV_HMAC].size);
+        memmap[IBEX_DEV_HMAC].پایه, memmap[IBEX_DEV_HMAC].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.kmac",
-        memmap[IBEX_DEV_KMAC].base, memmap[IBEX_DEV_KMAC].size);
+        memmap[IBEX_DEV_KMAC].پایه, memmap[IBEX_DEV_KMAC].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.keymgr",
-        memmap[IBEX_DEV_KEYMGR].base, memmap[IBEX_DEV_KEYMGR].size);
+        memmap[IBEX_DEV_KEYMGR].پایه, memmap[IBEX_DEV_KEYMGR].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.csrng",
-        memmap[IBEX_DEV_CSRNG].base, memmap[IBEX_DEV_CSRNG].size);
+        memmap[IBEX_DEV_CSRNG].پایه, memmap[IBEX_DEV_CSRNG].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.entropy",
-        memmap[IBEX_DEV_ENTROPY].base, memmap[IBEX_DEV_ENTROPY].size);
+        memmap[IBEX_DEV_ENTROPY].پایه, memmap[IBEX_DEV_ENTROPY].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.edn0",
-        memmap[IBEX_DEV_EDNO].base, memmap[IBEX_DEV_EDNO].size);
+        memmap[IBEX_DEV_EDNO].پایه, memmap[IBEX_DEV_EDNO].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.edn1",
-        memmap[IBEX_DEV_EDN1].base, memmap[IBEX_DEV_EDN1].size);
+        memmap[IBEX_DEV_EDN1].پایه, memmap[IBEX_DEV_EDN1].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.alert_handler",
-        memmap[IBEX_DEV_ALERT_HANDLER].base, memmap[IBEX_DEV_ALERT_HANDLER].size);
+        memmap[IBEX_DEV_ALERT_HANDLER].پایه, memmap[IBEX_DEV_ALERT_HANDLER].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.sram_ctrl",
-        memmap[IBEX_DEV_SRAM_CTRL].base, memmap[IBEX_DEV_SRAM_CTRL].size);
+        memmap[IBEX_DEV_SRAM_CTRL].پایه, memmap[IBEX_DEV_SRAM_CTRL].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.otbn",
-        memmap[IBEX_DEV_OTBN].base, memmap[IBEX_DEV_OTBN].size);
+        memmap[IBEX_DEV_OTBN].پایه, memmap[IBEX_DEV_OTBN].اندازه);
     create_unimplemented_device("riscv.lowrisc.ibex.ibex_cfg",
-        memmap[IBEX_DEV_IBEX_CFG].base, memmap[IBEX_DEV_IBEX_CFG].size);
+        memmap[IBEX_DEV_IBEX_CFG].پایه, memmap[IBEX_DEV_IBEX_CFG].اندازه);
 }
 
-static const Property lowrisc_ibex_soc_props[] = {
-    DEFINE_PROP_UINT32("resetvec", LowRISCIbexSoCState, resetvec, 0x20000400),
+ساكن ثابت Property lowrisc_ibex_soc_props[] = {
+    DEFINE_PROP_UINT32("resetvec", کم_RISCIbex_So_CState, resetvec, 0x20000400),
 };
 
-static void lowrisc_ibex_soc_class_init(ObjectClass *oc, const void *data)
+ساكن فراغ lowrisc_ibex_soc_class_init(ObjectClass *oc, ثابت فراغ *داده)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
-    device_class_set_props(dc, lowrisc_ibex_soc_props);
+    device_class_مجموعه_props(dc, lowrisc_ibex_soc_props);
     dc->realize = lowrisc_ibex_soc_realize;
     /* Reason: Uses serial_hds in realize function, thus can't be used twice */
     dc->user_creatable = false;
 }
 
-static const TypeInfo open_titan_types[] = {
+ساكن ثابت TypeInfo open_titan_types[] = {
     {
         .name           = TYPE_RISCV_IBEX_SOC,
-        .parent         = TYPE_DEVICE,
-        .instance_size  = sizeof(LowRISCIbexSoCState),
+        .والد         = TYPE_DEVICE,
+        .instance_اندازه  = حجم(کم_RISCIbex_So_CState),
         .instance_init  = lowrisc_ibex_soc_init,
         .class_init     = lowrisc_ibex_soc_class_init,
     }, {
         .name           = TYPE_OPENTITAN_MACHINE,
-        .parent         = TYPE_MACHINE,
-        .instance_size  = sizeof(OpenTitanState),
+        .والد         = TYPE_MACHINE,
+        .instance_اندازه  = حجم(OpenTitanState),
         .class_init     = opentitan_machine_class_init,
     }
 };

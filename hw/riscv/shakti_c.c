@@ -16,21 +16,21 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "hw/core/boards.h"
-#include "hw/riscv/shakti_c.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "hw/intc/sifive_plic.h"
-#include "hw/intc/riscv_aclint.h"
-#include "system/system.h"
-#include "hw/core/qdev-properties.h"
-#include "system/address-spaces.h"
-#include "hw/riscv/boot.h"
+#ضمن "qemu/osdep.h"
+#ضمن "hw/core/boards.h"
+#ضمن "hw/riscv/shakti_c.h"
+#ضمن "qapi/error.h"
+#ضمن "qemu/error-report.h"
+#ضمن "hw/intc/sifive_plic.h"
+#ضمن "hw/intc/riscv_aclint.h"
+#ضمن "system/system.h"
+#ضمن "hw/core/qdev-properties.h"
+#ضمن "system/address-spaces.h"
+#ضمن "hw/riscv/boot.h"
 
-static const struct MemmapEntry {
-    hwaddr base;
-    hwaddr size;
+ساكن ثابت بنية Memmap_مدخل {
+    hwaddr پایه;
+    hwaddr اندازه;
 } shakti_c_memmap[] = {
     [SHAKTI_C_ROM]   =  {  0x00001000,  0x2000   },
     [SHAKTI_C_RAM]   =  {  0x80000000,  0x0      },
@@ -41,46 +41,46 @@ static const struct MemmapEntry {
     [SHAKTI_C_I2C]   =  {  0x20c00000,  0x00100  },
 };
 
-static void shakti_c_machine_state_init(MachineState *mstate)
+ساكن فراغ shakti_c_machine_state_init(MachineState *mstate)
 {
     ShaktiCMachineState *sms = RISCV_SHAKTI_MACHINE(mstate);
-    MemoryRegion *system_memory = get_system_memory();
+    حافظه_Region *system_حافظه = get_system_حافظه();
     RISCVBootInfo boot_info;
-    hwaddr firmware_load_addr = shakti_c_memmap[SHAKTI_C_RAM].base;
+    hwaddr firmware_بارگیری_addr = shakti_c_memmap[SHAKTI_C_RAM].پایه;
 
     /* Initialize SoC */
-    object_initialize_child(OBJECT(mstate), "soc", &sms->soc,
+    object_initialize_فرزند(OBJECT(mstate), "soc", &sms->soc,
                             TYPE_RISCV_SHAKTI_SOC);
-    qdev_realize(DEVICE(&sms->soc), NULL, &error_abort);
+    qdev_realize(DEVICE(&sms->soc), عدم, &error_abort);
 
     /* register RAM */
-    memory_region_add_subregion(system_memory,
-                                shakti_c_memmap[SHAKTI_C_RAM].base,
+    حافظه_region_جمع_کن_subregion(system_حافظه,
+                                shakti_c_memmap[SHAKTI_C_RAM].پایه,
                                 mstate->ram);
 
     riscv_boot_info_init(&boot_info, &sms->soc.cpus);
 
-    if (mstate->firmware) {
-        riscv_load_firmware(mstate, &boot_info, mstate->firmware,
-                            &firmware_load_addr, NULL);
+    إذا (mstate->firmware) {
+        riscv_بارگیری_firmware(mstate, &boot_info, mstate->firmware,
+                            &firmware_بارگیری_addr, عدم);
     }
 
     /* ROM reset vector */
-    riscv_setup_rom_reset_vec(mstate, &sms->soc.cpus, firmware_load_addr,
-                              shakti_c_memmap[SHAKTI_C_ROM].base,
-                              shakti_c_memmap[SHAKTI_C_ROM].size, 0, 0);
+    riscv_راهاندازی_rom_reset_vec(mstate, &sms->soc.cpus, firmware_بارگیری_addr,
+                              shakti_c_memmap[SHAKTI_C_ROM].پایه,
+                              shakti_c_memmap[SHAKTI_C_ROM].اندازه, 0, 0);
 }
 
-static void shakti_c_machine_instance_init(Object *obj)
+ساكن فراغ shakti_c_machine_instance_init(Object *obj)
 {
 }
 
-static void shakti_c_machine_class_init(ObjectClass *klass, const void *data)
+ساكن فراغ shakti_c_machine_class_init(ObjectClass *klass, ثابت فراغ *داده)
 {
     MachineClass *mc = MACHINE_CLASS(klass);
-    static const char * const valid_cpu_types[] = {
+    ساكن ثابت حرف * ثابت valid_cpu_types[] = {
         RISCV_CPU_TYPE_NAME("shakti-c"),
-        NULL
+        عدم
     };
 
     mc->desc = "RISC-V Board compatible with Shakti SDK";
@@ -91,65 +91,65 @@ static void shakti_c_machine_class_init(ObjectClass *klass, const void *data)
     mc->default_ram_id = "riscv.shakti.c.ram";
 }
 
-static const TypeInfo shakti_c_machine_type_info = {
+ساكن ثابت TypeInfo shakti_c_machine_type_info = {
     .name = TYPE_RISCV_SHAKTI_MACHINE,
-    .parent = TYPE_MACHINE,
+    .والد = TYPE_MACHINE,
     .class_init = shakti_c_machine_class_init,
     .instance_init = shakti_c_machine_instance_init,
-    .instance_size = sizeof(ShaktiCMachineState),
+    .instance_اندازه = حجم(ShaktiCMachineState),
 };
 
-static void shakti_c_machine_type_info_register(void)
+ساكن فراغ shakti_c_machine_type_info_ثبات(فراغ)
 {
-    type_register_static(&shakti_c_machine_type_info);
+    type_ثبات_static(&shakti_c_machine_type_info);
 }
-type_init(shakti_c_machine_type_info_register)
+type_init(shakti_c_machine_type_info_ثبات)
 
-static void shakti_c_soc_state_realize(DeviceState *dev, Error **errp)
+ساكن فراغ shakti_c_soc_state_realize(DeviceState *dev, Error **errp)
 {
     MachineState *ms = MACHINE(qdev_get_machine());
     ShaktiCSoCState *sss = RISCV_SHAKTI_SOC(dev);
-    MemoryRegion *system_memory = get_system_memory();
+    حافظه_Region *system_حافظه = get_system_حافظه();
 
     sysbus_realize(SYS_BUS_DEVICE(&sss->cpus), &error_abort);
 
-    sss->plic = sifive_plic_create(system_memory,
-        shakti_c_memmap[SHAKTI_C_PLIC].base,
-        (char *)SHAKTI_C_PLIC_HART_CONFIG, ms->smp.cpus, 0,
-        SHAKTI_C_PLIC_NUM_SOURCES,
-        SHAKTI_C_PLIC_NUM_PRIORITIES,
-        SHAKTI_C_PLIC_PRIORITY_BASE,
-        SHAKTI_C_PLIC_PENDING_BASE,
-        SHAKTI_C_PLIC_ENABLE_BASE,
+    sss->plic = sifive_plic_create(system_حافظه,
+        shakti_c_memmap[SHAKTI_C_PLIC].پایه,
+        (حرف *)SHAKTI_C_PLIC_HART_CONFIG, ms->smp.cpus, 0,
+        SHAKTI_C_PLIC_رقم_SOURCES,
+        SHAKTI_C_PLIC_رقم_PRIORITIES,
+        SHAKTI_C_PLIC_اولویت_پایه,
+        SHAKTI_C_PLIC_PENDING_پایه,
+        SHAKTI_C_PLIC_ENABLE_پایه,
         SHAKTI_C_PLIC_ENABLE_STRIDE,
-        SHAKTI_C_PLIC_CONTEXT_BASE,
+        SHAKTI_C_PLIC_CONTEXT_پایه,
         SHAKTI_C_PLIC_CONTEXT_STRIDE,
-        shakti_c_memmap[SHAKTI_C_PLIC].size);
+        shakti_c_memmap[SHAKTI_C_PLIC].اندازه);
 
-    riscv_aclint_swi_create(system_memory,
-        shakti_c_memmap[SHAKTI_C_CLINT].base,
+    riscv_aclint_swi_create(system_حافظه,
+        shakti_c_memmap[SHAKTI_C_CLINT].پایه,
         0, 1, false);
-    riscv_aclint_mtimer_create(system_memory,
-        shakti_c_memmap[SHAKTI_C_CLINT].base + RISCV_ACLINT_SWI_SIZE,
-        RISCV_ACLINT_DEFAULT_MTIMER_SIZE, 0, 1,
+    riscv_aclint_mtimer_create(system_حافظه,
+        shakti_c_memmap[SHAKTI_C_CLINT].پایه + RISCV_ACLINT_SWI_اندازه,
+        RISCV_ACLINT_DEFAULT_MTIMER_اندازه, 0, 1,
         RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
         RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, false);
 
-    qdev_prop_set_chr(DEVICE(&(sss->uart)), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&sss->uart), errp)) {
-        return;
+    qdev_prop_مجموعه_chr(DEVICE(&(sss->uart)), "chardev", serial_hd(0));
+    إذا (!sysbus_realize(SYS_BUS_DEVICE(&sss->uart), errp)) {
+        أرجع;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&sss->uart), 0,
-                    shakti_c_memmap[SHAKTI_C_UART].base);
+                    shakti_c_memmap[SHAKTI_C_UART].پایه);
 
     /* ROM */
-    memory_region_init_rom(&sss->rom, OBJECT(dev), "riscv.shakti.c.rom",
-                           shakti_c_memmap[SHAKTI_C_ROM].size, &error_fatal);
-    memory_region_add_subregion(system_memory,
-        shakti_c_memmap[SHAKTI_C_ROM].base, &sss->rom);
+    حافظه_region_init_rom(&sss->rom, OBJECT(dev), "riscv.shakti.c.rom",
+                           shakti_c_memmap[SHAKTI_C_ROM].اندازه, &error_fatal);
+    حافظه_region_جمع_کن_subregion(system_حافظه,
+        shakti_c_memmap[SHAKTI_C_ROM].پایه, &sss->rom);
 }
 
-static void shakti_c_soc_class_init(ObjectClass *klass, const void *data)
+ساكن فراغ shakti_c_soc_class_init(ObjectClass *klass, ثابت فراغ *داده)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
     dc->realize = shakti_c_soc_state_realize;
@@ -162,34 +162,34 @@ static void shakti_c_soc_class_init(ObjectClass *klass, const void *data)
     dc->user_creatable = false;
 }
 
-static void shakti_c_soc_instance_init(Object *obj)
+ساكن فراغ shakti_c_soc_instance_init(Object *obj)
 {
     ShaktiCSoCState *sss = RISCV_SHAKTI_SOC(obj);
 
-    object_initialize_child(obj, "cpus", &sss->cpus, TYPE_RISCV_HART_ARRAY);
-    object_initialize_child(obj, "uart", &sss->uart, TYPE_SHAKTI_UART);
+    object_initialize_فرزند(obj, "cpus", &sss->cpus, TYPE_RISCV_HART_ARRAY);
+    object_initialize_فرزند(obj, "uart", &sss->uart, TYPE_SHAKTI_UART);
 
     /*
      * CPU type is fixed and we are not supporting passing from commandline yet.
      * So let it be in instance_init. When supported should use ms->cpu_type
      * instead of TYPE_RISCV_CPU_SHAKTI_C
      */
-    object_property_set_str(OBJECT(&sss->cpus), "cpu-type",
+    object_property_مجموعه_str(OBJECT(&sss->cpus), "cpu-type",
                             TYPE_RISCV_CPU_SHAKTI_C, &error_abort);
-    object_property_set_int(OBJECT(&sss->cpus), "num-harts", 1,
+    object_property_مجموعه_int(OBJECT(&sss->cpus), "num-harts", 1,
                             &error_abort);
 }
 
-static const TypeInfo shakti_c_type_info = {
+ساكن ثابت TypeInfo shakti_c_type_info = {
     .name = TYPE_RISCV_SHAKTI_SOC,
-    .parent = TYPE_DEVICE,
+    .والد = TYPE_DEVICE,
     .class_init = shakti_c_soc_class_init,
     .instance_init = shakti_c_soc_instance_init,
-    .instance_size = sizeof(ShaktiCSoCState),
+    .instance_اندازه = حجم(ShaktiCSoCState),
 };
 
-static void shakti_c_type_info_register(void)
+ساكن فراغ shakti_c_type_info_ثبات(فراغ)
 {
-    type_register_static(&shakti_c_type_info);
+    type_ثبات_static(&shakti_c_type_info);
 }
-type_init(shakti_c_type_info_register)
+type_init(shakti_c_type_info_ثبات)

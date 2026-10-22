@@ -16,240 +16,240 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "hw/core/irq.h"
-#include "hw/pci/pci_bus.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/core/sysbus.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "qemu/host-utils.h"
-#include "qemu/module.h"
-#include "qom/object.h"
-#include "target/riscv/cpu_bits.h"
-#include "trace.h"
+#ضمن "qemu/osdep.h"
+#ضمن "hw/core/irq.h"
+#ضمن "hw/pci/pci_bus.h"
+#ضمن "hw/core/qdev-properties.h"
+#ضمن "hw/core/sysbus.h"
+#ضمن "qapi/error.h"
+#ضمن "qemu/error-report.h"
+#ضمن "qemu/host-utils.h"
+#ضمن "qemu/module.h"
+#ضمن "qom/object.h"
+#ضمن "target/riscv/cpu_bits.h"
+#ضمن "trace.h"
 
-#include "riscv-iommu.h"
+#ضمن "riscv-iommu.h"
 
-#define RISCV_IOMMU_SYSDEV_ICVEC_VECTORS 0x3333
+#تعریف_کن RISCV_IOMMU_SYSDEV_ICVEC_VECTORS 0x3333
 
-#define RISCV_IOMMU_PCI_MSIX_VECTORS 5
+#تعریف_کن RISCV_IOMMU_PCI_MSIX_VECTORS 5
 
 /* RISC-V IOMMU System Platform Device Emulation */
 
-struct RISCVIOMMUStateSys {
-    SysBusDevice     parent;
+بنية RISCVIOMMUStateSys {
+    SysBusDevice     والد;
     uint64_t         addr;
-    uint32_t         base_irq;
+    uint32_t         پایه_irq;
     DeviceState      *irqchip;
     RISCVIOMMUState  iommu;
 
     /* Wired int support */
-    qemu_irq         irqs[RISCV_IOMMU_INTR_COUNT];
+    qemu_irq         irqs[RISCV_IOMMU_INTR_شمار];
 
     /* Memory Regions for MSIX table and pending bit entries. */
-    MemoryRegion msix_table_mmio;
-    MemoryRegion msix_pba_mmio;
-    uint8_t *msix_table;
+    حافظه_Region msix_جدول_mmio;
+    حافظه_Region msix_pba_mmio;
+    uint8_t *msix_جدول;
     uint8_t *msix_pba;
 };
 
-static uint64_t msix_table_mmio_read(void *opaque, hwaddr addr,
-                                     unsigned size)
+ساكن uint64_t msix_جدول_mmio_read(فراغ *opaque, hwaddr addr,
+                                     بیعلامت اندازه)
 {
     RISCVIOMMUStateSys *s = opaque;
 
-    g_assert(addr + size <= RISCV_IOMMU_PCI_MSIX_VECTORS * PCI_MSIX_ENTRY_SIZE);
-    return pci_get_long(s->msix_table + addr);
+    g_assert(addr + اندازه <= RISCV_IOMMU_PCI_MSIX_VECTORS * PCI_MSIX_مدخل_اندازه);
+    أرجع pci_get_long(s->msix_جدول + addr);
 }
 
-static void msix_table_mmio_write(void *opaque, hwaddr addr,
-                                  uint64_t val, unsigned size)
+ساكن فراغ msix_جدول_mmio_write(فراغ *opaque, hwaddr addr,
+                                  uint64_t val, بیعلامت اندازه)
 {
     RISCVIOMMUStateSys *s = opaque;
 
-    g_assert(addr + size <= RISCV_IOMMU_PCI_MSIX_VECTORS * PCI_MSIX_ENTRY_SIZE);
-    pci_set_long(s->msix_table + addr, val);
+    g_assert(addr + اندازه <= RISCV_IOMMU_PCI_MSIX_VECTORS * PCI_MSIX_مدخل_اندازه);
+    pci_مجموعه_long(s->msix_جدول + addr, val);
 }
 
-static const MemoryRegionOps msix_table_mmio_ops = {
-    .read = msix_table_mmio_read,
-    .write = msix_table_mmio_write,
+ساكن ثابت حافظه_Region_Ops msix_جدول_mmio_ops = {
+    .اقرأ = msix_جدول_mmio_read,
+    .اكتب = msix_جدول_mmio_write,
     .endianness = DEVICE_LITTLE_ENDIAN,
     .valid = {
-        .min_access_size = 4,
-        .max_access_size = 8,
+        .min_access_اندازه = 4,
+        .max_access_اندازه = 8,
     },
     .impl = {
-        .max_access_size = 4,
+        .max_access_اندازه = 4,
     },
 };
 
-static uint64_t msix_pba_mmio_read(void *opaque, hwaddr addr,
-                                   unsigned size)
+ساكن uint64_t msix_pba_mmio_read(فراغ *opaque, hwaddr addr,
+                                   بیعلامت اندازه)
 {
     RISCVIOMMUStateSys *s = opaque;
 
-    return pci_get_long(s->msix_pba + addr);
+    أرجع pci_get_long(s->msix_pba + addr);
 }
 
-static void msix_pba_mmio_write(void *opaque, hwaddr addr,
-                                uint64_t val, unsigned size)
+ساكن فراغ msix_pba_mmio_write(فراغ *opaque, hwaddr addr,
+                                uint64_t val, بیعلامت اندازه)
 {
 }
 
-static const MemoryRegionOps msix_pba_mmio_ops = {
-    .read = msix_pba_mmio_read,
-    .write = msix_pba_mmio_write,
+ساكن ثابت حافظه_Region_Ops msix_pba_mmio_ops = {
+    .اقرأ = msix_pba_mmio_read,
+    .اكتب = msix_pba_mmio_write,
     .endianness = DEVICE_LITTLE_ENDIAN,
     .valid = {
-        .min_access_size = 4,
-        .max_access_size = 8,
+        .min_access_اندازه = 4,
+        .max_access_اندازه = 8,
     },
     .impl = {
-        .max_access_size = 4,
+        .max_access_اندازه = 4,
     },
 };
 
-static void riscv_iommu_sysdev_init_msi(RISCVIOMMUStateSys *s,
+ساكن فراغ riscv_iommu_sysdev_init_msi(RISCVIOMMUStateSys *s,
                                         uint32_t n_vectors)
 {
     RISCVIOMMUState *iommu = &s->iommu;
-    uint32_t table_size = n_vectors * PCI_MSIX_ENTRY_SIZE;
-    uint32_t table_offset = RISCV_IOMMU_REG_MSI_CONFIG;
-    uint32_t pba_size = QEMU_ALIGN_UP(n_vectors, 64) / 8;
-    uint32_t pba_offset = RISCV_IOMMU_REG_MSI_CONFIG + 256;
+    uint32_t جدول_اندازه = n_vectors * PCI_MSIX_مدخل_اندازه;
+    uint32_t جدول_جابه_جایی = RISCV_IOMMU_REG_MSI_CONFIG;
+    uint32_t pba_اندازه = QEMU_ALIGN_به_بالا(n_vectors, 64) / 8;
+    uint32_t pba_جابه_جایی = RISCV_IOMMU_REG_MSI_CONFIG + 256;
 
-    s->msix_table = g_malloc0(table_size);
-    s->msix_pba = g_malloc0(pba_size);
+    s->msix_جدول = g_malloc0(جدول_اندازه);
+    s->msix_pba = g_malloc0(pba_اندازه);
 
-    memory_region_init_io(&s->msix_table_mmio, OBJECT(s), &msix_table_mmio_ops,
-                          s, "msix-table", table_size);
-    memory_region_add_subregion(&iommu->regs_mr, table_offset,
-                                &s->msix_table_mmio);
+    حافظه_region_init_io(&s->msix_جدول_mmio, OBJECT(s), &msix_جدول_mmio_ops,
+                          s, "msix-table", جدول_اندازه);
+    حافظه_region_جمع_کن_subregion(&iommu->regs_mr, جدول_جابه_جایی,
+                                &s->msix_جدول_mmio);
 
-    memory_region_init_io(&s->msix_pba_mmio, OBJECT(s), &msix_pba_mmio_ops, s,
-                          "msix-pba", pba_size);
-    memory_region_add_subregion(&iommu->regs_mr, pba_offset,
+    حافظه_region_init_io(&s->msix_pba_mmio, OBJECT(s), &msix_pba_mmio_ops, s,
+                          "msix-pba", pba_اندازه);
+    حافظه_region_جمع_کن_subregion(&iommu->regs_mr, pba_جابه_جایی,
                                 &s->msix_pba_mmio);
 }
 
-static void riscv_iommu_sysdev_send_MSI(RISCVIOMMUStateSys *s,
-                                        uint32_t vector)
+ساكن فراغ riscv_iommu_sysdev_send_MSI(RISCVIOMMUStateSys *s,
+                                        uint32_t وکتور)
 {
-    uint8_t *table_entry = s->msix_table + vector * PCI_MSIX_ENTRY_SIZE;
-    uint64_t msi_addr = pci_get_quad(table_entry + PCI_MSIX_ENTRY_LOWER_ADDR);
-    uint32_t msi_data = pci_get_long(table_entry + PCI_MSIX_ENTRY_DATA);
-    MemTxResult result;
+    uint8_t *جدول_مدخل = s->msix_جدول + وکتور * PCI_MSIX_مدخل_اندازه;
+    uint64_t msi_addr = pci_get_quad(جدول_مدخل + PCI_MSIX_مدخل_پایینی_ADDR);
+    uint32_t msi_داده = pci_get_long(جدول_مدخل + PCI_MSIX_مدخل_داده);
+    Mem_Tx_نتیجه نتیجه;
 
-    address_space_stl_le(&address_space_memory, msi_addr,
-                         msi_data, MEMTXATTRS_UNSPECIFIED, &result);
+    آدرس_space_stl_le(&آدرس_space_حافظه, msi_addr,
+                         msi_داده, MEMTXATTRS_UNSPECIFIED, &نتیجه);
 
-    if (result == MEMTX_OK) {
-        trace_riscv_iommu_sys_msi_sent(vector, msi_addr, msi_data, result);
-    } else {
+    إذا (نتیجه == MEMTX_OK) {
+        trace_riscv_iommu_sys_msi_فرستاده(وکتور, msi_addr, msi_داده, نتیجه);
+    } وإلا {
         /* Record an access fault error in the fault queue */
-        struct riscv_iommu_fq_record ev = { 0 };
+        بنية riscv_iommu_fq_رکورد ev = { 0 };
         RISCVIOMMUState *iommu = &s->iommu;
 
-        ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_CAUSE,
+        ev.hdr = مجموعه_فیلد(ev.hdr, RISCV_IOMMU_FQ_HDR_CAUSE,
                            RISCV_IOMMU_FQ_CAUSE_MSI_WR_FAULT);
-        ev.hdr = set_field(ev.hdr, RISCV_IOMMU_FQ_HDR_TTYPE,
+        ev.hdr = مجموعه_فیلد(ev.hdr, RISCV_IOMMU_FQ_HDR_TTYPE,
                            RISCV_IOMMU_FQ_TTYPE_UADDR_WR);
         riscv_iommu_fault(iommu, &ev);
     }
 }
 
-static void riscv_iommu_sysdev_notify(RISCVIOMMUState *iommu,
-                                      unsigned vector)
+ساكن فراغ riscv_iommu_sysdev_notify(RISCVIOMMUState *iommu,
+                                      بیعلامت وکتور)
 {
-    RISCVIOMMUStateSys *s = container_of(iommu, RISCVIOMMUStateSys, iommu);
+    RISCVIOMMUStateSys *s = container_از(iommu, RISCVIOMMUStateSys, iommu);
     uint32_t fctl =  riscv_iommu_reg_get32(iommu, RISCV_IOMMU_REG_FCTL);
 
-    if (fctl & RISCV_IOMMU_FCTL_WSI) {
-        qemu_irq_pulse(s->irqs[vector]);
-        trace_riscv_iommu_sys_irq_sent(vector);
-        return;
+    إذا (fctl & RISCV_IOMMU_FCTL_WSI) {
+        qemu_irq_pulse(s->irqs[وکتور]);
+        trace_riscv_iommu_sys_irq_فرستاده(وکتور);
+        أرجع;
     }
 
-    riscv_iommu_sysdev_send_MSI(s, vector);
+    riscv_iommu_sysdev_send_MSI(s, وکتور);
 }
 
-static void riscv_iommu_sys_realize(DeviceState *dev, Error **errp)
+ساكن فراغ riscv_iommu_sys_realize(DeviceState *dev, Error **errp)
 {
     RISCVIOMMUStateSys *s = RISCV_IOMMU_SYS(dev);
     SysBusDevice *sysdev = SYS_BUS_DEVICE(s);
     PCIBus *pci_bus;
     qemu_irq irq;
 
-    qdev_realize(DEVICE(&s->iommu), NULL, errp);
+    qdev_realize(DEVICE(&s->iommu), عدم, errp);
     sysbus_init_mmio(SYS_BUS_DEVICE(dev), &s->iommu.regs_mr);
-    if (s->addr) {
+    إذا (s->addr) {
         sysbus_mmio_map(SYS_BUS_DEVICE(s), 0, s->addr);
     }
 
-    pci_bus = (PCIBus *) object_resolve_path_type("", TYPE_PCI_BUS, NULL);
-    if (pci_bus) {
-        riscv_iommu_pci_setup_iommu(&s->iommu, pci_bus, errp);
+    pci_bus = (PCIBus *) object_resolve_مسیر_type("", TYPE_PCI_BUS, عدم);
+    إذا (pci_bus) {
+        riscv_iommu_pci_راهاندازی_iommu(&s->iommu, pci_bus, errp);
     }
 
     s->iommu.notify = riscv_iommu_sysdev_notify;
 
     /* 4 IRQs are defined starting from s->base_irq */
-    for (int i = 0; i < RISCV_IOMMU_INTR_COUNT; i++) {
+    لكل (صحيح i = 0; i < RISCV_IOMMU_INTR_شمار; i++) {
         sysbus_init_irq(sysdev, &s->irqs[i]);
-        irq = qdev_get_gpio_in(s->irqchip, s->base_irq + i);
+        irq = qdev_get_gpio_درون(s->irqchip, s->پایه_irq + i);
         sysbus_connect_irq(sysdev, i, irq);
     }
 
     riscv_iommu_sysdev_init_msi(s, RISCV_IOMMU_PCI_MSIX_VECTORS);
 }
 
-static void riscv_iommu_sys_init(Object *obj)
+ساكن فراغ riscv_iommu_sys_init(Object *obj)
 {
     RISCVIOMMUStateSys *s = RISCV_IOMMU_SYS(obj);
     RISCVIOMMUState *iommu = &s->iommu;
 
-    object_initialize_child(obj, "iommu", iommu, TYPE_RISCV_IOMMU);
+    object_initialize_فرزند(obj, "iommu", iommu, TYPE_RISCV_IOMMU);
     qdev_alias_all_properties(DEVICE(iommu), obj);
 
     iommu->icvec_avail_vectors = RISCV_IOMMU_SYSDEV_ICVEC_VECTORS;
-    riscv_iommu_set_cap_igs(iommu, RISCV_IOMMU_CAP_IGS_BOTH);
+    riscv_iommu_مجموعه_cap_igs(iommu, RISCV_IOMMU_CAP_IGS_BOTH);
 }
 
 DeviceState *riscv_create_iommu_sys(DeviceState *mmio_irqchip,
-                                    hwaddr addr, int base_irq,
-                                    bool is_32_bit)
+                                    hwaddr addr, صحيح پایه_irq,
+                                    bool is_32_بیت)
 {
     DeviceState *iommu_sys = qdev_new(TYPE_RISCV_IOMMU_SYS);
 
-    object_property_set_uint(OBJECT(iommu_sys), "addr", addr, &error_fatal);
-    object_property_set_uint(OBJECT(iommu_sys), "base-irq",
-                             base_irq, &error_fatal);
-    object_property_set_link(OBJECT(iommu_sys), "irqchip",
+    object_property_مجموعه_uint(OBJECT(iommu_sys), "addr", addr, &error_fatal);
+    object_property_مجموعه_uint(OBJECT(iommu_sys), "base-irq",
+                             پایه_irq, &error_fatal);
+    object_property_مجموعه_link(OBJECT(iommu_sys), "irqchip",
                              OBJECT(mmio_irqchip),
                              &error_fatal);
     /*
      * For riscv64 use a physical address size of 56 bits (44 bit PPN),
      * and for riscv32 use 34 bits (22 bit PPN).
      */
-    object_property_set_uint(OBJECT(iommu_sys), "pas-bits",
-                             is_32_bit ? 34 : 56,
+    object_property_مجموعه_uint(OBJECT(iommu_sys), "pas-bits",
+                             is_32_بیت ? 34 : 56,
                              &error_fatal);
 
     sysbus_realize_and_unref(SYS_BUS_DEVICE(iommu_sys), &error_fatal);
 
-    return iommu_sys;
+    أرجع iommu_sys;
 }
 
-static const Property riscv_iommu_sys_properties[] = {
+ساكن ثابت Property riscv_iommu_sys_properties[] = {
     DEFINE_PROP_UINT64("addr", RISCVIOMMUStateSys, addr, 0),
-    DEFINE_PROP_UINT32("base-irq", RISCVIOMMUStateSys, base_irq, 0),
+    DEFINE_PROP_UINT32("base-irq", RISCVIOMMUStateSys, پایه_irq, 0),
     DEFINE_PROP_LINK("irqchip", RISCVIOMMUStateSys, irqchip,
                      TYPE_DEVICE, DeviceState *),
 };
 
-static void riscv_iommu_sys_reset_hold(Object *obj, ResetType type)
+ساكن فراغ riscv_iommu_sys_reset_hold(Object *obj, ResetType type)
 {
     RISCVIOMMUStateSys *sys = RISCV_IOMMU_SYS(obj);
     RISCVIOMMUState *iommu = &sys->iommu;
@@ -259,7 +259,7 @@ static void riscv_iommu_sys_reset_hold(Object *obj, ResetType type)
     trace_riscv_iommu_sys_reset_hold(type);
 }
 
-static void riscv_iommu_sys_class_init(ObjectClass *klass, const void *data)
+ساكن فراغ riscv_iommu_sys_class_init(ObjectClass *klass, ثابت فراغ *داده)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
     ResettableClass *rc = RESETTABLE_CLASS(klass);
@@ -267,21 +267,21 @@ static void riscv_iommu_sys_class_init(ObjectClass *klass, const void *data)
     rc->phases.hold = riscv_iommu_sys_reset_hold;
 
     dc->realize = riscv_iommu_sys_realize;
-    set_bit(DEVICE_CATEGORY_MISC, dc->categories);
-    device_class_set_props(dc, riscv_iommu_sys_properties);
+    مجموعه_بیت(DEVICE_CATEGORY_MISC, dc->categories);
+    device_class_مجموعه_props(dc, riscv_iommu_sys_properties);
 }
 
-static const TypeInfo riscv_iommu_sys = {
+ساكن ثابت TypeInfo riscv_iommu_sys = {
     .name          = TYPE_RISCV_IOMMU_SYS,
-    .parent        = TYPE_SYS_BUS_DEVICE,
+    .والد        = TYPE_SYS_BUS_DEVICE,
     .class_init    = riscv_iommu_sys_class_init,
     .instance_init = riscv_iommu_sys_init,
-    .instance_size = sizeof(RISCVIOMMUStateSys),
+    .instance_اندازه = حجم(RISCVIOMMUStateSys),
 };
 
-static void riscv_iommu_register_sys(void)
+ساكن فراغ riscv_iommu_ثبات_sys(فراغ)
 {
-    type_register_static(&riscv_iommu_sys);
+    type_ثبات_static(&riscv_iommu_sys);
 }
 
-type_init(riscv_iommu_register_sys)
+type_init(riscv_iommu_ثبات_sys)
