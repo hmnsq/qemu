@@ -16,26 +16,26 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "qemu/osdep.h"
-#include "exec/target_page.h"
-#include "hw/pci/msi.h"
-#include "hw/pci/msix.h"
-#include "hw/pci/pci_bus.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/riscv/riscv_hart.h"
-#include "migration/vmstate.h"
-#include "qapi/error.h"
-#include "qemu/error-report.h"
-#include "qemu/host-utils.h"
-#include "qom/object.h"
+#ಅನ್ತರ್ಭಾವ "qemu/osdep.h"
+#ಅನ್ತರ್ಭಾವ "exec/target_page.h"
+#ಅನ್ತರ್ಭಾವ "hw/pci/msi.h"
+#ಅನ್ತರ್ಭಾವ "hw/pci/msix.h"
+#ಅನ್ತರ್ಭಾವ "hw/pci/pci_bus.h"
+#ಅನ್ತರ್ಭಾವ "hw/core/qdev-properties.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/riscv_hart.h"
+#ಅನ್ತರ್ಭಾವ "migration/vmstate.h"
+#ಅನ್ತರ್ಭಾವ "qapi/error.h"
+#ಅನ್ತರ್ಭಾವ "qemu/error-report.h"
+#ಅನ್ತರ್ಭಾವ "qemu/host-utils.h"
+#ಅನ್ತರ್ಭಾವ "qom/object.h"
 
-#include "cpu_bits.h"
-#include "riscv-iommu.h"
-#include "riscv-iommu-bits.h"
-#include "trace.h"
+#ಅನ್ತರ್ಭಾವ "cpu_bits.h"
+#ಅನ್ತರ್ಭಾವ "riscv-iommu.h"
+#ಅನ್ತರ್ಭಾವ "riscv-iommu-bits.h"
+#ಅನ್ತರ್ಭಾವ "trace.h"
 
 /* RISC-V IOMMU PCI Device Emulation */
-#define RISCV_PCI_CLASS_SYSTEM_IOMMU     0x0806
+#ವ್ಯಾಖ್ಯಾನಿಸು RISCV_PCI_CLASS_SYSTEM_IOMMU     0x0806
 
 /*
  * 4 MSIx vectors for ICVEC, one for MRIF. The spec mentions in
@@ -50,120 +50,120 @@
  * We're making a design decision to create the MSIx for MRIF in the
  * IOMMU MSIx emulation.
  */
-#define RISCV_IOMMU_PCI_MSIX_VECTORS 5
+#ವ್ಯಾಖ್ಯಾನಿಸು RISCV_IOMMU_PCI_MSIX_VECTORS 5
 
 /*
  * 4 vectors that can be used by civ, fiv, pmiv and piv. Number of
  * vectors is represented by 2^N, where N = number of writable bits
  * in each cause. For 4 vectors we'll write 0b11 (3) in each reg.
  */
-#define RISCV_IOMMU_PCI_ICVEC_VECTORS 0x3333
+#ವ್ಯಾಖ್ಯಾನಿಸು RISCV_IOMMU_PCI_ICVEC_VECTORS 0x3333
 
-typedef struct RISCVIOMMUStatePci {
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ರಚನೆ RISCVIOMMUStatePci {
     PCIDevice        pci;     /* Parent PCIe device state */
     uint16_t         vendor_id;
     uint16_t         device_id;
     uint8_t          revision;
-    MemoryRegion     bar0;    /* PCI BAR (including MSI-x config) */
+    ಸ್ಮರಣೆ_Region     bar0;    /* PCI BAR (including MSI-x config) */
     RISCVIOMMUState  iommu;   /* common IOMMU state */
 } RISCVIOMMUStatePci;
 
 /* interrupt delivery callback */
-static void riscv_iommu_pci_notify(RISCVIOMMUState *iommu, unsigned vector)
+ಸ್ಥಿರ ಶೂನ್ಯ riscv_iommu_pci_notify(RISCVIOMMUState *iommu, ಚಿಹ್ನೆರಹಿತ ಸದಿಶ)
 {
-    RISCVIOMMUStatePci *s = container_of(iommu, RISCVIOMMUStatePci, iommu);
+    RISCVIOMMUStatePci *s = container_ದ(iommu, RISCVIOMMUStatePci, iommu);
 
-    if (msix_enabled(&(s->pci))) {
-        msix_notify(&(s->pci), vector);
+    ಆದರೆ (msix_enabled(&(s->pci))) {
+        msix_notify(&(s->pci), ಸದಿಶ);
     }
 }
 
-static void riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
+ಸ್ಥಿರ ಶೂನ್ಯ riscv_iommu_pci_realize(PCIDevice *dev, Error **errp)
 {
     RISCVIOMMUStatePci *s = DO_UPCAST(RISCVIOMMUStatePci, pci, dev);
     RISCVIOMMUState *iommu = &s->iommu;
     uint8_t *pci_conf = dev->config;
-    Error *err = NULL;
+    Error *err = ಖಾಲಿ;
 
-    pci_set_word(pci_conf + PCI_VENDOR_ID, s->vendor_id);
-    pci_set_word(pci_conf + PCI_SUBSYSTEM_VENDOR_ID, s->vendor_id);
-    pci_set_word(pci_conf + PCI_DEVICE_ID, s->device_id);
-    pci_set_word(pci_conf + PCI_SUBSYSTEM_ID, s->device_id);
-    pci_set_byte(pci_conf + PCI_REVISION_ID, s->revision);
+    pci_ಗಣ_ಶಬ್ದ(pci_conf + PCI_VENDOR_ID, s->vendor_id);
+    pci_ಗಣ_ಶಬ್ದ(pci_conf + PCI_SUBSYSTEM_VENDOR_ID, s->vendor_id);
+    pci_ಗಣ_ಶಬ್ದ(pci_conf + PCI_DEVICE_ID, s->device_id);
+    pci_ಗಣ_ಶಬ್ದ(pci_conf + PCI_SUBSYSTEM_ID, s->device_id);
+    pci_ಗಣ_byte(pci_conf + PCI_REVISION_ID, s->revision);
 
     /* Set device id for trace / debug */
     DEVICE(iommu)->id = g_strdup_printf("%02x:%02x.%01x",
-        pci_dev_bus_num(dev), PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn));
-    qdev_realize(DEVICE(iommu), NULL, errp);
+        pci_dev_bus_ಅಂಕೆ(dev), PCI_ಸ್ಥಾನ(dev->devfn), PCI_FUNC(dev->devfn));
+    qdev_realize(DEVICE(iommu), ಖಾಲಿ, errp);
 
-    memory_region_init(&s->bar0, OBJECT(s), "riscv-iommu-bar0",
-        QEMU_ALIGN_UP(memory_region_size(&iommu->regs_mr), TARGET_PAGE_SIZE));
-    memory_region_add_subregion(&s->bar0, 0, &iommu->regs_mr);
+    ಸ್ಮರಣೆ_region_init(&s->bar0, OBJECT(s), "riscv-iommu-bar0",
+        QEMU_ALIGN_ಮೇಲೆ(ಸ್ಮರಣೆ_region_ಗಾತ್ರ(&iommu->regs_mr), ಗುರಿ_ಪುಟ_ಗಾತ್ರ));
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(&s->bar0, 0, &iommu->regs_mr);
 
     pcie_endpoint_cap_init(dev, 0);
 
-    pci_register_bar(dev, 0, PCI_BASE_ADDRESS_SPACE_MEMORY |
-                     PCI_BASE_ADDRESS_MEM_TYPE_64, &s->bar0);
+    pci_ರಿಜಿಸ್ಟರ್_bar(dev, 0, PCI_ತಳ_ವಿಳಾಸ_SPACE_ಸ್ಮರಣೆ |
+                     PCI_ತಳ_ವಿಳಾಸ_MEM_TYPE_64, &s->bar0);
 
-    int ret = msix_init(dev, RISCV_IOMMU_PCI_MSIX_VECTORS,
+    ಪೂರ್ಣಾಂಕ ret = msix_init(dev, RISCV_IOMMU_PCI_MSIX_VECTORS,
                         &s->bar0, 0, RISCV_IOMMU_REG_MSI_CONFIG,
                         &s->bar0, 0, RISCV_IOMMU_REG_MSI_CONFIG + 256, 0, &err);
 
-    if (ret == -ENOTSUP) {
+    ಆದರೆ (ret == -ENOTSUP) {
         /*
          * MSI-x is not supported by the platform.
          * Driver should use timer/polling based notification handlers.
          */
         warn_report_err(err);
-    } else if (ret < 0) {
+    } ಇಲ್ಲದಿದ್ದರೆ ಆದರೆ (ret < 0) {
         error_propagate(errp, err);
-        return;
-    } else {
+        ಹಿಂತಿರುಗಿ;
+    } ಇಲ್ಲದಿದ್ದರೆ {
         /* Mark all ICVEC MSIx vectors as used */
-        for (int i = 0; i < RISCV_IOMMU_PCI_MSIX_VECTORS; i++) {
-            msix_vector_use(dev, i);
+        ಗಾಗಿ (ಪೂರ್ಣಾಂಕ i = 0; i < RISCV_IOMMU_PCI_MSIX_VECTORS; i++) {
+            msix_ಸದಿಶ_use(dev, i);
         }
 
         iommu->notify = riscv_iommu_pci_notify;
     }
 
-    PCIBus *bus = pci_device_root_bus(dev);
-    if (!bus) {
+    PCIBus *bus = pci_device_ಬೇರು_bus(dev);
+    ಆದರೆ (!bus) {
         error_setg(errp, "can't find PCIe root port for %02x:%02x.%x",
-            pci_bus_num(pci_get_bus(dev)), PCI_SLOT(dev->devfn),
+            pci_bus_ಅಂಕೆ(pci_get_bus(dev)), PCI_ಸ್ಥಾನ(dev->devfn),
             PCI_FUNC(dev->devfn));
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
 
-    riscv_iommu_pci_setup_iommu(iommu, bus, errp);
+    riscv_iommu_pci_ಸಿದ್ಧತೆ_iommu(iommu, bus, errp);
 }
 
-static void riscv_iommu_pci_exit(PCIDevice *pci_dev)
+ಸ್ಥಿರ ಶೂನ್ಯ riscv_iommu_pci_exit(PCIDevice *pci_dev)
 {
-    pci_setup_iommu(pci_device_root_bus(pci_dev), NULL, NULL);
+    pci_ಸಿದ್ಧತೆ_iommu(pci_device_ಬೇರು_bus(pci_dev), ಖಾಲಿ, ಖಾಲಿ);
 }
 
-static const VMStateDescription riscv_iommu_vmstate = {
+ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ VMStateDescription riscv_iommu_vmstate = {
     .name = "riscv-iommu",
     .unmigratable = 1
 };
 
-static void riscv_iommu_pci_init(Object *obj)
+ಸ್ಥಿರ ಶೂನ್ಯ riscv_iommu_pci_init(Object *obj)
 {
     RISCVIOMMUStatePci *s = RISCV_IOMMU_PCI(obj);
     RISCVIOMMUState *iommu = &s->iommu;
 
-    object_initialize_child(obj, "iommu", iommu, TYPE_RISCV_IOMMU);
+    object_initialize_ಮಗು(obj, "iommu", iommu, TYPE_RISCV_IOMMU);
     qdev_alias_all_properties(DEVICE(iommu), obj);
 
     iommu->icvec_avail_vectors = RISCV_IOMMU_PCI_ICVEC_VECTORS;
-    riscv_iommu_set_cap_igs(iommu, RISCV_IOMMU_CAP_IGS_MSI);
+    riscv_iommu_ಗಣ_cap_igs(iommu, RISCV_IOMMU_CAP_IGS_MSI);
 
     /* Report maximum physical address size of riscv64 */
-    iommu->pas_bits = 56;
+    iommu->pas_ಬಿಟ್ಟುಗಳು = 56;
 }
 
-static const Property riscv_iommu_pci_properties[] = {
+ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ Property riscv_iommu_pci_properties[] = {
     DEFINE_PROP_UINT16("vendor-id", RISCVIOMMUStatePci, vendor_id,
                        PCI_VENDOR_ID_REDHAT),
     DEFINE_PROP_UINT16("device-id", RISCVIOMMUStatePci, device_id,
@@ -171,7 +171,7 @@ static const Property riscv_iommu_pci_properties[] = {
     DEFINE_PROP_UINT8("revision", RISCVIOMMUStatePci, revision, 0x01),
 };
 
-static void riscv_iommu_pci_reset_hold(Object *obj, ResetType type)
+ಸ್ಥಿರ ಶೂನ್ಯ riscv_iommu_pci_reset_hold(Object *obj, ResetType type)
 {
     RISCVIOMMUStatePci *pci = RISCV_IOMMU_PCI(obj);
     RISCVIOMMUState *iommu = &pci->iommu;
@@ -181,7 +181,7 @@ static void riscv_iommu_pci_reset_hold(Object *obj, ResetType type)
     trace_riscv_iommu_pci_reset_hold(type);
 }
 
-static void riscv_iommu_pci_class_init(ObjectClass *klass, const void *data)
+ಸ್ಥಿರ ಶೂನ್ಯ riscv_iommu_pci_class_init(ObjectClass *klass, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *ದತ್ತಾಂಶ)
 {
     DeviceClass *dc = DEVICE_CLASS(klass);
     PCIDeviceClass *k = PCI_DEVICE_CLASS(klass);
@@ -190,31 +190,31 @@ static void riscv_iommu_pci_class_init(ObjectClass *klass, const void *data)
     rc->phases.hold = riscv_iommu_pci_reset_hold;
 
     k->realize = riscv_iommu_pci_realize;
-    k->exit = riscv_iommu_pci_exit;
+    k->ನಿರ್ಗಮಿಸು = riscv_iommu_pci_exit;
     k->class_id = RISCV_PCI_CLASS_SYSTEM_IOMMU;
     dc->desc = "RISCV-IOMMU DMA Remapping device";
     dc->vmsd = &riscv_iommu_vmstate;
     dc->hotpluggable = false;
     dc->user_creatable = true;
-    set_bit(DEVICE_CATEGORY_MISC, dc->categories);
-    device_class_set_props(dc, riscv_iommu_pci_properties);
+    ಗಣ_ಬಿಟ್(DEVICE_CATEGORY_MISC, dc->categories);
+    device_class_ಗಣ_props(dc, riscv_iommu_pci_properties);
 }
 
-static const TypeInfo riscv_iommu_pci = {
+ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ TypeInfo riscv_iommu_pci = {
     .name = TYPE_RISCV_IOMMU_PCI,
-    .parent = TYPE_PCI_DEVICE,
+    .ಪೋಷಕ = TYPE_PCI_DEVICE,
     .class_init = riscv_iommu_pci_class_init,
     .instance_init = riscv_iommu_pci_init,
-    .instance_size = sizeof(RISCVIOMMUStatePci),
-    .interfaces = (const InterfaceInfo[]) {
+    .instance_ಗಾತ್ರ = ಗಾತ್ರ(RISCVIOMMUStatePci),
+    .interfaces = (ಸ್ಥಿರಾಂಕ InterfaceInfo[]) {
         { INTERFACE_PCIE_DEVICE },
         { },
     },
 };
 
-static void riscv_iommu_register_pci_types(void)
+ಸ್ಥಿರ ಶೂನ್ಯ riscv_iommu_ರಿಜಿಸ್ಟರ್_pci_types(ಶೂನ್ಯ)
 {
-    type_register_static(&riscv_iommu_pci);
+    type_ರಿಜಿಸ್ಟರ್_static(&riscv_iommu_pci);
 }
 
-type_init(riscv_iommu_register_pci_types);
+type_init(riscv_iommu_ರಿಜಿಸ್ಟರ್_pci_types);

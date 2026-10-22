@@ -13,30 +13,30 @@
  * For more information, see <https://www.kendryte.com/en/proDetail/230>
  */
 
-#include "qemu/osdep.h"
-#include "cpu-qom.h"
-#include "qemu/cutils.h"
-#include "qemu/error-report.h"
-#include "qapi/error.h"
-#include "system/device_tree.h"
-#include "system/system.h"
-#include "system/memory.h"
-#include "target/riscv/cpu.h"
-#include "hw/core/loader.h"
-#include "hw/core/sysbus.h"
-#include "hw/riscv/k230.h"
-#include "hw/riscv/boot.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/sifive_plic.h"
-#include "hw/char/serial-mm.h"
-#include "hw/misc/unimp.h"
+#ಅನ್ತರ್ಭಾವ "qemu/osdep.h"
+#ಅನ್ತರ್ಭಾವ "cpu-qom.h"
+#ಅನ್ತರ್ಭಾವ "qemu/cutils.h"
+#ಅನ್ತರ್ಭಾವ "qemu/error-report.h"
+#ಅನ್ತರ್ಭಾವ "qapi/error.h"
+#ಅನ್ತರ್ಭಾವ "system/device_tree.h"
+#ಅನ್ತರ್ಭಾವ "system/system.h"
+#ಅನ್ತರ್ಭಾವ "system/memory.h"
+#ಅನ್ತರ್ಭಾವ "target/riscv/cpu.h"
+#ಅನ್ತರ್ಭಾವ "hw/core/loader.h"
+#ಅನ್ತರ್ಭಾವ "hw/core/sysbus.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/k230.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/boot.h"
+#ಅನ್ತರ್ಭಾವ "hw/intc/riscv_aclint.h"
+#ಅನ್ತರ್ಭಾವ "hw/intc/sifive_plic.h"
+#ಅನ್ತರ್ಭಾವ "hw/char/serial-mm.h"
+#ಅನ್ತರ್ಭಾವ "hw/misc/unimp.h"
 
 /* Align K230_SDK k230_canmv_defconfig */
-#define K230_DIRECT_OPENSBI_ADDR 0x8000000
-#define K230_DIRECT_KERNEL_ADDR  0x8200000
-#define K230_DIRECT_DTB_ADDR     0xa000000
+#ವ್ಯಾಖ್ಯಾನಿಸು K230_ನೇರ_OPENSBI_ADDR 0x8000000
+#ವ್ಯಾಖ್ಯಾನಿಸು K230_ನೇರ_KERNEL_ADDR  0x8200000
+#ವ್ಯಾಖ್ಯಾನಿಸು K230_ನೇರ_DTB_ADDR     0xa000000
 
-static const MemMapEntry memmap[] = {
+ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು memmap[] = {
     [K230_DEV_DDRC] =         { 0x00000000,  0x80000000 },
     [K230_DEV_KPU_L2_CACHE] = { 0x80000000,  0x00200000 },
     [K230_DEV_SRAM] =         { 0x80200000,  0x00200000 },
@@ -102,94 +102,94 @@ static const MemMapEntry memmap[] = {
     [K230_DEV_CLINT] =        { 0xF04000000, 0x00400000 },
 };
 
-static void k230_soc_init(Object *obj)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_soc_init(Object *obj)
 {
     K230SoCState *s = RISCV_K230_SOC(obj);
     RISCVHartArrayState *cpu0 = &s->c908_cpu;
 
-    object_initialize_child(obj, "c908-cpu", cpu0, TYPE_RISCV_HART_ARRAY);
-    object_initialize_child(obj, "ddr-cfg", &s->ddr_cfg,
+    object_initialize_ಮಗು(obj, "c908-cpu", cpu0, TYPE_RISCV_HART_ARRAY);
+    object_initialize_ಮಗು(obj, "ddr-cfg", &s->ddr_cfg,
                             TYPE_K230_DDR_CFG);
-    object_initialize_child(obj, "ddr-phy", &s->ddr_phy,
+    object_initialize_ಮಗು(obj, "ddr-phy", &s->ddr_phy,
                             TYPE_K230_DDR_PHY);
     s->ddr_cfg.phy = &s->ddr_phy;
-    object_initialize_child(obj, "k230-wdt0", &s->wdt[0], TYPE_K230_WDT);
-    object_initialize_child(obj, "k230-wdt1", &s->wdt[1], TYPE_K230_WDT);
-    object_initialize_child(obj, "k230-gsdma", &s->gsdma, TYPE_K230_GSDMA);
-    object_initialize_child(obj, "k230-decomp-gzip", &s->decomp_gzip,
+    object_initialize_ಮಗು(obj, "k230-wdt0", &s->wdt[0], TYPE_K230_WDT);
+    object_initialize_ಮಗು(obj, "k230-wdt1", &s->wdt[1], TYPE_K230_WDT);
+    object_initialize_ಮಗು(obj, "k230-gsdma", &s->gsdma, TYPE_K230_GSDMA);
+    object_initialize_ಮಗು(obj, "k230-decomp-gzip", &s->decomp_gzip,
                             TYPE_K230_DECOMP_GZIP);
 
-    qdev_prop_set_uint32(DEVICE(cpu0), "hartid-base", 0);
-    qdev_prop_set_string(DEVICE(cpu0), "cpu-type", TYPE_RISCV_CPU_THEAD_C908);
-    qdev_prop_set_uint64(DEVICE(cpu0), "resetvec",
-                         memmap[K230_DEV_BOOTROM].base);
+    qdev_prop_ಗಣ_uint32(DEVICE(cpu0), "hartid-base", 0);
+    qdev_prop_ಗಣ_string(DEVICE(cpu0), "cpu-type", TYPE_RISCV_CPU_THEAD_C908);
+    qdev_prop_ಗಣ_uint64(DEVICE(cpu0), "resetvec",
+                         memmap[K230_DEV_BOOTROM].ತಳ);
 }
 
-static DeviceState *k230_create_plic(int base_hartid, int hartid_count)
+ಸ್ಥಿರ DeviceState *k230_create_plic(ಪೂರ್ಣಾಂಕ ತಳ_hartid, ಪೂರ್ಣಾಂಕ hartid_ಎಣಿಕೆ)
 {
-    g_autofree char *plic_hart_config = NULL;
+    g_autofree ಅಕ್ಷರ *plic_hart_config = ಖಾಲಿ;
 
     /* Per-socket PLIC hart topology configuration string */
-    plic_hart_config = riscv_plic_hart_config_string(hartid_count);
+    plic_hart_config = riscv_plic_hart_config_string(hartid_ಎಣಿಕೆ);
 
     /* Per-socket PLIC */
-    return sifive_plic_create(get_system_memory(),
-                              memmap[K230_DEV_PLIC].base,
-                              plic_hart_config, hartid_count, base_hartid,
-                              K230_PLIC_NUM_SOURCES,
-                              K230_PLIC_NUM_PRIORITIES,
-                              K230_PLIC_PRIORITY_BASE, K230_PLIC_PENDING_BASE,
-                              K230_PLIC_ENABLE_BASE, K230_PLIC_ENABLE_STRIDE,
-                              K230_PLIC_CONTEXT_BASE,
+    ಹಿಂತಿರುಗಿ sifive_plic_create(get_system_ಸ್ಮರಣೆ(),
+                              memmap[K230_DEV_PLIC].ತಳ,
+                              plic_hart_config, hartid_ಎಣಿಕೆ, ತಳ_hartid,
+                              K230_PLIC_ಅಂಕೆ_SOURCES,
+                              K230_PLIC_ಅಂಕೆ_PRIORITIES,
+                              K230_PLIC_ಆದ್ಯತೆ_ತಳ, K230_PLIC_PENDING_ತಳ,
+                              K230_PLIC_ENABLE_ತಳ, K230_PLIC_ENABLE_STRIDE,
+                              K230_PLIC_CONTEXT_ತಳ,
                               K230_PLIC_CONTEXT_STRIDE,
-                              memmap[K230_DEV_PLIC].size);
+                              memmap[K230_DEV_PLIC].ಗಾತ್ರ_2);
 }
 
-static void k230_create_uart(MemoryRegion *sys_mem, DeviceState *plic,
-                             int index)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_create_uart(ಸ್ಮರಣೆ_Region *sys_mem, DeviceState *plic,
+                             ಪೂರ್ಣಾಂಕ ಸೂಚ್ಯಂಕ)
 {
-    int uart_dev = K230_DEV_UART0 + index;
-    g_autofree char *name = g_strdup_printf("uart%d", index);
+    ಪೂರ್ಣಾಂಕ uart_dev = K230_DEV_UART0 + ಸೂಚ್ಯಂಕ;
+    g_autofree ಅಕ್ಷರ *name = g_strdup_printf("uart%d", ಸೂಚ್ಯಂಕ);
 
     /* Cover the non-16550 part of the SDK's 0x1000 UART window. */
-    create_unimplemented_device(name, memmap[uart_dev].base,
-                                memmap[uart_dev].size);
+    create_unimplemented_device(name, memmap[uart_dev].ತಳ,
+                                memmap[uart_dev].ಗಾತ್ರ_2);
 
-    serial_mm_init(sys_mem, memmap[uart_dev].base, 2,
-                   qdev_get_gpio_in(plic, K230_UART0_IRQ + index),
-                   399193, serial_hd(index), DEVICE_LITTLE_ENDIAN);
+    serial_mm_init(sys_mem, memmap[uart_dev].ತಳ, 2,
+                   qdev_get_gpio_ಒಳ(plic, K230_UART0_IRQ + ಸೂಚ್ಯಂಕ),
+                   399193, serial_hd(ಸೂಚ್ಯಂಕ), DEVICE_LITTLE_ENDIAN);
 }
 
-static void k230_soc_realize(DeviceState *dev, Error **errp)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_soc_realize(DeviceState *dev, Error **errp)
 {
     K230SoCState *s = RISCV_K230_SOC(dev);
-    MemoryRegion *sys_mem = get_system_memory();
-    int c908_cpus;
+    ಸ್ಮರಣೆ_Region *sys_mem = get_system_ಸ್ಮರಣೆ();
+    ಪೂರ್ಣಾಂಕ c908_cpus;
 
     sysbus_realize(SYS_BUS_DEVICE(&s->c908_cpu), &error_fatal);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_cfg), errp)) {
-        return;
+    ಆದರೆ (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_cfg), errp)) {
+        ಹಿಂತಿರುಗಿ;
     }
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_phy), errp)) {
-        return;
+    ಆದರೆ (!sysbus_realize(SYS_BUS_DEVICE(&s->ddr_phy), errp)) {
+        ಹಿಂತಿರುಗಿ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ddr_cfg), 0,
-                    memmap[K230_DEV_DDRC_CFG].base);
+                    memmap[K230_DEV_DDRC_CFG].ತಳ);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ddr_phy), 0,
-                    memmap[K230_DEV_DDR_PHY].base);
+                    memmap[K230_DEV_DDR_PHY].ತಳ);
 
-    c908_cpus = s->c908_cpu.num_harts;
+    c908_cpus = s->c908_cpu.ಅಂಕೆ_harts;
 
     /* SRAM */
-    memory_region_init_ram(&s->sram, OBJECT(dev), "sram",
-                           memmap[K230_DEV_SRAM].size, &error_fatal);
-    memory_region_add_subregion(sys_mem, memmap[K230_DEV_SRAM].base,
+    ಸ್ಮರಣೆ_region_init_ram(&s->sram, OBJECT(dev), "sram",
+                           memmap[K230_DEV_SRAM].ಗಾತ್ರ_2, &error_fatal);
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(sys_mem, memmap[K230_DEV_SRAM].ತಳ,
                                 &s->sram);
 
     /* BootROM */
-    memory_region_init_rom(&s->bootrom, OBJECT(dev), "bootrom",
-                           memmap[K230_DEV_BOOTROM].size, &error_fatal);
-    memory_region_add_subregion(sys_mem, memmap[K230_DEV_BOOTROM].base,
+    ಸ್ಮರಣೆ_region_init_rom(&s->bootrom, OBJECT(dev), "bootrom",
+                           memmap[K230_DEV_BOOTROM].ಗಾತ್ರ_2, &error_fatal);
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(sys_mem, memmap[K230_DEV_BOOTROM].ತಳ,
                                 &s->bootrom);
 
     /* PLIC */
@@ -197,59 +197,59 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
 
     /* CLINT */
     riscv_aclint_swi_create(sys_mem,
-                            memmap[K230_DEV_CLINT].base,
+                            memmap[K230_DEV_CLINT].ತಳ,
                             C908_CPU_HARTID, c908_cpus, false);
     riscv_aclint_mtimer_create(sys_mem,
-                               memmap[K230_DEV_CLINT].base + 0x4000,
-                               RISCV_ACLINT_DEFAULT_MTIMER_SIZE,
+                               memmap[K230_DEV_CLINT].ತಳ + 0x4000,
+                               RISCV_ACLINT_DEFAULT_MTIMER_ಗಾತ್ರ,
                                C908_CPU_HARTID, c908_cpus,
                                RISCV_ACLINT_DEFAULT_MTIMECMP,
                                RISCV_ACLINT_DEFAULT_MTIME,
                                RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
 
     /* UART */
-    for (int i = 0; i < K230_UART_COUNT; i++) {
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ i = 0; i < K230_UART_ಎಣಿಕೆ; i++) {
         k230_create_uart(sys_mem, DEVICE(s->c908_plic), i);
     }
 
     /* Watchdog */
-    for (int i = 0; i < 2; i++) {
-        if (!sysbus_realize(SYS_BUS_DEVICE(&s->wdt[i]), errp)) {
-            return;
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ i = 0; i < 2; i++) {
+        ಆದರೆ (!sysbus_realize(SYS_BUS_DEVICE(&s->wdt[i]), errp)) {
+            ಹಿಂತಿರುಗಿ;
         }
     }
 
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->wdt[0]), 0, memmap[K230_DEV_WDT0].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->wdt[0]), 0, memmap[K230_DEV_WDT0].ತಳ);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->wdt[0]), 0,
-                       qdev_get_gpio_in(DEVICE(s->c908_plic), K230_WDT0_IRQ));
+                       qdev_get_gpio_ಒಳ(DEVICE(s->c908_plic), K230_WDT0_IRQ));
 
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->wdt[1]), 0, memmap[K230_DEV_WDT1].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->wdt[1]), 0, memmap[K230_DEV_WDT1].ತಳ);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->wdt[1]), 0,
-                       qdev_get_gpio_in(DEVICE(s->c908_plic), K230_WDT1_IRQ));
+                       qdev_get_gpio_ಒಳ(DEVICE(s->c908_plic), K230_WDT1_IRQ));
 
     /* Gsdma */
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->gsdma), errp)) {
-        return;
+    ಆದರೆ (!sysbus_realize(SYS_BUS_DEVICE(&s->gsdma), errp)) {
+        ಹಿಂತಿರುಗಿ;
     }
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gsdma), 0, memmap[K230_DEV_GSDMA].base);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->gsdma), 0, memmap[K230_DEV_GSDMA].ತಳ);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->gsdma), 0,
-                       qdev_get_gpio_in(DEVICE(s->c908_plic), K230_GSDMA_IRQ));
+                       qdev_get_gpio_ಒಳ(DEVICE(s->c908_plic), K230_GSDMA_IRQ));
 
     /* Decomp gzip */
-    qdev_prop_set_uint64(DEVICE(&s->decomp_gzip), "sram-base",
-                         memmap[K230_DEV_SRAM].base);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->decomp_gzip), errp)) {
-        return;
+    qdev_prop_ಗಣ_uint64(DEVICE(&s->decomp_gzip), "sram-base",
+                         memmap[K230_DEV_SRAM].ತಳ);
+    ಆದರೆ (!sysbus_realize(SYS_BUS_DEVICE(&s->decomp_gzip), errp)) {
+        ಹಿಂತಿರುಗಿ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->decomp_gzip), 0,
-                    memmap[K230_DEV_DECOMP_GZIP].base);
-    for (int i = 0; i < K230_DECOMP_GZIP_NUM_GPIOS_OUT; i++) {
-        qdev_connect_gpio_out(DEVICE(&s->decomp_gzip), i,
-                              qdev_get_gpio_in(DEVICE(&s->gsdma), i));
+                    memmap[K230_DEV_DECOMP_GZIP].ತಳ);
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ i = 0; i < K230_DECOMP_GZIP_ಅಂಕೆ_GPIOS_ಹೊರಹೋಗು; i++) {
+        qdev_connect_gpio_ಹೊರಹೋಗು(DEVICE(&s->decomp_gzip), i,
+                              qdev_get_gpio_ಒಳ(DEVICE(&s->gsdma), i));
     }
-    for (int i = 0; i < K230_DECOMP_GZIP_NUM_GPIOS_IN; i++) {
-        qdev_connect_gpio_out(DEVICE(&s->gsdma), i,
-                              qdev_get_gpio_in(DEVICE(&s->decomp_gzip), i));
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ i = 0; i < K230_DECOMP_GZIP_ಅಂಕೆ_GPIOS_ಒಳ; i++) {
+        qdev_connect_gpio_ಹೊರಹೋಗು(DEVICE(&s->gsdma), i,
+                              qdev_get_gpio_ಒಳ(DEVICE(&s->decomp_gzip), i));
     }
 
     /* Noc stub, the k230 decomp_gzip driver in uboot will access this region */
@@ -257,291 +257,291 @@ static void k230_soc_realize(DeviceState *dev, Error **errp)
 
     /* unimplemented devices */
     create_unimplemented_device("kpu.l2-cache",
-                                memmap[K230_DEV_KPU_L2_CACHE].base,
-                                memmap[K230_DEV_KPU_L2_CACHE].size);
+                                memmap[K230_DEV_KPU_L2_CACHE].ತಳ,
+                                memmap[K230_DEV_KPU_L2_CACHE].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("kpu_cfg", memmap[K230_DEV_KPU_CFG].base,
-                                memmap[K230_DEV_KPU_CFG].size);
+    create_unimplemented_device("kpu_cfg", memmap[K230_DEV_KPU_CFG].ತಳ,
+                                memmap[K230_DEV_KPU_CFG].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("fft", memmap[K230_DEV_FFT].base,
-                                memmap[K230_DEV_FFT].size);
+    create_unimplemented_device("fft", memmap[K230_DEV_FFT].ತಳ,
+                                memmap[K230_DEV_FFT].ಗಾತ್ರ_2);
 
     create_unimplemented_device("2d-engine.ai",
-                                memmap[K230_DEV_AI_2D_ENGINE].base,
-                                memmap[K230_DEV_AI_2D_ENGINE].size);
+                                memmap[K230_DEV_AI_2D_ENGINE].ತಳ,
+                                memmap[K230_DEV_AI_2D_ENGINE].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("dma", memmap[K230_DEV_DMA].base,
-                                memmap[K230_DEV_DMA].size);
+    create_unimplemented_device("dma", memmap[K230_DEV_DMA].ತಳ,
+                                memmap[K230_DEV_DMA].ಗಾತ್ರ_2);
 
     create_unimplemented_device("2d-engine.non-ai",
-                                memmap[K230_DEV_NON_AI_2D].base,
-                                memmap[K230_DEV_NON_AI_2D].size);
+                                memmap[K230_DEV_NON_AI_2D].ತಳ,
+                                memmap[K230_DEV_NON_AI_2D].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("isp", memmap[K230_DEV_ISP].base,
-                                memmap[K230_DEV_ISP].size);
+    create_unimplemented_device("isp", memmap[K230_DEV_ISP].ತಳ,
+                                memmap[K230_DEV_ISP].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("dewarp", memmap[K230_DEV_DEWARP].base,
-                                memmap[K230_DEV_DEWARP].size);
+    create_unimplemented_device("dewarp", memmap[K230_DEV_DEWARP].ತಳ,
+                                memmap[K230_DEV_DEWARP].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("rx-csi", memmap[K230_DEV_RX_CSI].base,
-                                memmap[K230_DEV_RX_CSI].size);
+    create_unimplemented_device("rx-csi", memmap[K230_DEV_RX_CSI].ತಳ,
+                                memmap[K230_DEV_RX_CSI].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("vpu", memmap[K230_DEV_H264].base,
-                                memmap[K230_DEV_H264].size);
+    create_unimplemented_device("vpu", memmap[K230_DEV_H264].ತಳ,
+                                memmap[K230_DEV_H264].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("gpu", memmap[K230_DEV_2P5D].base,
-                                memmap[K230_DEV_2P5D].size);
+    create_unimplemented_device("gpu", memmap[K230_DEV_2P5D].ತಳ,
+                                memmap[K230_DEV_2P5D].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("vo", memmap[K230_DEV_VO].base,
-                                memmap[K230_DEV_VO].size);
+    create_unimplemented_device("vo", memmap[K230_DEV_VO].ತಳ,
+                                memmap[K230_DEV_VO].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("vo_cfg", memmap[K230_DEV_VO_CFG].base,
-                                memmap[K230_DEV_VO_CFG].size);
+    create_unimplemented_device("vo_cfg", memmap[K230_DEV_VO_CFG].ತಳ,
+                                memmap[K230_DEV_VO_CFG].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("3d-engine", memmap[K230_DEV_3D_ENGINE].base,
-                                memmap[K230_DEV_3D_ENGINE].size);
+    create_unimplemented_device("3d-engine", memmap[K230_DEV_3D_ENGINE].ತಳ,
+                                memmap[K230_DEV_3D_ENGINE].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("pmu", memmap[K230_DEV_PMU].base,
-                                memmap[K230_DEV_PMU].size);
+    create_unimplemented_device("pmu", memmap[K230_DEV_PMU].ತಳ,
+                                memmap[K230_DEV_PMU].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("rtc", memmap[K230_DEV_RTC].base,
-                                memmap[K230_DEV_RTC].size);
+    create_unimplemented_device("rtc", memmap[K230_DEV_RTC].ತಳ,
+                                memmap[K230_DEV_RTC].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("cmu", memmap[K230_DEV_CMU].base,
-                                memmap[K230_DEV_CMU].size);
+    create_unimplemented_device("cmu", memmap[K230_DEV_CMU].ತಳ,
+                                memmap[K230_DEV_CMU].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("rmu", memmap[K230_DEV_RMU].base,
-                                memmap[K230_DEV_RMU].size);
+    create_unimplemented_device("rmu", memmap[K230_DEV_RMU].ತಳ,
+                                memmap[K230_DEV_RMU].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("boot", memmap[K230_DEV_BOOT].base,
-                                memmap[K230_DEV_BOOT].size);
+    create_unimplemented_device("boot", memmap[K230_DEV_BOOT].ತಳ,
+                                memmap[K230_DEV_BOOT].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("pwr", memmap[K230_DEV_PWR].base,
-                                memmap[K230_DEV_PWR].size);
+    create_unimplemented_device("pwr", memmap[K230_DEV_PWR].ತಳ,
+                                memmap[K230_DEV_PWR].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("ipcm", memmap[K230_DEV_MAILBOX].base,
-                                memmap[K230_DEV_MAILBOX].size);
+    create_unimplemented_device("ipcm", memmap[K230_DEV_MAILBOX].ತಳ,
+                                memmap[K230_DEV_MAILBOX].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("iomux", memmap[K230_DEV_IOMUX].base,
-                                memmap[K230_DEV_IOMUX].size);
+    create_unimplemented_device("iomux", memmap[K230_DEV_IOMUX].ತಳ,
+                                memmap[K230_DEV_IOMUX].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("timer", memmap[K230_DEV_TIMER].base,
-                                memmap[K230_DEV_TIMER].size);
+    create_unimplemented_device("timer", memmap[K230_DEV_TIMER].ತಳ,
+                                memmap[K230_DEV_TIMER].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("wdt0", memmap[K230_DEV_WDT0].base,
-                                memmap[K230_DEV_WDT0].size);
+    create_unimplemented_device("wdt0", memmap[K230_DEV_WDT0].ತಳ,
+                                memmap[K230_DEV_WDT0].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("wdt1", memmap[K230_DEV_WDT1].base,
-                                memmap[K230_DEV_WDT1].size);
+    create_unimplemented_device("wdt1", memmap[K230_DEV_WDT1].ತಳ,
+                                memmap[K230_DEV_WDT1].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("ts", memmap[K230_DEV_TS].base,
-                                memmap[K230_DEV_TS].size);
+    create_unimplemented_device("ts", memmap[K230_DEV_TS].ತಳ,
+                                memmap[K230_DEV_TS].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("hdi", memmap[K230_DEV_HDI].base,
-                                memmap[K230_DEV_HDI].size);
+    create_unimplemented_device("hdi", memmap[K230_DEV_HDI].ತಳ,
+                                memmap[K230_DEV_HDI].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("stc", memmap[K230_DEV_STC].base,
-                                memmap[K230_DEV_STC].size);
+    create_unimplemented_device("stc", memmap[K230_DEV_STC].ತಳ,
+                                memmap[K230_DEV_STC].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("security", memmap[K230_DEV_SECURITY].base,
-                                memmap[K230_DEV_SECURITY].size);
+    create_unimplemented_device("security", memmap[K230_DEV_SECURITY].ತಳ,
+                                memmap[K230_DEV_SECURITY].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("i2c0", memmap[K230_DEV_I2C0].base,
-                                memmap[K230_DEV_I2C0].size);
+    create_unimplemented_device("i2c0", memmap[K230_DEV_I2C0].ತಳ,
+                                memmap[K230_DEV_I2C0].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("i2c1", memmap[K230_DEV_I2C1].base,
-                                memmap[K230_DEV_I2C1].size);
+    create_unimplemented_device("i2c1", memmap[K230_DEV_I2C1].ತಳ,
+                                memmap[K230_DEV_I2C1].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("i2c2", memmap[K230_DEV_I2C2].base,
-                                memmap[K230_DEV_I2C2].size);
+    create_unimplemented_device("i2c2", memmap[K230_DEV_I2C2].ತಳ,
+                                memmap[K230_DEV_I2C2].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("i2c3", memmap[K230_DEV_I2C3].base,
-                                memmap[K230_DEV_I2C3].size);
+    create_unimplemented_device("i2c3", memmap[K230_DEV_I2C3].ತಳ,
+                                memmap[K230_DEV_I2C3].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("i2c4", memmap[K230_DEV_I2C4].base,
-                                memmap[K230_DEV_I2C4].size);
+    create_unimplemented_device("i2c4", memmap[K230_DEV_I2C4].ತಳ,
+                                memmap[K230_DEV_I2C4].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("pwm", memmap[K230_DEV_PWM].base,
-                                memmap[K230_DEV_PWM].size);
+    create_unimplemented_device("pwm", memmap[K230_DEV_PWM].ತಳ,
+                                memmap[K230_DEV_PWM].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("gpio0", memmap[K230_DEV_GPIO0].base,
-                                memmap[K230_DEV_GPIO0].size);
+    create_unimplemented_device("gpio0", memmap[K230_DEV_GPIO0].ತಳ,
+                                memmap[K230_DEV_GPIO0].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("gpio1", memmap[K230_DEV_GPIO1].base,
-                                memmap[K230_DEV_GPIO1].size);
+    create_unimplemented_device("gpio1", memmap[K230_DEV_GPIO1].ತಳ,
+                                memmap[K230_DEV_GPIO1].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("adc", memmap[K230_DEV_ADC].base,
-                                memmap[K230_DEV_ADC].size);
+    create_unimplemented_device("adc", memmap[K230_DEV_ADC].ತಳ,
+                                memmap[K230_DEV_ADC].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("codec", memmap[K230_DEV_CODEC].base,
-                                memmap[K230_DEV_CODEC].size);
+    create_unimplemented_device("codec", memmap[K230_DEV_CODEC].ತಳ,
+                                memmap[K230_DEV_CODEC].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("i2s", memmap[K230_DEV_I2S].base,
-                                memmap[K230_DEV_I2S].size);
+    create_unimplemented_device("i2s", memmap[K230_DEV_I2S].ತಳ,
+                                memmap[K230_DEV_I2S].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("usb0", memmap[K230_DEV_USB0].base,
-                                memmap[K230_DEV_USB0].size);
+    create_unimplemented_device("usb0", memmap[K230_DEV_USB0].ತಳ,
+                                memmap[K230_DEV_USB0].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("usb1", memmap[K230_DEV_USB1].base,
-                                memmap[K230_DEV_USB1].size);
+    create_unimplemented_device("usb1", memmap[K230_DEV_USB1].ತಳ,
+                                memmap[K230_DEV_USB1].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("sd0", memmap[K230_DEV_SD0].base,
-                                memmap[K230_DEV_SD0].size);
+    create_unimplemented_device("sd0", memmap[K230_DEV_SD0].ತಳ,
+                                memmap[K230_DEV_SD0].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("sd1", memmap[K230_DEV_SD1].base,
-                                memmap[K230_DEV_SD1].size);
+    create_unimplemented_device("sd1", memmap[K230_DEV_SD1].ತಳ,
+                                memmap[K230_DEV_SD1].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("qspi0", memmap[K230_DEV_QSPI0].base,
-                                memmap[K230_DEV_QSPI0].size);
+    create_unimplemented_device("qspi0", memmap[K230_DEV_QSPI0].ತಳ,
+                                memmap[K230_DEV_QSPI0].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("qspi1", memmap[K230_DEV_QSPI1].base,
-                                memmap[K230_DEV_QSPI1].size);
+    create_unimplemented_device("qspi1", memmap[K230_DEV_QSPI1].ತಳ,
+                                memmap[K230_DEV_QSPI1].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("spi", memmap[K230_DEV_SPI].base,
-                                memmap[K230_DEV_SPI].size);
+    create_unimplemented_device("spi", memmap[K230_DEV_SPI].ತಳ,
+                                memmap[K230_DEV_SPI].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("hi_sys_cfg", memmap[K230_DEV_HI_SYS_CFG].base,
-                                memmap[K230_DEV_HI_SYS_CFG].size);
+    create_unimplemented_device("hi_sys_cfg", memmap[K230_DEV_HI_SYS_CFG].ತಳ,
+                                memmap[K230_DEV_HI_SYS_CFG].ಗಾತ್ರ_2);
 
-    create_unimplemented_device("flash", memmap[K230_DEV_FLASH].base,
-                                memmap[K230_DEV_FLASH].size);
+    create_unimplemented_device("flash", memmap[K230_DEV_FLASH].ತಳ,
+                                memmap[K230_DEV_FLASH].ಗಾತ್ರ_2);
 }
 
-static void k230_soc_class_init(ObjectClass *oc, const void *data)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_soc_class_init(ObjectClass *oc, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *ದತ್ತಾಂಶ)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
     dc->realize = k230_soc_realize;
 }
 
-static const TypeInfo k230_soc_type_info = {
+ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ TypeInfo k230_soc_type_info = {
     .name = TYPE_RISCV_K230_SOC,
-    .parent = TYPE_DEVICE,
-    .instance_size = sizeof(K230SoCState),
+    .ಪೋಷಕ = TYPE_DEVICE,
+    .instance_ಗಾತ್ರ = ಗಾತ್ರ(K230SoCState),
     .instance_init = k230_soc_init,
     .class_init = k230_soc_class_init,
 };
 
-static void k230_soc_register_types(void)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_soc_ರಿಜಿಸ್ಟರ್_types(ಶೂನ್ಯ)
 {
-    type_register_static(&k230_soc_type_info);
+    type_ರಿಜಿಸ್ಟರ್_static(&k230_soc_type_info);
 }
 
-type_init(k230_soc_register_types)
+type_init(k230_soc_ರಿಜಿಸ್ಟರ್_types)
 
-static void k230_direct_boot(K230MachineState *s, MachineState *machine)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_ನೇರ_boot(K230MachineState *s, MachineState *machine)
 {
-    const char *firmware_name = riscv_default_firmware_name(&s->soc.c908_cpu);
+    ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *firmware_name = riscv_default_firmware_name(&s->soc.c908_cpu);
     RISCVBootInfo boot_info = {0};
-    hwaddr start_addr = K230_DIRECT_OPENSBI_ADDR;
-    hwaddr firmware_end_addr = 0;
-    hwaddr kernel_entry = 0;
-    int fdt_size = 0;
+    hwaddr ಆರಂಭ_addr = K230_ನೇರ_OPENSBI_ADDR;
+    hwaddr firmware_ಕೊನೆ_addr = 0;
+    hwaddr kernel_ನಮೂದು = 0;
+    ಪೂರ್ಣಾಂಕ fdt_ಗಾತ್ರ = 0;
 
-    if (machine->firmware && !strcmp(machine->firmware, "none")) {
+    ಆದರೆ (machine->firmware && !strcmp(machine->firmware, "none")) {
         error_report("K230 direct boot requires OpenSBI firmware; omit "
                      "-bios none or pass OpenSBI with -bios");
-        exit(EXIT_FAILURE);
+        ನಿರ್ಗಮಿಸು(EXIT_FAILURE);
     }
 
-    if (!machine->dtb) {
+    ಆದರೆ (!machine->dtb) {
         error_report("K230 direct boot requires -dtb");
-        exit(EXIT_FAILURE);
+        ನಿರ್ಗಮಿಸು(EXIT_FAILURE);
     }
 
-    machine->fdt = load_device_tree(machine->dtb, &fdt_size);
-    if (!machine->fdt) {
+    machine->fdt = ತುಂಬು_device_ವೃಕ್ಷ(machine->dtb, &fdt_ಗಾತ್ರ);
+    ಆದರೆ (!machine->fdt) {
         error_report("load_device_tree() failed");
-        exit(EXIT_FAILURE);
+        ನಿರ್ಗಮಿಸು(EXIT_FAILURE);
     }
 
-    qemu_fdt_add_path(machine->fdt, "/chosen");
+    qemu_fdt_ಕೂಡಿಸು_ಮಾರ್ಗ(machine->fdt, "/chosen");
 
     riscv_boot_info_init(&boot_info, &s->soc.c908_cpu);
-    riscv_load_kernel(machine, &boot_info, K230_DIRECT_KERNEL_ADDR, true, NULL);
-    kernel_entry = boot_info.image_low_addr;
+    riscv_ತುಂಬು_kernel(machine, &boot_info, K230_ನೇರ_KERNEL_ADDR, true, ಖಾಲಿ);
+    kernel_ನಮೂದು = boot_info.image_ಕೆಳಗಿನ_addr;
 
-    riscv_load_fdt(K230_DIRECT_DTB_ADDR, machine->fdt);
+    riscv_ತುಂಬು_fdt(K230_ನೇರ_DTB_ADDR, machine->fdt);
 
-    firmware_end_addr = riscv_find_and_load_firmware(machine, &boot_info,
+    firmware_ಕೊನೆ_addr = riscv_ಕಂಡುಹಿಡಿ_and_ತುಂಬು_firmware(machine, &boot_info,
                                                      firmware_name,
-                                                     &start_addr, NULL);
-    if (firmware_end_addr > K230_DIRECT_KERNEL_ADDR) {
+                                                     &ಆರಂಭ_addr, ಖಾಲಿ);
+    ಆದರೆ (firmware_ಕೊನೆ_addr > K230_ನೇರ_KERNEL_ADDR) {
         error_report("K230 firmware overlaps kernel address 0x%x",
-                     K230_DIRECT_KERNEL_ADDR);
-        exit(EXIT_FAILURE);
+                     K230_ನೇರ_KERNEL_ADDR);
+        ನಿರ್ಗಮಿಸು(EXIT_FAILURE);
     }
 
-    riscv_setup_rom_reset_vec(machine, &s->soc.c908_cpu, start_addr,
-                              memmap[K230_DEV_BOOTROM].base,
-                              memmap[K230_DEV_BOOTROM].size, kernel_entry,
-                              K230_DIRECT_DTB_ADDR);
+    riscv_ಸಿದ್ಧತೆ_rom_reset_vec(machine, &s->soc.c908_cpu, ಆರಂಭ_addr,
+                              memmap[K230_DEV_BOOTROM].ತಳ,
+                              memmap[K230_DEV_BOOTROM].ಗಾತ್ರ_2, kernel_ನಮೂದು,
+                              K230_ನೇರ_DTB_ADDR);
 }
 
-static void k230_firmware_boot(K230MachineState *s, MachineState *machine)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_firmware_boot(K230MachineState *s, MachineState *machine)
 {
-    const char *firmware_name = riscv_default_firmware_name(&s->soc.c908_cpu);
-    hwaddr start_addr = memmap[K230_DEV_DDRC].base;
+    ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *firmware_name = riscv_default_firmware_name(&s->soc.c908_cpu);
+    hwaddr ಆರಂಭ_addr = memmap[K230_DEV_DDRC].ತಳ;
     RISCVBootInfo boot_info = {0};
 
-    if (machine->dtb || (machine->kernel_cmdline && *machine->kernel_cmdline)) {
+    ಆದರೆ (machine->dtb || (machine->kernel_cmdline && *machine->kernel_cmdline)) {
         error_report("K230 firmware boot does not support -dtb or -append");
-        exit(EXIT_FAILURE);
+        ನಿರ್ಗಮಿಸು(EXIT_FAILURE);
     }
 
     riscv_boot_info_init(&boot_info, &s->soc.c908_cpu);
-    riscv_find_and_load_firmware(machine, &boot_info, firmware_name,
-                                 &start_addr, NULL);
+    riscv_ಕಂಡುಹಿಡಿ_and_ತುಂಬು_firmware(machine, &boot_info, firmware_name,
+                                 &ಆರಂಭ_addr, ಖಾಲಿ);
 
-    riscv_setup_rom_reset_vec(machine, &s->soc.c908_cpu, start_addr,
-                              memmap[K230_DEV_BOOTROM].base,
-                              memmap[K230_DEV_BOOTROM].size, 0, 0);
+    riscv_ಸಿದ್ಧತೆ_rom_reset_vec(machine, &s->soc.c908_cpu, ಆರಂಭ_addr,
+                              memmap[K230_DEV_BOOTROM].ತಳ,
+                              memmap[K230_DEV_BOOTROM].ಗಾತ್ರ_2, 0, 0);
 }
 
-static void k230_machine_done(Notifier *notifier, void *data)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_machine_ಮುಗಿದ(Notifier *notifier, ಶೂನ್ಯ *ದತ್ತಾಂಶ)
 {
-    K230MachineState *s = container_of(notifier, K230MachineState,
-                                       machine_done);
+    K230MachineState *s = container_ದ(notifier, K230MachineState,
+                                       machine_ಮುಗಿದ);
     MachineState *machine = MACHINE(s);
 
-    if (machine->kernel_filename) {
-        k230_direct_boot(s, machine);
-    } else {
+    ಆದರೆ (machine->kernel_filename) {
+        k230_ನೇರ_boot(s, machine);
+    } ಇಲ್ಲದಿದ್ದರೆ {
         k230_firmware_boot(s, machine);
     }
 }
 
-static void k230_machine_init(MachineState *machine)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_machine_init(MachineState *machine)
 {
     MachineClass *mc = MACHINE_GET_CLASS(machine);
     K230MachineState *s = RISCV_K230_MACHINE(machine);
-    MemoryRegion *sys_mem = get_system_memory();
+    ಸ್ಮರಣೆ_Region *sys_mem = get_system_ಸ್ಮರಣೆ();
 
-    if (machine->ram_size < mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    ಆದರೆ (machine->ram_ಗಾತ್ರ < mc->default_ram_ಗಾತ್ರ) {
+        ಅಕ್ಷರ *sz = ಗಾತ್ರ_ಗಮ್ಯ_str(mc->default_ram_ಗಾತ್ರ);
         error_report("Invalid RAM size, should be %s", sz);
         g_free(sz);
-        exit(EXIT_FAILURE);
+        ನಿರ್ಗಮಿಸು(EXIT_FAILURE);
     }
 
     /* Initialize SoC */
-    object_initialize_child(OBJECT(machine), "soc", &s->soc,
+    object_initialize_ಮಗು(OBJECT(machine), "soc", &s->soc,
                             TYPE_RISCV_K230_SOC);
-    qdev_realize(DEVICE(&s->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&s->soc), ಖಾಲಿ, &error_fatal);
 
     /* Data Memory */
-    memory_region_add_subregion(sys_mem, memmap[K230_DEV_DDRC].base,
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(sys_mem, memmap[K230_DEV_DDRC].ತಳ,
                                 machine->ram);
 
-    s->machine_done.notify = k230_machine_done;
-    qemu_add_machine_init_done_notifier(&s->machine_done);
+    s->machine_ಮುಗಿದ.notify = k230_machine_ಮುಗಿದ;
+    qemu_ಕೂಡಿಸು_machine_init_ಮುಗಿದ_notifier(&s->machine_ಮುಗಿದ);
 }
 
-static void k230_machine_instance_init(Object *obj)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_machine_instance_init(Object *obj)
 {
 }
 
-static void k230_machine_class_init(ObjectClass *oc, const void *data)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_machine_class_init(ObjectClass *oc, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *ದತ್ತಾಂಶ)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -549,20 +549,20 @@ static void k230_machine_class_init(ObjectClass *oc, const void *data)
     mc->init = k230_machine_init;
     mc->default_cpus = 1;
     mc->default_ram_id = "riscv.K230.ram"; /* DDR */
-    mc->default_ram_size = memmap[K230_DEV_DDRC].size;
+    mc->default_ram_ಗಾತ್ರ = memmap[K230_DEV_DDRC].ಗಾತ್ರ_2;
 }
 
-static const TypeInfo k230_machine_typeinfo = {
+ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ TypeInfo k230_machine_typeinfo = {
     .name       = TYPE_RISCV_K230_MACHINE,
-    .parent     = TYPE_MACHINE,
+    .ಪೋಷಕ     = TYPE_MACHINE,
     .class_init = k230_machine_class_init,
     .instance_init = k230_machine_instance_init,
-    .instance_size = sizeof(K230MachineState),
+    .instance_ಗಾತ್ರ = ಗಾತ್ರ(K230MachineState),
 };
 
-static void k230_machine_init_register_types(void)
+ಸ್ಥಿರ ಶೂನ್ಯ k230_machine_init_ರಿಜಿಸ್ಟರ್_types(ಶೂನ್ಯ)
 {
-    type_register_static(&k230_machine_typeinfo);
+    type_ರಿಜಿಸ್ಟರ್_static(&k230_machine_typeinfo);
 }
 
-type_init(k230_machine_init_register_types)
+type_init(k230_machine_init_ರಿಜಿಸ್ಟರ್_types)

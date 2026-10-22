@@ -6,32 +6,32 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#include "qemu/osdep.h"
+#ಅನ್ತರ್ಭಾವ "qemu/osdep.h"
 
-#include "qemu/error-report.h"
-#include "system/device_tree.h"
-#include "hw/core/boards.h"
-#include "hw/core/sysbus-fdt.h"
-#include "hw/riscv/fdt-common.h"
-#include "target/riscv/cpu_bits.h"
-#include "hw/riscv/riscv-iommu-bits.h"
-#include "hw/riscv/iommu.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/intc/riscv_imsic.h"
-#include "hw/pci/pci.h"
-#include "hw/pci/pcie_host.h"
-#include "hw/riscv/aia.h"
+#ಅನ್ತರ್ಭಾವ "qemu/error-report.h"
+#ಅನ್ತರ್ಭಾವ "system/device_tree.h"
+#ಅನ್ತರ್ಭಾವ "hw/core/boards.h"
+#ಅನ್ತರ್ಭಾವ "hw/core/sysbus-fdt.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/fdt-common.h"
+#ಅನ್ತರ್ಭಾವ "target/riscv/cpu_bits.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/riscv-iommu-bits.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/iommu.h"
+#ಅನ್ತರ್ಭಾವ "hw/intc/riscv_aclint.h"
+#ಅನ್ತರ್ಭಾವ "hw/intc/riscv_imsic.h"
+#ಅನ್ತರ್ಭಾವ "hw/pci/pci.h"
+#ಅನ್ತರ್ಭಾವ "hw/pci/pcie_host.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/aia.h"
 
-#define UART_STD_CLOCK_FREQ 3686400 /* 3.6864 MHz */
+#ವ್ಯಾಖ್ಯಾನಿಸು UART_STD_CLOCK_FREQ 3686400 /* 3.6864 MHz */
 
-void *riscv_create_board_device_tree(const char *model, const char *compatible,
-                                     int *fdt_size)
+ಶೂನ್ಯ *riscv_create_board_device_ವೃಕ್ಷ(ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *model, ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *compatible,
+                                     ಪೂರ್ಣಾಂಕ *fdt_ಗಾತ್ರ)
 {
-    void *fdt = create_device_tree(fdt_size);
+    ಶೂನ್ಯ *fdt = create_device_ವೃಕ್ಷ(fdt_ಗಾತ್ರ);
 
-    if (!fdt) {
+    ಆದರೆ (!fdt) {
         error_report("create_device_tree() failed");
-        exit(1);
+        ನಿರ್ಗಮಿಸು(1);
     }
 
     qemu_fdt_setprop_string(fdt, "/", "model", model);
@@ -39,85 +39,85 @@ void *riscv_create_board_device_tree(const char *model, const char *compatible,
     qemu_fdt_setprop_cell(fdt, "/", "#size-cells", 0x2);
     qemu_fdt_setprop_cell(fdt, "/", "#address-cells", 0x2);
 
-    qemu_fdt_add_subnode(fdt, "/soc");
-    qemu_fdt_setprop(fdt, "/soc", "ranges", NULL, 0);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, "/soc");
+    qemu_fdt_setprop(fdt, "/soc", "ranges", ಖಾಲಿ, 0);
     qemu_fdt_setprop_string(fdt, "/soc", "compatible", "simple-bus");
     qemu_fdt_setprop_cell(fdt, "/soc", "#size-cells", 0x2);
     qemu_fdt_setprop_cell(fdt, "/soc", "#address-cells", 0x2);
 
-    return fdt;
+    ಹಿಂತಿರುಗಿ fdt;
 }
 
-void riscv_create_fdt_socket_memory(void *fdt, hwaddr addr, uint64_t size,
-                                    int socket_id, bool numa_enabled)
+ಶೂನ್ಯ riscv_create_fdt_socket_ಸ್ಮರಣೆ(ಶೂನ್ಯ *fdt, hwaddr addr, uint64_t ಗಾತ್ರ_2,
+                                    ಪೂರ್ಣಾಂಕ socket_id, bool numa_enabled)
 {
-    g_autofree char *mem_name = g_strdup_printf("/memory@%"HWADDR_PRIx, addr);
+    g_autofree ಅಕ್ಷರ *mem_name = g_strdup_printf("/memory@%"HWADDR_PRIx, addr);
 
-    qemu_fdt_add_subnode(fdt, mem_name);
-    qemu_fdt_setprop_sized_cells(fdt, mem_name, "reg", 2, addr, 2, size);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, mem_name);
+    qemu_fdt_setprop_sized_cells(fdt, mem_name, "reg", 2, addr, 2, ಗಾತ್ರ_2);
     qemu_fdt_setprop_string(fdt, mem_name, "device_type", "memory");
 
-    if (numa_enabled) {
+    ಆದರೆ (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, mem_name, "numa-node-id", socket_id);
     }
 }
 
-void riscv_create_fdt_socket_clint(void *fdt, hwaddr addr, uint64_t size,
-                                   int socket_id, uint32_t *intc_phandles,
-                                   int num_harts, bool numa_enabled)
+ಶೂನ್ಯ riscv_create_fdt_socket_clint(ಶೂನ್ಯ *fdt, hwaddr addr, uint64_t ಗಾತ್ರ_2,
+                                   ಪೂರ್ಣಾಂಕ socket_id, uint32_t *intc_phandles,
+                                   ಪೂರ್ಣಾಂಕ ಅಂಕೆ_harts, bool numa_enabled)
 {
-    g_autofree uint32_t *clint_cells = g_new0(uint32_t, num_harts * 4);
-    g_autofree char *clint_name = NULL;
-    static const char * const clint_compat[2] = {
+    g_autofree uint32_t *clint_cells = g_new0(uint32_t, ಅಂಕೆ_harts * 4);
+    g_autofree ಅಕ್ಷರ *clint_name = ಖಾಲಿ;
+    ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ * ಸ್ಥಿರಾಂಕ clint_compat[2] = {
         "sifive,clint0", "riscv,clint0"
     };
 
-    for (int cpu = 0; cpu < num_harts; cpu++) {
-        clint_cells[cpu * 4 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        clint_cells[cpu * 4 + 1] = cpu_to_be32(IRQ_M_SOFT);
-        clint_cells[cpu * 4 + 2] = cpu_to_be32(intc_phandles[cpu]);
-        clint_cells[cpu * 4 + 3] = cpu_to_be32(IRQ_M_TIMER);
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ cpu = 0; cpu < ಅಂಕೆ_harts; cpu++) {
+        clint_cells[cpu * 4 + 0] = cpu_ಗಮ್ಯ_be32(intc_phandles[cpu]);
+        clint_cells[cpu * 4 + 1] = cpu_ಗಮ್ಯ_be32(IRQ_M_SOFT);
+        clint_cells[cpu * 4 + 2] = cpu_ಗಮ್ಯ_be32(intc_phandles[cpu]);
+        clint_cells[cpu * 4 + 3] = cpu_ಗಮ್ಯ_be32(IRQ_M_TIMER);
     }
 
     clint_name = g_strdup_printf("/soc/clint@%"HWADDR_PRIx, addr);
-    qemu_fdt_add_subnode(fdt, clint_name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, clint_name);
     qemu_fdt_setprop_string_array(fdt, clint_name, "compatible",
-                                  (char **)&clint_compat,
-                                  ARRAY_SIZE(clint_compat));
+                                  (ಅಕ್ಷರ **)&clint_compat,
+                                  ARRAY_ಗಾತ್ರ(clint_compat));
     qemu_fdt_setprop_sized_cells(fdt, clint_name, "reg",
-                                 2, addr, 2, size);
+                                 2, addr, 2, ಗಾತ್ರ_2);
     qemu_fdt_setprop(fdt, clint_name, "interrupts-extended",
-                     clint_cells, num_harts * sizeof(uint32_t) * 4);
+                     clint_cells, ಅಂಕೆ_harts * ಗಾತ್ರ(uint32_t) * 4);
 
-    if (numa_enabled) {
+    ಆದರೆ (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, clint_name, "numa-node-id", socket_id);
     }
 }
 
-void riscv_fdt_create_cpu_socket_subnode(void *fdt,
+ಶೂನ್ಯ riscv_fdt_create_cpu_socket_subnode(ಶೂನ್ಯ *fdt,
                                          uint64_t timebase_frequency)
 {
-    qemu_fdt_add_subnode(fdt, "/cpus");
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, "/cpus");
     qemu_fdt_setprop_cell(fdt, "/cpus", "timebase-frequency",
                           timebase_frequency);
     qemu_fdt_setprop_cell(fdt, "/cpus", "#size-cells", 0x0);
     qemu_fdt_setprop_cell(fdt, "/cpus", "#address-cells", 0x1);
-    qemu_fdt_add_subnode(fdt, "/cpus/cpu-map");
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, "/cpus/cpu-map");
 }
 
-static void
-create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
-                               int cpu, int socket_id, int socket_hartid_base,
+ಸ್ಥಿರ ಶೂನ್ಯ
+create_fdt_socket_cpu_ಆಂತರಿಕ(ಶೂನ್ಯ *fdt, ಅಕ್ಷರ *clust_name, RISCVCPU *cpu_ptr,
+                               ಪೂರ್ಣಾಂಕ cpu, ಪೂರ್ಣಾಂಕ socket_id, ಪೂರ್ಣಾಂಕ socket_hartid_ತಳ,
                                uint32_t *phandle, uint32_t *intc_phandles,
-                               bool numa_enabled, bool is_32_bit)
+                               bool numa_enabled, bool is_32_ಬಿಟ್)
 {
-    g_autofree char *cpu_name = NULL;
-    g_autofree char *core_name = NULL;
-    g_autofree char *intc_name = NULL;
+    g_autofree ಅಕ್ಷರ *cpu_name = ಖಾಲಿ;
+    g_autofree ಅಕ್ಷರ *core_name = ಖಾಲಿ;
+    g_autofree ಅಕ್ಷರ *intc_name = ಖಾಲಿ;
     uint32_t cpu_phandle = (*phandle)++;
-    bool is_sifive_u = cpu_ptr == NULL;
+    bool is_sifive_u = cpu_ptr == ಖಾಲಿ;
 
-    cpu_name = g_strdup_printf("/cpus/cpu@%d", socket_hartid_base + cpu);
+    cpu_name = g_strdup_printf("/cpus/cpu@%d", socket_hartid_ತಳ + cpu);
 
     /*
      * The sifive_u board has an exclusive satp and riscv,isa
@@ -125,30 +125,30 @@ create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
      * of the CPU FDT creation (i.e. the /cpus/cpu@N subnode)
      * is still being done by the board.
      */
-    if (!is_sifive_u) {
-        int8_t satp_mode_max = cpu_ptr->cfg.max_satp_mode;
+    ಆದರೆ (!is_sifive_u) {
+        int8_t satp_ಬಹುಲಕ_max = cpu_ptr->cfg.max_satp_ಬಹುಲಕ;
 
-        qemu_fdt_add_subnode(fdt, cpu_name);
+        qemu_fdt_ಕೂಡಿಸು_subnode(fdt, cpu_name);
 
-        if (satp_mode_max != -1) {
-            g_autofree char *sv_name = NULL;
+        ಆದರೆ (satp_ಬಹುಲಕ_max != -1) {
+            g_autofree ಅಕ್ಷರ *sv_name = ಖಾಲಿ;
             sv_name = g_strdup_printf("riscv,%s",
-                                      satp_mode_str(satp_mode_max, is_32_bit));
+                                      satp_ಬಹುಲಕ_str(satp_ಬಹುಲಕ_max, is_32_ಬಿಟ್));
             qemu_fdt_setprop_string(fdt, cpu_name, "mmu-type", sv_name);
         }
         riscv_isa_write_fdt(cpu_ptr, fdt, cpu_name);
 
-        if (cpu_ptr->cfg.ext_zicbom) {
+        ಆದರೆ (cpu_ptr->cfg.ext_zicbom) {
             qemu_fdt_setprop_cell(fdt, cpu_name, "riscv,cbom-block-size",
                                   cpu_ptr->cfg.cbom_blocksize);
         }
 
-        if (cpu_ptr->cfg.ext_zicboz) {
+        ಆದರೆ (cpu_ptr->cfg.ext_zicboz) {
             qemu_fdt_setprop_cell(fdt, cpu_name, "riscv,cboz-block-size",
                                   cpu_ptr->cfg.cboz_blocksize);
         }
 
-        if (cpu_ptr->cfg.ext_zicbop) {
+        ಆದರೆ (cpu_ptr->cfg.ext_zicbop) {
             qemu_fdt_setprop_cell(fdt, cpu_name, "riscv,cbop-block-size",
                                   cpu_ptr->cfg.cbop_blocksize);
         }
@@ -157,9 +157,9 @@ create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
     qemu_fdt_setprop_string(fdt, cpu_name, "compatible", "riscv");
     qemu_fdt_setprop_string(fdt, cpu_name, "status", "okay");
     qemu_fdt_setprop_cell(fdt, cpu_name, "reg",
-                          socket_hartid_base + cpu);
+                          socket_hartid_ತಳ + cpu);
     qemu_fdt_setprop_string(fdt, cpu_name, "device_type", "cpu");
-    if (numa_enabled) {
+    ಆದರೆ (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, cpu_name, "numa-node-id", socket_id);
     }
     qemu_fdt_setprop_cell(fdt, cpu_name, "phandle", cpu_phandle);
@@ -167,76 +167,76 @@ create_fdt_socket_cpu_internal(void *fdt, char *clust_name, RISCVCPU *cpu_ptr,
     intc_phandles[cpu] = (*phandle)++;
 
     intc_name = g_strdup_printf("%s/interrupt-controller", cpu_name);
-    qemu_fdt_add_subnode(fdt, intc_name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, intc_name);
     qemu_fdt_setprop_cell(fdt, intc_name, "phandle",
                           intc_phandles[cpu]);
     qemu_fdt_setprop_string(fdt, intc_name, "compatible",
                             "riscv,cpu-intc");
-    qemu_fdt_setprop(fdt, intc_name, "interrupt-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, intc_name, "interrupt-controller", ಖಾಲಿ, 0);
     qemu_fdt_setprop_cell(fdt, intc_name, "#interrupt-cells", 1);
 
     core_name = g_strdup_printf("%s/core%d", clust_name, cpu);
-    qemu_fdt_add_subnode(fdt, core_name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, core_name);
     qemu_fdt_setprop_cell(fdt, core_name, "cpu", cpu_phandle);
 }
 
-void riscv_create_fdt_socket_cpus(void *fdt, RISCVCPU *socket_harts,
-                                  int socket_id, int num_harts_socket,
-                                  int socket_hartid_base, uint32_t *phandle,
+ಶೂನ್ಯ riscv_create_fdt_socket_cpus(ಶೂನ್ಯ *fdt, RISCVCPU *socket_harts,
+                                  ಪೂರ್ಣಾಂಕ socket_id, ಪೂರ್ಣಾಂಕ ಅಂಕೆ_harts_socket,
+                                  ಪೂರ್ಣಾಂಕ socket_hartid_ತಳ, uint32_t *phandle,
                                   uint32_t *intc_phandles, bool numa_enabled,
-                                  bool is_32_bit)
+                                  bool is_32_ಬಿಟ್)
 {
-    g_autofree char *clust_name = NULL;
+    g_autofree ಅಕ್ಷರ *clust_name = ಖಾಲಿ;
 
     clust_name = g_strdup_printf("/cpus/cpu-map/cluster%d", socket_id);
-    qemu_fdt_add_subnode(fdt, clust_name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, clust_name);
 
-    for (int cpu = num_harts_socket - 1; cpu >= 0; cpu--) {
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ cpu = ಅಂಕೆ_harts_socket - 1; cpu >= 0; cpu--) {
         RISCVCPU *cpu_ptr = &socket_harts[cpu];
 
-        create_fdt_socket_cpu_internal(fdt, clust_name, cpu_ptr, cpu,
-                                       socket_id, socket_hartid_base,
+        create_fdt_socket_cpu_ಆಂತರಿಕ(fdt, clust_name, cpu_ptr, cpu,
+                                       socket_id, socket_hartid_ತಳ,
                                        phandle, intc_phandles, numa_enabled,
-                                       is_32_bit);
+                                       is_32_ಬಿಟ್);
     }
 }
 
-void
-riscv_create_fdt_socket_cpu_sifive(void *fdt, char *clust_name,
-                                   int cpu_id, int socket_id,
-                                   int socket_hartid_base, uint32_t *phandle,
+ಶೂನ್ಯ
+riscv_create_fdt_socket_cpu_sifive(ಶೂನ್ಯ *fdt, ಅಕ್ಷರ *clust_name,
+                                   ಪೂರ್ಣಾಂಕ cpu_id, ಪೂರ್ಣಾಂಕ socket_id,
+                                   ಪೂರ್ಣಾಂಕ socket_hartid_ತಳ, uint32_t *phandle,
                                    uint32_t *intc_phandles)
 {
-    create_fdt_socket_cpu_internal(fdt, clust_name, NULL, cpu_id,
-                                   socket_id, socket_hartid_base,
+    create_fdt_socket_cpu_ಆಂತರಿಕ(fdt, clust_name, ಖಾಲಿ, cpu_id,
+                                   socket_id, socket_hartid_ತಳ,
                                    phandle, intc_phandles, false, false);
 }
 
-void riscv_create_fdt_plic(void *fdt, hwaddr addr, uint64_t size,
+ಶೂನ್ಯ riscv_create_fdt_plic(ಶೂನ್ಯ *fdt, hwaddr addr, uint64_t ಗಾತ್ರ_2,
                            uint32_t plic_phandle, uint32_t int_cells,
                            uint32_t addr_cells, uint32_t *plic_cells,
-                           uint32_t cells_size, uint32_t ndev_sources,
-                           bool numa_enabled, int socket_id)
+                           uint32_t cells_ಗಾತ್ರ, uint32_t ndev_sources,
+                           bool numa_enabled, ಪೂರ್ಣಾಂಕ socket_id)
 {
-    g_autofree char *nodename = NULL;
-    static const char * const plic_compat[2] = {
+    g_autofree ಅಕ್ಷರ *nodename = ಖಾಲಿ;
+    ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ * ಸ್ಥಿರಾಂಕ plic_compat[2] = {
         "sifive,plic-1.0.0", "riscv,plic0"
     };
 
     nodename = g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIx, addr);
 
-    qemu_fdt_add_subnode(fdt, nodename);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, nodename);
     qemu_fdt_setprop_cell(fdt, nodename, "#interrupt-cells", int_cells);
     qemu_fdt_setprop_cell(fdt, nodename, "#address-cells", addr_cells);
     qemu_fdt_setprop_string_array(fdt, nodename, "compatible",
-        (char **)&plic_compat, ARRAY_SIZE(plic_compat));
-    qemu_fdt_setprop(fdt, nodename, "interrupt-controller", NULL, 0);
+        (ಅಕ್ಷರ **)&plic_compat, ARRAY_ಗಾತ್ರ(plic_compat));
+    qemu_fdt_setprop(fdt, nodename, "interrupt-controller", ಖಾಲಿ, 0);
     qemu_fdt_setprop(fdt, nodename, "interrupts-extended",
-                     plic_cells, cells_size);
+                     plic_cells, cells_ಗಾತ್ರ);
     qemu_fdt_setprop_sized_cells(fdt, nodename, "reg",
-                                 2, addr, 2, size);
+                                 2, addr, 2, ಗಾತ್ರ_2);
     qemu_fdt_setprop_cell(fdt, nodename, "riscv,ndev", ndev_sources);
-    if (numa_enabled) {
+    ಆದರೆ (numa_enabled) {
         qemu_fdt_setprop_cell(fdt, nodename, "numa-node-id", socket_id);
     }
     qemu_fdt_setprop_cell(fdt, nodename, "phandle", plic_phandle);
@@ -249,7 +249,7 @@ void riscv_create_fdt_plic(void *fdt, hwaddr addr, uint64_t size,
  * to provide the correct value as well. Heterogeneous PMU per hart is not
  * supported yet. Thus, number of counters are same across all harts.
  */
-void riscv_pmu_generate_fdt_node(void *fdt, uint32_t cmask, char *pmu_name)
+ಶೂನ್ಯ riscv_pmu_generate_fdt_ಗಂಟು(ಶೂನ್ಯ *fdt, uint32_t cmask, ಅಕ್ಷರ *pmu_name)
 {
     uint32_t fdt_event_ctr_map[15] = {};
 
@@ -265,40 +265,40 @@ void riscv_pmu_generate_fdt_node(void *fdt, uint32_t cmask, char *pmu_name)
     */
 
    /* SBI_PMU_HW_CPU_CYCLES: 0x01 : type(0x00) */
-   fdt_event_ctr_map[0] = cpu_to_be32(0x00000001);
-   fdt_event_ctr_map[1] = cpu_to_be32(0x00000001);
-   fdt_event_ctr_map[2] = cpu_to_be32(cmask | 1 << 0);
+   fdt_event_ctr_map[0] = cpu_ಗಮ್ಯ_be32(0x00000001);
+   fdt_event_ctr_map[1] = cpu_ಗಮ್ಯ_be32(0x00000001);
+   fdt_event_ctr_map[2] = cpu_ಗಮ್ಯ_be32(cmask | 1 << 0);
 
    /* SBI_PMU_HW_INSTRUCTIONS: 0x02 : type(0x00) */
-   fdt_event_ctr_map[3] = cpu_to_be32(0x00000002);
-   fdt_event_ctr_map[4] = cpu_to_be32(0x00000002);
-   fdt_event_ctr_map[5] = cpu_to_be32(cmask | 1 << 2);
+   fdt_event_ctr_map[3] = cpu_ಗಮ್ಯ_be32(0x00000002);
+   fdt_event_ctr_map[4] = cpu_ಗಮ್ಯ_be32(0x00000002);
+   fdt_event_ctr_map[5] = cpu_ಗಮ್ಯ_be32(cmask | 1 << 2);
 
    /* SBI_PMU_HW_CACHE_DTLB : 0x03 READ : 0x00 MISS : 0x00 type(0x01) */
-   fdt_event_ctr_map[6] = cpu_to_be32(0x00010019);
-   fdt_event_ctr_map[7] = cpu_to_be32(0x00010019);
-   fdt_event_ctr_map[8] = cpu_to_be32(cmask);
+   fdt_event_ctr_map[6] = cpu_ಗಮ್ಯ_be32(0x00010019);
+   fdt_event_ctr_map[7] = cpu_ಗಮ್ಯ_be32(0x00010019);
+   fdt_event_ctr_map[8] = cpu_ಗಮ್ಯ_be32(cmask);
 
    /* SBI_PMU_HW_CACHE_DTLB : 0x03 WRITE : 0x01 MISS : 0x00 type(0x01) */
-   fdt_event_ctr_map[9] = cpu_to_be32(0x0001001B);
-   fdt_event_ctr_map[10] = cpu_to_be32(0x0001001B);
-   fdt_event_ctr_map[11] = cpu_to_be32(cmask);
+   fdt_event_ctr_map[9] = cpu_ಗಮ್ಯ_be32(0x0001001B);
+   fdt_event_ctr_map[10] = cpu_ಗಮ್ಯ_be32(0x0001001B);
+   fdt_event_ctr_map[11] = cpu_ಗಮ್ಯ_be32(cmask);
 
    /* SBI_PMU_HW_CACHE_ITLB : 0x04 READ : 0x00 MISS : 0x00 type(0x01) */
-   fdt_event_ctr_map[12] = cpu_to_be32(0x00010021);
-   fdt_event_ctr_map[13] = cpu_to_be32(0x00010021);
-   fdt_event_ctr_map[14] = cpu_to_be32(cmask);
+   fdt_event_ctr_map[12] = cpu_ಗಮ್ಯ_be32(0x00010021);
+   fdt_event_ctr_map[13] = cpu_ಗಮ್ಯ_be32(0x00010021);
+   fdt_event_ctr_map[14] = cpu_ಗಮ್ಯ_be32(cmask);
 
    /* This a OpenSBI specific DT property documented in OpenSBI docs */
    qemu_fdt_setprop(fdt, pmu_name, "riscv,event-to-mhpmcounters",
-                    fdt_event_ctr_map, sizeof(fdt_event_ctr_map));
+                    fdt_event_ctr_map, ಗಾತ್ರ(fdt_event_ctr_map));
 }
 
-void riscv_create_fdt_flash(void *fdt, hwaddr flashbase, hwaddr flashsize)
+ಶೂನ್ಯ riscv_create_fdt_flash(ಶೂನ್ಯ *fdt, hwaddr flashbase, hwaddr flashsize)
 {
-    g_autofree char *name = g_strdup_printf("/flash@%" PRIx64, flashbase);
+    g_autofree ಅಕ್ಷರ *name = g_strdup_printf("/flash@%" PRIx64, flashbase);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "cfi-flash");
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
                                  2, flashbase, 2, flashsize,
@@ -312,39 +312,39 @@ void riscv_create_fdt_flash(void *fdt, hwaddr flashbase, hwaddr flashsize)
  * to be the case for the 'virt' machine that also creates a
  * 'sifive_test' syscon device.
  */
-void riscv_create_fdt_syscon(void *fdt, uint32_t *next_phandle,
-                             hwaddr addr, hwaddr size,
+ಶೂನ್ಯ riscv_create_fdt_syscon(ಶೂನ್ಯ *fdt, uint32_t *ಮುಂದಿನ_phandle,
+                             hwaddr addr, hwaddr ಗಾತ್ರ_2,
                              uint32_t reboot, uint32_t poweroff,
                              bool sifive_test_compat)
 {
     uint32_t syscon_phandle;
-    char *name;
+    ಅಕ್ಷರ *name;
 
     name = g_strdup_printf("/soc/syscon@%"HWADDR_PRIx, addr);
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
 
-    if (sifive_test_compat) {
-        static const char * const compat[3] = {
+    ಆದರೆ (sifive_test_compat) {
+        ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ * ಸ್ಥಿರಾಂಕ compat[3] = {
             "sifive,test1", "sifive,test0", "syscon"
         };
 
         qemu_fdt_setprop_string_array(fdt, name, "compatible",
-                                      (char **)&compat, ARRAY_SIZE(compat));
-    } else {
+                                      (ಅಕ್ಷರ **)&compat, ARRAY_ಗಾತ್ರ(compat));
+    } ಇಲ್ಲದಿದ್ದರೆ {
         qemu_fdt_setprop_string(fdt, name, "compatible", "syscon");
     }
 
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
                                  2, addr,
-                                 2, size);
+                                 2, ಗಾತ್ರ_2);
 
-    syscon_phandle = next_phandle ? (*next_phandle)++ : qemu_fdt_alloc_phandle(fdt);
+    syscon_phandle = ಮುಂದಿನ_phandle ? (*ಮುಂದಿನ_phandle)++ : qemu_fdt_alloc_phandle(fdt);
     qemu_fdt_setprop_cell(fdt, name, "phandle", syscon_phandle);
 
     g_free(name);
 
     name = g_strdup_printf("/reboot");
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "syscon-reboot");
     qemu_fdt_setprop_cell(fdt, name, "regmap", syscon_phandle);
     qemu_fdt_setprop_cell(fdt, name, "offset", 0x0);
@@ -352,7 +352,7 @@ void riscv_create_fdt_syscon(void *fdt, uint32_t *next_phandle,
     g_free(name);
 
     name = g_strdup_printf("/poweroff");
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "syscon-poweroff");
     qemu_fdt_setprop_cell(fdt, name, "regmap", syscon_phandle);
     qemu_fdt_setprop_cell(fdt, name, "offset", 0x0);
@@ -360,48 +360,48 @@ void riscv_create_fdt_syscon(void *fdt, uint32_t *next_phandle,
     g_free(name);
 }
 
-uint32_t riscv_create_fdt_riscv_iommu_sys(void *fdt, hwaddr addr, hwaddr size,
-                                          uint32_t *next_phandle,
+uint32_t riscv_create_fdt_riscv_iommu_sys(ಶೂನ್ಯ *fdt, hwaddr addr, hwaddr ಗಾತ್ರ_2,
+                                          uint32_t *ಮುಂದಿನ_phandle,
                                           uint32_t irq_chip,
                                           uint32_t msi_phandle,
                                           uint32_t iommu_sys_irq)
 {
-    const char comp[] = "riscv,iommu";
-    g_autofree char *iommu_node = NULL;
+    ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ comp[] = "riscv,iommu";
+    g_autofree ಅಕ್ಷರ *iommu_ಗಂಟು = ಖಾಲಿ;
     uint32_t iommu_phandle;
 
-    iommu_node = g_strdup_printf("/soc/iommu@%"HWADDR_PRIx, addr);
-    qemu_fdt_add_subnode(fdt, iommu_node);
+    iommu_ಗಂಟು = g_strdup_printf("/soc/iommu@%"HWADDR_PRIx, addr);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, iommu_ಗಂಟು);
 
-    qemu_fdt_setprop(fdt, iommu_node, "compatible", comp, sizeof(comp));
-    qemu_fdt_setprop_cell(fdt, iommu_node, "#iommu-cells", 1);
+    qemu_fdt_setprop(fdt, iommu_ಗಂಟು, "compatible", comp, ಗಾತ್ರ(comp));
+    qemu_fdt_setprop_cell(fdt, iommu_ಗಂಟು, "#iommu-cells", 1);
 
-    iommu_phandle = next_phandle ? (*next_phandle)++ : qemu_fdt_alloc_phandle(fdt);
-    qemu_fdt_setprop_cell(fdt, iommu_node, "phandle", iommu_phandle);
+    iommu_phandle = ಮುಂದಿನ_phandle ? (*ಮುಂದಿನ_phandle)++ : qemu_fdt_alloc_phandle(fdt);
+    qemu_fdt_setprop_cell(fdt, iommu_ಗಂಟು, "phandle", iommu_phandle);
 
-    qemu_fdt_setprop_sized_cells(fdt, iommu_node, "reg", 2, addr, 2, size);
-    qemu_fdt_setprop_cell(fdt, iommu_node, "interrupt-parent", irq_chip);
+    qemu_fdt_setprop_sized_cells(fdt, iommu_ಗಂಟು, "reg", 2, addr, 2, ಗಾತ್ರ_2);
+    qemu_fdt_setprop_cell(fdt, iommu_ಗಂಟು, "interrupt-parent", irq_chip);
 
-    qemu_fdt_setprop_cells(fdt, iommu_node, "interrupts",
-        iommu_sys_irq + RISCV_IOMMU_INTR_CQ, FDT_IRQ_TYPE_EDGE_LOW,
-        iommu_sys_irq + RISCV_IOMMU_INTR_FQ, FDT_IRQ_TYPE_EDGE_LOW,
-        iommu_sys_irq + RISCV_IOMMU_INTR_PM, FDT_IRQ_TYPE_EDGE_LOW,
-        iommu_sys_irq + RISCV_IOMMU_INTR_PQ, FDT_IRQ_TYPE_EDGE_LOW);
+    qemu_fdt_setprop_cells(fdt, iommu_ಗಂಟು, "interrupts",
+        iommu_sys_irq + RISCV_IOMMU_INTR_CQ, FDT_IRQ_TYPE_ಅಂಚು_ಕೆಳಗಿನ,
+        iommu_sys_irq + RISCV_IOMMU_INTR_FQ, FDT_IRQ_TYPE_ಅಂಚು_ಕೆಳಗಿನ,
+        iommu_sys_irq + RISCV_IOMMU_INTR_PM, FDT_IRQ_TYPE_ಅಂಚು_ಕೆಳಗಿನ,
+        iommu_sys_irq + RISCV_IOMMU_INTR_PQ, FDT_IRQ_TYPE_ಅಂಚು_ಕೆಳಗಿನ);
 
-    qemu_fdt_setprop_cell(fdt, iommu_node, "msi-parent", msi_phandle);
+    qemu_fdt_setprop_cell(fdt, iommu_ಗಂಟು, "msi-parent", msi_phandle);
 
-    return iommu_phandle;
+    ಹಿಂತಿರುಗಿ iommu_phandle;
 }
 
-static void create_pcie_irq_map(void *fdt, char *nodename,
+ಸ್ಥಿರ ಶೂನ್ಯ create_pcie_irq_map(ಶೂನ್ಯ *fdt, ಅಕ್ಷರ *nodename,
                                 uint32_t irqchip_phandle,
                                 RISCVAIAType aia_type, uint32_t pcie_irq)
 {
-    int pin, dev;
+    ಪೂರ್ಣಾಂಕ pin, dev;
     uint32_t irq_map_stride = 0;
-    uint32_t full_irq_map[PCI_NUM_PINS * PCI_NUM_PINS *
-                          FDT_MAX_INT_MAP_WIDTH] = {};
-    uint32_t *irq_map = full_irq_map;
+    uint32_t ತುಂಬಿದ_irq_map[PCI_ಅಂಕೆ_PINS * PCI_ಅಂಕೆ_PINS *
+                          FDT_MAX_INT_MAP_ಅಗಲ] = {};
+    uint32_t *irq_map = ತುಂಬಿದ_irq_map;
 
     /*
      * This code creates a standard swizzle of interrupts such that
@@ -412,39 +412,39 @@ static void create_pcie_irq_map(void *fdt, char *nodename,
      * possible slot) seeing the interrupt-map-mask will allow the table
      * to wrap to any number of devices.
      */
-    for (dev = 0; dev < PCI_NUM_PINS; dev++) {
-        int devfn = dev * 0x8;
+    ಗಾಗಿ (dev = 0; dev < PCI_ಅಂಕೆ_PINS; dev++) {
+        ಪೂರ್ಣಾಂಕ devfn = dev * 0x8;
 
-        for (pin = 0; pin < PCI_NUM_PINS; pin++) {
-            int irq_nr = pcie_irq + ((pin + PCI_SLOT(devfn)) % PCI_NUM_PINS);
-            int i = 0;
+        ಗಾಗಿ (pin = 0; pin < PCI_ಅಂಕೆ_PINS; pin++) {
+            ಪೂರ್ಣಾಂಕ irq_nr = pcie_irq + ((pin + PCI_ಸ್ಥಾನ(devfn)) % PCI_ಅಂಕೆ_PINS);
+            ಪೂರ್ಣಾಂಕ i = 0;
 
             /* Fill PCI address cells */
-            irq_map[i] = cpu_to_be32(devfn << 8);
+            irq_map[i] = cpu_ಗಮ್ಯ_be32(devfn << 8);
             i += FDT_PCI_ADDR_CELLS;
 
             /* Fill PCI Interrupt cells */
-            irq_map[i] = cpu_to_be32(pin + 1);
+            irq_map[i] = cpu_ಗಮ್ಯ_be32(pin + 1);
             i += FDT_PCI_INT_CELLS;
 
             /* Fill interrupt controller phandle and cells */
-            irq_map[i++] = cpu_to_be32(irqchip_phandle);
-            irq_map[i++] = cpu_to_be32(irq_nr);
+            irq_map[i++] = cpu_ಗಮ್ಯ_be32(irqchip_phandle);
+            irq_map[i++] = cpu_ಗಮ್ಯ_be32(irq_nr);
 
-            if (aia_type != AIA_TYPE_NONE) {
-                irq_map[i++] = cpu_to_be32(0x4);
+            ಆದರೆ (aia_type != AIA_TYPE_NONE) {
+                irq_map[i++] = cpu_ಗಮ್ಯ_be32(0x4);
             }
 
-            if (!irq_map_stride) {
+            ಆದರೆ (!irq_map_stride) {
                 irq_map_stride = i;
             }
             irq_map += irq_map_stride;
         }
     }
 
-    qemu_fdt_setprop(fdt, nodename, "interrupt-map", full_irq_map,
-                     PCI_NUM_PINS * PCI_NUM_PINS *
-                     irq_map_stride * sizeof(uint32_t));
+    qemu_fdt_setprop(fdt, nodename, "interrupt-map", ತುಂಬಿದ_irq_map,
+                     PCI_ಅಂಕೆ_PINS * PCI_ಅಂಕೆ_PINS *
+                     irq_map_stride * ಗಾತ್ರ(uint32_t));
 
     qemu_fdt_setprop_cells(fdt, nodename, "interrupt-map-mask",
                            0x1800, 0, 0, 0x7);
@@ -454,18 +454,18 @@ static void create_pcie_irq_map(void *fdt, char *nodename,
  * NOTE: this function uses a "/soc/pci@..." FDT subnode that
  * should be created beforehand.
  */
-void riscv_create_fdt_pcie(void *fdt, int aia_type, bool has_iommu_sys,
-                           const MemMapEntry *pcie_ecam,
-                           const MemMapEntry *pcie_pio,
-                           const MemMapEntry *pcie_mmio,
-                           const MemMapEntry *high_pcie,
+ಶೂನ್ಯ riscv_create_fdt_pcie(ಶೂನ್ಯ *fdt, ಪೂರ್ಣಾಂಕ aia_type, bool has_iommu_sys,
+                           ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು *pcie_ecam,
+                           ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು *pcie_pio,
+                           ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು *pcie_mmio,
+                           ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು *ಮೇಲಿನ_pcie,
                            uint32_t irq_pcie_phandle,
                            uint32_t msi_pcie_phandle,
                            uint32_t iommu_sys_phandle, uint32_t pcie_irq)
 {
-    g_autofree char *name = NULL;
+    g_autofree ಅಕ್ಷರ *name = ಖಾಲಿ;
 
-    name = g_strdup_printf("/soc/pci@%"HWADDR_PRIx, pcie_ecam->base);
+    name = g_strdup_printf("/soc/pci@%"HWADDR_PRIx, pcie_ecam->ತಳ);
     qemu_fdt_setprop_cell(fdt, name, "#address-cells", FDT_PCI_ADDR_CELLS);
     qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", FDT_PCI_INT_CELLS);
     qemu_fdt_setprop_cell(fdt, name, "#size-cells", 0x2);
@@ -474,27 +474,27 @@ void riscv_create_fdt_pcie(void *fdt, int aia_type, bool has_iommu_sys,
     qemu_fdt_setprop_cell(fdt, name, "linux,pci-domain", 0);
 
     qemu_fdt_setprop_cells(fdt, name, "bus-range", 0,
-                           pcie_ecam->size / PCIE_MMCFG_SIZE_MIN - 1);
-    qemu_fdt_setprop(fdt, name, "dma-coherent", NULL, 0);
+                           pcie_ecam->ಗಾತ್ರ_2 / PCIE_MMCFG_ಗಾತ್ರ_MIN - 1);
+    qemu_fdt_setprop(fdt, name, "dma-coherent", ಖಾಲಿ, 0);
 
-    if (aia_type == AIA_TYPE_APLIC_IMSIC) {
+    ಆದರೆ (aia_type == AIA_TYPE_APLIC_IMSIC) {
         qemu_fdt_setprop_cell(fdt, name, "msi-parent", msi_pcie_phandle);
     }
 
     qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2,
-                                 pcie_ecam->base, 2, pcie_ecam->size);
+                                 pcie_ecam->ತಳ, 2, pcie_ecam->ಗಾತ್ರ_2);
 
     qemu_fdt_setprop_sized_cells(fdt, name, "ranges",
         1, FDT_PCI_RANGE_IOPORT, 2, 0,
-        2, pcie_pio->base, 2, pcie_pio->size,
+        2, pcie_pio->ತಳ, 2, pcie_pio->ಗಾತ್ರ_2,
         1, FDT_PCI_RANGE_MMIO,
-        2, pcie_mmio->base,
-        2, pcie_mmio->base, 2, pcie_mmio->size,
-        1, FDT_PCI_RANGE_MMIO_64BIT,
-        2, high_pcie->base,
-        2, high_pcie->base, 2, high_pcie->size);
+        2, pcie_mmio->ತಳ,
+        2, pcie_mmio->ತಳ, 2, pcie_mmio->ಗಾತ್ರ_2,
+        1, FDT_PCI_RANGE_MMIO_64_ಬಿಟ್,
+        2, ಮೇಲಿನ_pcie->ತಳ,
+        2, ಮೇಲಿನ_pcie->ತಳ, 2, ಮೇಲಿನ_pcie->ಗಾತ್ರ_2);
 
-    if (has_iommu_sys) {
+    ಆದರೆ (has_iommu_sys) {
         qemu_fdt_setprop_cells(fdt, name, "iommu-map",
                                0, iommu_sys_phandle, 0, 0x10000);
     }
@@ -502,299 +502,299 @@ void riscv_create_fdt_pcie(void *fdt, int aia_type, bool has_iommu_sys,
     create_pcie_irq_map(fdt, name, irq_pcie_phandle, aia_type, pcie_irq);
 }
 
-static void create_fdt_one_imsic(void *fdt, IMSICFdtProps *props,
-                                 hwaddr base_addr,
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_one_imsic(ಶೂನ್ಯ *fdt, IMSICFdtProps *props,
+                                 hwaddr ತಳ_addr,
                                  uint32_t *intc_phandles, uint32_t msi_phandle,
-                                 bool m_mode, uint32_t imsic_guest_bits)
+                                 bool m_ಬಹುಲಕ, uint32_t imsic_guest_ಬಿಟ್ಟುಗಳು)
 {
     RISCVHartArrayState *soc = (RISCVHartArrayState *)props->soc;
-    g_autofree char *imsic_name = NULL;
-    g_autofree uint32_t *imsic_cells = NULL;
-    g_autofree uint32_t *imsic_regs = NULL;
-    uint32_t imsic_max_hart_per_socket = 0;
-    static const char * const imsic_compat[2] = {
+    g_autofree ಅಕ್ಷರ *imsic_name = ಖಾಲಿ;
+    g_autofree uint32_t *imsic_cells = ಖಾಲಿ;
+    g_autofree uint32_t *imsic_regs = ಖಾಲಿ;
+    uint32_t imsic_max_hart_ಪ್ರತಿ_socket = 0;
+    ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ * ಸ್ಥಿರಾಂಕ imsic_compat[2] = {
         "qemu,imsics", "riscv,imsics"
     };
 
     imsic_cells = g_new0(uint32_t, props->smp_cpus * 2);
-    imsic_regs = g_new0(uint32_t, props->socket_count * 4);
+    imsic_regs = g_new0(uint32_t, props->socket_ಎಣಿಕೆ * 4);
 
-    for (int cpu = 0; cpu < props->smp_cpus; cpu++) {
-        imsic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        imsic_cells[cpu * 2 + 1] = cpu_to_be32(m_mode ? IRQ_M_EXT : IRQ_S_EXT);
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ cpu = 0; cpu < props->smp_cpus; cpu++) {
+        imsic_cells[cpu * 2 + 0] = cpu_ಗಮ್ಯ_be32(intc_phandles[cpu]);
+        imsic_cells[cpu * 2 + 1] = cpu_ಗಮ್ಯ_be32(m_ಬಹುಲಕ ? IRQ_M_EXT : IRQ_S_EXT);
     }
 
-    for (int socket = 0; socket < props->socket_count; socket++) {
-        hwaddr imsic_addr = base_addr + socket * props->imsic_group_max_size;
-        uint32_t imsic_size = IMSIC_HART_SIZE(imsic_guest_bits) *
-                              soc[socket].num_harts;
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ socket = 0; socket < props->socket_ಎಣಿಕೆ; socket++) {
+        hwaddr imsic_addr = ತಳ_addr + socket * props->imsic_ಗುಂಪು_max_ಗಾತ್ರ;
+        uint32_t imsic_ಗಾತ್ರ = IMSIC_HART_ಗಾತ್ರ(imsic_guest_ಬಿಟ್ಟುಗಳು) *
+                              soc[socket].ಅಂಕೆ_harts;
 
-        imsic_regs[socket * 4 + 0] = cpu_to_be32(imsic_addr >> 32);
-        imsic_regs[socket * 4 + 1] = cpu_to_be32(imsic_addr);
+        imsic_regs[socket * 4 + 0] = cpu_ಗಮ್ಯ_be32(imsic_addr >> 32);
+        imsic_regs[socket * 4 + 1] = cpu_ಗಮ್ಯ_be32(imsic_addr);
         imsic_regs[socket * 4 + 2] = 0;
-        imsic_regs[socket * 4 + 3] = cpu_to_be32(imsic_size);
-        if (imsic_max_hart_per_socket < soc[socket].num_harts) {
-            imsic_max_hart_per_socket = soc[socket].num_harts;
+        imsic_regs[socket * 4 + 3] = cpu_ಗಮ್ಯ_be32(imsic_ಗಾತ್ರ);
+        ಆದರೆ (imsic_max_hart_ಪ್ರತಿ_socket < soc[socket].ಅಂಕೆ_harts) {
+            imsic_max_hart_ಪ್ರತಿ_socket = soc[socket].ಅಂಕೆ_harts;
         }
     }
 
     imsic_name = g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIx,
-                                 base_addr);
-    qemu_fdt_add_subnode(fdt, imsic_name);
+                                 ತಳ_addr);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, imsic_name);
 
     qemu_fdt_setprop_string_array(fdt, imsic_name, "compatible",
-                                  (char **)&imsic_compat,
-                                  ARRAY_SIZE(imsic_compat));
+                                  (ಅಕ್ಷರ **)&imsic_compat,
+                                  ARRAY_ಗಾತ್ರ(imsic_compat));
 
     qemu_fdt_setprop_cell(fdt, imsic_name, "#interrupt-cells",
                           FDT_IMSIC_INT_CELLS);
-    qemu_fdt_setprop(fdt, imsic_name, "interrupt-controller", NULL, 0);
-    qemu_fdt_setprop(fdt, imsic_name, "msi-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, imsic_name, "interrupt-controller", ಖಾಲಿ, 0);
+    qemu_fdt_setprop(fdt, imsic_name, "msi-controller", ಖಾಲಿ, 0);
     qemu_fdt_setprop(fdt, imsic_name, "interrupts-extended",
-                     imsic_cells, props->smp_cpus * sizeof(uint32_t) * 2);
+                     imsic_cells, props->smp_cpus * ಗಾತ್ರ(uint32_t) * 2);
     qemu_fdt_setprop(fdt, imsic_name, "reg", imsic_regs,
-                     props->socket_count * sizeof(uint32_t) * 4);
+                     props->socket_ಎಣಿಕೆ * ಗಾತ್ರ(uint32_t) * 4);
     qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,num-ids",
-                          props->irqchip_num_msis);
+                          props->irqchip_ಅಂಕೆ_msis);
 
-    if (imsic_guest_bits) {
+    ಆದರೆ (imsic_guest_ಬಿಟ್ಟುಗಳು) {
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,guest-index-bits",
-                              imsic_guest_bits);
+                              imsic_guest_ಬಿಟ್ಟುಗಳು);
     }
 
-    if (props->socket_count > 1) {
+    ಆದರೆ (props->socket_ಎಣಿಕೆ > 1) {
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,hart-index-bits",
-                              imsic_num_bits(imsic_max_hart_per_socket));
+                              imsic_ಅಂಕೆ_ಬಿಟ್ಟುಗಳು(imsic_max_hart_ಪ್ರತಿ_socket));
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,group-index-bits",
-                              imsic_num_bits(props->socket_count));
+                              imsic_ಅಂಕೆ_ಬಿಟ್ಟುಗಳು(props->socket_ಎಣಿಕೆ));
         qemu_fdt_setprop_cell(fdt, imsic_name, "riscv,group-index-shift",
-                              IMSIC_MMIO_GROUP_MIN_SHIFT);
+                              IMSIC_MMIO_ಗುಂಪು_MIN_ಸರಿಸು);
     }
     qemu_fdt_setprop_cell(fdt, imsic_name, "phandle", msi_phandle);
 }
 
-void riscv_create_fdt_imsic(void *fdt, IMSICFdtProps *props,
-                            uint32_t *next_phandle, uint32_t *intc_phandles,
+ಶೂನ್ಯ riscv_create_fdt_imsic(ಶೂನ್ಯ *fdt, IMSICFdtProps *props,
+                            uint32_t *ಮುಂದಿನ_phandle, uint32_t *intc_phandles,
                             uint32_t *msi_m_phandle, uint32_t *msi_s_phandle)
 {
-    if (next_phandle) {
-        *msi_m_phandle = (*next_phandle)++;
-        *msi_s_phandle = (*next_phandle)++;
-    } else {
+    ಆದರೆ (ಮುಂದಿನ_phandle) {
+        *msi_m_phandle = (*ಮುಂದಿನ_phandle)++;
+        *msi_s_phandle = (*ಮುಂದಿನ_phandle)++;
+    } ಇಲ್ಲದಿದ್ದರೆ {
         *msi_m_phandle = qemu_fdt_alloc_phandle(fdt);
         *msi_s_phandle = qemu_fdt_alloc_phandle(fdt);
     }
 
-    if (props->imsic_m_base) {
+    ಆದರೆ (props->imsic_m_ತಳ) {
         /* M-level IMSIC node */
-        create_fdt_one_imsic(fdt, props, props->imsic_m_base,
+        create_fdt_one_imsic(fdt, props, props->imsic_m_ತಳ,
                              intc_phandles, *msi_m_phandle, true, 0);
     }
 
     /* S-level IMSIC node */
-    create_fdt_one_imsic(fdt, props, props->imsic_s_base,
+    create_fdt_one_imsic(fdt, props, props->imsic_s_ತಳ,
                          intc_phandles, *msi_s_phandle, false,
-                         imsic_num_bits(props->aia_guests + 1));
+                         imsic_ಅಂಕೆ_ಬಿಟ್ಟುಗಳು(props->aia_guests + 1));
 
 }
 
 /* Caller must free string after use */
-static char *fdt_get_aplic_nodename(hwaddr aplic_addr)
+ಸ್ಥಿರ ಅಕ್ಷರ *fdt_get_aplic_nodename(hwaddr aplic_addr)
 {
-    return g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIx,
+    ಹಿಂತಿರುಗಿ g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIx,
                            aplic_addr);
 }
 
-static void create_fdt_one_aplic(void *fdt, APLICFdtProps *props,
-                                 hwaddr aplic_addr, uint32_t aplic_size,
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_one_aplic(ಶೂನ್ಯ *fdt, APLICFdtProps *props,
+                                 hwaddr aplic_addr, uint32_t aplic_ಗಾತ್ರ,
                                  uint32_t msi_phandle,
                                  uint32_t *intc_phandles,
                                  uint32_t aplic_phandle,
-                                 uint32_t aplic_child_phandle,
-                                 bool m_mode)
+                                 uint32_t aplic_ಮಗು_phandle,
+                                 bool m_ಬಹುಲಕ)
 {
-    g_autofree char *aplic_name = fdt_get_aplic_nodename(aplic_addr);
-    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, props->num_harts * 2);
-    static const char * const aplic_compat[2] = {
+    g_autofree ಅಕ್ಷರ *aplic_name = fdt_get_aplic_nodename(aplic_addr);
+    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, props->ಅಂಕೆ_harts * 2);
+    ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ * ಸ್ಥಿರಾಂಕ aplic_compat[2] = {
         "qemu,aplic", "riscv,aplic"
     };
 
-    for (int cpu = 0; cpu < props->num_harts; cpu++) {
-        aplic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aplic_cells[cpu * 2 + 1] = cpu_to_be32(m_mode ? IRQ_M_EXT : IRQ_S_EXT);
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ cpu = 0; cpu < props->ಅಂಕೆ_harts; cpu++) {
+        aplic_cells[cpu * 2 + 0] = cpu_ಗಮ್ಯ_be32(intc_phandles[cpu]);
+        aplic_cells[cpu * 2 + 1] = cpu_ಗಮ್ಯ_be32(m_ಬಹುಲಕ ? IRQ_M_EXT : IRQ_S_EXT);
     }
 
-    qemu_fdt_add_subnode(fdt, aplic_name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, aplic_name);
     qemu_fdt_setprop_string_array(fdt, aplic_name, "compatible",
-                                  (char **)&aplic_compat,
-                                  ARRAY_SIZE(aplic_compat));
+                                  (ಅಕ್ಷರ **)&aplic_compat,
+                                  ARRAY_ಗಾತ್ರ(aplic_compat));
     qemu_fdt_setprop_cell(fdt, aplic_name, "#address-cells",
                           FDT_APLIC_ADDR_CELLS);
     qemu_fdt_setprop_cell(fdt, aplic_name,
                           "#interrupt-cells", FDT_APLIC_INT_CELLS);
-    qemu_fdt_setprop(fdt, aplic_name, "interrupt-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, aplic_name, "interrupt-controller", ಖಾಲಿ, 0);
 
-    if (props->aia_type == AIA_TYPE_APLIC) {
+    ಆದರೆ (props->aia_type == AIA_TYPE_APLIC) {
         qemu_fdt_setprop(fdt, aplic_name, "interrupts-extended",
-                         aplic_cells, props->num_harts * sizeof(uint32_t) * 2);
-    } else {
+                         aplic_cells, props->ಅಂಕೆ_harts * ಗಾತ್ರ(uint32_t) * 2);
+    } ಇಲ್ಲದಿದ್ದರೆ {
         qemu_fdt_setprop_cell(fdt, aplic_name, "msi-parent", msi_phandle);
     }
 
     qemu_fdt_setprop_sized_cells(fdt, aplic_name, "reg",
-                                 2, aplic_addr, 2, aplic_size);
+                                 2, aplic_addr, 2, aplic_ಗಾತ್ರ);
     qemu_fdt_setprop_cell(fdt, aplic_name, "riscv,num-sources",
-                          props->irqchip_num_sources);
+                          props->irqchip_ಅಂಕೆ_sources);
 
-    if (aplic_child_phandle) {
+    ಆದರೆ (aplic_ಮಗು_phandle) {
         qemu_fdt_setprop_cell(fdt, aplic_name, "riscv,children",
-                              aplic_child_phandle);
+                              aplic_ಮಗು_phandle);
         qemu_fdt_setprop_cells(fdt, aplic_name, "riscv,delegation",
-                               aplic_child_phandle, 0x1,
-                               props->irqchip_num_sources);
+                               aplic_ಮಗು_phandle, 0x1,
+                               props->irqchip_ಅಂಕೆ_sources);
     }
 
-    if (props->numa_enabled) {
+    ಆದರೆ (props->numa_enabled) {
         qemu_fdt_setprop_cell(fdt, aplic_name, "numa-node-id", props->socket);
     }
 
     qemu_fdt_setprop_cell(fdt, aplic_name, "phandle", aplic_phandle);
 }
 
-void riscv_create_fdt_socket_aplic(void *fdt, APLICFdtProps *props,
+ಶೂನ್ಯ riscv_create_fdt_socket_aplic(ಶೂನ್ಯ *fdt, APLICFdtProps *props,
                                    uint32_t msi_m_phandle,
                                    uint32_t msi_s_phandle,
-                                   uint32_t *next_phandle,
+                                   uint32_t *ಮುಂದಿನ_phandle,
                                    uint32_t *intc_phandles,
                                    uint32_t *aplic_phandles)
 {
     uint32_t aplic_m_phandle, aplic_s_phandle;
     hwaddr aplic_addr;
 
-    if (next_phandle) {
-        aplic_m_phandle = (*next_phandle)++;
-        aplic_s_phandle = (*next_phandle)++;
-    } else {
+    ಆದರೆ (ಮುಂದಿನ_phandle) {
+        aplic_m_phandle = (*ಮುಂದಿನ_phandle)++;
+        aplic_s_phandle = (*ಮುಂದಿನ_phandle)++;
+    } ಇಲ್ಲದಿದ್ದರೆ {
         aplic_m_phandle = qemu_fdt_alloc_phandle(fdt);
         aplic_s_phandle = qemu_fdt_alloc_phandle(fdt);
     }
 
-    if (props->aplic_m) {
+    ಆದರೆ (props->aplic_m) {
         /* M-level APLIC node */
-        aplic_addr = props->aplic_m->base + (props->aplic_m->size * props->socket);
-        create_fdt_one_aplic(fdt, props, aplic_addr, props->aplic_m->size,
+        aplic_addr = props->aplic_m->ತಳ + (props->aplic_m->ಗಾತ್ರ_2 * props->socket);
+        create_fdt_one_aplic(fdt, props, aplic_addr, props->aplic_m->ಗಾತ್ರ_2,
                              msi_m_phandle, intc_phandles,
                              aplic_m_phandle, aplic_s_phandle,
                              true);
     }
 
     /* S-level APLIC node */
-    aplic_addr = props->aplic_s->base + (props->aplic_s->size * props->socket);
-    create_fdt_one_aplic(fdt, props, aplic_addr, props->aplic_s->size,
+    aplic_addr = props->aplic_s->ತಳ + (props->aplic_s->ಗಾತ್ರ_2 * props->socket);
+    create_fdt_one_aplic(fdt, props, aplic_addr, props->aplic_s->ಗಾತ್ರ_2,
                          msi_s_phandle, intc_phandles,
                          aplic_s_phandle, 0,
                          false);
 
-    if (!props->socket && props->platform_bus_irq) {
-        g_autofree char *aplic_name = fdt_get_aplic_nodename(aplic_addr);
-        platform_bus_add_all_fdt_nodes(fdt, aplic_name,
-                                       props->platform_bus->base,
-                                       props->platform_bus->size,
+    ಆದರೆ (!props->socket && props->platform_bus_irq) {
+        g_autofree ಅಕ್ಷರ *aplic_name = fdt_get_aplic_nodename(aplic_addr);
+        platform_bus_ಕೂಡಿಸು_all_fdt_nodes(fdt, aplic_name,
+                                       props->platform_bus->ತಳ,
+                                       props->platform_bus->ಗಾತ್ರ_2,
                                        props->platform_bus_irq);
     }
 
     aplic_phandles[props->socket] = aplic_s_phandle;
 }
 
-void riscv_create_fdt_socket_aclint(void *fdt, ACLINTFdtProps *props,
+ಶೂನ್ಯ riscv_create_fdt_socket_aclint(ಶೂನ್ಯ *fdt, ACLINTFdtProps *props,
                                     uint32_t *intc_phandles)
 {
-    uint32_t aclint_cells_size = props->num_harts * sizeof(uint32_t) * 2;
-    g_autofree uint32_t *aclint_mswi_cells = NULL;
-    g_autofree uint32_t *aclint_sswi_cells = NULL;
-    g_autofree uint32_t *aclint_mtimer_cells = NULL;
-    hwaddr addr, size;
-    char *name;
-    int cpu;
+    uint32_t aclint_cells_ಗಾತ್ರ = props->ಅಂಕೆ_harts * ಗಾತ್ರ(uint32_t) * 2;
+    g_autofree uint32_t *aclint_mswi_cells = ಖಾಲಿ;
+    g_autofree uint32_t *aclint_sswi_cells = ಖಾಲಿ;
+    g_autofree uint32_t *aclint_mtimer_cells = ಖಾಲಿ;
+    hwaddr addr, ಗಾತ್ರ_2;
+    ಅಕ್ಷರ *name;
+    ಪೂರ್ಣಾಂಕ cpu;
 
-    aclint_mswi_cells = g_new0(uint32_t, props->num_harts * 2);
-    aclint_mtimer_cells = g_new0(uint32_t, props->num_harts * 2);
-    aclint_sswi_cells = g_new0(uint32_t, props->num_harts * 2);
+    aclint_mswi_cells = g_new0(uint32_t, props->ಅಂಕೆ_harts * 2);
+    aclint_mtimer_cells = g_new0(uint32_t, props->ಅಂಕೆ_harts * 2);
+    aclint_sswi_cells = g_new0(uint32_t, props->ಅಂಕೆ_harts * 2);
 
-    for (cpu = 0; cpu < props->num_harts; cpu++) {
-        aclint_mswi_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aclint_mswi_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_M_SOFT);
-        aclint_mtimer_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aclint_mtimer_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_M_TIMER);
-        aclint_sswi_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aclint_sswi_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_S_SOFT);
+    ಗಾಗಿ (cpu = 0; cpu < props->ಅಂಕೆ_harts; cpu++) {
+        aclint_mswi_cells[cpu * 2 + 0] = cpu_ಗಮ್ಯ_be32(intc_phandles[cpu]);
+        aclint_mswi_cells[cpu * 2 + 1] = cpu_ಗಮ್ಯ_be32(IRQ_M_SOFT);
+        aclint_mtimer_cells[cpu * 2 + 0] = cpu_ಗಮ್ಯ_be32(intc_phandles[cpu]);
+        aclint_mtimer_cells[cpu * 2 + 1] = cpu_ಗಮ್ಯ_be32(IRQ_M_TIMER);
+        aclint_sswi_cells[cpu * 2 + 0] = cpu_ಗಮ್ಯ_be32(intc_phandles[cpu]);
+        aclint_sswi_cells[cpu * 2 + 1] = cpu_ಗಮ್ಯ_be32(IRQ_S_SOFT);
     }
 
-    if (props->aia_type != AIA_TYPE_APLIC_IMSIC) {
-        addr = props->clint->base + (props->clint->size * props->socket);
+    ಆದರೆ (props->aia_type != AIA_TYPE_APLIC_IMSIC) {
+        addr = props->clint->ತಳ + (props->clint->ಗಾತ್ರ_2 * props->socket);
         name = g_strdup_printf("/soc/mswi@%"HWADDR_PRIx, addr);
 
-        qemu_fdt_add_subnode(fdt, name);
+        qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
         qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,aclint-mswi");
         qemu_fdt_setprop_sized_cells(fdt, name, "reg",
-                                     2, addr, 2, RISCV_ACLINT_SWI_SIZE);
+                                     2, addr, 2, RISCV_ACLINT_SWI_ಗಾತ್ರ);
         qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                         aclint_mswi_cells, aclint_cells_size);
-        qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
+                         aclint_mswi_cells, aclint_cells_ಗಾತ್ರ);
+        qemu_fdt_setprop(fdt, name, "interrupt-controller", ಖಾಲಿ, 0);
         qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 0);
 
-        if (props->numa_enabled) {
+        ಆದರೆ (props->numa_enabled) {
             qemu_fdt_setprop_cell(fdt, name, "numa-node-id", props->socket);
         }
 
         g_free(name);
     }
 
-    if (props->aia_type == AIA_TYPE_APLIC_IMSIC) {
-        addr = props->clint->base +
-               (RISCV_ACLINT_DEFAULT_MTIMER_SIZE * props->socket);
-        size = RISCV_ACLINT_DEFAULT_MTIMER_SIZE;
-    } else {
-        addr = props->clint->base + RISCV_ACLINT_SWI_SIZE +
-               (props->clint->size * props->socket);
-        size = props->clint->size - RISCV_ACLINT_SWI_SIZE;
+    ಆದರೆ (props->aia_type == AIA_TYPE_APLIC_IMSIC) {
+        addr = props->clint->ತಳ +
+               (RISCV_ACLINT_DEFAULT_MTIMER_ಗಾತ್ರ * props->socket);
+        ಗಾತ್ರ_2 = RISCV_ACLINT_DEFAULT_MTIMER_ಗಾತ್ರ;
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        addr = props->clint->ತಳ + RISCV_ACLINT_SWI_ಗಾತ್ರ +
+               (props->clint->ಗಾತ್ರ_2 * props->socket);
+        ಗಾತ್ರ_2 = props->clint->ಗಾತ್ರ_2 - RISCV_ACLINT_SWI_ಗಾತ್ರ;
     }
 
     name = g_strdup_printf("/soc/mtimer@%"HWADDR_PRIx,
                            addr + RISCV_ACLINT_DEFAULT_MTIME);
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible",
                             "riscv,aclint-mtimer");
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
         2, addr + RISCV_ACLINT_DEFAULT_MTIME,
-        2, size - RISCV_ACLINT_DEFAULT_MTIME,
+        2, ಗಾತ್ರ_2 - RISCV_ACLINT_DEFAULT_MTIME,
         2, addr + RISCV_ACLINT_DEFAULT_MTIMECMP,
         2, RISCV_ACLINT_DEFAULT_MTIME);
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     aclint_mtimer_cells, aclint_cells_size);
+                     aclint_mtimer_cells, aclint_cells_ಗಾತ್ರ);
 
-    if (props->numa_enabled) {
+    ಆದರೆ (props->numa_enabled) {
         qemu_fdt_setprop_cell(fdt, name, "numa-node-id", props->socket);
     }
 
     g_free(name);
 
-    if (props->aia_type != AIA_TYPE_APLIC_IMSIC) {
-        addr = props->aclint_sswi->base
-               + (props->aclint_sswi->size * props->socket);
+    ಆದರೆ (props->aia_type != AIA_TYPE_APLIC_IMSIC) {
+        addr = props->aclint_sswi->ತಳ
+               + (props->aclint_sswi->ಗಾತ್ರ_2 * props->socket);
 
         name = g_strdup_printf("/soc/sswi@%"HWADDR_PRIx, addr);
-        qemu_fdt_add_subnode(fdt, name);
+        qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
         qemu_fdt_setprop_string(fdt, name, "compatible",
             "riscv,aclint-sswi");
         qemu_fdt_setprop_sized_cells(fdt, name, "reg",
-                                     2, addr, 2, props->aclint_sswi->size);
+                                     2, addr, 2, props->aclint_sswi->ಗಾತ್ರ_2);
         qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                         aclint_sswi_cells, aclint_cells_size);
-        qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
+                         aclint_sswi_cells, aclint_cells_ಗಾತ್ರ);
+        qemu_fdt_setprop(fdt, name, "interrupt-controller", ಖಾಲಿ, 0);
         qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 0);
 
-        if (props->numa_enabled) {
+        ಆದರೆ (props->numa_enabled) {
             qemu_fdt_setprop_cell(fdt, name, "numa-node-id", props->socket);
         }
 
@@ -802,50 +802,50 @@ void riscv_create_fdt_socket_aclint(void *fdt, ACLINTFdtProps *props,
     }
 }
 
-char *riscv_fdt_get_uart_nodename(hwaddr addr)
+ಅಕ್ಷರ *riscv_fdt_get_uart_nodename(hwaddr addr)
 {
-    return g_strdup_printf("/soc/serial@%"HWADDR_PRIx, addr);
+    ಹಿಂತಿರುಗಿ g_strdup_printf("/soc/serial@%"HWADDR_PRIx, addr);
 }
 
-void riscv_create_fdt_uart(void *fdt, const MemMapEntry *uart_mem,
-                           int uart_irq, int aia_type,
+ಶೂನ್ಯ riscv_create_fdt_uart(ಶೂನ್ಯ *fdt, ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು *uart_mem,
+                           ಪೂರ್ಣಾಂಕ uart_irq, ಪೂರ್ಣಾಂಕ aia_type,
                            uint32_t irq_phandle)
 {
-    g_autofree char *name = riscv_fdt_get_uart_nodename(uart_mem->base);
+    g_autofree ಅಕ್ಷರ *name = riscv_fdt_get_uart_nodename(uart_mem->ತಳ);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "ns16550a");
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
-                                 2, uart_mem->base,
-                                 2, uart_mem->size);
+                                 2, uart_mem->ತಳ,
+                                 2, uart_mem->ಗಾತ್ರ_2);
 
     qemu_fdt_setprop_cell(fdt, name, "clock-frequency", UART_STD_CLOCK_FREQ);
     qemu_fdt_setprop_cell(fdt, name, "interrupt-parent", irq_phandle);
 
-    if (aia_type == AIA_TYPE_NONE) {
+    ಆದರೆ (aia_type == AIA_TYPE_NONE) {
         qemu_fdt_setprop_cell(fdt, name, "interrupts", uart_irq);
-    } else {
+    } ಇಲ್ಲದಿದ್ದರೆ {
         qemu_fdt_setprop_cells(fdt, name, "interrupts", uart_irq, 0x4);
     }
 }
 
-void riscv_create_fdt_rtc(void *fdt, const MemMapEntry *rtc_mem,
-                          int rtc_irq, int aia_type,
+ಶೂನ್ಯ riscv_create_fdt_rtc(ಶೂನ್ಯ *fdt, ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು *rtc_mem,
+                          ಪೂರ್ಣಾಂಕ rtc_irq, ಪೂರ್ಣಾಂಕ aia_type,
                           uint32_t irq_phandle)
 {
-    g_autofree char *name = NULL;
+    g_autofree ಅಕ್ಷರ *name = ಖಾಲಿ;
 
     name = g_strdup_printf("/soc/rtc@%"HWADDR_PRIx,
-                           rtc_mem->base);
-    qemu_fdt_add_subnode(fdt, name);
+                           rtc_mem->ತಳ);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "google,goldfish-rtc");
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
-                                 2, rtc_mem->base,
-                                 2, rtc_mem->size);
+                                 2, rtc_mem->ತಳ,
+                                 2, rtc_mem->ಗಾತ್ರ_2);
     qemu_fdt_setprop_cell(fdt, name, "interrupt-parent", irq_phandle);
-    if (aia_type == AIA_TYPE_NONE) {
+    ಆದರೆ (aia_type == AIA_TYPE_NONE) {
         qemu_fdt_setprop_cell(fdt, name, "interrupts", rtc_irq);
-    } else {
+    } ಇಲ್ಲದಿದ್ದರೆ {
         qemu_fdt_setprop_cells(fdt, name, "interrupts", rtc_irq, 0x4);
     }
 }

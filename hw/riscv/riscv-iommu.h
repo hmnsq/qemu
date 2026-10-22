@@ -16,25 +16,25 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HW_RISCV_IOMMU_STATE_H
-#define HW_RISCV_IOMMU_STATE_H
+#ವ್ಯಾಖ್ಯಾನಿತವಾಗದಿದ್ದರೆ HW_RISCV_IOMMU_STATE_H
+#ವ್ಯಾಖ್ಯಾನಿಸು HW_RISCV_IOMMU_STATE_H
 
-#include "qom/object.h"
-#include "hw/core/qdev-properties.h"
-#include "system/dma.h"
-#include "hw/riscv/iommu.h"
-#include "hw/riscv/riscv-iommu-bits.h"
+#ಅನ್ತರ್ಭಾವ "qom/object.h"
+#ಅನ್ತರ್ಭಾವ "hw/core/qdev-properties.h"
+#ಅನ್ತರ್ಭಾವ "system/dma.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/iommu.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/riscv-iommu-bits.h"
 
-typedef enum riscv_iommu_igs_modes riscv_iommu_igs_mode;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ಎಣಿಕೆ riscv_iommu_igs_modes riscv_iommu_igs_ಬಹುಲಕ;
 
-struct RISCVIOMMUState {
+ರಚನೆ RISCVIOMMUState {
     /*< private >*/
-    DeviceState parent_obj;
+    DeviceState ಪೋಷಕ_obj;
 
     /*< public >*/
-    uint32_t version;     /* Reported interface version number */
-    uint32_t pid_bits;    /* process identifier width */
-    uint32_t pas_bits;    /* physical address bits */
+    uint32_t ಆವೃತ್ತಿ;     /* Reported interface version number */
+    uint32_t pid_ಬಿಟ್ಟುಗಳು;    /* process identifier width */
+    uint32_t pas_ಬಿಟ್ಟುಗಳು;    /* physical address bits */
     uint32_t bus;         /* PCI bus mapping for non-root endpoints */
 
     uint64_t cap;         /* IOMMU supported capabilities */
@@ -54,28 +54,28 @@ struct RISCVIOMMUState {
     dma_addr_t fq_addr;   /* Fault/event queue base physical address */
     dma_addr_t pq_addr;   /* Page request queue base physical address */
 
-    uint32_t cq_mask;     /* Command queue index bit mask */
-    uint32_t fq_mask;     /* Fault/event queue index bit mask */
-    uint32_t pq_mask;     /* Page request queue index bit mask */
+    uint32_t cq_ಮುಖವಾಡ;     /* Command queue index bit mask */
+    uint32_t fq_ಮುಖವಾಡ;     /* Fault/event queue index bit mask */
+    uint32_t pq_ಮುಖವಾಡ;     /* Page request queue index bit mask */
 
     /* interrupt notifier */
-    void (*notify)(RISCVIOMMUState *iommu, unsigned vector);
+    ಶೂನ್ಯ (*notify)(RISCVIOMMUState *iommu, ಚಿಹ್ನೆರಹಿತ ಸದಿಶ);
 
     /* IOMMU target address space */
-    AddressSpace *target_as;
-    MemoryRegion *target_mr;
+    ವಿಳಾಸ_Space *ಗುರಿ_as;
+    ಸ್ಮರಣೆ_Region *ಗುರಿ_mr;
 
     /* MSI / MRIF access trap */
-    AddressSpace trap_as;
-    MemoryRegion trap_mr;
+    ವಿಳಾಸ_Space trap_as;
+    ಸ್ಮರಣೆ_Region trap_mr;
 
-    GHashTable *ctx_cache;          /* Device translation Context Cache */
+    GHash_ಕೋಷ್ಟಕ *ctx_cache;          /* Device translation Context Cache */
 
-    GHashTable *iot_cache;          /* IO Translated Address Cache */
-    unsigned iot_limit;             /* IO Translation Cache size limit */
+    GHash_ಕೋಷ್ಟಕ *iot_cache;          /* IO Translated Address Cache */
+    ಚಿಹ್ನೆರಹಿತ iot_ಎಲ್ಲೆ;             /* IO Translation Cache size limit */
 
     /* MMIO Hardware Interface */
-    MemoryRegion regs_mr;
+    ಸ್ಮರಣೆ_Region regs_mr;
     uint8_t *regs;  /* current register state */
     uint8_t *regs_wc;  /* write-1-to-clear mask */
     /*
@@ -84,83 +84,83 @@ struct RISCVIOMMUState {
      */
     uint8_t *regs_ro;
 
-    QLIST_ENTRY(RISCVIOMMUState) iommus;
-    QLIST_HEAD(, RISCVIOMMUSpace) spaces;
+    QLIST_ನಮೂದು(RISCVIOMMUState) iommus;
+    QLIST_ತಲೆ(, RISCVIOMMUSpace) spaces;
 
     /* HPM cycle counter */
     QEMUTimer *hpm_timer;
     uint64_t hpmcycle_val;      /* Current value of cycle register */
     uint64_t hpmcycle_prev;     /* Saved value of QEMU_CLOCK_VIRTUAL clock */
-    uint64_t irq_overflow_left; /* Value beyond INT64_MAX after overflow */
+    uint64_t irq_ಅತಿಪ್ರವಾಹ_ಎಡ; /* Value beyond INT64_MAX after overflow */
 
     /* HPM event counters */
-    GHashTable *hpm_event_ctr_map; /* Mapping of events to counters */
+    GHash_ಕೋಷ್ಟಕ *hpm_event_ctr_map; /* Mapping of events to counters */
     uint8_t hpm_cntrs;
 };
 
-void riscv_iommu_pci_setup_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
+ಶೂನ್ಯ riscv_iommu_pci_ಸಿದ್ಧತೆ_iommu(RISCVIOMMUState *iommu, PCIBus *bus,
          Error **errp);
-void riscv_iommu_set_cap_igs(RISCVIOMMUState *s, riscv_iommu_igs_mode mode);
-void riscv_iommu_reset(RISCVIOMMUState *s);
-void riscv_iommu_notify(RISCVIOMMUState *s, int vec_type);
-void riscv_iommu_fault(RISCVIOMMUState *s, struct riscv_iommu_fq_record *ev);
+ಶೂನ್ಯ riscv_iommu_ಗಣ_cap_igs(RISCVIOMMUState *s, riscv_iommu_igs_ಬಹುಲಕ ಬಹುಲಕ);
+ಶೂನ್ಯ riscv_iommu_reset(RISCVIOMMUState *s);
+ಶೂನ್ಯ riscv_iommu_notify(RISCVIOMMUState *s, ಪೂರ್ಣಾಂಕ vec_type);
+ಶೂನ್ಯ riscv_iommu_fault(RISCVIOMMUState *s, ರಚನೆ riscv_iommu_fq_ದಾಖಲೆ *ev);
 DeviceState *riscv_create_iommu_sys(DeviceState *mmio_irqchip,
-                                    hwaddr addr, int base_irq,
-                                    bool is_32_bit);
+                                    hwaddr addr, ಪೂರ್ಣಾಂಕ ತಳ_irq,
+                                    bool is_32_ಬಿಟ್);
 
-typedef struct RISCVIOMMUContext RISCVIOMMUContext;
+ಪ್ರಕಾರವ್ಯಾಖ್ಯೆ ರಚನೆ RISCVIOMMUContext RISCVIOMMUContext;
 /* Device translation context state. */
-struct RISCVIOMMUContext {
+ರಚನೆ RISCVIOMMUContext {
     uint64_t devid:24;          /* Requester Id, AKA device_id */
     uint64_t process_id:20;     /* Process ID. PASID for PCIe */
     uint64_t tc;                /* Translation Control */
     uint64_t ta;                /* Translation Attributes */
     uint64_t satp;              /* S-Stage address translation and protection */
     uint64_t gatp;              /* G-Stage address translation and protection */
-    uint64_t msi_addr_mask;     /* MSI filtering - address mask */
-    uint64_t msi_addr_pattern;  /* MSI filtering - address pattern */
+    uint64_t msi_addr_ಮುಖವಾಡ;     /* MSI filtering - address mask */
+    uint64_t msi_addr_ನಮೂನೆ;  /* MSI filtering - address pattern */
     uint64_t msiptp;            /* MSI redirection page table pointer */
 };
 
 /* private helpers */
 
 /* Register helper functions */
-static inline uint32_t riscv_iommu_reg_mod32(RISCVIOMMUState *s,
-    unsigned idx, uint32_t set, uint32_t clr)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ uint32_t riscv_iommu_reg_mod32(RISCVIOMMUState *s,
+    ಚಿಹ್ನೆರಹಿತ idx, uint32_t ಗಣ, uint32_t clr)
 {
     uint32_t val = ldl_le_p(s->regs + idx);
-    stl_le_p(s->regs + idx, (val & ~clr) | set);
-    return val;
+    stl_le_p(s->regs + idx, (val & ~clr) | ಗಣ);
+    ಹಿಂತಿರುಗಿ val;
 }
 
-static inline void riscv_iommu_reg_set32(RISCVIOMMUState *s, unsigned idx,
-                                         uint32_t set)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ riscv_iommu_reg_set32(RISCVIOMMUState *s, ಚಿಹ್ನೆರಹಿತ idx,
+                                         uint32_t ಗಣ)
 {
-    stl_le_p(s->regs + idx, set);
+    stl_le_p(s->regs + idx, ಗಣ);
 }
 
-static inline uint32_t riscv_iommu_reg_get32(RISCVIOMMUState *s, unsigned idx)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ uint32_t riscv_iommu_reg_get32(RISCVIOMMUState *s, ಚಿಹ್ನೆರಹಿತ idx)
 {
-    return ldl_le_p(s->regs + idx);
+    ಹಿಂತಿರುಗಿ ldl_le_p(s->regs + idx);
 }
 
-static inline uint64_t riscv_iommu_reg_mod64(RISCVIOMMUState *s, unsigned idx,
-                                             uint64_t set, uint64_t clr)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ uint64_t riscv_iommu_reg_mod64(RISCVIOMMUState *s, ಚಿಹ್ನೆರಹಿತ idx,
+                                             uint64_t ಗಣ, uint64_t clr)
 {
     uint64_t val = ldq_le_p(s->regs + idx);
-    stq_le_p(s->regs + idx, (val & ~clr) | set);
-    return val;
+    stq_le_p(s->regs + idx, (val & ~clr) | ಗಣ);
+    ಹಿಂತಿರುಗಿ val;
 }
 
-static inline void riscv_iommu_reg_set64(RISCVIOMMUState *s, unsigned idx,
-                                         uint64_t set)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ ಶೂನ್ಯ riscv_iommu_reg_set64(RISCVIOMMUState *s, ಚಿಹ್ನೆರಹಿತ idx,
+                                         uint64_t ಗಣ)
 {
-    stq_le_p(s->regs + idx, set);
+    stq_le_p(s->regs + idx, ಗಣ);
 }
 
-static inline uint64_t riscv_iommu_reg_get64(RISCVIOMMUState *s,
-                                             unsigned idx)
+ಸ್ಥಿರ ಸಾಲೊಳಗೆ uint64_t riscv_iommu_reg_get64(RISCVIOMMUState *s,
+                                             ಚಿಹ್ನೆರಹಿತ idx)
 {
-    return ldq_le_p(s->regs + idx);
+    ಹಿಂತಿರುಗಿ ldq_le_p(s->regs + idx);
 }
-#endif
+#ಆದರೆ_ಅಂತ್ಯ

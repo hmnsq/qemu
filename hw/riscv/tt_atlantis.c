@@ -6,52 +6,52 @@
  * Copyright 2025 Tenstorrent, Joel Stanley <joel@jms.id.au>
  */
 
-#include "qemu/osdep.h"
-#include "qapi/error.h"
-#include "qemu/cutils.h"
-#include "qemu/error-report.h"
-#include "qemu/guest-random.h"
-#include "qemu/units.h"
+#ಅನ್ತರ್ಭಾವ "qemu/osdep.h"
+#ಅನ್ತರ್ಭಾವ "qapi/error.h"
+#ಅನ್ತರ್ಭಾವ "qemu/cutils.h"
+#ಅನ್ತರ್ಭಾವ "qemu/error-report.h"
+#ಅನ್ತರ್ಭಾವ "qemu/guest-random.h"
+#ಅನ್ತರ್ಭಾವ "qemu/units.h"
 
-#include "hw/core/boards.h"
-#include "hw/core/loader.h"
-#include "hw/core/qdev-properties.h"
-#include "hw/core/sysbus.h"
+#ಅನ್ತರ್ಭಾವ "hw/core/boards.h"
+#ಅನ್ತರ್ಭಾವ "hw/core/loader.h"
+#ಅನ್ತರ್ಭಾವ "hw/core/qdev-properties.h"
+#ಅನ್ತರ್ಭಾವ "hw/core/sysbus.h"
 
-#include "target/riscv/cpu.h"
+#ಅನ್ತರ್ಭಾವ "target/riscv/cpu.h"
 
-#include "hw/riscv/boot.h"
-#include "hw/riscv/fdt-common.h"
-#include "hw/riscv/riscv_hart.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/boot.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/fdt-common.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/riscv_hart.h"
 
-#include "hw/char/serial-mm.h"
-#include "hw/intc/riscv_aclint.h"
-#include "hw/misc/unimp.h"
-#include "hw/misc/tt_atlantis_prcm.h"
+#ಅನ್ತರ್ಭಾವ "hw/char/serial-mm.h"
+#ಅನ್ತರ್ಭಾವ "hw/intc/riscv_aclint.h"
+#ಅನ್ತರ್ಭಾವ "hw/misc/unimp.h"
+#ಅನ್ತರ್ಭಾವ "hw/misc/tt_atlantis_prcm.h"
 
-#include "system/system.h"
-#include "system/device_tree.h"
+#ಅನ್ತರ್ಭಾವ "system/system.h"
+#ಅನ್ತರ್ಭಾವ "system/device_tree.h"
 
-#include "hw/riscv/tt_atlantis.h"
+#ಅನ್ತರ್ಭಾವ "hw/riscv/tt_atlantis.h"
 
-#include "aia.h"
+#ಅನ್ತರ್ಭಾವ "aia.h"
 
-#define TT_IRQCHIP_NUM_MSIS       255
-#define TT_IRQCHIP_NUM_SOURCES    128
-#define TT_IRQCHIP_NUM_PRIO_BITS  3
-#define TT_IMSIC_GUESTS           5
-#define TT_IMSIC_STRIDE           0x40000 /* Same stride for M and S */
-#define TT_IMSIC_GUEST_BITS       6
+#ವ್ಯಾಖ್ಯಾನಿಸು TT_IRQCHIP_ಅಂಕೆ_MSIS       255
+#ವ್ಯಾಖ್ಯಾನಿಸು TT_IRQCHIP_ಅಂಕೆ_SOURCES    128
+#ವ್ಯಾಖ್ಯಾನಿಸು TT_IRQCHIP_ಅಂಕೆ_PRIO_ಬಿಟ್ಟುಗಳು  3
+#ವ್ಯಾಖ್ಯಾನಿಸು TT_IMSIC_GUESTS           5
+#ವ್ಯಾಖ್ಯಾನಿಸು TT_IMSIC_STRIDE           0x40000 /* Same stride for M and S */
+#ವ್ಯಾಖ್ಯಾನಿಸು TT_IMSIC_GUEST_ಬಿಟ್ಟುಗಳು       6
 
 /* Stride is fixed by hardware, check it's consistent with guest bits. */
-QEMU_BUILD_BUG_ON(TT_IMSIC_STRIDE != (0x1000 << TT_IMSIC_GUEST_BITS));
+QEMU_BUILD_BUG_ON(TT_IMSIC_STRIDE != (0x1000 << TT_IMSIC_GUEST_ಬಿಟ್ಟುಗಳು));
 
-#define TT_ACLINT_MTIME_SIZE    0x8050
-#define TT_ACLINT_MTIME         0x0
-#define TT_ACLINT_MTIMECMP      0x8000
-#define TT_ACLINT_TIMEBASE_FREQ 1000000000
+#ವ್ಯಾಖ್ಯಾನಿಸು TT_ACLINT_MTIME_ಗಾತ್ರ    0x8050
+#ವ್ಯಾಖ್ಯಾನಿಸು TT_ACLINT_MTIME         0x0
+#ವ್ಯಾಖ್ಯಾನಿಸು TT_ACLINT_MTIMECMP      0x8000
+#ವ್ಯಾಖ್ಯಾನಿಸು TT_ACLINT_TIMEBASE_FREQ 1000000000
 
-static const MemMapEntry tt_atlantis_memmap[] = {
+ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು tt_atlantis_memmap[] = {
     /* Keep sorted with :'<,'>!sort -g -k 4 */
     [TT_ATL_DDR_LO] =           { 0x00000000,    0x80000000 },
     [TT_ATL_BOOTROM] =          { 0x80000000,        0x2000 },
@@ -73,64 +73,64 @@ static const MemMapEntry tt_atlantis_memmap[] = {
     [TT_ATL_DDR_HI] =          { 0x100000000,  0x1000000000 },
 };
 
-static I2CBus *i2c_get_bus(TTAtlantisSoCState *s, unsigned busnr)
+ಸ್ಥಿರ I2CBus *i2c_get_bus(TTAtlantisSoCState *s, ಚಿಹ್ನೆರಹಿತ busnr)
 {
-    assert(busnr < TT_ATL_NUM_I2C);
+    ಪ್ರತಿಜ್ಞಾ(busnr < TT_ATL_ಅಂಕೆ_I2_C);
 
-    return s->i2c[busnr].bus;
+    ಹಿಂತಿರುಗಿ s->i2c[busnr].bus;
 }
 
-static uint32_t fdt_phandle = 1;
-static uint32_t next_phandle(void)
+ಸ್ಥಿರ uint32_t fdt_phandle = 1;
+ಸ್ಥಿರ uint32_t ಮುಂದಿನ_phandle(ಶೂನ್ಯ)
 {
-    return fdt_phandle++;
+    ಹಿಂತಿರುಗಿ fdt_phandle++;
 }
 
-static void create_fdt_memory(void *fdt, TTAtlantisSoCState *s)
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_ಸ್ಮರಣೆ(ಶೂನ್ಯ *fdt, TTAtlantisSoCState *s)
 {
-    hwaddr ram_size = memory_region_size(s->dram);
-    hwaddr size_lo = ram_size;
-    hwaddr size_hi = 0;
+    hwaddr ram_ಗಾತ್ರ = ಸ್ಮರಣೆ_region_ಗಾತ್ರ(s->dram);
+    hwaddr ಗಾತ್ರ_lo = ram_ಗಾತ್ರ;
+    hwaddr ಗಾತ್ರ_hi = 0;
 
-    if (size_lo > s->memmap[TT_ATL_DDR_LO].size) {
-        size_lo = s->memmap[TT_ATL_DDR_LO].size;
-        size_hi = ram_size - size_lo;
+    ಆದರೆ (ಗಾತ್ರ_lo > s->memmap[TT_ATL_DDR_LO].ಗಾತ್ರ_2) {
+        ಗಾತ್ರ_lo = s->memmap[TT_ATL_DDR_LO].ಗಾತ್ರ_2;
+        ಗಾತ್ರ_hi = ram_ಗಾತ್ರ - ಗಾತ್ರ_lo;
     }
 
-    riscv_create_fdt_socket_memory(fdt, s->memmap[TT_ATL_DDR_LO].base,
-                                   size_lo, 0, false);
-    if (size_hi) {
+    riscv_create_fdt_socket_ಸ್ಮರಣೆ(fdt, s->memmap[TT_ATL_DDR_LO].ತಳ,
+                                   ಗಾತ್ರ_lo, 0, false);
+    ಆದರೆ (ಗಾತ್ರ_hi) {
         /*
          * The first part of the HI address is aliased at the LO address
          * so do not include that as usable memory. Is there any way
          * (or good reason) to describe that aliasing 2GB with DT?
          */
-        riscv_create_fdt_socket_memory(fdt,
-                                       s->memmap[TT_ATL_DDR_HI].base + size_lo,
-                                       size_hi, 0, false);
+        riscv_create_fdt_socket_ಸ್ಮರಣೆ(fdt,
+                                       s->memmap[TT_ATL_DDR_HI].ತಳ + ಗಾತ್ರ_lo,
+                                       ಗಾತ್ರ_hi, 0, false);
     }
 }
 
-static void create_fdt_aclint(void *fdt, TTAtlantisSoCState *s,
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_aclint(ಶೂನ್ಯ *fdt, TTAtlantisSoCState *s,
                               uint32_t *intc_phandles)
 {
-    g_autofree char *name = NULL;
-    g_autofree uint32_t *aclint_mtimer_cells = NULL;
-    uint32_t aclint_cells_size;
+    g_autofree ಅಕ್ಷರ *name = ಖಾಲಿ;
+    g_autofree uint32_t *aclint_mtimer_cells = ಖಾಲಿ;
+    uint32_t aclint_cells_ಗಾತ್ರ;
     hwaddr addr;
 
-    aclint_mtimer_cells = g_new0(uint32_t, s->cpus.num_harts * 2);
+    aclint_mtimer_cells = g_new0(uint32_t, s->cpus.ಅಂಕೆ_harts * 2);
 
-    for (int cpu = 0; cpu < s->cpus.num_harts; cpu++) {
-        aclint_mtimer_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aclint_mtimer_cells[cpu * 2 + 1] = cpu_to_be32(IRQ_M_TIMER);
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ cpu = 0; cpu < s->cpus.ಅಂಕೆ_harts; cpu++) {
+        aclint_mtimer_cells[cpu * 2 + 0] = cpu_ಗಮ್ಯ_be32(intc_phandles[cpu]);
+        aclint_mtimer_cells[cpu * 2 + 1] = cpu_ಗಮ್ಯ_be32(IRQ_M_TIMER);
     }
-    aclint_cells_size = s->cpus.num_harts * sizeof(uint32_t) * 2;
+    aclint_cells_ಗಾತ್ರ = s->cpus.ಅಂಕೆ_harts * ಗಾತ್ರ(uint32_t) * 2;
 
-    addr = s->memmap[TT_ATL_ACLINT].base;
+    addr = s->memmap[TT_ATL_ACLINT].ತಳ;
 
     name = g_strdup_printf("/soc/mtimer@%"HWADDR_PRIX, addr);
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,aclint-mtimer");
     qemu_fdt_setprop_sized_cells(fdt, name, "reg",
                                  2, addr + TT_ACLINT_MTIME,
@@ -138,145 +138,145 @@ static void create_fdt_aclint(void *fdt, TTAtlantisSoCState *s,
                                  2, addr + TT_ACLINT_MTIMECMP,
                                  2, 0x1000);
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     aclint_mtimer_cells, aclint_cells_size);
+                     aclint_mtimer_cells, aclint_cells_ಗಾತ್ರ);
 }
 
-static void create_fdt_one_imsic(void *fdt, const MemMapEntry *mem, int cpus,
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_one_imsic(ಶೂನ್ಯ *fdt, ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು *mem, ಪೂರ್ಣಾಂಕ cpus,
                                  uint32_t *intc_phandles, uint32_t msi_phandle,
-                                 int irq_line, uint32_t imsic_guest_bits)
+                                 ಪೂರ್ಣಾಂಕ irq_ಸಾಲು, uint32_t imsic_guest_ಬಿಟ್ಟುಗಳು)
 {
-    g_autofree char *name = NULL;
+    g_autofree ಅಕ್ಷರ *name = ಖಾಲಿ;
     g_autofree uint32_t *imsic_cells = g_new0(uint32_t, cpus * 2);
 
-    for (int cpu = 0; cpu < cpus; cpu++) {
-        imsic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        imsic_cells[cpu * 2 + 1] = cpu_to_be32(irq_line);
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ cpu = 0; cpu < cpus; cpu++) {
+        imsic_cells[cpu * 2 + 0] = cpu_ಗಮ್ಯ_be32(intc_phandles[cpu]);
+        imsic_cells[cpu * 2 + 1] = cpu_ಗಮ್ಯ_be32(irq_ಸಾಲು);
     }
 
-    name = g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->base);
-    qemu_fdt_add_subnode(fdt, name);
+    name = g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->ತಳ);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,imsics");
 
     qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 0);
-    qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
-    qemu_fdt_setprop(fdt, name, "msi-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, name, "interrupt-controller", ಖಾಲಿ, 0);
+    qemu_fdt_setprop(fdt, name, "msi-controller", ಖಾಲಿ, 0);
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     imsic_cells, sizeof(uint32_t) * cpus * 2);
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
-    qemu_fdt_setprop_cell(fdt, name, "riscv,num-ids", TT_IRQCHIP_NUM_MSIS);
+                     imsic_cells, ಗಾತ್ರ(uint32_t) * cpus * 2);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->ತಳ, 2, mem->ಗಾತ್ರ_2);
+    qemu_fdt_setprop_cell(fdt, name, "riscv,num-ids", TT_IRQCHIP_ಅಂಕೆ_MSIS);
 
-    if (imsic_guest_bits) {
+    ಆದರೆ (imsic_guest_ಬಿಟ್ಟುಗಳು) {
         qemu_fdt_setprop_cell(fdt, name, "riscv,guest-index-bits",
-                              imsic_guest_bits);
+                              imsic_guest_ಬಿಟ್ಟುಗಳು);
     }
     qemu_fdt_setprop_cell(fdt, name, "phandle", msi_phandle);
 }
 
-static void create_fdt_one_aplic(void *fdt,
-                                 const MemMapEntry *mem,
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_one_aplic(ಶೂನ್ಯ *fdt,
+                                 ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು *mem,
                                  uint32_t msi_phandle,
                                  uint32_t *intc_phandles,
                                  uint32_t aplic_phandle,
-                                 uint32_t aplic_child_phandle,
-                                 int irq_line, int num_harts)
+                                 uint32_t aplic_ಮಗು_phandle,
+                                 ಪೂರ್ಣಾಂಕ irq_ಸಾಲು, ಪೂರ್ಣಾಂಕ ಅಂಕೆ_harts)
 {
-    g_autofree char *name =
-        g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->base);
-    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, num_harts * 2);
+    g_autofree ಅಕ್ಷರ *name =
+        g_strdup_printf("/soc/interrupt-controller@%"HWADDR_PRIX, mem->ತಳ);
+    g_autofree uint32_t *aplic_cells = g_new0(uint32_t, ಅಂಕೆ_harts * 2);
 
-    for (int cpu = 0; cpu < num_harts; cpu++) {
-        aplic_cells[cpu * 2 + 0] = cpu_to_be32(intc_phandles[cpu]);
-        aplic_cells[cpu * 2 + 1] = cpu_to_be32(irq_line);
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ cpu = 0; cpu < ಅಂಕೆ_harts; cpu++) {
+        aplic_cells[cpu * 2 + 0] = cpu_ಗಮ್ಯ_be32(intc_phandles[cpu]);
+        aplic_cells[cpu * 2 + 1] = cpu_ಗಮ್ಯ_be32(irq_ಸಾಲು);
     }
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "riscv,aplic");
     qemu_fdt_setprop_cell(fdt, name, "#address-cells", 0);
     qemu_fdt_setprop_cell(fdt, name, "#interrupt-cells", 2);
-    qemu_fdt_setprop(fdt, name, "interrupt-controller", NULL, 0);
+    qemu_fdt_setprop(fdt, name, "interrupt-controller", ಖಾಲಿ, 0);
 
     qemu_fdt_setprop(fdt, name, "interrupts-extended",
-                     aplic_cells, num_harts * sizeof(uint32_t) * 2);
+                     aplic_cells, ಅಂಕೆ_harts * ಗಾತ್ರ(uint32_t) * 2);
     qemu_fdt_setprop_cell(fdt, name, "msi-parent", msi_phandle);
 
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->ತಳ, 2, mem->ಗಾತ್ರ_2);
     qemu_fdt_setprop_cell(fdt, name, "riscv,num-sources",
-                          TT_IRQCHIP_NUM_SOURCES);
+                          TT_IRQCHIP_ಅಂಕೆ_SOURCES);
 
-    if (aplic_child_phandle) {
+    ಆದರೆ (aplic_ಮಗು_phandle) {
         qemu_fdt_setprop_cell(fdt, name, "riscv,children",
-                              aplic_child_phandle);
+                              aplic_ಮಗು_phandle);
         qemu_fdt_setprop_cells(fdt, name, "riscv,delegation",
-                               aplic_child_phandle, 1, TT_IRQCHIP_NUM_SOURCES);
+                               aplic_ಮಗು_phandle, 1, TT_IRQCHIP_ಅಂಕೆ_SOURCES);
     }
 
     qemu_fdt_setprop_cell(fdt, name, "phandle", aplic_phandle);
 }
 
-static void create_fdt_pmu(void *fdt, TTAtlantisSoCState *s)
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_pmu(ಶೂನ್ಯ *fdt, TTAtlantisSoCState *s)
 {
-    char pmu_name[] = "/pmu";
+    ಅಕ್ಷರ pmu_name[] = "/pmu";
     RISCVCPU *hart = &s->cpus.harts[0];
 
-    qemu_fdt_add_subnode(fdt, pmu_name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, pmu_name);
     qemu_fdt_setprop_string(fdt, pmu_name, "compatible", "riscv,pmu");
-    riscv_pmu_generate_fdt_node(fdt, hart->pmu_avail_ctrs, pmu_name);
+    riscv_pmu_generate_fdt_ಗಂಟು(fdt, hart->pmu_avail_ctrs, pmu_name);
 }
 
-static void create_fdt_cpu(void *fdt, TTAtlantisSoCState *s,
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_cpu(ಶೂನ್ಯ *fdt, TTAtlantisSoCState *s,
                            uint32_t aplic_s_phandle,
                            uint32_t imsic_s_phandle)
 {
-    g_autofree uint32_t *intc_phandles = g_new0(uint32_t, s->cpus.num_harts);
-    int num_harts = s->cpus.num_harts;
+    g_autofree uint32_t *intc_phandles = g_new0(uint32_t, s->cpus.ಅಂಕೆ_harts);
+    ಪೂರ್ಣಾಂಕ ಅಂಕೆ_harts = s->cpus.ಅಂಕೆ_harts;
 
     riscv_fdt_create_cpu_socket_subnode(fdt, TT_ACLINT_TIMEBASE_FREQ);
 
-    riscv_create_fdt_socket_cpus(fdt, s->cpus.harts, 0, num_harts,
-                                 s->cpus.hartid_base, &fdt_phandle,
+    riscv_create_fdt_socket_cpus(fdt, s->cpus.harts, 0, ಅಂಕೆ_harts,
+                                 s->cpus.hartid_ತಳ, &fdt_phandle,
                                  intc_phandles, false, false);
 
     create_fdt_aclint(fdt, s, intc_phandles);
 
     /* M-level IMSIC node */
-    uint32_t msi_m_phandle = next_phandle();
-    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_MIMSIC], num_harts,
+    uint32_t msi_m_phandle = ಮುಂದಿನ_phandle();
+    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_MIMSIC], ಅಂಕೆ_harts,
                          intc_phandles, msi_m_phandle,
-                         IRQ_M_EXT, TT_IMSIC_GUEST_BITS);
+                         IRQ_M_EXT, TT_IMSIC_GUEST_ಬಿಟ್ಟುಗಳು);
 
     /* S-level IMSIC node */
-    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_SIMSIC], num_harts,
+    create_fdt_one_imsic(fdt, &s->memmap[TT_ATL_SIMSIC], ಅಂಕೆ_harts,
                          intc_phandles, imsic_s_phandle,
-                         IRQ_S_EXT, TT_IMSIC_GUEST_BITS);
+                         IRQ_S_EXT, TT_IMSIC_GUEST_ಬಿಟ್ಟುಗಳು);
 
-    uint32_t aplic_m_phandle = next_phandle();
+    uint32_t aplic_m_phandle = ಮುಂದಿನ_phandle();
 
     /* M-level APLIC node */
     create_fdt_one_aplic(fdt, &s->memmap[TT_ATL_MAPLIC],
                          msi_m_phandle, intc_phandles,
                          aplic_m_phandle, aplic_s_phandle,
-                         IRQ_M_EXT, num_harts);
+                         IRQ_M_EXT, ಅಂಕೆ_harts);
 
     /* S-level APLIC node */
     create_fdt_one_aplic(fdt, &s->memmap[TT_ATL_SAPLIC],
                          imsic_s_phandle, intc_phandles,
                          aplic_s_phandle, 0,
-                         IRQ_S_EXT, num_harts);
+                         IRQ_S_EXT, ಅಂಕೆ_harts);
 }
 
-static void create_fdt_uart(void *fdt, const MemMapEntry *mem, int irq,
-                            int irqchip_phandle, uint32_t clk_parent_phandle,
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_uart(ಶೂನ್ಯ *fdt, ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು *mem, ಪೂರ್ಣಾಂಕ irq,
+                            ಪೂರ್ಣಾಂಕ irqchip_phandle, uint32_t clk_ಪೋಷಕ_phandle,
                             uint32_t clk_phandle)
 {
-    g_autofree char *name = g_strdup_printf("/soc/serial@%"HWADDR_PRIX,
-                                            mem->base);
+    g_autofree ಅಕ್ಷರ *name = g_strdup_printf("/soc/serial@%"HWADDR_PRIX,
+                                            mem->ತಳ);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "ns16550a");
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->ತಳ, 2, mem->ಗಾತ್ರ_2);
     qemu_fdt_setprop_cell(fdt, name, "reg-shift", 2);
     qemu_fdt_setprop_cell(fdt, name, "reg-io-width", 4);
-    qemu_fdt_setprop_cells(fdt, name, "clocks", clk_parent_phandle,
+    qemu_fdt_setprop_cells(fdt, name, "clocks", clk_ಪೋಷಕ_phandle,
                            clk_phandle);
     qemu_fdt_setprop_cell(fdt, name, "clock-frequency", 3686400);
     qemu_fdt_setprop_cell(fdt, name, "interrupt-parent", irqchip_phandle);
@@ -286,20 +286,20 @@ static void create_fdt_uart(void *fdt, const MemMapEntry *mem, int irq,
     qemu_fdt_setprop_string(fdt, "/aliases", "serial0", name);
 }
 
-static void create_fdt_rng(void *fdt)
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_rng(ಶೂನ್ಯ *fdt)
 {
-    uint8_t rng_seed[32];
+    uint8_t rng_ಬೀಜ[32];
 
-    qemu_guest_getrandom_nofail(rng_seed, sizeof(rng_seed));
-    qemu_fdt_setprop(fdt, "/chosen", "rng-seed", rng_seed, sizeof(rng_seed));
+    qemu_guest_getrandom_nofail(rng_ಬೀಜ, ಗಾತ್ರ(rng_ಬೀಜ));
+    qemu_fdt_setprop(fdt, "/chosen", "rng-seed", rng_ಬೀಜ, ಗಾತ್ರ(rng_ಬೀಜ));
 }
 
-static void create_fdt_clk(void *fdt, const char *clock_name,
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_clk(ಶೂನ್ಯ *fdt, ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *clock_name,
                            uint32_t freq, uint32_t phandle)
 {
-    g_autofree char *name = g_strdup_printf("/clocks/%s", clock_name);
+    g_autofree ಅಕ್ಷರ *name = g_strdup_printf("/clocks/%s", clock_name);
 
-    qemu_fdt_add_path(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_ಮಾರ್ಗ(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "fixed-clock");
     qemu_fdt_setprop_string(fdt, name, "clock-output-names", clock_name);
     qemu_fdt_setprop_cell(fdt, name, "#clock-cells", 0);
@@ -307,68 +307,68 @@ static void create_fdt_clk(void *fdt, const char *clock_name,
     qemu_fdt_setprop_cell(fdt, name, "phandle", phandle);
 }
 
-static void create_fdt_i2c(void *fdt, const MemMapEntry *mem, uint32_t irq,
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_i2c(ಶೂನ್ಯ *fdt, ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು *mem, uint32_t irq,
                            uint32_t irqchip_phandle,
-                           uint32_t clk_parent_phandle,
+                           uint32_t clk_ಪೋಷಕ_phandle,
                            uint32_t clk_phandle)
 {
-    g_autofree char *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX, mem->base);
+    g_autofree ಅಕ್ಷರ *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX, mem->ತಳ);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", "snps,designware-i2c");
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->base, 2, mem->size);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, mem->ತಳ, 2, mem->ಗಾತ್ರ_2);
     qemu_fdt_setprop_cell(fdt, name, "interrupt-parent", irqchip_phandle);
     qemu_fdt_setprop_cells(fdt, name, "interrupts", irq, 0x4);
-    qemu_fdt_setprop_cells(fdt, name, "clocks", clk_parent_phandle,
+    qemu_fdt_setprop_cells(fdt, name, "clocks", clk_ಪೋಷಕ_phandle,
                            clk_phandle);
     qemu_fdt_setprop_cell(fdt, name, "clock-frequency", 100000);
     qemu_fdt_setprop_cell(fdt, name, "#address-cells", 1);
     qemu_fdt_setprop_cell(fdt, name, "#size-cells", 0);
 }
 
-static void create_fdt_i2c_device(void *fdt, TTAtlantisSoCState *s, int bus,
-                                  const char *compat, int addr)
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt_i2c_device(ಶೂನ್ಯ *fdt, TTAtlantisSoCState *s, ಪೂರ್ಣಾಂಕ bus,
+                                  ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *compat, ಪೂರ್ಣಾಂಕ addr)
 {
-    hwaddr base = s->memmap[TT_ATL_I2C0 + bus].base;
-    g_autofree char *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX"/sensor@%x",
-                                            base, addr);
+    hwaddr ತಳ = s->memmap[TT_ATL_I2C0 + bus].ತಳ;
+    g_autofree ಅಕ್ಷರ *name = g_strdup_printf("/soc/i2c@%"HWADDR_PRIX"/sensor@%x",
+                                            ತಳ, addr);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", compat);
     qemu_fdt_setprop_cell(fdt, name, "reg", addr);
 }
 
-static char *create_fdt_prcm(void *fdt, const MemMapEntry *mem,
-                             const char *prcm_name)
+ಸ್ಥಿರ ಅಕ್ಷರ *create_fdt_prcm(ಶೂನ್ಯ *fdt, ಸ್ಥಿರಾಂಕ Mem_Map_ನಮೂದು *mem,
+                             ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *prcm_name)
 {
-    hwaddr base = mem->base;
-    hwaddr size = mem->size;
-    char *name = g_strdup_printf("/soc/clock-controller@%" PRIx64,
-                                 base);
-    g_autofree char *compatible =
+    hwaddr ತಳ = mem->ತಳ;
+    hwaddr ಗಾತ್ರ_2 = mem->ಗಾತ್ರ_2;
+    ಅಕ್ಷರ *name = g_strdup_printf("/soc/clock-controller@%" PRIx64,
+                                 ತಳ);
+    g_autofree ಅಕ್ಷರ *compatible =
         g_strdup_printf("tenstorrent,atlantis-prcm-%s", prcm_name);
 
-    qemu_fdt_add_subnode(fdt, name);
+    qemu_fdt_ಕೂಡಿಸು_subnode(fdt, name);
     qemu_fdt_setprop_string(fdt, name, "compatible", compatible);
-    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, base, 2, size);
+    qemu_fdt_setprop_sized_cells(fdt, name, "reg", 2, ತಳ, 2, ಗಾತ್ರ_2);
     qemu_fdt_setprop_cell(fdt, name, "#clock-cells", 1);
     qemu_fdt_setprop_cell(fdt, name, "#reset-cells", 1);
-    qemu_fdt_setprop_cell(fdt, name, "phandle", next_phandle());
+    qemu_fdt_setprop_cell(fdt, name, "phandle", ಮುಂದಿನ_phandle());
 
-    return name;
+    ಹಿಂತಿರುಗಿ name;
 }
 
-static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
+ಸ್ಥಿರ ಶೂನ್ಯ finalize_fdt(ಶೂನ್ಯ *fdt, TTAtlantisSoCState *s)
 {
-    uint32_t aplic_s_phandle = next_phandle();
-    uint32_t imsic_s_phandle = next_phandle();
-    uint32_t osc_24m_phandle = next_phandle();
+    uint32_t aplic_s_phandle = ಮುಂದಿನ_phandle();
+    uint32_t imsic_s_phandle = ಮುಂದಿನ_phandle();
+    uint32_t osc_24m_phandle = ಮುಂದಿನ_phandle();
     uint32_t prcm_rcpu_phandle;
-    g_autofree char *rcpu_name, *hsio_name, *pcie_name, *mm_name;
+    g_autofree ಅಕ್ಷರ *rcpu_name, *hsio_name, *pcie_name, *mm_name;
 
     create_fdt_cpu(fdt, s, aplic_s_phandle, imsic_s_phandle);
 
-    create_fdt_memory(fdt, s);
+    create_fdt_ಸ್ಮರಣೆ(fdt, s);
 
     /*
      * We want to do this, but the Linux aplic driver was broken before v6.16
@@ -383,7 +383,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     prcm_rcpu_phandle = qemu_fdt_get_phandle(fdt, rcpu_name);
     qemu_fdt_setprop_cells(fdt, rcpu_name, "clocks", osc_24m_phandle);
     qemu_fdt_setprop_cells(fdt, rcpu_name, "assigned-clocks",
-                           prcm_rcpu_phandle, TT_ATL_CLK_RCPU_ROOT,
+                           prcm_rcpu_phandle, TT_ATL_CLK_RCPU_ಬೇರು,
                            prcm_rcpu_phandle, TT_ATL_CLK_NOCC_CLK);
     qemu_fdt_setprop_cells(fdt, rcpu_name, "assigned-clock-parents",
                            prcm_rcpu_phandle, TT_ATL_CLK_RCPU_PLL,
@@ -405,7 +405,7 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     create_fdt_uart(fdt, &s->memmap[TT_ATL_UART1], TT_ATL_UART1_IRQ,
                     aplic_s_phandle, prcm_rcpu_phandle, TT_ATL_CLK_UART1_PCLK);
 
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ i = 0; i < TT_ATL_ಅಂಕೆ_I2_C; i++) {
         create_fdt_i2c(fdt,
                        &s->memmap[TT_ATL_I2C0 + i],
                        TT_ATL_I2C0_IRQ + i,
@@ -418,206 +418,206 @@ static void finalize_fdt(void *fdt, TTAtlantisSoCState *s)
     create_fdt_i2c_device(fdt, s, 4, "ti,tmp105", 0x48);
 }
 
-static void create_fdt(TTAtlantisState *ams)
+ಸ್ಥಿರ ಶೂನ್ಯ create_fdt(TTAtlantisState *ams)
 {
     MachineState *ms = MACHINE(ams);
-    int fdt_size = 0;
+    ಪೂರ್ಣಾಂಕ fdt_ಗಾತ್ರ = 0;
 
-    ms->fdt = riscv_create_board_device_tree("Tenstorrent Atlantis RISC-V Machine",
-                                             "tenstorrent,atlantis", &fdt_size);
+    ms->fdt = riscv_create_board_device_ವೃಕ್ಷ("Tenstorrent Atlantis RISC-V Machine",
+                                             "tenstorrent,atlantis", &fdt_ಗಾತ್ರ);
 
-    qemu_fdt_add_subnode(ms->fdt, "/chosen");
+    qemu_fdt_ಕೂಡಿಸು_subnode(ms->fdt, "/chosen");
 
     create_fdt_rng(ms->fdt);
 
-    qemu_fdt_add_subnode(ms->fdt, "/aliases");
+    qemu_fdt_ಕೂಡಿಸು_subnode(ms->fdt, "/aliases");
 
     create_fdt_pmu(ms->fdt, &ams->soc);
 }
 
-static void load_fdt(TTAtlantisState *ams)
+ಸ್ಥಿರ ಶೂನ್ಯ ತುಂಬು_fdt(TTAtlantisState *ams)
 {
     MachineState *ms = MACHINE(ams);
-    char **node_path;
-    Error *err = NULL;
-    int fdt_size = 0;
+    ಅಕ್ಷರ **ಗಂಟು_ಮಾರ್ಗ;
+    Error *err = ಖಾಲಿ;
+    ಪೂರ್ಣಾಂಕ fdt_ಗಾತ್ರ = 0;
 
-    ms->fdt = load_device_tree(ms->dtb, &fdt_size);
-    if (!ms->fdt) {
+    ms->fdt = ತುಂಬು_device_ವೃಕ್ಷ(ms->dtb, &fdt_ಗಾತ್ರ);
+    ಆದರೆ (!ms->fdt) {
         error_report("load_device_tree() failed");
-        exit(1);
+        ನಿರ್ಗಮಿಸು(1);
     }
 
-    qemu_fdt_add_path(ms->fdt, "/chosen");
+    qemu_fdt_ಕೂಡಿಸು_ಮಾರ್ಗ(ms->fdt, "/chosen");
 
     /* Clear memory nodes and update with the specified RAM size */
-    node_path = qemu_fdt_node_unit_path(ms->fdt, "memory", &err);
-    if (err) {
+    ಗಂಟು_ಮಾರ್ಗ = qemu_fdt_ಗಂಟು_unit_ಮಾರ್ಗ(ms->fdt, "memory", &err);
+    ಆದರೆ (err) {
         warn_report_err(err);
-    } else {
-        for (int i = 0; node_path[i]; i++) {
+    } ಇಲ್ಲದಿದ್ದರೆ {
+        ಗಾಗಿ (ಪೂರ್ಣಾಂಕ i = 0; ಗಂಟು_ಮಾರ್ಗ[i]; i++) {
             warn_report("Replacing device tree %s with the requested RAM size",
-                        node_path[i]);
-            qemu_fdt_nop_node(ms->fdt, node_path[i]);
+                        ಗಂಟು_ಮಾರ್ಗ[i]);
+            qemu_fdt_nop_ಗಂಟು(ms->fdt, ಗಂಟು_ಮಾರ್ಗ[i]);
         }
-        g_strfreev(node_path);
+        g_strfreev(ಗಂಟು_ಮಾರ್ಗ);
     }
 
-    create_fdt_memory(ms->fdt, &ams->soc);
+    create_fdt_ಸ್ಮರಣೆ(ms->fdt, &ams->soc);
 }
 
-static void mmio_map_unimplemented(MemoryRegion *memory, SysBusDevice *dev,
-                                   const char *name, hwaddr addr, uint64_t size)
+ಸ್ಥಿರ ಶೂನ್ಯ mmio_map_unimplemented(ಸ್ಮರಣೆ_Region *ಸ್ಮರಣೆ, SysBusDevice *dev,
+                                   ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *name, hwaddr addr, uint64_t ಗಾತ್ರ_2)
 {
-    qdev_prop_set_string(DEVICE(dev), "name", name);
-    qdev_prop_set_uint64(DEVICE(dev), "size", size);
+    qdev_prop_ಗಣ_string(DEVICE(dev), "name", name);
+    qdev_prop_ಗಣ_uint64(DEVICE(dev), "size", ಗಾತ್ರ_2);
     sysbus_realize(dev, &error_abort);
 
-    memory_region_add_subregion_overlap(memory, addr,
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion_overlap(ಸ್ಮರಣೆ, addr,
                                         sysbus_mmio_get_region(dev, 0), -1000);
 }
 
-static void tt_atlantis_machine_done(Notifier *n, void *data)
+ಸ್ಥಿರ ಶೂನ್ಯ tt_atlantis_machine_ಮುಗಿದ(Notifier *n, ಶೂನ್ಯ *ದತ್ತಾಂಶ)
 {
-    TTAtlantisState *ams = container_of(n, TTAtlantisState, machine_done);
+    TTAtlantisState *ams = container_ದ(n, TTAtlantisState, machine_ಮುಗಿದ);
     TTAtlantisSoCState *s = &ams->soc;
     MachineState *machine = MACHINE(ams);
-    hwaddr start_addr = s->memmap[TT_ATL_DDR_LO].base;
-    hwaddr mem_size;
-    target_ulong firmware_end_addr, kernel_start_addr;
-    const char *firmware_name = riscv_default_firmware_name(&s->cpus);
-    uint64_t fdt_load_addr;
-    uint64_t kernel_entry;
+    hwaddr ಆರಂಭ_addr = s->memmap[TT_ATL_DDR_LO].ತಳ;
+    hwaddr mem_ಗಾತ್ರ;
+    ಗುರಿ_ulong firmware_ಕೊನೆ_addr, kernel_ಆರಂಭ_addr;
+    ಸ್ಥಿರಾಂಕ ಅಕ್ಷರ *firmware_name = riscv_default_firmware_name(&s->cpus);
+    uint64_t fdt_ತುಂಬು_addr;
+    uint64_t kernel_ನಮೂದು;
     RISCVBootInfo boot_info;
 
     /*
      * A user provided dtb must include everything, including
      * dynamic sysbus devices. Our FDT needs to be finalized.
      */
-    if (machine->dtb == NULL) {
+    ಆದರೆ (machine->dtb == ಖಾಲಿ) {
         finalize_fdt(machine->fdt, s);
     }
 
-    mem_size = machine->ram_size;
-    if (mem_size > s->memmap[TT_ATL_DDR_LO].size) {
-        mem_size = s->memmap[TT_ATL_DDR_LO].size;
+    mem_ಗಾತ್ರ = machine->ram_ಗಾತ್ರ;
+    ಆದರೆ (mem_ಗಾತ್ರ > s->memmap[TT_ATL_DDR_LO].ಗಾತ್ರ_2) {
+        mem_ಗಾತ್ರ = s->memmap[TT_ATL_DDR_LO].ಗಾತ್ರ_2;
     }
     riscv_boot_info_init_discontig_mem(&boot_info, &s->cpus,
-                                       s->memmap[TT_ATL_DDR_LO].base,
-                                       mem_size);
+                                       s->memmap[TT_ATL_DDR_LO].ತಳ,
+                                       mem_ಗಾತ್ರ);
 
-    firmware_end_addr = riscv_find_and_load_firmware(machine, &boot_info,
+    firmware_ಕೊನೆ_addr = riscv_ಕಂಡುಹಿಡಿ_and_ತುಂಬು_firmware(machine, &boot_info,
                                                      firmware_name,
-                                                     &start_addr, NULL);
+                                                     &ಆರಂಭ_addr, ಖಾಲಿ);
 
-    kernel_start_addr = riscv_calc_kernel_start_addr(&boot_info,
-                                                     firmware_end_addr);
-    if (machine->kernel_filename) {
-        riscv_load_kernel(machine, &boot_info, kernel_start_addr,
-                          true, NULL);
-        kernel_entry = boot_info.image_low_addr;
-    } else {
+    kernel_ಆರಂಭ_addr = riscv_calc_kernel_ಆರಂಭ_addr(&boot_info,
+                                                     firmware_ಕೊನೆ_addr);
+    ಆದರೆ (machine->kernel_filename) {
+        riscv_ತುಂಬು_kernel(machine, &boot_info, kernel_ಆರಂಭ_addr,
+                          true, ಖಾಲಿ);
+        kernel_ನಮೂದು = boot_info.image_ಕೆಳಗಿನ_addr;
+    } ಇಲ್ಲದಿದ್ದರೆ {
         /* If we aren't loading a payload, OpenSBI thinks we are trying to boot
          * address 0, which fails `sbi_domain_check_addr()` as that is where
          * OpenSBI is running. Instead point OpenSBI to the end of the region
          * where it was loaded, which avoids the early hang, allowing the
          * system to proceed with the OpenSBI boot output.
          */
-        kernel_entry = kernel_start_addr;
+        kernel_ನಮೂದು = kernel_ಆರಂಭ_addr;
     }
 
-    fdt_load_addr = riscv_compute_fdt_addr(s->memmap[TT_ATL_DDR_LO].base,
-                                           s->memmap[TT_ATL_DDR_LO].size,
+    fdt_ತುಂಬು_addr = riscv_compute_fdt_addr(s->memmap[TT_ATL_DDR_LO].ತಳ,
+                                           s->memmap[TT_ATL_DDR_LO].ಗಾತ್ರ_2,
                                            machine, &boot_info);
-    riscv_load_fdt(fdt_load_addr, machine->fdt);
+    riscv_ತುಂಬು_fdt(fdt_ತುಂಬು_addr, machine->fdt);
 
     /* load the reset vector */
-    riscv_setup_rom_reset_vec(machine, &s->cpus, start_addr,
-                              s->memmap[TT_ATL_BOOTROM].base,
-                              s->memmap[TT_ATL_BOOTROM].size,
-                              kernel_entry,
-                              fdt_load_addr);
+    riscv_ಸಿದ್ಧತೆ_rom_reset_vec(machine, &s->cpus, ಆರಂಭ_addr,
+                              s->memmap[TT_ATL_BOOTROM].ತಳ,
+                              s->memmap[TT_ATL_BOOTROM].ಗಾತ್ರ_2,
+                              kernel_ನಮೂದು,
+                              fdt_ತುಂಬು_addr);
 }
 
-static void tt_atlantis_soc_init(Object *obj)
+ಸ್ಥಿರ ಶೂನ್ಯ tt_atlantis_soc_init(Object *obj)
 {
     TTAtlantisSoCState *s = TT_ATLANTIS_SOC(obj);
 
-    object_initialize_child(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
+    object_initialize_ಮಗು(obj, "cpus", &s->cpus, TYPE_RISCV_HART_ARRAY);
 
-    object_initialize_child(obj, "uart1", &s->uart1,
+    object_initialize_ಮಗು(obj, "uart1", &s->uart1,
                             TYPE_UNIMPLEMENTED_DEVICE);
 
-    object_initialize_child(obj, "prcm-rcpu",
+    object_initialize_ಮಗು(obj, "prcm-rcpu",
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU],
                             TYPE_TT_ATLANTIS_PRCM_RCPU);
-    object_initialize_child(obj, "prcm-hsio",
+    object_initialize_ಮಗು(obj, "prcm-hsio",
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO],
                             TYPE_TT_ATLANTIS_PRCM_HSIO);
-    object_initialize_child(obj, "prcm-pcie",
+    object_initialize_ಮಗು(obj, "prcm-pcie",
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE],
                             TYPE_TT_ATLANTIS_PRCM_PCIE);
-    object_initialize_child(obj, "prcm-mm",
+    object_initialize_ಮಗು(obj, "prcm-mm",
                             &s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM],
                             TYPE_TT_ATLANTIS_PRCM_MM);
 
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
-        object_initialize_child(obj, "i2c[*]", &s->i2c[i],
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ i = 0; i < TT_ATL_ಅಂಕೆ_I2_C; i++) {
+        object_initialize_ಮಗು(obj, "i2c[*]", &s->i2c[i],
                                 TYPE_DESIGNWARE_I2C);
     }
 }
 
-static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
+ಸ್ಥಿರ ಶೂನ್ಯ tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
 {
     TTAtlantisSoCState *s = TT_ATLANTIS_SOC(dev);
-    ram_addr_t lo_ram_size, ram_size;
-    int hart_count = s->num_harts;
+    ram_addr_t lo_ram_ಗಾತ್ರ, ram_ಗಾತ್ರ;
+    ಪೂರ್ಣಾಂಕ hart_ಎಣಿಕೆ = s->ಅಂಕೆ_harts;
 
-    if (!s->memory) {
+    ಆದರೆ (!s->ಸ್ಮರಣೆ) {
         error_setg(errp, "'memory' link is not set");
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
-    if (!s->dram) {
+    ಆದರೆ (!s->dram) {
         error_setg(errp, "'dram' link is not set");
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
-    ram_size = memory_region_size(s->dram);
+    ram_ಗಾತ್ರ = ಸ್ಮರಣೆ_region_ಗಾತ್ರ(s->dram);
 
     s->memmap = tt_atlantis_memmap;
 
     /* CPUs */
-    object_property_set_str(OBJECT(&s->cpus), "cpu-type", s->cpu_type,
+    object_property_ಗಣ_str(OBJECT(&s->cpus), "cpu-type", s->cpu_type,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "hartid-base", 0,
+    object_property_ಗಣ_int(OBJECT(&s->cpus), "hartid-base", 0,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "num-harts", hart_count,
+    object_property_ಗಣ_int(OBJECT(&s->cpus), "num-harts", hart_ಎಣಿಕೆ,
                             &error_abort);
-    object_property_set_int(OBJECT(&s->cpus), "resetvec",
-                            s->memmap[TT_ATL_BOOTROM].base,
+    object_property_ಗಣ_int(OBJECT(&s->cpus), "resetvec",
+                            s->memmap[TT_ATL_BOOTROM].ತಳ,
                             &error_abort);
-    object_property_set_link(OBJECT(&s->cpus), "memory", OBJECT(s->memory),
+    object_property_ಗಣ_link(OBJECT(&s->cpus), "memory", OBJECT(s->ಸ್ಮರಣೆ),
                              &error_abort);
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
-        return;
+    ಆದರೆ (!sysbus_realize(SYS_BUS_DEVICE(&s->cpus), errp)) {
+        ಹಿಂತಿರುಗಿ;
     }
 
-    s->irqchip = riscv_create_aia(s->memory,
+    s->irqchip = riscv_create_aia(s->ಸ್ಮರಣೆ,
                                   true, TT_IMSIC_GUESTS,
                                   TT_IMSIC_STRIDE,
                                   TT_IMSIC_STRIDE,
-                                  TT_IRQCHIP_NUM_SOURCES,
+                                  TT_IRQCHIP_ಅಂಕೆ_SOURCES,
                                   &s->memmap[TT_ATL_MAPLIC],
                                   &s->memmap[TT_ATL_SAPLIC],
                                   &s->memmap[TT_ATL_MIMSIC],
                                   &s->memmap[TT_ATL_SIMSIC],
-                                  0, 0, hart_count,
-                                  TT_IRQCHIP_NUM_MSIS,
-                                  TT_IRQCHIP_NUM_PRIO_BITS);
+                                  0, 0, hart_ಎಣಿಕೆ,
+                                  TT_IRQCHIP_ಅಂಕೆ_MSIS,
+                                  TT_IRQCHIP_ಅಂಕೆ_PRIO_ಬಿಟ್ಟುಗಳು);
 
-    riscv_aclint_mtimer_create(s->memory,
-            s->memmap[TT_ATL_ACLINT].base,
-            TT_ACLINT_MTIME_SIZE,
-            0, hart_count,
+    riscv_aclint_mtimer_create(s->ಸ್ಮರಣೆ,
+            s->memmap[TT_ATL_ACLINT].ತಳ,
+            TT_ACLINT_MTIME_ಗಾತ್ರ,
+            0, hart_ಎಣಿಕೆ,
             TT_ACLINT_MTIMECMP,
             TT_ACLINT_MTIME,
             TT_ACLINT_TIMEBASE_FREQ, true);
@@ -628,70 +628,70 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
      * The high address is where RAM lives. It is always present and may be
      * up to 64GB. The low address is an alias of the first 2GB of that RAM.
      */
-    if (ram_size > s->memmap[TT_ATL_DDR_HI].size) {
-        g_autofree char *sz = size_to_str(s->memmap[TT_ATL_DDR_HI].size);
+    ಆದರೆ (ram_ಗಾತ್ರ > s->memmap[TT_ATL_DDR_HI].ಗಾತ್ರ_2) {
+        g_autofree ಅಕ್ಷರ *sz = ಗಾತ್ರ_ಗಮ್ಯ_str(s->memmap[TT_ATL_DDR_HI].ಗಾತ್ರ_2);
         error_setg(errp, "RAM size is too large, maximum is %s", sz);
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
 
-    memory_region_init_alias(&s->ram_hi, OBJECT(s), "ram.high", s->dram,
-                             0, ram_size);
-    memory_region_add_subregion(s->memory,
-                                s->memmap[TT_ATL_DDR_HI].base, &s->ram_hi);
+    ಸ್ಮರಣೆ_region_init_alias(&s->ram_hi, OBJECT(s), "ram.high", s->dram,
+                             0, ram_ಗಾತ್ರ);
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(s->ಸ್ಮರಣೆ,
+                                s->memmap[TT_ATL_DDR_HI].ತಳ, &s->ram_hi);
 
-    lo_ram_size = MIN(ram_size, s->memmap[TT_ATL_DDR_LO].size);
-    memory_region_init_alias(&s->ram_lo, OBJECT(s), "ram.low", s->dram,
-                             0, lo_ram_size);
-    memory_region_add_subregion(s->memory,
-                                s->memmap[TT_ATL_DDR_LO].base, &s->ram_lo);
+    lo_ram_ಗಾತ್ರ = MIN(ram_ಗಾತ್ರ, s->memmap[TT_ATL_DDR_LO].ಗಾತ್ರ_2);
+    ಸ್ಮರಣೆ_region_init_alias(&s->ram_lo, OBJECT(s), "ram.low", s->dram,
+                             0, lo_ram_ಗಾತ್ರ);
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(s->ಸ್ಮರಣೆ,
+                                s->memmap[TT_ATL_DDR_LO].ತಳ, &s->ram_lo);
 
     /* Boot ROM */
-    if (!memory_region_init_rom(&s->bootrom, OBJECT(s), "tt-atlantis.bootrom",
-                                s->memmap[TT_ATL_BOOTROM].size, errp)) {
-        return;
+    ಆದರೆ (!ಸ್ಮರಣೆ_region_init_rom(&s->bootrom, OBJECT(s), "tt-atlantis.bootrom",
+                                s->memmap[TT_ATL_BOOTROM].ಗಾತ್ರ_2, errp)) {
+        ಹಿಂತಿರುಗಿ;
     }
-    memory_region_add_subregion(s->memory, s->memmap[TT_ATL_BOOTROM].base,
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(s->ಸ್ಮರಣೆ, s->memmap[TT_ATL_BOOTROM].ತಳ,
                                 &s->bootrom);
 
     /* UART1, the soc console (UART0 is for the boot microcontroller) */
-    serial_mm_init(s->memory, s->memmap[TT_ATL_UART1].base, 2,
-                   qdev_get_gpio_in(s->irqchip, TT_ATL_UART1_IRQ),
+    serial_mm_init(s->ಸ್ಮರಣೆ, s->memmap[TT_ATL_UART1].ತಳ, 2,
+                   qdev_get_gpio_ಒಳ(s->irqchip, TT_ATL_UART1_IRQ),
                    115200, serial_hd(0), DEVICE_LITTLE_ENDIAN);
 
     /* 4 PRCM blocks */
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]),
+    ಆದರೆ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]),
                         errp)) {
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
-    memory_region_add_subregion(
-        s->memory, s->memmap[TT_ATL_PRCM_RCPU].base,
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(
+        s->ಸ್ಮರಣೆ, s->memmap[TT_ATL_PRCM_RCPU].ತಳ,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_RCPU]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]),
+    ಆದರೆ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]),
                         errp)) {
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
-    memory_region_add_subregion(
-        s->memory, s->memmap[TT_ATL_PRCM_HSIO].base,
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(
+        s->ಸ್ಮರಣೆ, s->memmap[TT_ATL_PRCM_HSIO].ತಳ,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_HSIO]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]),
+    ಆದರೆ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]),
                         errp)) {
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
-    memory_region_add_subregion(
-        s->memory, s->memmap[TT_ATL_PRCM_PCIE].base,
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(
+        s->ಸ್ಮರಣೆ, s->memmap[TT_ATL_PRCM_PCIE].ತಳ,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_PCIE]), 0));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]),
+    ಆದರೆ (!sysbus_realize(SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]),
                         errp)) {
-        return;
+        ಹಿಂತಿರುಗಿ;
     }
-    memory_region_add_subregion(
-        s->memory, s->memmap[TT_ATL_PRCM_MM].base,
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(
+        s->ಸ್ಮರಣೆ, s->memmap[TT_ATL_PRCM_MM].ತಳ,
         sysbus_mmio_get_region(
             SYS_BUS_DEVICE(&s->prcm[TT_ATLANTIS_PRCM_DOMAIN_MM]), 0));
 
@@ -704,83 +704,83 @@ static void tt_atlantis_soc_realize(DeviceState *dev, Error **errp)
      * Create an unimplemented device region so writes don't fault
      * and reads return zero, which keeps Linux happy.
      */
-    mmio_map_unimplemented(s->memory, SYS_BUS_DEVICE(&s->uart1),
-                           "tt-atlantis.uart1", s->memmap[TT_ATL_UART1].base,
-                           s->memmap[TT_ATL_UART1].size);
+    mmio_map_unimplemented(s->ಸ್ಮರಣೆ, SYS_BUS_DEVICE(&s->uart1),
+                           "tt-atlantis.uart1", s->memmap[TT_ATL_UART1].ತಳ,
+                           s->memmap[TT_ATL_UART1].ಗಾತ್ರ_2);
 
     /* I2C */
-    for (int i = 0; i < TT_ATL_NUM_I2C; i++) {
+    ಗಾಗಿ (ಪೂರ್ಣಾಂಕ i = 0; i < TT_ATL_ಅಂಕೆ_I2_C; i++) {
         SysBusDevice *sbd = SYS_BUS_DEVICE(&s->i2c[i]);
 
-        if (!sysbus_realize(sbd, errp)) {
-            return;
+        ಆದರೆ (!sysbus_realize(sbd, errp)) {
+            ಹಿಂತಿರುಗಿ;
         }
-        memory_region_add_subregion(s->memory,
-                                    s->memmap[TT_ATL_I2C0 + i].base,
+        ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(s->ಸ್ಮರಣೆ,
+                                    s->memmap[TT_ATL_I2C0 + i].ತಳ,
                                     sysbus_mmio_get_region(sbd, 0));
         sysbus_connect_irq(sbd, 0,
-                           qdev_get_gpio_in(s->irqchip, TT_ATL_I2C0_IRQ + i));
+                           qdev_get_gpio_ಒಳ(s->irqchip, TT_ATL_I2C0_IRQ + i));
     }
 }
 
-static const Property tt_atlantis_soc_props[] = {
+ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ Property tt_atlantis_soc_props[] = {
     DEFINE_PROP_STRING("cpu-type", TTAtlantisSoCState, cpu_type),
-    DEFINE_PROP_UINT32("num-harts", TTAtlantisSoCState, num_harts, 8),
-    DEFINE_PROP_LINK("memory", TTAtlantisSoCState, memory,
-                     TYPE_MEMORY_REGION, MemoryRegion *),
+    DEFINE_PROP_UINT32("num-harts", TTAtlantisSoCState, ಅಂಕೆ_harts, 8),
+    DEFINE_PROP_LINK("memory", TTAtlantisSoCState, ಸ್ಮರಣೆ,
+                     TYPE_ಸ್ಮರಣೆ_REGION, ಸ್ಮರಣೆ_Region *),
     DEFINE_PROP_LINK("dram", TTAtlantisSoCState, dram,
-                     TYPE_MEMORY_REGION, MemoryRegion *),
+                     TYPE_ಸ್ಮರಣೆ_REGION, ಸ್ಮರಣೆ_Region *),
 };
 
-static void tt_atlantis_soc_class_init(ObjectClass *oc, const void *data)
+ಸ್ಥಿರ ಶೂನ್ಯ tt_atlantis_soc_class_init(ObjectClass *oc, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *ದತ್ತಾಂಶ)
 {
     DeviceClass *dc = DEVICE_CLASS(oc);
 
     dc->realize = tt_atlantis_soc_realize;
-    device_class_set_props(dc, tt_atlantis_soc_props);
+    device_class_ಗಣ_props(dc, tt_atlantis_soc_props);
     /* The SoC can only be instantiated from the machine */
     dc->user_creatable = false;
 }
 
-static void tt_atlantis_machine_init(MachineState *machine)
+ಸ್ಥಿರ ಶೂನ್ಯ tt_atlantis_machine_init(MachineState *machine)
 {
     TTAtlantisState *ams = TT_ATLANTIS_MACHINE(machine);
     TTAtlantisSoCState *s = &ams->soc;
 
-    memory_region_init(&ams->soc_memory, OBJECT(machine),
+    ಸ್ಮರಣೆ_region_init(&ams->soc_ಸ್ಮರಣೆ, OBJECT(machine),
                        "tt-atlantis.soc-memory", UINT64_MAX);
-    memory_region_add_subregion(get_system_memory(), 0, &ams->soc_memory);
+    ಸ್ಮರಣೆ_region_ಕೂಡಿಸು_subregion(get_system_ಸ್ಮರಣೆ(), 0, &ams->soc_ಸ್ಮರಣೆ);
 
-    object_initialize_child(OBJECT(machine), "soc", &ams->soc,
+    object_initialize_ಮಗು(OBJECT(machine), "soc", &ams->soc,
                             TYPE_TT_ATLANTIS_SOC);
-    object_property_set_str(OBJECT(&ams->soc), "cpu-type", machine->cpu_type,
+    object_property_ಗಣ_str(OBJECT(&ams->soc), "cpu-type", machine->cpu_type,
                             &error_abort);
-    object_property_set_int(OBJECT(&ams->soc), "num-harts", machine->smp.cpus,
+    object_property_ಗಣ_int(OBJECT(&ams->soc), "num-harts", machine->smp.cpus,
                             &error_abort);
 
-    object_property_set_link(OBJECT(&ams->soc), "memory",
-                             OBJECT(&ams->soc_memory), &error_abort);
-    object_property_set_link(OBJECT(&ams->soc), "dram", OBJECT(machine->ram),
+    object_property_ಗಣ_link(OBJECT(&ams->soc), "memory",
+                             OBJECT(&ams->soc_ಸ್ಮರಣೆ), &error_abort);
+    object_property_ಗಣ_link(OBJECT(&ams->soc), "dram", OBJECT(machine->ram),
                              &error_abort);
 
-    qdev_realize(DEVICE(&ams->soc), NULL, &error_fatal);
+    qdev_realize(DEVICE(&ams->soc), ಖಾಲಿ, &error_fatal);
 
     /* I2C peripherals: qemu specific */
     i2c_slave_create_simple(i2c_get_bus(s, 0), "ds1338", 0x6f);
     i2c_slave_create_simple(i2c_get_bus(s, 4), "tmp105", 0x48);
 
     /* Load or create device tree */
-    if (machine->dtb) {
-        load_fdt(ams);
-    } else {
+    ಆದರೆ (machine->dtb) {
+        ತುಂಬು_fdt(ams);
+    } ಇಲ್ಲದಿದ್ದರೆ {
         create_fdt(ams);
     }
 
-    ams->machine_done.notify = tt_atlantis_machine_done;
-    qemu_add_machine_init_done_notifier(&ams->machine_done);
+    ams->machine_ಮುಗಿದ.notify = tt_atlantis_machine_ಮುಗಿದ;
+    qemu_ಕೂಡಿಸು_machine_init_ಮುಗಿದ_notifier(&ams->machine_ಮುಗಿದ);
 }
 
-static void tt_atlantis_machine_class_init(ObjectClass *oc, const void *data)
+ಸ್ಥಿರ ಶೂನ್ಯ tt_atlantis_machine_class_init(ObjectClass *oc, ಸ್ಥಿರಾಂಕ ಶೂನ್ಯ *ದತ್ತಾಂಶ)
 {
     MachineClass *mc = MACHINE_CLASS(oc);
 
@@ -788,25 +788,25 @@ static void tt_atlantis_machine_class_init(ObjectClass *oc, const void *data)
     mc->init = tt_atlantis_machine_init;
     mc->max_cpus = 8;
     mc->default_cpus = 8;
-    mc->default_ram_size = 4 * GiB;
+    mc->default_ram_ಗಾತ್ರ = 4 * GiB;
     mc->default_cpu_type = TYPE_RISCV_CPU_TT_ASCALON;
-    mc->block_default_type = IF_VIRTIO;
+    mc->ಖಂಡ_default_type = IF_VIRTIO;
     mc->no_cdrom = 1;
     mc->default_ram_id = "tt_atlantis.ram";
 }
 
-static const TypeInfo tt_atlantis_types[] = {
+ಸ್ಥಿರ ಸ್ಥಿರಾಂಕ TypeInfo tt_atlantis_types[] = {
     {
         .name       = TYPE_TT_ATLANTIS_SOC,
-        .parent     = TYPE_DEVICE,
-        .instance_size = sizeof(TTAtlantisSoCState),
+        .ಪೋಷಕ     = TYPE_DEVICE,
+        .instance_ಗಾತ್ರ = ಗಾತ್ರ(TTAtlantisSoCState),
         .instance_init = tt_atlantis_soc_init,
         .class_init = tt_atlantis_soc_class_init,
     }, {
         .name       = MACHINE_TYPE_NAME("tt-atlantis"),
-        .parent     = TYPE_MACHINE,
+        .ಪೋಷಕ     = TYPE_MACHINE,
         .class_init = tt_atlantis_machine_class_init,
-        .instance_size = sizeof(TTAtlantisState),
+        .instance_ಗಾತ್ರ = ಗಾತ್ರ(TTAtlantisState),
     },
 };
 
