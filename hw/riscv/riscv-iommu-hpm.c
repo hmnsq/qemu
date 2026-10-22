@@ -25,9 +25,9 @@
 #include "trace.h"
 
 /* For now we assume IOMMU HPM frequency to be 1GHz so 1-cycle is of 1-ns. */
-static inline uint64_t get_cycles(void)
+static anta_hstha uint64_t get_cycles(void)
 {
-    return qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
+    ආපසු qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
 }
 
 uint64_t riscv_iommu_hpmcycle_read(RISCVIOMMUState *s)
@@ -41,17 +41,17 @@ uint64_t riscv_iommu_hpmcycle_read(RISCVIOMMUState *s)
 
     trace_riscv_iommu_hpm_read(cycle, inhibit, ctr_prev, ctr_val);
 
-    if (get_field(inhibit, RISCV_IOMMU_IOCOUNTINH_CY)) {
+    නම් (get_field(inhibit, RISCV_IOMMU_IOCOUNTINH_CY)) {
         /*
          * Counter should not increment if inhibit bit is set. We can't really
          * stop the QEMU_CLOCK_VIRTUAL, so we just return the last updated
          * counter value to indicate that counter was not incremented.
          */
-        return (ctr_val & RISCV_IOMMU_IOHPMCYCLES_COUNTER) |
+        ආපසු (ctr_val & RISCV_IOMMU_IOHPMCYCLES_COUNTER) |
                (cycle & RISCV_IOMMU_IOHPMCYCLES_OVF);
     }
 
-    return (ctr_val + get_cycles() - ctr_prev) |
+    ආපසු (ctr_val + get_cycles() - ctr_prev) |
         (cycle & RISCV_IOMMU_IOHPMCYCLES_OVF);
 }
 
@@ -66,7 +66,7 @@ static void hpm_incr_ctr(RISCVIOMMUState *s, uint32_t ctr_idx)
     trace_riscv_iommu_hpm_incr_ctr(cntr_val);
 
     /* Handle the overflow scenario. */
-    if (cntr_val == UINT64_MAX) {
+    නම් (cntr_val == UINT64_MAX) {
         /*
          * Generate interrupt only if OF bit is clear. +1 to offset the cycle
          * register OF bit.
@@ -74,7 +74,7 @@ static void hpm_incr_ctr(RISCVIOMMUState *s, uint32_t ctr_idx)
         const uint32_t ovf =
             riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_IOCOUNTOVF,
                                   BIT(ctr_idx + 1), 0);
-        if (!get_field(ovf, BIT(ctr_idx + 1))) {
+        නම් (!get_field(ovf, BIT(ctr_idx + 1))) {
             riscv_iommu_reg_mod64(s,
                                   RISCV_IOMMU_REG_IOHPMEVT_BASE + off,
                                   RISCV_IOMMU_IOHPMEVT_OF,
@@ -96,19 +96,19 @@ void riscv_iommu_hpm_incr_ctr(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
     uint32_t ctrs;
     uint64_t evt;
 
-    if (!(s->cap & RISCV_IOMMU_CAP_HPM)) {
-        return;
+    නම් (!(s->cap & RISCV_IOMMU_CAP_HPM)) {
+        ආපසු;
     }
 
     value = g_hash_table_lookup(s->hpm_event_ctr_map,
                                 GUINT_TO_POINTER(event_id));
-    if (value == NULL) {
-        return;
+    නම් (value == NULL) {
+        ආපසු;
     }
 
-    for (ctrs = GPOINTER_TO_UINT(value); ctrs != 0; ctrs &= ctrs - 1) {
+    සඳහා (ctrs = GPOINTER_TO_UINT(value); ctrs != 0; ctrs &= ctrs - 1) {
         ctr_idx = ctz32(ctrs);
-        if (get_field(inhibit, BIT(ctr_idx + 1))) {
+        නම් (get_field(inhibit, BIT(ctr_idx + 1))) {
             continue;
         }
 
@@ -120,19 +120,19 @@ void riscv_iommu_hpm_incr_ctr(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
          * but hashtable hasn't been updated yet. We don't want to increment
          * counter for the old event ID.
          */
-        if (event_id != get_field(evt, RISCV_IOMMU_IOHPMEVT_EVENT_ID)) {
+        නම් (event_id != get_field(evt, RISCV_IOMMU_IOHPMEVT_EVENT_ID)) {
             continue;
         }
 
-        if (get_field(evt, RISCV_IOMMU_IOHPMEVT_IDT)) {
+        නම් (get_field(evt, RISCV_IOMMU_IOHPMEVT_IDT)) {
             did_gscid = get_field(ctx->gatp, RISCV_IOMMU_DC_IOHGATP_GSCID);
             pid_pscid = get_field(ctx->ta, RISCV_IOMMU_DC_TA_PSCID);
-        } else {
+        } නැතහොත් {
             did_gscid = ctx->devid;
             pid_pscid = ctx->process_id;
         }
 
-        if (get_field(evt, RISCV_IOMMU_IOHPMEVT_PV_PSCV)) {
+        නම් (get_field(evt, RISCV_IOMMU_IOHPMEVT_PV_PSCV)) {
             /*
              * If the transaction does not have a valid process_id, counter
              * increments if device_id matches DID_GSCID. If the transaction
@@ -141,16 +141,16 @@ void riscv_iommu_hpm_incr_ctr(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
              * IOMMU Specification, Chapter 5.23. Performance-monitoring
              * event selector.
              */
-            if (ctx->process_id &&
+            නම් (ctx->process_id &&
                 get_field(evt, RISCV_IOMMU_IOHPMEVT_PID_PSCID) != pid_pscid) {
                 continue;
             }
         }
 
-        if (get_field(evt, RISCV_IOMMU_IOHPMEVT_DV_GSCV)) {
+        නම් (get_field(evt, RISCV_IOMMU_IOHPMEVT_DV_GSCV)) {
             uint32_t mask = ~0;
 
-            if (get_field(evt, RISCV_IOMMU_IOHPMEVT_DMASK)) {
+            නම් (get_field(evt, RISCV_IOMMU_IOHPMEVT_DMASK)) {
                 /*
                  * 1001 1011   mask = GSCID
                  * 0000 0111   mask = mask ^ (mask + 1)
@@ -161,7 +161,7 @@ void riscv_iommu_hpm_incr_ctr(RISCVIOMMUState *s, RISCVIOMMUContext *ctx,
                 mask = ~mask;
             }
 
-            if ((get_field(evt, RISCV_IOMMU_IOHPMEVT_DID_GSCID) & mask) !=
+            නම් ((get_field(evt, RISCV_IOMMU_IOHPMEVT_DID_GSCID) & mask) !=
                 (did_gscid & mask)) {
                 continue;
             }
@@ -179,20 +179,20 @@ void riscv_iommu_hpm_timer_cb(void *priv)
         s, RISCV_IOMMU_REG_IOCOUNTINH);
     uint32_t ovf;
 
-    if (get_field(inhibit, RISCV_IOMMU_IOCOUNTINH_CY)) {
-        return;
+    නම් (get_field(inhibit, RISCV_IOMMU_IOCOUNTINH_CY)) {
+        ආපසු;
     }
 
-    if (s->irq_overflow_left > 0) {
+    නම් (s->irq_overflow_left > 0) {
         uint64_t irq_trigger_at =
             qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) + s->irq_overflow_left;
         timer_mod_anticipate_ns(s->hpm_timer, irq_trigger_at);
         s->irq_overflow_left = 0;
-        return;
+        ආපසු;
     }
 
     ovf = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_IOCOUNTOVF);
-    if (!get_field(ovf, RISCV_IOMMU_IOCOUNTOVF_CY)) {
+    නම් (!get_field(ovf, RISCV_IOMMU_IOCOUNTOVF_CY)) {
         /*
          * We don't need to set hpmcycle_val to zero and update hpmcycle_prev to
          * current clock value. The way we calculate iohpmcycs will overflow
@@ -213,24 +213,24 @@ static void hpm_setup_timer(RISCVIOMMUState *s, uint64_t value)
         s, RISCV_IOMMU_REG_IOCOUNTINH);
     uint64_t overflow_at, overflow_ns;
 
-    if (get_field(inhibit, RISCV_IOMMU_IOCOUNTINH_CY)) {
-        return;
+    නම් (get_field(inhibit, RISCV_IOMMU_IOCOUNTINH_CY)) {
+        ආපසු;
     }
 
     /*
      * We are using INT64_MAX here instead to UINT64_MAX because cycle counter
      * has 63-bit precision and INT64_MAX is the maximum it can store.
      */
-    if (value) {
+    නම් (value) {
         overflow_ns = INT64_MAX - value + 1;
-    } else {
+    } නැතහොත් {
         overflow_ns = INT64_MAX;
     }
 
     overflow_at = (uint64_t)qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) + overflow_ns;
     s->irq_overflow_left = 0;
 
-    if (overflow_at > INT64_MAX) {
+    නම් (overflow_at > INT64_MAX) {
         s->irq_overflow_left = overflow_at - INT64_MAX;
         overflow_at = INT64_MAX;
     }
@@ -246,13 +246,13 @@ void riscv_iommu_process_iocntinh_cy(RISCVIOMMUState *s, bool prev_cy_inh)
 
     /* We only need to process CY bit toggle. */
     bool cy_inh = !!(inhibit & RISCV_IOMMU_IOCOUNTINH_CY);
-    if (cy_inh == prev_cy_inh) {
-        return;
+    නම් (cy_inh == prev_cy_inh) {
+        ආපසු;
     }
 
     trace_riscv_iommu_hpm_iocntinh_cy(prev_cy_inh);
 
-    if (!(inhibit & RISCV_IOMMU_IOCOUNTINH_CY)) {
+    නම් (!(inhibit & RISCV_IOMMU_IOCOUNTINH_CY)) {
         /*
          * Cycle counter is enabled. Just start the timer again and update
          * the clock snapshot value to point to the current time to make
@@ -260,7 +260,7 @@ void riscv_iommu_process_iocntinh_cy(RISCVIOMMUState *s, bool prev_cy_inh)
          */
         s->hpmcycle_prev = get_cycles();
         hpm_setup_timer(s, s->hpmcycle_val);
-    } else {
+    } නැතහොත් {
         /*
          * Cycle counter is disabled. Stop the timer and update the cycle
          * counter to record the current value which is last programmed
@@ -281,7 +281,7 @@ void riscv_iommu_process_hpmcycle_write(RISCVIOMMUState *s)
     /*
      * Clear OF bit in IOCNTOVF if it's being cleared in IOHPMCYCLES register.
      */
-    if (get_field(ovf, RISCV_IOMMU_IOCOUNTOVF_CY) &&
+    නම් (get_field(ovf, RISCV_IOMMU_IOCOUNTOVF_CY) &&
         !get_field(val, RISCV_IOMMU_IOHPMCYCLES_OVF)) {
         riscv_iommu_reg_mod32(s, RISCV_IOMMU_REG_IOCOUNTOVF, 0,
             RISCV_IOMMU_IOCOUNTOVF_CY);
@@ -292,9 +292,9 @@ void riscv_iommu_process_hpmcycle_write(RISCVIOMMUState *s)
     hpm_setup_timer(s, s->hpmcycle_val);
 }
 
-static inline bool check_valid_event_id(unsigned event_id)
+static anta_hstha bool check_valid_event_id(unsigned event_id)
 {
-    return event_id > RISCV_IOMMU_HPMEVENT_INVALID &&
+    ආපසු event_id > RISCV_IOMMU_HPMEVENT_INVALID &&
            event_id < RISCV_IOMMU_HPMEVENT_MAX;
 }
 
@@ -302,12 +302,12 @@ static gboolean hpm_event_equal(gpointer key, gpointer value, gpointer udata)
 {
     uint32_t *pair = udata;
 
-    if (GPOINTER_TO_UINT(value) & (1 << pair[0])) {
+    නම් (GPOINTER_TO_UINT(value) & (1 << pair[0])) {
         pair[1] = GPOINTER_TO_UINT(key);
-        return true;
+        ආපසු true;
     }
 
-    return false;
+    ආපසු false;
 }
 
 /* Caller must check ctr_idx against hpm_ctrs to see if its supported or not. */
@@ -323,24 +323,24 @@ static void update_event_map(RISCVIOMMUState *s, uint64_t value,
      * If EventID field is RISCV_IOMMU_HPMEVENT_INVALID
      * remove the current mapping.
      */
-    if (event_id == RISCV_IOMMU_HPMEVENT_INVALID) {
+    නම් (event_id == RISCV_IOMMU_HPMEVENT_INVALID) {
         data = g_hash_table_find(s->hpm_event_ctr_map, hpm_event_equal, pair);
 
         new_value = GPOINTER_TO_UINT(data) & ~(new_value);
-        if (new_value != 0) {
+        නම් (new_value != 0) {
             g_hash_table_replace(s->hpm_event_ctr_map,
                                  GUINT_TO_POINTER(pair[1]),
                                  GUINT_TO_POINTER(new_value));
-        } else {
+        } නැතහොත් {
             g_hash_table_remove(s->hpm_event_ctr_map,
                                 GUINT_TO_POINTER(pair[1]));
         }
 
-        return;
+        ආපසු;
     }
 
     /* Update the counter mask if the event is already enabled. */
-    if (g_hash_table_lookup_extended(s->hpm_event_ctr_map,
+    නම් (g_hash_table_lookup_extended(s->hpm_event_ctr_map,
                                      GUINT_TO_POINTER(event_id),
                                      NULL,
                                      &data)) {
@@ -358,21 +358,21 @@ void riscv_iommu_process_hpmevt_write(RISCVIOMMUState *s, uint32_t evt_reg)
     const uint32_t ovf = riscv_iommu_reg_get32(s, RISCV_IOMMU_REG_IOCOUNTOVF);
     uint64_t val = riscv_iommu_reg_get64(s, evt_reg);
 
-    if (ctr_idx >= s->hpm_cntrs) {
-        return;
+    නම් (ctr_idx >= s->hpm_cntrs) {
+        ආපසු;
     }
 
     trace_riscv_iommu_hpm_evt_write(ctr_idx, ovf, val);
 
     /* Clear OF bit in IOCNTOVF if it's being cleared in IOHPMEVT register. */
-    if (get_field(ovf, BIT(ctr_idx + 1)) &&
+    නම් (get_field(ovf, BIT(ctr_idx + 1)) &&
         !get_field(val, RISCV_IOMMU_IOHPMEVT_OF)) {
         /* +1 to offset CYCLE register OF bit. */
         riscv_iommu_reg_mod32(
             s, RISCV_IOMMU_REG_IOCOUNTOVF, 0, BIT(ctr_idx + 1));
     }
 
-    if (!check_valid_event_id(get_field(val, RISCV_IOMMU_IOHPMEVT_EVENT_ID))) {
+    නම් (!check_valid_event_id(get_field(val, RISCV_IOMMU_IOHPMEVT_EVENT_ID))) {
         /* Reset EventID (WARL) field to invalid. */
         val = set_field(val, RISCV_IOMMU_IOHPMEVT_EVENT_ID,
             RISCV_IOMMU_HPMEVENT_INVALID);
