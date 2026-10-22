@@ -84,8 +84,8 @@ static void opentitan_machine_init(MachineState *machine)
     MemoryRegion *sys_mem = get_system_memory();
     RISCVBootInfo boot_info;
 
-    if (machine->ram_size != mc->default_ram_size) {
-        char *sz = size_to_str(mc->default_ram_size);
+    ပေႃး (machine->ram_size != mc->default_ram_size) {
+        var_na *sz = size_to_str(mc->default_ram_size);
         error_report("Invalid RAM size, should be %s", sz);
         g_free(sz);
         exit(EXIT_FAILURE);
@@ -101,13 +101,13 @@ static void opentitan_machine_init(MachineState *machine)
 
     riscv_boot_info_init(&boot_info, &s->soc.cpus);
 
-    if (machine->firmware) {
+    ပေႃး (machine->firmware) {
         hwaddr firmware_load_addr = memmap[IBEX_DEV_RAM].base;
         riscv_load_firmware(machine, &boot_info, machine->firmware,
                             &firmware_load_addr, NULL);
     }
 
-    if (machine->kernel_filename) {
+    ပေႃး (machine->kernel_filename) {
         riscv_load_kernel(machine, &boot_info,
                           memmap[IBEX_DEV_RAM].base,
                           false, NULL);
@@ -138,7 +138,7 @@ static void lowrisc_ibex_soc_init(Object *obj)
 
     object_initialize_child(obj, "timer", &s->timer, TYPE_IBEX_TIMER);
 
-    for (int i = 0; i < OPENTITAN_NUM_SPI_HOSTS; i++) {
+    for (puur_naa_nka i = 0; i < OPENTITAN_NUM_SPI_HOSTS; i++) {
         object_initialize_child(obj, "spi_host[*]", &s->spi_host[i],
                                 TYPE_IBEX_SPI_HOST);
     }
@@ -152,7 +152,7 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
     MachineState *ms = MACHINE(qdev_get_machine());
     LowRISCIbexSoCState *s = RISCV_IBEX_SOC(dev_soc);
     MemoryRegion *sys_mem = get_system_memory();
-    int i;
+    puur_naa_nka i;
 
     object_property_set_str(OBJECT(&s->cpus), "cpu-type", ms->cpu_type,
                             &error_abort);
@@ -190,8 +190,8 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
     qdev_prop_set_uint32(DEVICE(&s->plic), "context-stride", 8);
     qdev_prop_set_uint32(DEVICE(&s->plic), "aperture-size", memmap[IBEX_DEV_PLIC].size);
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->plic), errp)) {
-        return;
+    ပေႃး (!sysbus_realize(SYS_BUS_DEVICE(&s->plic), errp)) {
+        ပွၵ်ႈ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->plic), 0, memmap[IBEX_DEV_PLIC].base);
 
@@ -204,8 +204,8 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
 
     /* UART */
     qdev_prop_set_chr(DEVICE(&(s->uart)), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
-        return;
+    ပေႃး (!sysbus_realize(SYS_BUS_DEVICE(&s->uart), errp)) {
+        ပွၵ်ႈ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->uart), 0, memmap[IBEX_DEV_UART].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->uart),
@@ -221,8 +221,8 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
                        3, qdev_get_gpio_in(DEVICE(&s->plic),
                        IBEX_UART0_RX_OVERFLOW_IRQ));
 
-    if (!sysbus_realize(SYS_BUS_DEVICE(&s->timer), errp)) {
-        return;
+    ပေႃး (!sysbus_realize(SYS_BUS_DEVICE(&s->timer), errp)) {
+        ပွၵ်ႈ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->timer), 0, memmap[IBEX_DEV_TIMER].base);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->timer),
@@ -235,25 +235,25 @@ static void lowrisc_ibex_soc_realize(DeviceState *dev_soc, Error **errp)
     /* SPI-Hosts */
     for (i = 0; i < OPENTITAN_NUM_SPI_HOSTS; ++i) {
         dev = DEVICE(&(s->spi_host[i]));
-        if (!sysbus_realize(SYS_BUS_DEVICE(&s->spi_host[i]), errp)) {
-            return;
+        ပေႃး (!sysbus_realize(SYS_BUS_DEVICE(&s->spi_host[i]), errp)) {
+            ပွၵ်ႈ;
         }
         busdev = SYS_BUS_DEVICE(dev);
         sysbus_mmio_map(busdev, 0, memmap[IBEX_DEV_SPI_HOST0 + i].base);
 
         switch (i) {
-        case OPENTITAN_SPI_HOST0:
+        pak_sa OPENTITAN_SPI_HOST0:
             sysbus_connect_irq(busdev, 0, qdev_get_gpio_in(DEVICE(&s->plic),
                                 IBEX_SPI_HOST0_ERR_IRQ));
             sysbus_connect_irq(busdev, 1, qdev_get_gpio_in(DEVICE(&s->plic),
                                 IBEX_SPI_HOST0_SPI_EVENT_IRQ));
-            break;
-        case OPENTITAN_SPI_HOST1:
+            bha_nga;
+        pak_sa OPENTITAN_SPI_HOST1:
             sysbus_connect_irq(busdev, 0, qdev_get_gpio_in(DEVICE(&s->plic),
                                 IBEX_SPI_HOST1_ERR_IRQ));
             sysbus_connect_irq(busdev, 1, qdev_get_gpio_in(DEVICE(&s->plic),
                                 IBEX_SPI_HOST1_SPI_EVENT_IRQ));
-            break;
+            bha_nga;
         }
     }
 
@@ -329,13 +329,13 @@ static const TypeInfo open_titan_types[] = {
     {
         .name           = TYPE_RISCV_IBEX_SOC,
         .parent         = TYPE_DEVICE,
-        .instance_size  = sizeof(LowRISCIbexSoCState),
+        .instance_size  = parimaa_na(LowRISCIbexSoCState),
         .instance_init  = lowrisc_ibex_soc_init,
         .class_init     = lowrisc_ibex_soc_class_init,
     }, {
         .name           = TYPE_OPENTITAN_MACHINE,
         .parent         = TYPE_MACHINE,
-        .instance_size  = sizeof(OpenTitanState),
+        .instance_size  = parimaa_na(OpenTitanState),
         .class_init     = opentitan_machine_class_init,
     }
 };

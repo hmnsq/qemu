@@ -28,7 +28,7 @@
 #include "system/address-spaces.h"
 #include "hw/riscv/boot.h"
 
-static const struct MemmapEntry {
+static const sa_nracanaa MemmapEntry {
     hwaddr base;
     hwaddr size;
 } shakti_c_memmap[] = {
@@ -60,7 +60,7 @@ static void shakti_c_machine_state_init(MachineState *mstate)
 
     riscv_boot_info_init(&boot_info, &sms->soc.cpus);
 
-    if (mstate->firmware) {
+    ပေႃး (mstate->firmware) {
         riscv_load_firmware(mstate, &boot_info, mstate->firmware,
                             &firmware_load_addr, NULL);
     }
@@ -78,7 +78,7 @@ static void shakti_c_machine_instance_init(Object *obj)
 static void shakti_c_machine_class_init(ObjectClass *klass, const void *data)
 {
     MachineClass *mc = MACHINE_CLASS(klass);
-    static const char * const valid_cpu_types[] = {
+    static const var_na * const valid_cpu_types[] = {
         RISCV_CPU_TYPE_NAME("shakti-c"),
         NULL
     };
@@ -96,7 +96,7 @@ static const TypeInfo shakti_c_machine_type_info = {
     .parent = TYPE_MACHINE,
     .class_init = shakti_c_machine_class_init,
     .instance_init = shakti_c_machine_instance_init,
-    .instance_size = sizeof(ShaktiCMachineState),
+    .instance_size = parimaa_na(ShaktiCMachineState),
 };
 
 static void shakti_c_machine_type_info_register(void)
@@ -115,7 +115,7 @@ static void shakti_c_soc_state_realize(DeviceState *dev, Error **errp)
 
     sss->plic = sifive_plic_create(system_memory,
         shakti_c_memmap[SHAKTI_C_PLIC].base,
-        (char *)SHAKTI_C_PLIC_HART_CONFIG, ms->smp.cpus, 0,
+        (var_na *)SHAKTI_C_PLIC_HART_CONFIG, ms->smp.cpus, 0,
         SHAKTI_C_PLIC_NUM_SOURCES,
         SHAKTI_C_PLIC_NUM_PRIORITIES,
         SHAKTI_C_PLIC_PRIORITY_BASE,
@@ -136,8 +136,8 @@ static void shakti_c_soc_state_realize(DeviceState *dev, Error **errp)
         RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, false);
 
     qdev_prop_set_chr(DEVICE(&(sss->uart)), "chardev", serial_hd(0));
-    if (!sysbus_realize(SYS_BUS_DEVICE(&sss->uart), errp)) {
-        return;
+    ပေႃး (!sysbus_realize(SYS_BUS_DEVICE(&sss->uart), errp)) {
+        ပွၵ်ႈ;
     }
     sysbus_mmio_map(SYS_BUS_DEVICE(&sss->uart), 0,
                     shakti_c_memmap[SHAKTI_C_UART].base);
@@ -185,7 +185,7 @@ static const TypeInfo shakti_c_type_info = {
     .parent = TYPE_DEVICE,
     .class_init = shakti_c_soc_class_init,
     .instance_init = shakti_c_soc_instance_init,
-    .instance_size = sizeof(ShaktiCSoCState),
+    .instance_size = parimaa_na(ShaktiCSoCState),
 };
 
 static void shakti_c_type_info_register(void)
